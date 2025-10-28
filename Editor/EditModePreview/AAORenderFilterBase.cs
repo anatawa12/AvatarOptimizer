@@ -30,15 +30,14 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             var componentsByRenderer = new Dictionary<Renderer, List<T>>();
             foreach (var component in components)
             {
-                if (component.GetComponent<MergeSkinnedMesh>())
+                if (component.TryGetComponent<MergeSkinnedMesh>(out _))
                 {
                     // the component applies to MergeSkinnedMesh, which is not supported for now
                     // TODO: rollup the remove operation to source renderers of MergeSkinnedMesh
                     continue;
                 }
 
-                var renderer = component.GetComponent<SkinnedMeshRenderer>();
-                if (renderer == null) continue;
+                if (!component.TryGetComponent<SkinnedMeshRenderer>(out var renderer)) continue;
                 if (renderer.sharedMesh == null) continue;
 
                 if (!componentsByRenderer.TryGetValue(renderer, out var list))

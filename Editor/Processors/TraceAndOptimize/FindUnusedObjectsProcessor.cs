@@ -19,92 +19,38 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
     }
 
-    internal readonly struct MarkObjectContext {
-        private readonly GCComponentInfoHolder _componentInfos;
-
-        private readonly Func<GCComponentInfo, Dictionary<Component, GCComponentInfo.DependencyType>> _getDependantMap;
-        private readonly Queue<Component> _processPending;
-        private readonly Component _entrypoint;
-
-        public MarkObjectContext(GCComponentInfoHolder componentInfos, Component entrypoint,
-            Func<GCComponentInfo, Dictionary<Component, GCComponentInfo.DependencyType>> getDependantMap)
-        {
-            _componentInfos = componentInfos;
-            _processPending = new Queue<Component>();
-            _entrypoint = entrypoint;
-            _getDependantMap = getDependantMap;
-        }
-
-        public void MarkComponent(Component component,
-            GCComponentInfo.DependencyType type)
-        {
-            var dependencies = _componentInfos.TryGetInfo(component);
-            if (dependencies == null) return;
-
-            var dependantMap = _getDependantMap(dependencies);
-            if (dependantMap.TryGetValue(_entrypoint, out var existingFlags))
-            {
-                dependantMap[_entrypoint] = existingFlags | type;
-            }
-            else
-            {
-                _processPending.Enqueue(component);
-                dependantMap.Add(_entrypoint, type);
-            }
-        }
-
-        public void MarkRecursively()
-        {
-            while (_processPending.Count != 0)
-            {
-                var component = _processPending.Dequeue();
-                var dependencies = _componentInfos.TryGetInfo(component);
-                if (dependencies == null) continue; // not part of this Hierarchy Tree
-
-                foreach (var (dependency, type) in dependencies.Dependencies)
-                    MarkComponent(dependency, type);
-            }
-        }
-    }
-
     internal readonly struct FindUnusedObjectsProcessor
     {
         private readonly BuildContext _context;
-        private readonly HashSet<GameObject> _exclusions;
-        private readonly bool _preserveEndBone;
+        private readonly bool _noSweepComponents;
         private readonly bool _noConfigureMergeBone;
         private readonly bool _noActivenessAnimation;
-        private readonly bool _gcDebug;
+        private readonly bool _skipRemoveUnusedSubMesh;
 
         public FindUnusedObjectsProcessor(BuildContext context, TraceAndOptimizeState state)
         {
             _context = context;
 
-            _preserveEndBone = state.PreserveEndBone;
+            _noSweepComponents = state.NoSweepComponents;
             _noConfigureMergeBone = state.NoConfigureMergeBone;
             _noActivenessAnimation = state.NoActivenessAnimation;
-            _gcDebug = state.GCDebug;
-            _exclusions = state.Exclusions;
+            _skipRemoveUnusedSubMesh = state.SkipRemoveUnusedSubMesh;
         }
 
         public void ProcessNew()
         {
-            var componentInfos = new GCComponentInfoHolder(_context);
-            Mark(componentInfos);
-            if (_gcDebug)
-            {
-                GCDebug.AddGCDebugInfo(componentInfos, _context.AvatarRootObject);
-                return;
-            }
-            Sweep(componentInfos);
+            var componentInfos = _context.Extension<GCComponentInfoContext>();
+            var entrypointMap = DependantMap.CreateEntrypointsMap(_context);
+            if (!_noSweepComponents)
+                Sweep(componentInfos, entrypointMap);
             if (!_noConfigureMergeBone)
-                MergeBone(componentInfos);
-            MarkDependant(componentInfos);
+                MergeBone(componentInfos, entrypointMap);
+            var behaviorMap = DependantMap.CreateDependantsMap(_context);
             if (!_noActivenessAnimation)
-                ActivenessAnimation(componentInfos);
+                ActivenessAnimation(componentInfos, behaviorMap);
         }
 
-        private void ActivenessAnimation(GCComponentInfoHolder componentInfos)
+        private void ActivenessAnimation(GCComponentInfoContext componentInfos, DependantMap behaviorMap)
         {
             // entrypoint -> affected activeness animated components / GameObjects
             Dictionary<Component, HashSet<Component>> entryPointActiveness =
@@ -119,10 +65,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     continue; // enabled is animated so we will not generate activeness animation
 
                 HashSet<Component> resultSet;
-                using (var enumerator = componentInfo.DependantComponents.GetEnumerator())
+                using (var enumerator = behaviorMap[componentInfo].Keys.GetEnumerator())
                 {
-                    System.Diagnostics.Debug.Assert(enumerator.MoveNext());
-                    resultSet = GetEntrypointActiveness(enumerator.Current, _context);
+                    Utils.Assert(enumerator.MoveNext());
+                    resultSet = GetEntrypointActiveness(enumerator.Current!, _context);
 
                     // resultSet.Count == 0 => no longer meaning
                     if (enumerator.MoveNext() && resultSet.Count != 0)
@@ -133,6 +79,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         {
                             var component = enumerator.Current;
                             if (component == null) continue;
+                            if (component == componentInfo.Component) continue;
                             var current = GetEntrypointActiveness(component, _context);
                             resultSet.IntersectWith(current);
                         } while (enumerator.MoveNext() && resultSet.Count != 0);
@@ -182,7 +129,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                             }
                         }
 
-                        System.Diagnostics.Debug.Assert(commonActiveness != null);
+                        Utils.Assert(commonActiveness != null);
                     }
                 }
 
@@ -222,50 +169,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
         }
 
-        private void Mark(GCComponentInfoHolder componentInfos)
-        {
-            // first, collect usages
-            
-            new ComponentDependencyCollector(_context, _preserveEndBone, componentInfos).CollectAllUsages();
-
-            // then, mark and sweep.
-
-            // entrypoint for mark & sweep is active-able GameObjects
-            foreach (var componentInfo in componentInfos.AllInformation)
-            {
-                if (componentInfo.IsEntrypoint)
-                {
-                    var component = componentInfo.Component;
-
-                    var markContext = new MarkObjectContext(componentInfos, component, GetDependantMap);
-                    markContext.MarkComponent(component, GCComponentInfo.DependencyType.Normal);
-                    markContext.MarkRecursively();
-                }
-            }
-
-            if (_exclusions.Count != 0) {
-                // excluded GameObjects must be exists
-                var markContext = new MarkObjectContext(componentInfos, _context.AvatarRootTransform, GetDependantMap);
-
-                foreach (var gameObject in _exclusions)
-                foreach (var component in gameObject.GetComponents<Component>())
-                    markContext.MarkComponent(component, GCComponentInfo.DependencyType.Normal);
-
-                markContext.MarkRecursively();
-            }
-
-            Dictionary<Component, GCComponentInfo.DependencyType> GetDependantMap(GCComponentInfo x) =>
-                x.DependantEntrypoint;
-        }
-
-        private void Sweep(GCComponentInfoHolder componentInfos)
+        private void Sweep(GCComponentInfoContext componentInfos, DependantMap entrypointMap)
         {
             foreach (var componentInfo in componentInfos.AllInformation)
             {
                 // null values are ignored
                 if (!componentInfo.Component) continue;
 
-                if (componentInfo.DependantEntrypoint.Count == 0)
+                if (entrypointMap[componentInfo].Count == 0)
                 {
                     if (componentInfo.Component is Transform)
                     {
@@ -289,36 +200,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             DestroyTracker.DestroyImmediate(component);
         }
 
-        private void MarkDependant(GCComponentInfoHolder componentInfos)
-        {
-            // entrypoint for mark & sweep is active-able GameObjects
-            foreach (var componentInfo in componentInfos.AllInformation)
-            {
-                if (componentInfo.BehaviourComponent)
-                {
-                    var component = componentInfo.Component;
-                    var markContext = new MarkObjectContext(componentInfos, component, GetDependantMap);
-                    markContext.MarkComponent(component, GCComponentInfo.DependencyType.Normal);
-                    markContext.MarkRecursively();
-                }
-            }
-
-            if (_exclusions.Count != 0) {
-                // excluded GameObjects must be exists
-                var markContext = new MarkObjectContext(componentInfos, _context.AvatarRootTransform, GetDependantMap);
-
-                foreach (var gameObject in _exclusions)
-                foreach (var component in gameObject.GetComponents<Component>())
-                    markContext.MarkComponent(component, GCComponentInfo.DependencyType.Normal);
-
-                markContext.MarkRecursively();
-            }
-
-            Dictionary<Component, GCComponentInfo.DependencyType> GetDependantMap(GCComponentInfo x) =>
-                x.DependantBehaviours;
-        }
-
-        private void MergeBone(GCComponentInfoHolder componentInfos)
+        private void MergeBone(GCComponentInfoContext componentInfos, DependantMap entrypointMap)
         {
             ConfigureRecursive(_context.AvatarRootTransform, _context);
 
@@ -352,11 +234,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 (bool, List<Transform>?) NotMerged() => (mergedChildren, null);
 
                 // Already Merged
-                if (transform.GetComponent<MergeBone>()) return YesMerge();
+                if (transform.TryGetComponent<MergeBone>(out _)) return YesMerge();
                 // Components must be Transform Only
                 if (transform.GetComponents<Component>().Length != 1) return NotMerged();
                 // The bone cannot be used generally
-                if ((componentInfos.GetInfo(transform).AllEntrypointUsages & ~AllowedUsages) != 0) return NotMerged();
+                if ((entrypointMap.MergedUsages(componentInfos.GetInfo(transform)) & ~AllowedUsages) != 0) return NotMerged();
                 // must not be animated
                 if (TransformAnimated(transform, context)) return NotMerged();
 
@@ -375,7 +257,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                             // if this is not identity transform, animating children is not good
                             return NotMerged();
 
-                        if (!MergeBoneProcessor.ScaledEvenly(localScale))
+                        if (!Utils.ScaledEvenly(localScale))
                             // non even scaling is not possible to reproduce in children
                             return NotMerged();
                     }
@@ -414,6 +296,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             "m_LocalRotation.x", "m_LocalRotation.y", "m_LocalRotation.z", "m_LocalRotation.w",
             "m_LocalPosition.x", "m_LocalPosition.y", "m_LocalPosition.z", 
             "m_LocalScale.x", "m_LocalScale.y", "m_LocalScale.z", 
+            // Animator Window won't create the following properties, but generated by some scripts and works in runtime
+            "localRotation.x", "localRotation.y", "localRotation.z", "localRotation.w",
+            "localPosition.x", "localPosition.y", "localPosition.z", 
+            "localScale.x", "localScale.y", "localScale.z", 
             "localEulerAnglesRaw.x", "localEulerAnglesRaw.y", "localEulerAnglesRaw.z"
         };
     }

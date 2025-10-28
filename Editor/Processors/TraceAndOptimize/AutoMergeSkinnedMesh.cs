@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.API;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using nadena.dev.ndmf;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
-using Debug = System.Diagnostics.Debug;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
@@ -21,29 +21,40 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var mergeMeshes = FilterMergeMeshes(context, state);
             if (mergeMeshes.Count == 0) return;
 
-            var categorizedMeshes = CategoryMeshesForMerge(context, mergeMeshes);
-            if (categorizedMeshes.Count == 0) return;
+            CategoryMeshesForMerge(context, mergeMeshes, out var categorizedMeshes);
+            
+            Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes;
 
-            MergeMeshes(context, state, categorizedMeshes);
+            // createSubMeshes must preserve first material to be the first material
+            if (state.SkipMergeMaterials)
+                createSubMeshes = CreateSubMeshesNoMerge;
+            else if (state.AllowShuffleMaterialSlots)
+                createSubMeshes = CreateSubMeshesMergeShuffling;
+            else
+                createSubMeshes = CreateSubMeshesMergePreserveOrder;
+
+            MergeMeshes(context, state, categorizedMeshes, createSubMeshes);
         }
 
         public static List<MeshInfo2> FilterMergeMeshes(BuildContext context, TraceAndOptimizeState state)
         {
             Profiler.BeginSample("Collect for Dependencies to not merge dependant objects");
 
-            var componentInfos = new GCComponentInfoHolder(context);
+            var componentInfos = context.Extension<GCComponentInfoContext>();
 
-            new ComponentDependencyCollector(context, false, componentInfos).CollectAllUsages();
+            var entryPointMap = DependantMap.CreateEntrypointsMap(context);
 
-            foreach (var componentInfo in componentInfos.AllInformation)
+            // if MMD World Compatibility is enabled, body mesh will be animated by MMD World
+            if (state.MmdWorldCompatibility)
             {
-                if (componentInfo.IsEntrypoint)
+                var mmdBody = context.AvatarRootTransform.Find("Body");
+                if (mmdBody != null)
                 {
-                    var component = componentInfo.Component;
-
-                    var markContext = new MarkObjectContext(componentInfos, component, x => x.DependantEntrypoint);
-                    markContext.MarkComponent(component, GCComponentInfo.DependencyType.Normal);
-                    markContext.MarkRecursively();
+                    if (mmdBody.TryGetComponent<SkinnedMeshRenderer>(out var mmdBodyRenderer))
+                    {
+                        entryPointMap[componentInfos.GetInfo(mmdBodyRenderer)]
+                            .Add(context.AvatarRootTransform, GCComponentInfo.DependencyType.Normal);
+                    }
                 }
             }
 
@@ -61,12 +72,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 var componentInfo = componentInfos.TryGetInfo(meshRenderer);
                 if (componentInfo != null)
                 {
-                    var dependants = componentInfo.DependantComponents.ToList();
+                    var dependants = entryPointMap[componentInfo].Keys.ToList();
                     if (dependants.Count != 1 || dependants[0] != meshRenderer)
                     {
-                        if (state.GCDebug)
-                            UnityEngine.Debug.Log(
-                                $"EntryPoints of {meshRenderer}: {string.Join(", ", componentInfo.DependantComponents)}");
                         continue;
                     }
                 }
@@ -78,8 +86,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     meshInfo.Bones.Count > 0
                     // FlattenMultiPassRendering will increase polygon count by VRChat so it's not good for T&O
                     && meshInfo.SubMeshes.All(x => x.SharedMaterials.Length == 1)
-                    // Merging Meshes with BlendShapes can increase rendering cost or break the animation
-                    && meshInfo.BlendShapes.Count == 0
+                    // Since 1.8.0 (targets 2022) we merge meshes with BlendShapes with RenameToAvoidConflict
+                    // && meshInfo.BlendShapes.Count == 0
                     // Animating renderer is not supported by this optimization
                     && !IsAnimatedForbidden(context.GetAnimationComponent(meshRenderer))
                     // any other components are not supported
@@ -100,7 +108,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     // not guaranteed so upgrading Avatar Optimizer may break your avatar if you rely on vertex index
                     // after Remove Mesh By **** or Merge Skinned Mesh.
                     && !context.GetAllPossibleMaterialFor(meshRenderer)
-                        .Any(x => context.GetMaterialInformation(x)?.UseVertexIndex ?? false)
+                        .Any(x => context.GetMaterialInformation(x)?.DefaultResult?.UseVertexIndex ?? false)
 
                     // other notes:
                     // - activeness animation can be ignored here because we'll combine based on activeness animation
@@ -114,10 +122,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return mergeMeshes;
         }
 
-        public static Dictionary<CategorizationKey, List<MeshInfo2>> CategoryMeshesForMerge(BuildContext context, List<MeshInfo2> mergeMeshes)
+        public static void CategoryMeshesForMerge(BuildContext context, List<MeshInfo2> mergeMeshes,
+            out Dictionary<CategorizationKey, List<MeshInfo2>> categorizedMeshes)
         {
+            List<MeshInfo2> orphanMeshes;
             // then, group by mesh attributes
-            var categorizedMeshes = new Dictionary<CategorizationKey, List<MeshInfo2>>();
+            categorizedMeshes = new Dictionary<CategorizationKey, List<MeshInfo2>>();
             foreach (var meshInfo2 in mergeMeshes)
             {
                 var activenessInfo = GetActivenessInformation(context, meshInfo2.SourceRenderer);
@@ -130,8 +140,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (rendererAnimationLocations == null)
                     continue; // animating renderer properties with non animator is not supported
 
+                var vrmFirstPersonFlag = GetVrmFirstPersonFlag(context, meshInfo2.SourceRenderer);
+
                 var key = new CategorizationKey(meshInfo2, activeness, activenessAnimationLocations,
-                    rendererAnimationLocations);
+                    rendererAnimationLocations, vrmFirstPersonFlag);
                 if (!categorizedMeshes.TryGetValue(key, out var list))
                 {
                     list = new List<MeshInfo2>();
@@ -141,30 +153,26 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 list.Add(meshInfo2);
             }
 
+            orphanMeshes = new List<MeshInfo2>();
+
             // remove single mesh group
             foreach (var (key, list) in categorizedMeshes.ToArray())
+            {
                 if (list.Count == 1)
+                {
                     categorizedMeshes.Remove(key);
+                    orphanMeshes.Add(list[0]);
+                }
+            }
 
             Profiler.EndSample();
-
-            return categorizedMeshes;
         }
 
         public static void MergeMeshes(BuildContext context, TraceAndOptimizeState state,
-            Dictionary<CategorizationKey, List<MeshInfo2>> categorizedMeshes)
+            Dictionary<CategorizationKey, List<MeshInfo2>> categorizedMeshes,
+            Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes)
         {
             Profiler.BeginSample("Merge Meshes");
-
-            Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes;
-
-            // createSubMeshes must preserve first material to be the first material
-            if (state.SkipMergeMaterials)
-                createSubMeshes = CreateSubMeshesNoMerge;
-            else if (state.AllowShuffleMaterialSlots)
-                createSubMeshes = CreateSubMeshesMergeShuffling;
-            else
-                createSubMeshes = CreateSubMeshesMergePreserveOrder;
 
             var index = 0;
             Func<GameObject> gameObjectFactory = () => new GameObject($"$$AAO_AUTO_MERGE_SKINNED_MESH_{index++}");
@@ -212,11 +220,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             var (subMeshIndexMap, materials) = createSubMeshes(meshInfosArray);
 
-            MergeSkinnedMeshProcessor.DoMerge(context, newMeshInfo, meshInfosArray, subMeshIndexMap, materials, null);
+            MergeSkinnedMeshProcessor.DoMerge(context, newMeshInfo, meshInfosArray, subMeshIndexMap, materials);
 
             // We process FindUnusedObjects after this pass so we wipe empty renderer object in that pass
             MergeSkinnedMeshProcessor.RemoveOldRenderers(newMeshInfo, meshInfosArray,
                 removeEmptyRendererObject: false);
+
+            var gcContext = context.Extension<GCComponentInfoContext>();
+            gcContext.NewComponent(newSkinnedMeshRenderer.transform);
+            APIInternal.SkinnedMeshRendererInformation.AddDependencyInformation(gcContext.NewComponent(newSkinnedMeshRenderer), newMeshInfo);
         }
 
         private static void MergeAnimatingSkinnedMesh(
@@ -261,18 +273,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 newSkinnedMeshRenderer.enabled = initial;
             }
 
-            Debug.Assert(activenessAnimatingProperties.Count == 0);
+            Utils.Assert(activenessAnimatingProperties.Count == 0);
 
             var newMeshInfo = context.GetMeshInfoFor(newSkinnedMeshRenderer);
             var meshInfosArray = meshInfos.ToArray();
 
             var (subMeshIndexMap, materials) = createSubMeshes(meshInfosArray);
 
-            MergeSkinnedMeshProcessor.DoMerge(context, newMeshInfo, meshInfosArray, subMeshIndexMap, materials, null);
+            MergeSkinnedMeshProcessor.DoMerge(context, newMeshInfo, meshInfosArray, subMeshIndexMap, materials);
 
             // We process FindUnusedObjects after this pass so we wipe empty renderer object in that pass
             MergeSkinnedMeshProcessor.RemoveOldRenderers(newMeshInfo, meshInfosArray,
                 removeEmptyRendererObject: false);
+            
+            var gcContext = context.Extension<GCComponentInfoContext>();
+            gcContext.NewComponent(newSkinnedMeshRenderer.transform);
+            APIInternal.SkinnedMeshRendererInformation.AddDependencyInformation(gcContext.NewComponent(newSkinnedMeshRenderer), newMeshInfo);
         }
 
         private static Transform ComputeCommonParent(IReadOnlyList<MeshInfo2> meshInfos, Transform avatarRoot)
@@ -415,11 +431,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 if (property == Props.EnabledFor(typeof(SkinnedMeshRenderer))) continue; // m_Enabled is proceed separatedly
                 if (!node.ComponentNodes.Any()) continue; // skip empty nodes, likely means PPtr animation
+                if (property.StartsWith("blendShape.", StringComparison.Ordinal)) continue; // blendShapes are renamed so we don't need to collect animation location
                 if (node.ComponentNodes.Any(x => x is not AnimatorParsersV2.AnimatorPropModNode<AnimatorParsersV2.FloatValueInfo>))
                     return null;
-
-                if (property.StartsWith("blendShape.", StringComparison.Ordinal))
-                    continue;
 
                 float? defaultValue;
                 if (node.ApplyState == AnimatorParsersV2.ApplyState.Always)
@@ -438,6 +452,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             }
 
             return new EqualsHashSet<(string property, float? defaultValue, EqualsHashSet<AnimationLocation> location)>(locations);
+        }
+
+        private static VrmFirstPersonFlag GetVrmFirstPersonFlag(BuildContext context, Component component)
+        {
+            // note: unset will fallback to Auto
+            return context.GetMappingBuilder().GetVrmFirstPersonFlag(component) ?? VrmFirstPersonFlag.Auto;
         }
 
         private static SkinnedMeshRenderer CreateNewRenderer(
@@ -634,8 +654,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // Note: when you added some other allowed properties,
                 // You have to add default value handling in GetDefaultValue below
 
-                // blendShapes are removed so it's allowed
-                if (name.StartsWith("blendShapes.", StringComparison.Ordinal)) continue;
+                // blendShapes are renamed to avoid conflict, so it's allowed
+                if (name.StartsWith("blendShape.", StringComparison.Ordinal)) continue;
                 // material properties are allowed, will be merged if animated similarly
                 if (name.StartsWith("material.", StringComparison.Ordinal)) continue;
                 // other float properties are forbidden
@@ -666,28 +686,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                     return channel switch
                     {
-                        'x' => material.GetVector(propertyName).x,
-                        'y' => material.GetVector(propertyName).y,
-                        'z' => material.GetVector(propertyName).z,
-                        'w' => material.GetVector(propertyName).w,
-                        'r' => material.GetColor(propertyName).r,
-                        'g' => material.GetColor(propertyName).g,
-                        'b' => material.GetColor(propertyName).b,
-                        'a' => material.GetColor(propertyName).a,
+                        'x' => material.SafeGetVector(propertyName).x,
+                        'y' => material.SafeGetVector(propertyName).y,
+                        'z' => material.SafeGetVector(propertyName).z,
+                        'w' => material.SafeGetVector(propertyName).w,
+                        'r' => material.SafeGetColor(propertyName).r,
+                        'g' => material.SafeGetColor(propertyName).g,
+                        'b' => material.SafeGetColor(propertyName).b,
+                        'a' => material.SafeGetColor(propertyName).a,
                         _ => null
                     };
                 }
                 else
                 {
                     // float
-                    return material.GetFloat(materialProperty);
+                    return material.SafeGetFloat(materialProperty);
                 }
-            }
-
-            if (property.StartsWith("blendShapes.", StringComparison.Ordinal))
-            {
-                var blendShapeName = property.Substring("blendShapes.".Length);
-                return meshInfo.BlendShapes.FirstOrDefault(x => x.name == blendShapeName).weight;
             }
 
             throw new InvalidOperationException($"AAO forgot to implement handling for {property}");
@@ -753,6 +767,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public EqualsHashSet<(string property, float? defaultValue, EqualsHashSet<AnimationLocation> locations)>
                 RendererAnimationLocations;
             public Activeness Activeness;
+            public VrmFirstPersonFlag VrmFirstPersonFlag;
 
             // renderer properties
             public Bounds Bounds;
@@ -775,7 +790,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 Activeness activeness,
                 EqualsHashSet<(bool initial, EqualsHashSet<AnimationLocation> animation)> activenessAnimationLocations,
                 EqualsHashSet<(string property, float? defaultValue, EqualsHashSet<AnimationLocation> locations)>
-                    rendererAnimationLocations
+                    rendererAnimationLocations,
+                VrmFirstPersonFlag vrmFirstPersonFlag
             )
             {
                 var renderer = (SkinnedMeshRenderer)meshInfo2.SourceRenderer;
@@ -784,6 +800,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 ActivenessAnimationLocations = activenessAnimationLocations;
                 RendererAnimationLocations = rendererAnimationLocations;
                 Activeness = activeness;
+                VrmFirstPersonFlag = vrmFirstPersonFlag;
 
                 Bounds = RoundError.Bounds(meshInfo2.Bounds);
                 ShadowCastingMode = renderer.shadowCastingMode;
@@ -806,6 +823,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                        ActivenessAnimationLocations.Equals(other.ActivenessAnimationLocations) &&
                        RendererAnimationLocations.Equals(other.RendererAnimationLocations) &&
                        Activeness == other.Activeness &&
+                       VrmFirstPersonFlag == other.VrmFirstPersonFlag &&
                        Bounds.Equals(other.Bounds) &&
                        ShadowCastingMode == other.ShadowCastingMode &&
                        ReceiveShadows == other.ReceiveShadows &&
@@ -832,6 +850,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 hashCode.Add(ActivenessAnimationLocations);
                 hashCode.Add(RendererAnimationLocations);
                 hashCode.Add(Activeness);
+                hashCode.Add(VrmFirstPersonFlag);
                 hashCode.Add(Bounds);
                 hashCode.Add(ShadowCastingMode);
                 hashCode.Add(ReceiveShadows);

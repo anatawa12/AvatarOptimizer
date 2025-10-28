@@ -32,11 +32,15 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             // - OnValidate will be called for prefab instance when the base prefab is changed
             var PrefabSafeUniqueCollection = getPrefabSafeUniqueCollection(component);
 
+            // The prefab from prefab stage is going to be saved. I don't update on this phase.
+            if (component == null) return;
+
             // detect creating new prefab
             var newCorrespondingObject = PrefabUtility.GetCorrespondingObjectFromSource(component);
             if (newCorrespondingObject != null &&
                 PrefabUtility.GetCorrespondingObjectFromSource(newCorrespondingObject) ==
-                PrefabSafeUniqueCollection.CorrespondingObject)
+                PrefabSafeUniqueCollection.CorrespondingObject
+                && !PrefabSafeUniqueCollection.IsNew) // not loading scene
             {
                 // this might be creating prefab. we do more checks
                 var newCorrespondingPrefabSafeUniqueCollection = getPrefabSafeUniqueCollection(newCorrespondingObject);
@@ -55,7 +59,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             PrefabSafeUniqueCollection.NestCount = nestCount;
 
             var shouldUsePrefabOnSceneLayer =
-                PSUCRuntimeUtil.ShouldUsePrefabOnSceneLayer(component);
+                nestCount != 0 && PSUCRuntimeUtil.ShouldUsePrefabOnSceneLayer(component);
             var maxLayerCount = shouldUsePrefabOnSceneLayer ? nestCount - 1 : nestCount;
 
             // https://github.com/anatawa12/AvatarOptimizer/issues/52

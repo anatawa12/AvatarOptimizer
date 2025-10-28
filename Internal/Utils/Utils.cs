@@ -5,9 +5,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -165,12 +167,15 @@ namespace Anatawa12.AvatarOptimizer
                 .FirstOrDefault(type => !(type == null));
 
         public static T? DistinctSingleOrDefaultIfNoneOrMultiple<T>(this IEnumerable<T> enumerable)
+            => DistinctSingleOrDefaultIfNoneOrMultiple(enumerable, null);
+
+        public static T? DistinctSingleOrDefaultIfNoneOrMultiple<T>(this IEnumerable<T> enumerable, IEqualityComparer<T>? comparer)
         {
             using (var enumerator = enumerable.GetEnumerator())
             {
                 if (!enumerator.MoveNext()) return default;
                 var found = enumerator.Current;
-                var eqOperator = EqualityComparer<T>.Default;
+                var eqOperator = comparer ?? EqualityComparer<T>.Default;
 
                 while (enumerator.MoveNext())
                 {
@@ -362,6 +367,31 @@ namespace Anatawa12.AvatarOptimizer
                 }
             }
         }
+        
+        public static void Assert(bool condition)
+        {
+            if (!condition) throw new InvalidOperationException("assertion failed");
+        }
+        
+        public static void Assert(bool condition, string message)
+        {
+            if (!condition) throw new InvalidOperationException(message);
+        }
+
+        public static float SafeGetFloat(this Material material, string propertyName) =>
+            material.HasFloat(propertyName) ? material.GetFloat(propertyName) : 0;
+
+        public static int SafeGetInteger(this Material material, string propertyName) =>
+            material.HasInteger(propertyName) ? material.GetInteger(propertyName) : 0;
+
+        public static int SafeGetInt(this Material material, string propertyName) =>
+            material.HasInt(propertyName) ? material.GetInt(propertyName) : 0;
+
+        public static Vector4 SafeGetVector(this Material material, string propertyName) =>
+            material.HasVector(propertyName) ? material.GetVector(propertyName) : Vector4.zero;
+
+        public static Color SafeGetColor(this Material material, string propertyName) =>
+            material.HasColor(propertyName) ? material.GetColor(propertyName) : Color.clear;
 
         /// <summary>
         /// Fast compare of <see cref="Color32"/> array.
@@ -374,5 +404,104 @@ namespace Anatawa12.AvatarOptimizer
         /// <param name="b">second array</param>
         /// <returns>whether two arrays are equal</returns>
         public static bool Color32ArrayEquals(Color32[] a, Color32[] b) => Color32ArrayEquals(a.AsSpan(), b.AsSpan());
+
+        // Exception-safe swap
+        public static void Swap<T>(ref T a, ref T b) =>
+            (a, b) = (b, a);
+        
+        /// <summary>
+        /// Returns whether the given local scale is scaled evenly.
+        ///
+        /// If the scale is skewed, this returns false.
+        /// </summary>
+        /// <param name="localScale">the local scale to check</param>
+        /// <returns>whether the given local scale is scaled evenly</returns>
+        public static bool ScaledEvenly(Vector3 localScale)
+        {
+            bool CheckScale(float scale) => 0.995 < scale && scale < 1.005;
+            return CheckScale(localScale.x / localScale.y) && CheckScale(localScale.x / localScale.z) &&
+                   CheckScale(localScale.y / localScale.z);
+        }
+
+        public static TSource MaxBy<TSource, TComparable>(this IEnumerable<TSource> source, 
+            Func<TSource, TComparable> selector)
+            where TComparable : IComparable<TComparable>
+        {
+            using var enumerator = source.GetEnumerator();
+            if (!enumerator.MoveNext()) throw new InvalidOperationException("Sequence is empty");
+            var max = enumerator.Current;
+            var maxComparable = selector(max);
+            while (enumerator.MoveNext())
+            {
+                var current = enumerator.Current;
+                var currentComparable = selector(current);
+                if (currentComparable.CompareTo(maxComparable) > 0)
+                {
+                    max = current;
+                    maxComparable = currentComparable;
+                }
+            }
+
+            return max;
+        }
+
+        /// <summary>
+        /// The helper function to resolve the animation path.
+        ///
+        /// The <see cref="AnimationUtility.GetAnimatedObject"/> and <see cref="Transform.Find"/> does not handle
+        /// game objects with slash in their name, however, animator component can have slash in their name.
+        ///
+        /// Therefore, this function resolves the animation path with slash in the name.
+        ///
+        /// This function is generic over T because we use same logic for both Transform and ObjectMapping system
+        /// </summary>
+        /// <returns>Enumerable that resolves to list of game objects matching the path</returns>
+        public static IEnumerable<T> ResolveAnimationPath<T>(
+            T root,
+            string relative,
+            Func<T, string, IEnumerable<T>> findChild
+        ) {
+            // if relative path is empty, return itself
+            if (relative == "")
+                return new[] { root };
+            // otherwise, match as possible from start
+
+            // simplest pattern: the relative is entire path
+            var slashIndex = relative.IndexOf('/');
+            if (slashIndex == -1)
+                return findChild(root, relative);
+
+            // other patterns: the relative path has slash, so we tries to match from start
+            for (;slashIndex != -1; slashIndex = relative.IndexOf('/', slashIndex + 1))
+            {
+                var name = relative[..slashIndex];
+
+                var childrenMatched = findChild(root, name);
+                // ReSharper disable once PossibleMultipleEnumeration : single element is proceed
+                if (childrenMatched.Any())
+                {
+                    var remaining = relative[(slashIndex + 1)..];
+                    // ReSharper disable once PossibleMultipleEnumeration
+                    return childrenMatched.SelectMany(x => ResolveAnimationPath(x, remaining, findChild));
+                }
+            }
+
+            // no subpath matched, so we try to match the entire path
+            return findChild(root, relative);
+        }
+
+        public static Transform? ResolveAnimationPath(Transform root, string path) =>
+            ResolveAnimationPath(root, path, (transform, name) => 
+                Enumerable.Range(0, transform.childCount)
+                    .Select(transform.GetChild)
+                    .Where(x => x.name == name))
+                .FirstOrDefault();
+
+        public static Object? GetAnimatedObject(GameObject obj, EditorCurveBinding binding)
+        {
+            var gameObject = ResolveAnimationPath(obj.transform, binding.path);
+            if (gameObject == null) return null;
+            return binding.type == typeof(GameObject) ? gameObject.gameObject : gameObject.GetComponent(binding.type);
+        }
     }
 }

@@ -66,7 +66,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         {
                             // if there are multiple users for the vertex: duplicate it
                             var cloned = subMesh.Vertices[i].Clone();
-                            target.Vertices.Add(cloned);
+                            target.VerticesMutable.Add(cloned);
 
                             users[subMesh.Vertices[i]]--;
 
@@ -293,7 +293,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             if (compress && IsCompressedFormat(finalFormat))
                 EditorUtility.CompressTexture(texture, (TextureFormat)finalFormat, TextureCompressionQuality.Normal);
 
-            System.Diagnostics.Debug.Assert(texture.format == (TextureFormat)finalFormat, 
+            Utils.Assert(!compress || texture.format == (TextureFormat)finalFormat, 
                 $"TextureFormat mismatch: expected {finalFormat} but was {texture.format}");
 
             return texture;

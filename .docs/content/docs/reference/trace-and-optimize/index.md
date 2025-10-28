@@ -14,18 +14,19 @@ You can enable/disable some automatic optimization features with checkboxes.
 
 This component should be added to an avatar root. (Kind: [Avatar Global Component](../../component-kind/avatar-global-components))
 
-{{< hint info >}}
+<blockquote class="book-hint info">
 
 Trace and Optimize is quite carefully designed under the premise that "**never let it affect the appearance**."\
 So, if any problems occur, such as appearance is affected or some gimmick stops working, they are all caused by bugs in AAO, without exception.\
 Therefore, if you encounter any problems with this component, please report it.\
 We will fix it as much as we can.
 
-{{< /hint >}}
+</blockquote>
 
 Currently the following optimizations are applied automatically.
-- `Automatically Freeze BlendShape`\
-  Automatically freezes BlendShapes which are always the same value or unused in animation, etc.
+- `Optimize BlendShape`\
+  <small>Previously known as `Freeze BlendShapes` but renamed to add more functionality.</small>\
+  By scanning animation etc., remove, freeze, or merge BlendShapes automatically to reduce the number of BlendShapes.
 - `Remove unused Objects`\
   By scanning animation etc., automatically removes unused Objects (e.g. GameObjects, Components).\
   In addition, this will automatically toggle PhysBone Components if they are only used by toggled objects.
@@ -43,6 +44,9 @@ Currently the following optimizations are applied automatically.
   - `Allow Shuffling Material Slots`\
     By shuffling material slots, you may reduce draw calls of the avatar.
     The order of material slots usually doesn't matter, but it may affect the drawing order in rare cases.
+- `Optimize Texture`\
+  Optimizes textures without affecting the appearance.\
+  Currently, UV Packing and reducing texture size is performed only for materials with supported shaders.
 
 Also, You can adjust optimization with the following settings
 - `MMD World Compatibility`\
@@ -65,11 +69,79 @@ See tooltips or implementation for more details.
 
 This feature currently applies the following optimizations.
 
+(Details of optimization can be changed in the future.)
+
 - Convert AnyState to Entry-Exit\
-  This tries to convert Animator Controller layers of AnyState type to of Entry-Exit type as possible.
+  This tries to convert Animator Controller layers of AnyState type to Diamond-style Entry-Exit type as possible.
   With other optimizations, AnyState type layers may be converted to BlendTree.
+
+  ```mermaid
+  ---
+  title: AnyState type layer
+  ---
+  graph LR;
+        AnyState(AnyState);
+        Entry(Entry) --> State1;
+        AnyState --> State1(State1);
+        AnyState --> State2(State2);
+        AnyState --> State3(State3);
+  
+  classDef default fill:#ab8211
+  classDef node stroke-width:0px,color:#ffffff
+  classDef state fill:#878787
+  style AnyState fill:#29a0cc
+  style Entry fill:#15910f
+  class Entry,State1,State2,Exit node
+  class State1 default
+  class State2,State3 state
+  ```
+
 - Convert Entry-Exit to BlendTree\
-  This tries to convert Animator Controller layers of Entry-Exit type to BlendTree as possible.
+  This tries to convert Animator Controller layers of Entry-Exit type to BlendTree as possible.\
+  Currently, this is applied to Diamond-style and Linear-style Entry-Exit layers.
+
+  ```mermaid
+  ---
+  title: Diamond-style Entry-Exit type layer
+  ---
+  graph LR;
+        Entry(Entry);
+        Entry --> State1(State1);
+        Entry --> State2(State2);
+        Entry --> State3(State3);
+        State1 --> Exit(Exit);
+        State2 --> Exit;
+        State3 --> Exit;
+  
+  classDef default fill:#ab8211
+  classDef node stroke-width:0px,color:#ffffff
+  style Exit fill:#ba202f
+  style Entry fill:#15910f
+  classDef state fill:#878787
+  class Entry,State1,State2,Exit node
+  class State1 default
+  class State2,State3 state
+  ```
+
+  ```mermaid
+  ---
+  title: Linear-style Entry-Exit type layer
+  ---
+  flowchart LR;
+        Entry(Entry) --> State1(State1);
+        State1 --> State2(State2);
+        State2 --> Exit(Exit);
+
+  classDef node stroke-width:0px,color:#ffffff
+  style Exit fill:#ba202f
+  style Entry fill:#15910f
+  classDef default fill:#ab8211
+  classDef state fill:#878787
+  class Entry,State1,State2,Exit node
+  class State1 default
+  class State2 state
+  ```
+
 - Merge BlendTree Layers\
   This merges multiple BlendTree layers to single Direct BlendTree layer as possible.
 - Remove Meaningless Layers\

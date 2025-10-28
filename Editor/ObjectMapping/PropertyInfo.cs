@@ -24,7 +24,7 @@ namespace Anatawa12.AvatarOptimizer
             where TValueInfo : struct, IValueInfo<TValueInfo>
         {
             if (merge == null || merge.IsEmpty) return;
-            if (mergeTo == null || merge.IsEmpty)
+            if (mergeTo == null || mergeTo.IsEmpty)
             {
                 mergeTo = merge;
                 return;
@@ -45,12 +45,7 @@ namespace Anatawa12.AvatarOptimizer
             where TValueInfo: struct, IValueInfo<TValueInfo>
         {
             if (merge == null || merge.IsEmpty) return;
-            if (mergeTo == null || merge.IsEmpty)
-            {
-                mergeTo = merge;
-                return;
-            }
-
+            mergeTo ??= new RootPropModNode<TValueInfo>();
             mergeTo.Add(merge);
         }
 

@@ -5,6 +5,7 @@ using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using UnityEngine.Profiling;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
@@ -54,7 +55,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 ImmutableNodeContainer, ImmutableNodeContainer, ImmutablePropModNode<FloatValueInfo>, 
                 ImmutablePropModNode<ObjectValueInfo>,
                 BlendTreeMergeProperty
-            >(children.Select(x => ParseMotionInner(root, x.motion, mapping)),
+            >(children
+                        // As far as I tested, Unity Editor just ignores null motion in BlendTree.
+                        // See https://github.com/anatawa12/AvatarOptimizer/discussions/1489#discussioncomment-14211785
+                    .Where(x => x.motion != null)
+                    .Select(x => ParseMotionInner(root, x.motion, mapping)),
                 new BlendTreeMergeProperty(blendTree.blendType));
         }
 
@@ -101,20 +106,19 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public static ImmutableNodeContainer ParseAnimation(GameObject root, AnimationClip clip)
         {
+            Profiler.BeginSample("ParseAnimation");
             var nodes = new ImmutableNodeContainer();
 
             AnimationClip? additiveReferenceClip;
             // in seconds
             float additiveReferenceFrame;
 
-            using (var serialized = new SerializedObject(clip))
             {
-                if (serialized.FindProperty("m_AnimationClipSettings.m_HasAdditiveReferencePose").boolValue)
+                var settings = AnimationUtility.GetAnimationClipSettings(clip);
+                if (settings.hasAdditiveReferencePose)
                 {
-                    additiveReferenceClip = (AnimationClip?)serialized
-                        .FindProperty("m_AnimationClipSettings.m_AdditiveReferencePoseClip").objectReferenceValue;
-                    additiveReferenceFrame = serialized
-                        .FindProperty("m_AnimationClipSettings.m_AdditiveReferencePoseTime").floatValue;
+                    additiveReferenceClip = settings.additiveReferencePoseClip;
+                    additiveReferenceFrame = settings.additiveReferencePoseTime;
                 }
                 else
                 {
@@ -123,9 +127,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 }
             }
 
-            foreach (var binding in AnimationUtility.GetCurveBindings(clip))
+            Profiler.BeginSample("ParseAnimation.GetCurveBindings");
+            var floatBindings = AnimationUtility.GetCurveBindings(clip);
+            Profiler.EndSample();
+            Profiler.BeginSample("AnimationParser.ProcessFloatNodes");
+            foreach (var binding in floatBindings)
             {
-                var obj = AnimationUtility.GetAnimatedObject(root, binding);
+                var obj = Utils.GetAnimatedObject(root, binding);
                 if (obj == null) continue;
                 var componentOrGameObject = obj is Component component ? (ComponentOrGameObject)component
                     : obj is GameObject gameObject ? (ComponentOrGameObject)gameObject
@@ -138,13 +146,17 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     propertyName = Props.EnabledFor(obj);
 
                 var node = FloatAnimationCurveNode.Create(clip, binding, additiveReferenceClip, additiveReferenceFrame);
-                if (node == null) continue;
                 nodes.Set(componentOrGameObject, propertyName, node);
             }
+            Profiler.EndSample();
 
-            foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
+            Profiler.BeginSample("ParseAnimation.GetObjectReferenceCurveBindings");
+            var objectBindings = AnimationUtility.GetObjectReferenceCurveBindings(clip);
+            Profiler.EndSample();
+            Profiler.BeginSample("ProcessObjectNodes");
+            foreach (var binding in objectBindings)
             {
-                var obj = AnimationUtility.GetAnimatedObject(root, binding);
+                var obj = Utils.GetAnimatedObject(root, binding);
                 if (obj == null) continue;
                 var componentOrGameObject = obj is Component component ? (ComponentOrGameObject)component
                     : obj is GameObject gameObject ? (ComponentOrGameObject)gameObject
@@ -154,7 +166,9 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 if (node == null) continue;
                 nodes.Set(componentOrGameObject, binding.propertyName, node);
             }
+            Profiler.EndSample();
 
+            Profiler.EndSample();
             return nodes;
         }
     }

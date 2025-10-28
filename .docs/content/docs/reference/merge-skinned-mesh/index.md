@@ -9,6 +9,12 @@ Merges one or more SkinnedMeshRenderers and MeshRenderers into one SkinnedMeshRe
 
 This component should be added to a new GameObject which has a SkinnedMeshRenderer component without Mesh specified. (Kind: [Source Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#source-component))
 
+<blockquote class="book-hint info">
+
+[Trace And Optimize](../trace-and-optimize) will automatically do the same process, so in most cases you do not need to use this component.
+
+</blockquote>
+
 ## Benefits
 
 Merging SkinnedMeshRenderer will reduce number of deforming mesh (skinning).
@@ -21,27 +27,19 @@ This component makes it impossible to turn meshes on and off individually on ani
 This component will configure Meshes, Materials, BlendShapes, and Bounds but other settings will not be modified.
 Please edit SkinnedMeshRenderer component attached to same GameObject as MergeSkinnedMesh to set Anchor Override or else.
 
-{{< hint info >}}
+<blockquote class="book-hint info">
 
 If you are using [Modular Avatar], you can add [`MA Mesh Settings`] component to the root of the avatar to set the Anchor Override or else for the whole avatar.
 
-{{< /hint >}}
+</blockquote>
 
-This component is good for merging your cloth meshes and body meshes but not good for face meshes because BlendShape can cause performance impact.
-BlendShape is a feature became heavier in proportion to the count of vertices and BlendShapes.
-Merging SkinnedMesh increases vertices and face mesh usually have many BlendShapes.
-That's why it's not good to merge face meshes.
-
-In addition, because of same reasons, you should freeze & remove unchanging BlendShapes for body / cloth meshes.
+It's better to freeze & remove unchanging BlendShapes for body / cloth meshes to reduce BlendShape load.\
 You can freeze & remove BlendShape using [Freeze BlendShape](../freeze-blendshape) component.
 Add this component to both/either merge source SkinnedMeshRenderer and/or merged SkinnedMeshRenderer to freeze & remove BlendShapes.
-Also, you can use `Automatically Freeze BlendShape` of [Trace and Optimize](../trace-and-optimize) component to get the same benefits.
+Also, you can use `Optimize BlendShapes` of [Trace and Optimize](../trace-and-optimize) component to get the same benefits.
 
-{{< hint info >}}
-
-[Trace And Optimize](../trace-and-optimize) will automatically do the same process, so in some cases you do not need to use this component.
-
-{{< /hint >}}
+In previous versions of Avatar Optimizer, we recommended not merging face meshes due to merging BlendShape-heavy mesh will increase load on BlendShape much in Unity 2019.\
+However, in Unity 2022, we no longer recommends not merging face meshes because the BlendShape load has been improved.
 
 ## Settings
 
@@ -53,7 +51,9 @@ The list of SkinnedMeshRenderers to be merged.
 
 Drop to None element at the bottom to add renderer and reset to None to remove from the list.
 
-### Static Renderers
+<div id="static-renderers"></div>
+
+### Basic Renderers
 
 The list of MeshRenderers (without mesh transform).
 
@@ -78,6 +78,15 @@ This feature may copy animation animating `enabled` of the merge target renderer
 This feature supports copying only one animated property so if there are multiple animated properties (e.g., both `enabled` and `activeSelf` are animated, or both one `activeSelf` and parents' `activeSelf` are), it will be error.
 
 In addition, if this is enabled, you must not animate `enabled` of the merged renderer since it will be overwritten by the copied animation.
+
+### BlendShape Mode
+
+The mode of BlendShape handling.
+
+- `Rename BlendShape to avoid conflict`: Renames BlendShapes to avoid conflicts. This is the default behavior.
+- `Merge BlendShapes with same name`: Merges BlendShapes with the same name. This is useful when you want to merge BlendShapes of the same name from different SkinnedMeshRenderers.
+- `v1.7.x or older compability mode`: This mode is for compatibility with v1.7.x or older versions. It will merge BlendShapes, but this merge is not considered by Trace and Optimize. This mode is not available for new components.
+
 
 ### Merge Materials
 

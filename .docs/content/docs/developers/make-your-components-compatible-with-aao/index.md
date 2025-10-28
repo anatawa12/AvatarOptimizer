@@ -9,7 +9,7 @@ This page describes the following two things.
 - When can components be incompatible with Avatar Optimizer?
 - How to improve the compatibility?
 
-If you have some question, please feel free to ask [`@anatawa12@misskey.niri.la` on fediverse][fediverse].
+If you have some question, please feel free to ask on [Fediverse (Misskey / Mastodon)][fediverse] or [NDMF Discord].
 
 ## When can components be incompatible with Avatar Optimizer? {#when-incompatible}
 
@@ -73,8 +73,6 @@ To improve the compatibility, you may implement one of the following methods.
    removing your components and your tool not working properly when the execution order is incorrect or unexpectedly changed.
 
    Avatar Optimizer internally uses this method to keep compatibility with well-known edit-mode tools.
-
-[Asset Description]: ../asset-description
 
 ### Removing your components {#remove-component}
 
@@ -154,3 +152,5 @@ with many non-destructive tools based on NDMF.
 [NDMF]: https://ndmf.nadena.dev/
 [modular-avatar]: https://modular-avatar.nadena.dev/
 [Version Defines]: https://docs.unity3d.com/2019.4/Documentation/Manual/ScriptCompilationAssemblyDefinitionFiles.html#define-symbols
+[Asset Description]: ../asset-description
+[NDMF Discord]: https://discord.gg/dV4cVpewmM

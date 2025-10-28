@@ -5,7 +5,6 @@ using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 #if AAO_VRCSDK3_AVATARS
 using VRC.SDKBase;
@@ -17,8 +16,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
     // This pass prepares animator optimizer
     // This pass does the following things:
     // - Collects all AnimatorController objects and save to state
-    // - Clones AnimatorController and StateMachines to avoid modifying original AnimatorController if needed
     // - If the RuntimeAnimatorController is AnimatorOverrideController, convert it to AnimatorController
+    // Cloning the AnimatorController is moved to DuplicateAssets pass
     class InitializeAnimatorOptimizer : TraceAndOptimizePass<InitializeAnimatorOptimizer>
     {
         public override string DisplayName => "AnimOpt: Initialize";
@@ -44,47 +43,46 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
             foreach (var component in context.AvatarRootObject.GetComponents<Component>())
             {
-                GameObject? animatorControllerRoot = null;
-
                 switch (component)
                 {
-                    case Animator:
-#if AAO_VRCSDK3_AVATARS
-                    case VRCAvatarDescriptor:
-#endif
-                        animatorControllerRoot = component.gameObject;
+                    case Animator animator:
+                        ProcessController(animator.runtimeAnimatorController, component.gameObject);
                         break;
+#if AAO_VRCSDK3_AVATARS
+                    case VRCAvatarDescriptor avatarDescriptor:
+                        foreach (ref var layer in avatarDescriptor.baseAnimationLayers.AsSpan())
+                            ProcessController(layer.animatorController, component.gameObject);
+                        foreach (ref var layer in avatarDescriptor.specialAnimationLayers.AsSpan())
+                            ProcessController(layer.animatorController, component.gameObject);
+#endif
+                        break;
+                    // do not run animator optimizer with unknown components
+                    default:
+                        continue;
                 }
-
-                using (var serializedObject = new SerializedObject(component))
-                {
-                    foreach (var property in serializedObject.ObjectReferenceProperties())
-                    {
-                        if (property.objectReferenceValue is RuntimeAnimatorController runtimeController)
-                        {
-                            var cloned = AnimatorControllerCloner.Clone(context, runtimeController);
-                            var wrapper = new AOAnimatorController(cloned, animatorControllerRoot);
-                            animatorState.Add(wrapper);
-                            property.objectReferenceValue = cloned;
-                            clonedToController.Add(cloned, wrapper);
+            }
+            
+            void ProcessController(RuntimeAnimatorController? runtimeController,
+                GameObject rootGameObject)
+            {
+                if (runtimeController == null) return;
+                var cloned = (AnimatorController)runtimeController;
+                var wrapper = new AOAnimatorController(cloned, rootGameObject);
+                animatorState.Add(wrapper);
+                if (!clonedToController.TryAdd(cloned, wrapper)) return;
 
 #if AAO_VRCSDK3_AVATARS
-                            foreach (var behaviour in ACUtils.StateMachineBehaviours(cloned))
-                            {
-                                switch (behaviour)
-                                {
-                                    case VRC_AnimatorLayerControl control:
-                                        if (control.playable.ToAnimLayerType() is VRCAvatarDescriptor.AnimLayerType l)
-                                            changerBehaviours[l].Add(control);
-                                        break;
-                                }
-                            }
-#endif
-                        }
+                foreach (var behaviour in ACUtils.StateMachineBehaviours(cloned))
+                {
+                    switch (behaviour)
+                    {
+                        case VRC_AnimatorLayerControl control:
+                            if (control.playable.ToAnimLayerType() is VRCAvatarDescriptor.AnimLayerType l)
+                                changerBehaviours[l].Add(control);
+                            break;
                     }
-
-                    serializedObject.ApplyModifiedPropertiesWithoutUndo();
                 }
+#endif
             }
             
 #if AAO_VRCSDK3_AVATARS
@@ -121,7 +119,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                                 {
                                     wrapper.layers[i].MarkUnRemovable();
                                     wrapper.layers[i].WeightChange = wrapper.layers[i].WeightChange
-                                        .Merge(AnimatorWeightChange.EitherZeroOrOne);
+                                        .Merge(AnimatorWeightChange.NonZeroOneChange);
                                 }
                             }
                         }
@@ -129,59 +127,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 }
             }
 #endif
-        }
-    }
-
-    class AnimatorControllerCloner : DeepCloneHelper
-    {
-        private readonly BuildContext _context;
-        private readonly IReadOnlyDictionary<AnimationClip,AnimationClip>? _mapping;
-
-        private AnimatorControllerCloner(BuildContext context,
-            IReadOnlyDictionary<AnimationClip, AnimationClip>? mapping)
-        {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _mapping = mapping;
-        }
-
-        public static AnimatorController Clone(BuildContext context, RuntimeAnimatorController runtimeController)
-        {
-            var (controller, mapping) = ACUtils.GetControllerAndOverrides(runtimeController);
-
-            return new AnimatorControllerCloner(context, mapping).MapObject(controller);
-        }
-
-        protected override Object? CustomClone(Object o)
-        {
-            if (o is AnimationClip clip)
-            {
-                if (_mapping != null && _mapping.TryGetValue(clip, out var mapped))
-                    return mapped;
-                return clip;
-            }
-
-            return null;
-        }
-
-        protected override ComponentSupport GetComponentSupport(Object o)
-        {
-            switch (o)
-            {
-                case AnimatorController _:
-                case AnimatorStateMachine _:
-                case AnimatorState _:
-                case AnimatorTransitionBase _:
-                case StateMachineBehaviour _:
-                case Motion _ :
-                    return ComponentSupport.Clone;
-
-                // should not reach this case
-                case RuntimeAnimatorController _:
-                    return ComponentSupport.Unsupported;
-
-                default:
-                    return ComponentSupport.NoClone;
-            }
         }
     }
 }

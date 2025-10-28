@@ -15,28 +15,34 @@ Avatar Optimizerは[GitHub]上で開発され、[MIT License]で公開されて�
 
 ## インストール {#installation}
 
-Avatar Optimizerは[VPM][vpm]レポジトリを使用して公開されているため、任意のvpmクライアントを使用してインストールできます。
+Avatar Optimizerは[VPM][vpm]リポジトリを使用して公開されているため、任意のVPMクライアントを使用してインストールできます。
 
 {{< beta-only color="success" >}}
-{{< hint info >}}
+<blockquote class="book-hint info">
 
-プレリリース版のAvatar Optimizerでは、anatawa12のvpmレポジトリで提供されていないNDMFのプレリリース版が使用されている場合があります。
-その場合、VCCにbd_ prereleasesレポジトリ(<https://vpm.nadena.dev/vpm-prerelease.json>)を追加する必要があります。
+プレリリース版のAvatar Optimizerでは、anatawa12のVPMリポジトリで提供されていないNDMFのプレリリース版が使用されている場合があります。
+その場合、ALCOMにbd_ prereleasesリポジトリ(<https://vpm.nadena.dev/vpm-prerelease.json>)を追加する必要があります。
 
-{{< /hint >}}
+</blockquote>
 {{< /beta-only >}}
 
-### VCC を使用する (推奨) {#installation-vcc}
+<div id="installation-vcc"></div> <!-- compatibility with older docs -->
 
-1. [このリンク][VCC-add-repo-link]をクリックしてanatawa12のレポジトリを追加する。
-2. VCCでAvatar Optimizerを追加する。
+### ALCOM を使用する (推奨) {#installation-alcom}
+
+1. [このリンク][VCC-add-repo-link]をクリックして、anatawa12のVPMリポジトリを追加します。
+2. AAO: Avatar Optimizerをプロジェクトに追加します！
+
+このリンクは VCC と共通であるため、同じ方法で VCC を使用してこのパッケージをプロジェクトに追加できます。
+
+VCC に存在するバグ等により、正しく動作しない可能性があるため、 [ALCOM] を使用することをお勧めします。
 
 ### UnityPackageを使用する {#installation-vpai}
 
-unitypackageをインポートするだけでもこのツールをインストールできます。（VCCから追加する方法と全く同じようになります）
+unitypackageをインポートするだけでもこのツールをインストールできます。（ALCOMから追加する方法と全く同じようになります）
 
-1. [ここ][installer unitypackage 1.x.x]からインストーラunitypackageをダウンロードする。
-2. unitypackageをプロジェクトにインポートする。
+1. [ここ][installer unitypackage 1.x.x]からインストーラunitypackageをダウンロードします。
+2. unitypackageをプロジェクトにインポート！
 
 <details>
 <summary>他のバージョン用のインストーラ</summary>
@@ -53,7 +59,7 @@ unitypackageをインポートするだけでもこのツールをインスト�
 
 ### vrc-getを使用する {#installation-vrc-get}
 
-もしコマンドラインに精通しているのであれば、[vrc-get][vrc-get]を使用してインストールできます。
+もしコマンドラインに精通しているのであれば、[vrc-get][vrc-get]を使用してインストールすることもできます。
 
 ```bash
 # add our vpm repository
@@ -65,7 +71,7 @@ vrc-get install com.anatawa12.avatar-optimizer
 
 ### VPMコマンドラインインターフェースを使用する {#installation-vpm-cli}
 
-もしコマンドラインに精通しているのであれば、[VPM/VCC CLI][vcc-cli]を使用してインストールできます。
+もしコマンドラインに精通しているのであれば、[VPM/VCC CLI][vcc-cli]を使用してインストールすることもできます。
 
 ```bash
 # add our vpm repository
@@ -75,6 +81,7 @@ cd /path/to/your-unity-project
 vpm add package com.anatawa12.avatar-optimizer
 ```
 
+[ALCOM]: https://vrc-get.anatawa12.com/alcom/
 [VPAI]: https://github.com/anatawa12/VPMPackageAutoInstaller
 [vpm]: https://vcc.docs.vrchat.com/vpm/
 [vcc-cli]: https://vcc.docs.vrchat.com/vpm/cli

@@ -25,55 +25,117 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
     internal class RemoveMeshByBlendShapeRendererNode : AAORenderFilterNodeBase<RemoveMeshByBlendShape>
     {
-        public static NativeArray<bool> ComputeShouldRemoveVertex(Mesh mesh, Dictionary<string, double> toleranceSqrByShape)
+        public static NativeArray<bool> ComputeShouldRemoveVertex(Mesh mesh, RemoveMeshByBlendShape[] components, ComputeContext? context = null)
         {
+            context ??= ComputeContext.NullContext;
+            
+            var toleranceSqrByShape = CalculateToleranceSqrByShape(components, context);
             var shouldRemoveVertex = new NativeArray<bool>(mesh.vertexCount, Allocator.TempJob);
 
-            UnityEngine.Profiling.Profiler.BeginSample("ComputeShouldRemoveVertex: BlendShape");
             try
             {
-                var deltaBuffer = new Vector3[mesh.vertexCount];
-                using var deltaBufferJob = new NativeArray<Vector3>(deltaBuffer.Length, Allocator.TempJob);
-
-                for (var shapeIndex = 0; shapeIndex < mesh.blendShapeCount; shapeIndex++)
-                {
-                    var shapeName = mesh.GetBlendShapeName(shapeIndex);
-                    if (!toleranceSqrByShape.TryGetValue(shapeName, out var toleranceSqr)) continue;
-
-                    for (var frameIndex = 0;
-                         frameIndex < mesh.GetBlendShapeFrameCount(shapeIndex);
-                         frameIndex++)
-                    {
-                        mesh.GetBlendShapeFrameVertices(shapeIndex, frameIndex, deltaBuffer, null, null);
-                        deltaBufferJob.CopyFrom(deltaBuffer);
-
-                        new CheckRemoveVertexJob
-                        {
-                            toleranceSqr = toleranceSqr,
-                            blendShapeDelta = deltaBufferJob,
-                            shouldRemoveVertex = shouldRemoveVertex,
-                        }.Schedule(mesh.vertexCount, 32).Complete();
-                    }
-                }
+                ComputeShouldRemoveVertex(shouldRemoveVertex, mesh, toleranceSqrByShape);
+                ComputeShouldRemoveVertexInverted(shouldRemoveVertex, mesh, components, context);
             }
             catch
             {
                 shouldRemoveVertex.Dispose();
                 throw;
             }
-            UnityEngine.Profiling.Profiler.EndSample();
 
             return shouldRemoveVertex;
         }
 
-        public static Dictionary<string, double> CalculateToleranceSqrByShape(RemoveMeshByBlendShape[] components, ComputeContext? context = null)
+        private static void ComputeShouldRemoveVertexInverted(NativeArray<bool> shouldRemoveVertex, Mesh mesh, RemoveMeshByBlendShape[] components, ComputeContext context)
         {
-            context ??= ComputeContext.NullContext;
+            UnityEngine.Profiling.Profiler.BeginSample("ComputeShouldRemoveVertex: BlendShape (inverted)");
+            using var shouldRemoveBySingleComponent = new NativeArray<bool>(mesh.vertexCount, Allocator.TempJob);
+
+            var deltaBuffer = new Vector3[mesh.vertexCount];
+            using var deltaBufferJob = new NativeArray<Vector3>(deltaBuffer.Length, Allocator.TempJob);
+
+            var shapeIndexCache = new Dictionary<string, int>(mesh.blendShapeCount);
+            for (var shapeIndex = 0; shapeIndex < mesh.blendShapeCount; shapeIndex++)
+                shapeIndexCache[mesh.GetBlendShapeName(shapeIndex)] = shapeIndex;
+
+            foreach (var component in components)
+            {
+                var invertSelection = context.Observe(component, shape => shape.invertSelection);
+                if (!invertSelection) continue;
+
+                shouldRemoveBySingleComponent.AsSpan().Fill(true);
+
+                var toleranceSqr = context.Observe(component, shape => shape.tolerance * shape.tolerance);
+                var shapeKeys = context.Observe(component, shape => shape.shapeKeysSet.GetAsSet(),
+                    (a, b) => a.SetEquals(b));
+                foreach (var shape in shapeKeys)
+                {
+                    var shapeIndex = shapeIndexCache[shape];
+
+                    var frameCount = mesh.GetBlendShapeFrameCount(shapeIndex);
+                    for (var frameIndex = 0; frameIndex < frameCount; frameIndex++)
+                    {
+                        mesh.GetBlendShapeFrameVertices(shapeIndex, frameIndex, deltaBuffer, null, null);
+                        deltaBufferJob.CopyFrom(deltaBuffer);
+
+                        new CheckRemoveVertexMaxJob
+                        {
+                            toleranceSqr = toleranceSqr,
+                            blendShapeDelta = deltaBufferJob,
+                            shouldRemoveVertex = shouldRemoveBySingleComponent,
+                        }.Schedule(mesh.vertexCount, 32).Complete();
+                    }
+                }
+
+                new CheckRemoveVertexCombineEitherJob
+                {
+                    shouldRemoveVertex = shouldRemoveVertex,
+                    shouldRemoveVertexMerge = shouldRemoveBySingleComponent,
+                }.Schedule(mesh.vertexCount, 32).Complete();
+            }
+
+            UnityEngine.Profiling.Profiler.EndSample();
+        }
+
+        private static void ComputeShouldRemoveVertex(NativeArray<bool> shouldRemoveVertex, Mesh mesh, Dictionary<string, double> toleranceSqrByShape)
+        {
+            UnityEngine.Profiling.Profiler.BeginSample("ComputeShouldRemoveVertex: BlendShape (min)");
+
+            var deltaBuffer = new Vector3[mesh.vertexCount];
+            using var deltaBufferJob = new NativeArray<Vector3>(deltaBuffer.Length, Allocator.TempJob);
+
+            for (var shapeIndex = 0; shapeIndex < mesh.blendShapeCount; shapeIndex++)
+            {
+                var shapeName = mesh.GetBlendShapeName(shapeIndex);
+                if (!toleranceSqrByShape.TryGetValue(shapeName, out var toleranceSqr)) continue;
+
+                var frameCount = mesh.GetBlendShapeFrameCount(shapeIndex);
+                for (var frameIndex = 0; frameIndex < frameCount; frameIndex++)
+                {
+                    mesh.GetBlendShapeFrameVertices(shapeIndex, frameIndex, deltaBuffer, null, null);
+                    deltaBufferJob.CopyFrom(deltaBuffer);
+
+                    new CheckRemoveVertexJob
+                    {
+                        toleranceSqr = toleranceSqr,
+                        blendShapeDelta = deltaBufferJob,
+                        shouldRemoveVertex = shouldRemoveVertex,
+                    }.Schedule(mesh.vertexCount, 32).Complete();
+                }
+            }
+
+            UnityEngine.Profiling.Profiler.EndSample();
+        }
+
+        private static Dictionary<string, double> CalculateToleranceSqrByShape(RemoveMeshByBlendShape[] components, ComputeContext context)
+        {
             // we're removing vertices moving greater than tolerance, we're collecting min tolerance for each shape
 
             var toleranceSqrByShape = new Dictionary<string, double>();
             foreach (var component in components)
             {
+                var invertSelection = context.Observe(component, shape => shape.invertSelection);
+                if (invertSelection) continue;
                 var toleranceSqr = context.Observe(component, shape => shape.tolerance * shape.tolerance);
                 var shapeKeys = context.Observe(component, shape => shape.shapeKeysSet.GetAsSet(), (a, b) => a.SetEquals(b));
                 foreach (var shape in shapeKeys)
@@ -92,8 +154,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             RemoveMeshByBlendShape[] components,
             Mesh duplicated, ComputeContext context)
         {
-            var toleranceSqrByShape = CalculateToleranceSqrByShape(components, context);
-            using var shouldRemoveVertex = ComputeShouldRemoveVertex(duplicated, toleranceSqrByShape);
+            using var shouldRemoveVertex = ComputeShouldRemoveVertex(duplicated, components, context);
 
             for (var subMeshI = 0; subMeshI < duplicated.subMeshCount; subMeshI++)
             {
@@ -163,6 +224,37 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             {
                 shouldRemoveVertex[vertexIndex] = shouldRemoveVertex[vertexIndex] ||
                                                   blendShapeDelta[vertexIndex].sqrMagnitude > toleranceSqr;
+            }
+        }
+
+        [BurstCompile]
+        struct CheckRemoveVertexMaxJob : IJobParallelFor
+        {
+            // ReSharper disable InconsistentNaming
+            public double toleranceSqr;
+            [ReadOnly] public NativeArray<Vector3> blendShapeDelta;
+            public NativeArray<bool> shouldRemoveVertex;
+            // ReSharper restore InconsistentNaming
+
+            public void Execute(int vertexIndex)
+            {
+                shouldRemoveVertex[vertexIndex] = shouldRemoveVertex[vertexIndex] &&
+                                                  blendShapeDelta[vertexIndex].sqrMagnitude <= toleranceSqr;
+            }
+        }
+
+        [BurstCompile]
+        struct CheckRemoveVertexCombineEitherJob : IJobParallelFor
+        {
+            // ReSharper disable InconsistentNaming
+            [ReadOnly] public NativeArray<bool> shouldRemoveVertexMerge;
+            public NativeArray<bool> shouldRemoveVertex;
+            // ReSharper restore InconsistentNaming
+
+            public void Execute(int vertexIndex)
+            {
+                shouldRemoveVertex[vertexIndex] =
+                    shouldRemoveVertex[vertexIndex] || shouldRemoveVertexMerge[vertexIndex];
             }
         }
 

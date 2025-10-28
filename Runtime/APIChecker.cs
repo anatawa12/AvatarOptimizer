@@ -57,5 +57,31 @@ namespace Anatawa12.AvatarOptimizer
 
             return value;
         }
+
+        /// <summary>
+        /// Checks the API usage with version, and execute the <paramref name="value"/> if the API is used correctly.
+        /// </summary>
+        /// <param name="component">The component that uses the API</param>
+        /// <param name="minVersion">The minimum version to use</param>
+        /// <param name="value">The value to return</param>
+        /// <returns>Returns the value of the <paramref name="value"/></returns>
+        /// <exception cref="InvalidOperationException">If the API is used before initialization or with unsupported version.</exception>
+        public T OnAPIUsageVersioned<T>(Component component, int minVersion, Func<T> value)
+        {
+            switch (_isAPIUsed)
+            {
+                case State.Idle:
+                case State.UsedBeforeInitialization:
+                    throw new InvalidOperationException($"This API (see stacktrace) of {component} is used before initialization, this is unsupported with this API.");
+                case State.Initialized:
+                    if (_currentVersion < minVersion)
+                        throw new InvalidOperationException($"This API (see stacktrace) of {component} is initialized with unsupported version. Initialize with supported version.");
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            return value();
+        }
     }
 }

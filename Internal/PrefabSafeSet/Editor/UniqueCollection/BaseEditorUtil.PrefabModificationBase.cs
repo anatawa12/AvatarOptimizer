@@ -547,14 +547,14 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             }
 
             private (int indexInModifier, SerializedProperty modifierProp) AddToAdditions(TAdditionValue value) => 
-                AddToModifications(value, ref _currentAdditionsSize, CurrentAdditions, _helper.WriteAdditionValue);
+                AddToModifications(value, ref _currentAdditionsSize, ref CurrentAdditions, _helper.WriteAdditionValue);
             
             private (int indexInModifier, SerializedProperty modifierProp) AddToRemoves(TRemoveKey value) => 
-                AddToModifications(value, ref _currentRemovesSize, CurrentRemoves, _helper.WriteRemoveKey);
+                AddToModifications(value, ref _currentRemovesSize, ref CurrentRemoves, _helper.WriteRemoveKey);
 
             private (int indexInModifier, SerializedProperty modifierProp) AddToModifications<T>(T value,
                 ref int currentModificationSize,
-                SerializedProperty? currentModifications, 
+                ref SerializedProperty? currentModifications, // ref is needed to ensure InitCurrentLayer effect
                 Action<SerializedProperty, T> writeValue)
             {
                 InitCurrentLayer(true);

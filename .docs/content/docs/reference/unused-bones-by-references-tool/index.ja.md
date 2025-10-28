@@ -9,12 +9,12 @@ EditorOnlyなメッシュからしか参照がないボーンをEditorOnlyにし
 
 このコンポーネントはアバターのルートに追加してください。(分類: [Avatar Global Component](../../component-kind/avatar-global-components))
 
-{{< hint warning >}}
+<blockquote class="book-hint warning">
 
 このコンポーネントは非推奨です。代わりに[Trace and Optimize](../trace-and-optimize)の`使われていないObjectを自動的に削除する`を使用してください。
 このコンポーネントの動作が改善されることはありません。
 
-{{< /hint >}}
+</blockquote>
 
 これはNarazakaさんの[UnusedBonesByReferencesTool][UnusedBonesByReferencesTool]を移植したものですが、ビルド時に実行します。
 

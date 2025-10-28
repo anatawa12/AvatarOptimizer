@@ -43,7 +43,7 @@ You can skip the pre-build check with several ways. Please refer [faq][skip-hard
 
 [Upload without pre-check]: https://github.com/Sayamame-beans/Upload-without-preCheck?tab=readme-ov-file#upload-without-pre-check
 
-{{< hint info >}}
+<blockquote class="book-hint info">
 
 ### Checking performance rank without uploading avatar {#performance-rank-without-upload}
 
@@ -55,7 +55,19 @@ Please check [basic usages of anatawa12's Gist Pack][gists-basic-usage] and [doc
 [gists-basic-usage]: https://vpm.anatawa12.com/gists/ja/docs/basic-usage/
 [Actual Performance Window]: https://vpm.anatawa12.com/gists/ja/docs/reference/actual-performance-window/
 
-{{< /hint >}}
+</blockquote>
+
+<blockquote class="book-hint info">
+
+### Applying non-destructive tools manually {#how-to-manual-bake}
+
+You can use `NDM Framework/Manual bake avatar` on the context menu of the Avatar GameObject to apply non-destructive tools manually.
+
+This will clone your avatar and apply non-destructive tools to the cloned avatar, so your original avatar will not be modified.
+
+This can be useful in some cases (e.g. when exporting a VRChat avatar in VRM format).
+
+</blockquote>
 
 Reduce polygons with BlendShapes which shrink parts of the body {#remove-mesh-by-blendshape}
 ---
@@ -63,14 +75,11 @@ Reduce polygons with BlendShapes which shrink parts of the body {#remove-mesh-by
 By removing polygons which are hidden by clothes or something, you can reduce rendering cost, BlendShape processing cost, etc. without affecting the appearance so much.
 To make this easier, AvatarOptimizer allows you to remove polygons with BlendShapes for shrinking parts of the body, which many avatars have!
 
-Let's add `AAO Remove Mesh By BlendShape` component to Body Mesh!
-
-Enable `Automatically set BlendShape weight for preview when toggled` to make sure that unintended parts of the body are not removed, and
-select BlendShapes from the BlendShapes list below that shrink the parts of the body you want to remove!
+Let's add `AAO Remove Mesh By BlendShape` component to Body Mesh, and select BlendShapes from the BlendShapes list below that shrink the parts of the body you want to remove!
 
 In case polygons you want to remove are not removed, or you do not want to remove are removed, you need to adjust the `Tolerance` value!
 `Tolerance` decides how much the vertex is moved by BlendShape to be removed.
-In the first case, increase the value a little, in the second case, decrease it a little!
+If some parts intended to be removed are not removed, increase the value a little; otherwise, decrease it a little!
 
 ![remove mesh by BlendShape](./remove-mesh-by-blendshape.png)
 
@@ -83,14 +92,14 @@ Merge Meshes to reduce # of Skinned Renderers {#merge-skinned-mesh}
 You can easily merge Skinned Mesh with Avatar Optimizer!
 Merging Skinned Mesh will not allow you to turn them on and off individually, but merging them will reduce rendering cost!
 
-{{< hint info >}}
+<blockquote class="book-hint info">
 
 **Why will we merge Skinned Mesh?**
 
 Merging Skinned Mesh will reduce number of deforming mesh (skinning).
 Also, Merging with MergeSkinnedMesh can reduce material slots so we can reduce number of drawing.
 
-{{< /hint >}}
+</blockquote>
 
 This time, I'll optimize Anon-chan as a simplest case.
 
@@ -117,7 +126,7 @@ Then, select meshes except for Body, which is the face mesh, and drag & drop to 
 
 ![drag-and-drop.png](./drag-and-drop.png)
 
-{{< hint info >}}
+<blockquote class="book-hint info">
 
 **Why don't we merge face meshes?**
 
@@ -125,7 +134,7 @@ BlendShape (Shape Keys) is a feature became heavier in proportion to the count o
 Therefore, merging face mesh, which has many BlendShapes, and body mesh, which has many vertices, can make your avatar heavier than before
 so I recommend not to merge face mesh.
 
-{{< /hint >}}
+</blockquote>
 
 Next, configure `Anon_Merged`!
 

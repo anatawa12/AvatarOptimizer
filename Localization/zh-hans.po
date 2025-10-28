@@ -361,87 +361,41 @@ msgstr "Skinned Mesh Renderer未设置Mesh。"
 msgid "RemoveMeshByMask:button:makeReadable"
 msgstr "使其可读"
 
-msgid "RemoveMeshByMask:tooltip:textureIsNotImported"
-msgstr "这不是从图片文件导入的遮罩纹理。"
-
-# endregion
-
-# region MaskTextureEditor
-
-msgid "MaskTextureEditor:create"
+msgid "RemoveMeshByMask:button:create"
 msgstr "创建"
 
-msgid "MaskTextureEditor:edit"
+msgid "RemoveMeshByMask:button:edit"
 msgstr "编辑"
 
-msgid "MaskTextureEditor:title"
-msgstr "AAO 遮罩纹理编辑器"
+msgid "RemoveMeshByMask:dialog:create"
+msgstr "创建"
 
-msgid "MaskTextureEditor:renderer"
-msgstr "SkinnedMeshRenderer"
+msgid "RemoveMeshByMask:dialog:error"
+msgstr "错误"
 
-msgid "MaskTextureEditor:subMesh"
-msgstr "材质插槽"
-
-msgid "MaskTextureEditor:subMeshIndex"
-msgstr "{0}号"
-
-msgid "MaskTextureEditor:texture"
-msgstr "遮罩纹理"
-
-msgid "MaskTextureEditor:save"
-msgstr "保存"
-
-msgid "MaskTextureEditor:viewScale"
-msgstr "显示缩放"
-
-msgid "MaskTextureEditor:viewOpacity"
-msgstr "显示透明度"
-
-msgid "MaskTextureEditor:resetView"
-msgstr "将视图调整为窗口大小"
-
-msgid "MaskTextureEditor:brushSize"
-msgstr "画笔大小 (Shift + 鼠标滚轮)"
-
-msgid "MaskTextureEditor:brushColor"
-msgstr "画笔颜色"
-
-msgid "MaskTextureEditor:black"
-msgstr "黑色"
-
-msgid "MaskTextureEditor:white"
-msgstr "白色"
-
-msgid "MaskTextureEditor:fillBlack"
-msgstr "用黑色填充"
-
-msgid "MaskTextureEditor:fillWhite"
-msgstr "用白色填充"
-
-msgid "MaskTextureEditor:inverse"
-msgstr "颜色反转"
-
-msgid "MaskTextureEditor:saveChangesMessage"
-msgstr "有未保存的更改。是否保存？"
-
-msgid "MaskTextureEditor:saveChangesButtonSave"
-msgstr "保存"
-
-msgid "MaskTextureEditor:saveChangesButtonDiscard"
-msgstr "放弃"
-
-msgid "MaskTextureEditor:saveChangesButtonCancel"
-msgstr "取消"
-
-msgid "MaskTextureEditor:errorTitle"
-msgstr "出现错误"
-
-msgid "MaskTextureEditor:errorMessageCreateFailed"
+msgid "RemoveMeshByMask:dialog:createMaskFailed"
 msgstr "创建纹理失败。请查看日志以获取详细信息。"
 
-msgid "MaskTextureEditor:errorMessageSaveFailed"
-msgstr "保存纹理失败。请查看日志以获取详细信息。"
+msgid "RemoveMeshByMask:dialog:info"
+msgstr "信息"
+
+msgid "RemoveMeshByMask:dialog:maskTextureEditorNotFound"
+msgstr ""
+"未安装遮罩纹理编辑器。\n"
+"自AvatarOptimizer v1.9.0起，遮罩纹理编辑器已移至单独的VPM仓库中的软件包。\n"
+"请添加该VPM仓库，并将「Mask Texture Editor」软件包添加到此项目中。"
+
+msgid "RemoveMeshByMask:dialog:addRepo"
+msgstr "打开ALCOM (VCC)"
+
+msgid "RemoveMeshByMask:dialog:openWeb"
+msgstr "打开GitHub"
+
+msgid "RemoveMeshByMask:dialog:cancel"
+msgstr "取消"
+
+msgid "RemoveMeshByMask:tooltip:textureIsNotImported"
+msgstr "这不是从图片文件导入的遮罩纹理。"
 
 # endregion
 
@@ -615,20 +569,11 @@ msgstr ""
 
 #region ComponentInfos
 
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh"
-msgstr "没有用于唇形同步的SkinnedMeshRenderer。"
-
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownLipSyncStyle"
 msgstr "指定了未知的唇形同步类型'{0}'。"
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownColliderState"
 msgstr "在{1}的Standard Collider中指定了未知的设置'{0}'。"
-
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh"
-msgstr "眨眼用的SkinnedMeshRenderer中没有网格。"
-
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh"
-msgstr "没有用于眨眼的SkinnedMeshRenderer。"
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType"
 msgstr "指定了未知的眨眼类型'{0}'。"

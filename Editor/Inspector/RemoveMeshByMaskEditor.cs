@@ -1,12 +1,18 @@
 using Unity.Collections;
 using UnityEditor;
 using UnityEngine;
+#if AAO_MASK_TEXTURE_EDITOR
+using MaskTextureEditor = net.nekobako.MaskTextureEditor.Editor;
+#endif
 
 namespace Anatawa12.AvatarOptimizer
 {
     [CustomEditor(typeof(RemoveMeshByMask))]
     internal class RemoveMeshByMaskEditor : AvatarTagComponentEditorBase
     {
+        public const string MaskTextureEditorToken = "com.anatawa12.avatar-optimizer.remove-mesh-by-mask-editor";
+        private static readonly Vector2Int DefaultTextureSize = new(1024, 1024);
+
         private SerializedProperty _materials = null!; // Initialized in OnEnable
         private SkinnedMeshRenderer _renderer = null!; // Initialized in OnEnable
         public bool automaticallySetWeightWhenToggle;
@@ -21,7 +27,7 @@ namespace Anatawa12.AvatarOptimizer
         protected override void OnInspectorGUIInner()
         {
             // if there is source skinned mesh component, show error
-            if ((Component)((Component)target).GetComponent<ISourceSkinnedMeshComponent>())
+            if (((Component)target).TryGetComponent<ISourceSkinnedMeshComponent>(out _))
             {
                 EditorGUILayout.HelpBox(AAOL10N.Tr("NoSourceEditSkinnedMeshComponent:HasSourceSkinnedMeshComponent"), MessageType.Error);
                 return;
@@ -51,7 +57,7 @@ namespace Anatawa12.AvatarOptimizer
                         EditorGUI.indentLevel++;
                         var mask = slotConfig.FindPropertyRelative(nameof(RemoveMeshByMask.MaterialSlot.mask));
                         var mode = slotConfig.FindPropertyRelative(nameof(RemoveMeshByMask.MaterialSlot.mode));
-                        MaskTextureEditor.Inspector.DrawFields(_renderer, i, mask, mode);
+                        DrawMaskAndMode(mask, mode, _renderer, i);
                         var texture = mask.objectReferenceValue as Texture2D;
                         if (texture == null)
                         {
@@ -101,6 +107,150 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             serializedObject.ApplyModifiedProperties();
+        }
+
+        private static void DrawMaskAndMode(
+            SerializedProperty mask,
+            SerializedProperty mode,
+            SkinnedMeshRenderer renderer, int slot)
+        {
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                var texture = mask.objectReferenceValue as Texture2D;
+                if (texture == null)
+                {
+                    EditorGUILayout.PropertyField(mask);
+
+                    if (GUILayout.Button(AAOL10N.Tr("RemoveMeshByMask:button:create"), GUILayout.ExpandWidth(false)))
+                    {
+                        switch ((RemoveMeshByMask.RemoveMode)mode.intValue)
+                        {
+                            case RemoveMeshByMask.RemoveMode.RemoveBlack:
+                                texture = CreateTexture(DefaultTextureSize, Color.white);
+                                break;
+                            case RemoveMeshByMask.RemoveMode.RemoveWhite:
+                                texture = CreateTexture(DefaultTextureSize, Color.black);
+                                break;
+                        }
+
+                        mask.serializedObject.Update();
+                        mask.objectReferenceValue = texture;
+                        mask.serializedObject.ApplyModifiedProperties();
+
+#if AAO_MASK_TEXTURE_EDITOR
+                        if (texture != null)
+                        {
+                            MaskTextureEditor.Window.TryOpen(texture, renderer, slot, MaskTextureEditorToken);
+                        }
+#endif
+
+                        // Exit GUI to avoid "EndLayoutGroup: BeginLayoutGroup must be called first."
+                        GUIUtility.ExitGUI();
+                    }
+                }
+                else
+                {
+#if AAO_MASK_TEXTURE_EDITOR
+                    var isOpenWindow = MaskTextureEditor.Window.IsOpenFor(renderer, slot, MaskTextureEditorToken);
+#else
+                    var isOpenWindow = false;
+#endif
+                    using (new EditorGUI.DisabledScope(isOpenWindow))
+                    {
+                        EditorGUILayout.PropertyField(mask);
+                    }
+
+                    var extension = System.IO.Path.GetExtension(AssetDatabase.GetAssetPath(texture));
+                    using (new EditorGUI.DisabledScope(extension != ".png"))
+                    {
+                        var shouldOpenWindow = GUILayout.Toggle(isOpenWindow,
+                            AAOL10N.Tr("RemoveMeshByMask:button:edit"),
+                            GUI.skin.button, GUILayout.ExpandWidth(false));
+                        if (isOpenWindow != shouldOpenWindow)
+                        {
+#if AAO_MASK_TEXTURE_EDITOR
+                            if (shouldOpenWindow)
+                            {
+                                MaskTextureEditor.Window.TryOpen(texture, renderer, slot, MaskTextureEditorToken);
+                            }
+                            else
+                            {
+                                MaskTextureEditor.Window.TryClose();
+                            }
+#else
+                            switch (EditorUtility.DisplayDialogComplex(
+                                AAOL10N.Tr("RemoveMeshByMask:dialog:info"),
+                                AAOL10N.Tr("RemoveMeshByMask:dialog:maskTextureEditorNotFound"),
+                                AAOL10N.Tr("RemoveMeshByMask:dialog:addRepo"),
+                                AAOL10N.Tr("RemoveMeshByMask:dialog:cancel"),
+                                AAOL10N.Tr("RemoveMeshByMask:dialog:openWeb")))
+                            {
+                                case 0:
+                                    Application.OpenURL("vcc://vpm/addRepo?url=https://vpm.nekobako.net/index.json");
+                                    break;
+                                case 2:
+                                    Application.OpenURL("https://github.com/nekobako/MaskTextureEditor");
+                                    break;
+                            }
+#endif
+
+                            // Exit GUI to avoid "EndLayoutGroup: BeginLayoutGroup must be called first."
+                            GUIUtility.ExitGUI();
+                        }
+                    }
+                }
+            }
+
+            EditorGUILayout.PropertyField(mode);
+        }
+
+        private static Texture2D? CreateTexture(Vector2Int size, Color color)
+        {
+            var path = EditorUtility.SaveFilePanelInProject(
+                AAOL10N.Tr("RemoveMeshByMask:dialog:create"),
+                string.Empty, "png", string.Empty);
+            if (string.IsNullOrEmpty(path))
+            {
+                return null;
+            }
+
+            var texture = new Texture2D(size.x, size.y);
+            for (var x = 0; x < size.x; x++)
+            {
+                for (var y = 0; y < size.y; y++)
+                {
+                    texture.SetPixel(x, y, color);
+                }
+            }
+            texture.Apply();
+
+            try
+            {
+                System.IO.File.WriteAllBytes(path, texture.EncodeToPNG());
+
+                AssetDatabase.ImportAsset(path);
+
+                var importer = (TextureImporter)AssetImporter.GetAtPath(path);
+                importer.isReadable = true;
+                importer.SaveAndReimport();
+
+                return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+            }
+            catch (System.Exception e)
+            {
+                EditorUtility.DisplayDialog(
+                    AAOL10N.Tr("RemoveMeshByMask:dialog:error"),
+                    AAOL10N.Tr("RemoveMeshByMask:dialog:createMaskFailed"),
+                    "OK");
+
+                Debug.LogError(e);
+            }
+            finally
+            {
+                DestroyImmediate(texture);
+            }
+
+            return null;
         }
 
         TextureImporter? GetTextureImporter(Texture2D texture)

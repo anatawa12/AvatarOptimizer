@@ -37,6 +37,9 @@ msgstr "Drag & Drop value to here to add element to this set."
 msgid "PrefabSafeSet:tooltip:Force Add Button"
 msgstr "Add this element in current prefab modifications."
 
+msgid "PrefabSafeSet:tooltip:Remove Button"
+msgstr "Remove Element"
+
 # , csharp-format
 msgid "PrefabSafeSet:label:Element {0}"
 msgstr "Element {0}"
@@ -147,11 +150,14 @@ msgid "MergePhysBone:error:oneSource"
 msgstr "There is only one source PhysBone. You must specify two or more merge source PhysBones."
 
 msgid "MergePhysBone:error:multiChildType"
-msgstr "Some PysBone has multi child type != Ignore"
+msgstr "Some PhysBone has multi child type != Ignore"
 
 msgid "MergePhysBone:error:unsupportedPbVersion"
 msgstr "The PhysBone Version is not supported (yet) by Avatar Optimizer.\n"
 "Please tell author on twitter (@anatawa12_vrc) or GitHub (anatawa12/AvatarOptimizer)!"
+
+msgid "MergePhysBone:message:fix-yaw-pitch"
+msgstr "Fix Roll with rotating bones"
 
 msgid "MergePhysBone:error:differValues"
 msgstr "The values is differ between two or more sources. You have to set same value OR override this property: {0}"
@@ -161,6 +167,26 @@ msgstr "The value is differ between two or more sources. You have to set same va
 
 msgid "MergePhysBone:warning:differChainLength"
 msgstr "The chain length is differ between two or more sources. Shorter chain will be thicker than original."
+
+msgid "MergePhysBone:error:LimitRotationFix:SkewScaling"
+msgstr ""
+"Skew scaling is not supported with Limit Rotation mode Fix.\n"
+"Please change the Limit Rotation mode to other than Fix, or fix the skew scaling."
+
+msgid "MergePhysBone:error:LimitRotationFix:DifferRotation"
+msgstr ""
+"Limit Rotation of source PhysBones differs in unfixable way.\n"
+"Please fix Limit Rotation of source PhysBones to same value, or change to other mode."
+
+msgid "MergePhysBone:error:LimitRotationFix:DifferRotation:description"
+msgstr ""
+"Limit Rotation Fix can fix Roll axis of different rotation but we cannot fix difference in other axis.\n"
+"Roll axis in this context is local X axis, and might be differs from Roll config on PhysBone inspector if there is Yaw rotation."
+
+msgid "MergePhysBone:error:LimitRotationFix:NonZeroEndpointPosition"
+msgstr ""
+"Endpoint Position is not zero while Limit Rotation mode is Fix.\n"
+"Please set Endpoint Position to zero, set Endpoint Position mode to Clear, or change Limit Rotation mode to other than Fix."
 
 msgid "MergePhysBone:dialog:versionInfo:title"
 msgstr "Version Info" 
@@ -252,6 +278,15 @@ msgstr "Reset When Disabled"
 msgid "MergePhysBone:prop:components"
 msgstr "Components"
 
+msgid "MergePhysBone:warning:limit-rotation-fix-animation"
+msgstr "Limit Rotation mode is Fix but physBone affected transforms are animated."
+
+msgid "MergePhysBone:warning:limit-rotation-fix-animation"
+msgstr "Merge Bone on PhysBone for Merge PhysBone with Limit Rotation mode Fix does not work and completely unsupported."
+
+msgid "MergePhysBone:warning:limit-rotation-fix-animation:description"
+msgstr "This is not supported with Limit Rotation mode Fix for now."
+
 # endregion
 
 # region MergeSkinnedMesh
@@ -274,11 +309,29 @@ msgstr ""
 msgid "MergeSkinnedMesh:validation:self-recursive"
 msgstr "Skinned Renderers contains the SkinnedMeshRenderer of MergeSkinnedMesh!"
 
+msgid "MergeSkinnedMesh:warn:TraditionalBlendShapeMode"
+msgstr ""
+"You're using v1.7.x or older compability mode.\n"
+"This mode is only for compatibility with old versions of Avatar Optimizer.\n"
+"Please consider change to other mode."
+
+msgid "MergeSkinnedMesh:prop:blendShapeMode"
+msgstr "BlendShape Mode"
+
+msgid "MergeSkinnedMesh:prop:blendShapeMode:MergeSameName"
+msgstr "Merge BlendShapes with same name"
+
+msgid "MergeSkinnedMesh:prop:blendShapeMode:RenameToAvoidConflict"
+msgstr "Rename BlendShapes to avoid conflict"
+
+msgid "MergeSkinnedMesh:prop:blendShapeMode:TraditionalCompability"
+msgstr "v1.7.x or older compability mode"
+
 msgid "MergeSkinnedMesh:prop:renderers"
 msgstr "Skinned Renderers"
 
 msgid "MergeSkinnedMesh:prop:staticRenderers"
-msgstr "Static Renderers"
+msgstr "Basic Renderers"
 
 msgid "MergeSkinnedMesh:prop:removeEmptyRendererObject"
 msgstr "Remove Empty Renderer Object"
@@ -302,6 +355,16 @@ msgid "MergeSkinnedMesh:error:mix-normal-existence"
 msgstr ""
 "Merging both meshes with and without normal is not supported."
 "Please change import setting of models to include normals!"
+
+msgid "MergeSkinnedMesh:error:blendShape-animated-by-multiple-renderers"
+msgstr "Differently animated BlendShape is detected: {0}"
+
+msgid "MergeSkinnedMesh:error:blendShape-animated-by-multiple-renderers:description"
+msgstr ""
+"You're merging meshes that their BlendShapes are animated differently between meshes.\n"
+"Since BlendShapes are configured to merge, applied animation cannot be determined if animated differently.\n"
+"\n"
+"Please remove animation for some source SkinnedMeshRenderers or make them animated similarly."
 
 msgid "MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources"
 msgstr "Since Remove Zero Sized Polygons are processed later, it has no effects if it is added with the source Skinned Mesh Renderers."
@@ -356,6 +419,26 @@ msgstr "MergeSkinnedMesh does not automatically set the Anchor Override of the m
 
 msgid "MergeSkinnedMesh:warning:no-probe-anchor:hint"
 msgstr "You need to set it manually. If you are using Modular Avatar, you can also add MA Mesh Settings component to the root of the avatar to set the Anchor Override for the whole avatar."
+
+msgid "MergeSkinnedMesh:copy-enablement-animation:error:enablement-of-merged-mesh-is-animated"
+msgstr "'enabled' of the merged mesh is animated."
+
+msgid "MergeSkinnedMesh:copy-enablement-animation:error:enablement-of-merged-mesh-is-animated:description"
+msgstr "When 'Copy Enablement Animation' is enabled, Merge Skinned Mesh will create an animation for 'enabled' of the merged mesh.\n"
+"Therefore, you must not animate 'enabled' of the merged mesh."
+
+msgid "MergeSkinnedMesh:copy-enablement-animation:error:too-many-activeness-animation"
+msgstr "Multiple properties related to the activeness of the following source meshes are animated."
+
+msgid "MergeSkinnedMesh:copy-enablement-animation:error:too-many-activeness-animation:description"
+msgid "'Copy Enablement Animation' is designed to copy activeness / enablement animations to 'enabled' of the merged mesh.\n"
+"Therefore, we cannot copy animations if there are multiple properties are animated like both renderer's 'enabled' and GameObject's 'activeSelf', or multiple layers of 'activeSelf'."
+
+msgid "MergeSkinnedMesh:copy-enablement-animation:error:activeness-animation-of-source-mismatch"
+msgid "The animations for the activeness of the source meshes are different between multiple source meshes."
+
+msgid "MergeSkinnedMesh:copy-enablement-animation:error:activeness-animation-of-source-mismatch:description"
+msgid "'Copy Enablement Animation' can work if the activeness of the source meshes are animated with same curve and same animation clip."
 
 # endregion
 
@@ -475,6 +558,39 @@ msgstr "No Mesh is specified to the Skinned Mesh Renderer."
 msgid "RemoveMeshByMask:button:makeReadable"
 msgstr "Make Readable"
 
+msgid "RemoveMeshByMask:button:create"
+msgstr "Create"
+
+msgid "RemoveMeshByMask:button:edit"
+msgstr "Edit"
+
+msgid "RemoveMeshByMask:dialog:create"
+msgstr "Create"
+
+msgid "RemoveMeshByMask:dialog:error"
+msgstr "Error"
+
+msgid "RemoveMeshByMask:dialog:createMaskFailed"
+msgstr "Failed to create the texture. Refer to the log for details."
+
+msgid "RemoveMeshByMask:dialog:info"
+msgstr "Info"
+
+msgid "RemoveMeshByMask:dialog:maskTextureEditorNotFound"
+msgstr ""
+"Mask Texture Editor is not installed.\n"
+"Since AvatarOptimizer v1.9.0, Mask Texture Editor has been moved to a package in a separate VPM repository.\n"
+"Please add the VPM repository and install \"Mask Texture Editor\" package to this project."
+
+msgid "RemoveMeshByMask:dialog:addRepo"
+msgstr "Open ALCOM (VCC)"
+
+msgid "RemoveMeshByMask:dialog:openWeb"
+msgstr "Open GitHub"
+
+msgid "RemoveMeshByMask:dialog:cancel"
+msgstr "Cancel"
+
 msgid "RemoveMeshByMask:tooltip:textureIsNotImported"
 msgstr "Mask Texture is not imported from image file."
 
@@ -499,85 +615,6 @@ msgstr "UV Channel is out of range: {0}"
 
 # endregion
 
-# region MaskTextureEditor
-
-msgid "MaskTextureEditor:create"
-msgstr "Create"
-
-msgid "MaskTextureEditor:edit"
-msgstr "Edit"
-
-msgid "MaskTextureEditor:title"
-msgstr "AAO MaskTextureEditor"
-
-msgid "MaskTextureEditor:renderer"
-msgstr "Skinned Mesh Renderer"
-
-msgid "MaskTextureEditor:subMesh"
-msgstr "Material Slot"
-
-msgid "MaskTextureEditor:subMeshIndex"
-msgstr "{0}"
-
-msgid "MaskTextureEditor:texture"
-msgstr "Mask Texture"
-
-msgid "MaskTextureEditor:save"
-msgstr "Save"
-
-msgid "MaskTextureEditor:viewScale"
-msgstr "View Scale (Scroll)"
-
-msgid "MaskTextureEditor:viewOpacity"
-msgstr "View Opacity"
-
-msgid "MaskTextureEditor:resetView"
-msgstr "Fit the view to the window"
-
-msgid "MaskTextureEditor:brushSize"
-msgstr "Brush Size (Shift + Scroll)"
-
-msgid "MaskTextureEditor:brushColor"
-msgstr "Brush Color"
-
-msgid "MaskTextureEditor:black"
-msgstr "Black"
-
-msgid "MaskTextureEditor:white"
-msgstr "White"
-
-msgid "MaskTextureEditor:fillBlack"
-msgstr "Fill Black"
-
-msgid "MaskTextureEditor:fillWhite"
-msgstr "Fill White"
-
-msgid "MaskTextureEditor:inverse"
-msgstr "Inverse Color"
-
-msgid "MaskTextureEditor:saveChangesMessage"
-msgstr "There are unsaved changes. Would you like to save?"
-
-msgid "MaskTextureEditor:saveChangesButtonSave"
-msgstr "Save"
-
-msgid "MaskTextureEditor:saveChangesButtonDiscard"
-msgstr "Discard"
-
-msgid "MaskTextureEditor:saveChangesButtonCancel"
-msgstr "Cancel"
-
-msgid "MaskTextureEditor:errorTitle"
-msgstr "Error"
-
-msgid "MaskTextureEditor:errorMessageCreateFailed"
-msgstr "Failed to create the texture. Refer to the log for details."
-
-msgid "MaskTextureEditor:errorMessageSaveFailed"
-msgstr "Failed to save the texture. Refer to the log for details."
-
-# endregion
-
 # region RenameBlendShape
 
 # used in inspector
@@ -595,26 +632,21 @@ msgid "RenameBlendShape:error:empty-name-some"
 msgstr "Some changed names are empty."
 
 msgid "RenameBlendShape:warning:name-conflict-some"
-msgstr "Some changed names are duplicated. Those blendShapes will be merged to one."
+msgstr "Some changed names are duplicated."
 
 msgid "RenameBlendShape:error:empty-name-this"
 msgstr "Changed name is empty."
 
 msgid "RenameBlendShape:warning:name-conflict-this"
-msgstr "Changed name is duplicated with some other. This blendShape will be merged to one."
+msgstr "Changed name is duplicated with some other."
 
 # used in NDMF Console
 
 msgid "RenameBlendShape:error:empty-name"
 msgstr "Renamed BlendShape name for '{0}' is empty, which is not allowed."
 
-msgid "RenameBlendShape:warning:weight-conflict"
-msgstr "Weight for merged BlendShape '{0}' is not same in all sources, so it's hard to know which weight will be used.\n"
-"Sources: {1}"
-
-msgid "RenameBlendShape:warning:animation-conflict"
-msgstr "Weights of source BlendShapes for merged BlendShape '{0}' are partially animated.\n"
-"Sources: {1}"
+msgid "RenameBlendShape:error:after-name-conflict"
+msgstr "There are multiple BlendShapes with the same name '{0}' after renaming. This is not allowed."
 
 # endregion
 
@@ -677,8 +709,8 @@ msgstr "Migrating to Trace and Optimize is finished!"
 msgid "TraceAndOptimize:description"
 msgstr "When you added this component to your avatar, AvatarOptimizer will trace your avatar and optimize automatically."
 
-msgid "TraceAndOptimize:prop:freezeBlendShape"
-msgstr "Automatically Freeze BlendShape"
+msgid "TraceAndOptimize:prop:optimizeBlendShape"
+msgstr "Optimize BlendShape"
 
 msgid "TraceAndOptimize:prop:removeUnusedObjects"
 msgstr "Remove unused Objects Automatically"
@@ -773,14 +805,6 @@ msgstr "If some BlendShapes are missing or unset, all viseme BlendShapes would n
 
 #region ComponentInfos
 
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh"
-msgstr "No Skinned Mesh Renderer is specified for LipSync."
-
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh:hint"
-msgstr ""
-"If you want to enable viseme lip sync with BlendShapes, you should specify SkinnedMeshRenderer to Avatar Descriptor.\n"
-"If it's intended to not animate lips with BlendShapes, you should change LipSync type to other type like Viseme Parameter Only."
-
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownLipSyncStyle"
 msgstr "Unknown LipSync Mode '{0}' is specified."
 
@@ -792,22 +816,6 @@ msgstr "Unknown Standard Collider State '{0}' is specified for {1}."
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownColliderState:hint"
 msgstr "This is typically a bug of Avatar Optimizer. Please report this issue with the message above."
-
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh"
-msgstr "No Mesh is specified for Eyelids SkinnedMesh."
-
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh:hint"
-msgstr ""
-"If you want to animate eyelids with BlendShapes, you should specify SkinnedMeshRenderer having Mesh to Avatar Descriptor.\n"
-"If it's intended to not animate eyelids with BlendShapes, you should change eyelids type to other type like None."
-
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh"
-msgstr "No Skinned Mesh Renderer is specified for Eyelids."
-
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh:hint"
-msgstr ""
-"If you want to animate eyelids with BlendShapes, you should specify SkinnedMeshRenderer to Avatar Descriptor.\n"
-"If it's intended to not animate eyelids with BlendShapes, you should change eyelids type to other type like None."
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType"
 msgstr "Unknown Eyelid Type '{0}' is specified."
@@ -862,5 +870,15 @@ msgstr ""
 
 msgid "AssetDescription:OpenDocs"
 msgstr "Open Documentation"
+
+# endregion
+
+# region ContextMenus
+
+msgid "ContextMenus:AddTraceAndOptimize:FailedToAddTraceAndOptimize:Title"
+msgstr "Failed to add Trace and Optimize"
+
+msgid "ContextMenus:AddTraceAndOptimize:FailedToAddTraceAndOptimize:Message"
+msgstr "Trace and Optimize can only be added to the root of the avatar."
 
 # endregion

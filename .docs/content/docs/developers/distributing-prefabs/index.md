@@ -19,8 +19,8 @@ if your users use a newer version of Avatar Optimizer than your unofficial distr
 There are recommended ways to guide your users to the official distribution of Avatar Optimizer.
 1. If your asset is distributed via VPM, let users install Avatar Optimizer via VPM as well.\
    Declare Avatar Optimizer as a dependency of your asset in your `package.json`
-   and guide your users to add the Avatar Optimizer VPM repository to VCC.
-   [Here][add-repo] is the link to add the Avatar Optimizer Official repository to VCC.\
+   and guide your users to add the Avatar Optimizer VPM repository to ALCOM or VCC.
+   [Here][add-repo] is the link to add the Avatar Optimizer Official repository to ALCOM or VCC.\
    If you want, you can mirror the [Avatar Optimizer repository][repo] in your VPM repository.
    When mirroring, mirror the VPM repository, not from the GitHub Releases.
 2. Link to the official documentation of Avatar Optimizer.\

@@ -202,16 +202,25 @@ namespace Anatawa12.AvatarOptimizer.API
         /// </summary>
         /// <param name="propertyName">The name of the property in the material.</param>
         /// <param name="considerAnimation">Whether to consider the animation of the property. If this is true, this function will never </param>
-        /// <returns>The integer value for the property in the material, which is same as <see cref="Material.GetInteger(string)"/>, or null if the property is not set or not found.</returns>
+        /// <returns>The integer value for the property in the material, which is same as <see cref="Material.GetInteger(string)"/>, or null if the property is animated.</returns>
         [PublicAPI]
         public abstract int? GetInteger(string propertyName, bool considerAnimation = true);
+
+        /// <summary>
+        /// Returns the int value for the property in the material, or null if the property is not set or not found.
+        /// </summary>
+        /// <param name="propertyName">The name of the property in the material.</param>
+        /// <param name="considerAnimation">Whether to consider the animation of the property. If this is true, this function will never </param>
+        /// <returns>The int value for the property in the material, which is same as <see cref="Material.GetInt(string)"/>, or null if the property is animated.</returns>
+        [PublicAPI]
+        public abstract int? GetInt(string propertyName, bool considerAnimation = true);
 
         /// <summary>
         /// Returns the float value for the property in the material, or null if the property is not set or not found.
         /// </summary>
         /// <param name="propertyName">The name of the property in the material.</param>
         /// <param name="considerAnimation">Whether to consider the animation of the property. If this is true, this function will never </param>
-        /// <returns>The integer value for the property in the material, which is same as <see cref="Material.GetFloat(string)"/>, or null if the property is not set or not found.</returns>
+        /// <returns>The float value for the property in the material, which is same as <see cref="Material.GetFloat(string)"/>, or null if the property is animated.</returns>
         [PublicAPI]
         public abstract float? GetFloat(string propertyName, bool considerAnimation = true);
 
@@ -220,9 +229,17 @@ namespace Anatawa12.AvatarOptimizer.API
         /// </summary>
         /// <param name="propertyName">The name of the property in the material.</param>
         /// <param name="considerAnimation">Whether to consider the animation of the property. If this is true, this function will never </param>
-        /// <returns>The integer value for the property in the material, which is same as <see cref="Material.GetVector(string)"/>, or null if the property is not set or not found.</returns>
+        /// <returns>The integer value for the property in the material, which is same as <see cref="Material.GetVector(string)"/>, or null if the property is animated.</returns>
         [PublicAPI]
         public abstract Vector4? GetVector(string propertyName, bool considerAnimation = true);
+
+        /// <summary>
+        /// Returns if the local Shader Keyword is enabled or not.
+        /// </summary>
+        /// <param name="keywordName">The name of local shader keyword</param>
+        /// <returns>true if the local shader keyword is enabled, false if disabled, null if unknown or mixed.</returns>
+        [PublicAPI]
+        public abstract bool? IsShaderKeywordEnabled(string keywordName);
 
         /// <summary>
         /// Registers UV Usage that are not considered by Avatar Optimizer.

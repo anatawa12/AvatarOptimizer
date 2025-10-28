@@ -9,6 +9,12 @@ weight: 21
 
 このコンポーネントは、メッシュを指定していないSkinnedMeshRendererコンポーネントがある新規GameObjectに追加してください。(分類: [Source Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#source-component))
 
+<blockquote class="book-hint info">
+
+[Trace And Optimize](../trace-and-optimize)が自動で同様の処理を行うため、大抵の場合、このコンポーネントを使用する必要はありません。
+
+</blockquote>
+
 ## 利点 {#benefits}
 
 SkinnedMeshRendererを統合することでメッシュを変形させる処理の回数が減り、負荷が軽くなります。
@@ -21,25 +27,19 @@ SkinnedMeshRendererを統合することでメッシュを変形させる処理�
 このコンポーネントはメッシュ・マテリアル・BlendShape・Boundsを設定しますが、その他の設定については変更しません。
 Anchor Override等の設定を行うには、MergeSkinnedMeshのあるGameObject上のSkinnedMeshRendererコンポーネントを編集してください。
 
-{{< hint info >}}
+<blockquote class="book-hint info">
 
 [Modular Avatar]を使用している場合は、アバターのルートに[`MA Mesh Settings`]コンポーネントを追加して設定することにより、アバター全体のAnchor Override等をまとめて設定することができます。
 
-{{< /hint >}}
+</blockquote>
 
-また、このコンポーネントは、服のメッシュや体のメッシュを統合するのには適していますが、顔のメッシュを統合するのには適していません。\
-BlendShapeは、頂点とBlendShapeの数に比例して負荷が大きくなる機能です。
-顔のメッシュは一般的に多くのBlendShapeを持っているため、統合対象に含めると頂点数の増加により負荷が大きくなってしまいます。
-
-同様に、体や服のメッシュのBlendShapeは固定・除去することを推奨します。
+BlendShapeによる負荷を減らすために、体や服のメッシュのBlendShapeは固定・除去することを推奨します。\
 [Freeze BlendShape](../freeze-blendshape)コンポーネントを統合対象・統合先のSkinnedMeshRendererコンポーネントのいずれか(または両方)に追加して、BlendShapeを固定・除去することが出来ます。
-[Trace and Optimize](../trace-and-optimize)コンポーネントの`BlendShapeを自動的に固定・除去する`によっても同様の効果を得ることが出来ます。
+[Trace and Optimize](../trace-and-optimize)コンポーネントの`BlendShapeを最適化する`によっても同様の効果を得ることが出来ます。
 
-{{< hint info >}}
-
-いくつかのケースでは、[Trace And Optimize](../trace-and-optimize)が自動で同様の処理を行うため、このコンポーネントを使用する必要がないかもしれません。
-
-{{< /hint >}}
+以前のAvatar Optimizerは顔のメッシュを他のメッシュと統合することを推奨していませんでした。
+これは、Unity 2019でBlendShapeの多いメッシュを統合するとメッシュの負荷が大幅に増加してしまうためです。\
+Unity 2022ではBlendShapeの負荷が改善されているため、その記述は取り下げられました。
 
 ## 設定 {#settings}
 
@@ -51,7 +51,9 @@ BlendShapeは、頂点とBlendShapeの数に比例して負荷が大きくなる
 
 一番下の"None"と書いてある要素にドラッグ&ドロップすることにより対象を追加し、Noneに戻すことにより対象を一覧から取り除きます。
 
-### 静的レンダラー {#static-renderers}
+<div id="static-renderers"></div>
+
+### メッシュレンダラー {#basic-renderers}
 
 統合対象のMeshRendererの一覧です。
 
@@ -67,7 +69,7 @@ BlendShapeは、頂点とBlendShapeの数に比例して負荷が大きくなる
 
 統合先のSkinnedMeshRendererと有効無効の状態が異なる(Skinned)MeshRendererが統合対象の中に含まれている場合、それらをビルド時に統合対象から除外するオプションです。
 
-### "有効無効状態に関するアニメーションをコピーする" {#copy-enablement-animation}
+### 有効無効状態に関するアニメーションをコピーする {#copy-enablement-animation}
 
 統合対象の(Skinned)MeshRendererの有効無効状態に関するアニメーションを統合先のSkinnedMeshRendererにコピーするオプションです。
 
@@ -75,6 +77,14 @@ BlendShapeは、頂点とBlendShapeの数に比例して負荷が大きくなる
 ただし、アニメーションされているプロパティは1種類しかコピーできないため、複数種類/階層のプロパティがアニメーションされている場合(`enabled`と`activeSelf`の両方がアニメーションされている場合や、自身と親の両方の`activeSelf`がアニメーションされている場合など)はエラーになります。
 
 なお、統合先のSkinnedMeshRendererの`enabled`に対するアニメーションはこの機能によって上書きされるため、この機能を使用する時は統合先のSkinnedMeshRendererの`enabled`をアニメーションしてはいけません。
+
+### BlendShapeモード {#blendshape-mode}
+
+BlendShapeをどのように扱うかについてのオプションです。
+
+- `BlendShape名を自動変更して重複を避ける`: 重複を避けるために、BlendShape名を自動で変更します。これはデフォルトの設定になっています。
+- `同名のBlendShapeを統合する`: 同じ名前のBlendShapeを統合します。異なるSkinnedMeshRendererにある同じ名前のBlendShapeを統合する際に便利です。
+- `v1.7.x互換モード`: v1.7.x以前のAvatar Optimizerとの互換性を維持するためのモードです。同じ名前のBlendShapeが統合されますが、Trace and Optimizeの判断では考慮されません。また、新しく追加したコンポーネントでこのモードを選択することはできません。
 
 ### マテリアルの統合 {#merge-materials}
 

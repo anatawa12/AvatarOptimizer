@@ -9,6 +9,9 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
+#if AAO_MASK_TEXTURE_EDITOR
+using MaskTextureEditor = net.nekobako.MaskTextureEditor.Editor;
+#endif
 
 namespace Anatawa12.AvatarOptimizer.EditModePreview
 {
@@ -44,7 +47,11 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     if (materialSetting.mask == null) continue;
                     if (!materialSetting.mask.isReadable) continue;
 
-                    var editingTexture = MaskTextureEditor.Window.ObservePreviewTextureFor(original, subMeshI, context);
+#if AAO_MASK_TEXTURE_EDITOR
+                    var editingTexture = MaskTextureEditor.Window.ObserveTextureFor(context, original, subMeshI, RemoveMeshByMaskEditor.MaskTextureEditorToken);
+#else
+                    var editingTexture = default(Texture2D);
+#endif
                     int textureWidth;
                     int textureHeight;
                     Color32[] pixels;
@@ -56,9 +63,13 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     }
                     else
                     {
-                        textureWidth = context.Observe(materialSetting.mask, m => m.width);
-                        textureHeight = context.Observe(materialSetting.mask, m => m.height);
-                        pixels = context.Observe(materialSetting.mask, m => m.GetPixels32(), Utils.Color32ArrayEquals);
+                        // Register to be re-evaluted when the texture changes. We avoid using GetPixels32 here for
+                        // performance reasons, as this is frequently re-invoked by NDMF's PropertyMonitor.
+                        context.Observe(materialSetting.mask, m => (m.width, m.height, m.imageContentsHash));
+
+                        textureWidth = materialSetting.mask.width;
+                        textureHeight = materialSetting.mask.height;
+                        pixels = materialSetting.mask.GetPixels32();
                     }
                     using var pixelsJob = new NativeArray<Color32>(pixels, Allocator.TempJob);
 

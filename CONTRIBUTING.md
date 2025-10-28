@@ -67,7 +67,9 @@ I'll add `documentation` or `localization` label to the PR and the CI will ignor
 
 ## Notes for writing codes
 
-Do not use `Object.DestroyImmediate`, use `DestroyTracker.DestroyImmediate` instead.
+- Do not use `Object.DestroyImmediate`, use `DestroyTracker.DestroyImmediate` instead.
+- When you add some components in process of optimization that persists after build (or multiple phases of optimization),
+  register new component to GCComponentInfoContext.
 
 ## Adding Localization Locales
 

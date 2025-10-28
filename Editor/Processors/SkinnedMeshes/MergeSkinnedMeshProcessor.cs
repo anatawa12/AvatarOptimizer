@@ -4,6 +4,7 @@ using System.Linq;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using nadena.dev.ndmf;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 using Debug = System.Diagnostics.Debug;
@@ -21,16 +22,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         private IEnumerable<SkinnedMeshRenderer> SkinnedMeshRenderers =>
             Component.renderersSet.GetAsList().Except(new[] { Target });
         
-        private IEnumerable<MeshRenderer> StaticMeshRenderers =>
+        private IEnumerable<MeshRenderer> BasicMeshRenderers =>
             Component.staticRenderersSet.GetAsList();
 
         public override EditSkinnedMeshProcessorOrder ProcessOrder => EditSkinnedMeshProcessorOrder.Generation;
 
         public override void Process(BuildContext context, MeshInfo2 target)
         {
-            var meshInfos = CollectMeshInfos(context);
+            var (disposableList, meshInfos) = CollectMeshInfos(context);
+            using var _ = disposableList;
 
-            GenerateWarningsOrErrors(context, Component.copyEnablementAnimation, target, meshInfos);
+            GenerateWarningsOrErrors(context, Component.copyEnablementAnimation, Component.blendShapeMode, target, meshInfos);
 
             var (subMeshIndexMap, materials) =
                 GenerateSubMeshMapping(meshInfos, Component.doNotMergeMaterials.GetAsSet());
@@ -45,16 +47,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 .Select(x => x.property["material.".Length..])
                 .ToHashSet();
 
-            DoMerge(context, target, meshInfos, subMeshIndexMap, materials, targetAnimatedProperties);
+            DoMerge(context, target, meshInfos, subMeshIndexMap, materials, Component.blendShapeMode, targetAnimatedProperties);
             MergeBounds(target, meshInfos);
 
             RemoveOldRenderers(target, meshInfos, Component.removeEmptyRendererObject);
+
+            var gcInfo = context.Extension<GCComponentInfoContext>().GetInfo(target.SourceRenderer);
+            gcInfo.ClearDependencies();
+            APIInternal.SkinnedMeshRendererInformation.AddDependencyInformation(gcInfo, target);
         }
 
-        public MeshInfo2[] CollectMeshInfos(BuildContext context)
+        public (DisposableList<MeshInfo2>, MeshInfo2[] meshInfos) CollectMeshInfos(BuildContext context)
         {
             List<SkinnedMeshRenderer> skinnedMeshRenderers;
-            List<MeshRenderer> staticMeshRenderers;
+            List<MeshRenderer> basicMeshRenderers;
             if (Component.skipEnablementMismatchedRenderers)
             {
                 bool RendererEnabled(Renderer x)
@@ -70,50 +76,78 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 var enabledSelf = RendererEnabled(Target);
                 skinnedMeshRenderers = SkinnedMeshRenderers.Where(x => RendererEnabled(x) == enabledSelf).ToList();
-                staticMeshRenderers = StaticMeshRenderers.Where(x => RendererEnabled(x) == enabledSelf).ToList();
+                basicMeshRenderers = BasicMeshRenderers.Where(x => RendererEnabled(x) == enabledSelf).ToList();
             }
             else
             {
                 skinnedMeshRenderers = SkinnedMeshRenderers.ToList();
-                staticMeshRenderers = StaticMeshRenderers.ToList();
+                basicMeshRenderers = BasicMeshRenderers.ToList();
             }
-
-            Profiler.BeginSample("Merge PreserveBlendShapes");
-            {
-                var state = context.GetState<TraceAndOptimizes.TraceAndOptimizeState>();
-                HashSet<string>? thisPreserve = null;
-                foreach (var skinnedRenderer in skinnedMeshRenderers)
-                {
-                    if (!state.PreserveBlendShapes.TryGetValue(skinnedRenderer, out var preserve)) continue;
-
-                    if (thisPreserve == null && !state.PreserveBlendShapes.TryGetValue(Target, out thisPreserve))
-                        state.PreserveBlendShapes.Add(Target, thisPreserve = new HashSet<string>());
-                    thisPreserve.UnionWith(preserve);
-                }
-            }
-            Profiler.EndSample();
 
             Profiler.BeginSample("Collect MeshInfos");
-            var meshInfos = skinnedMeshRenderers.Select(context.GetMeshInfoFor)
-                .Concat(staticMeshRenderers.Select(renderer => new MeshInfo2(renderer)))
-                .ToArray();
+            // Owns staticRendererMeshInfos
+            var basicRendererMeshInfos = basicMeshRenderers.Select(renderer => new MeshInfo2(renderer)).ToDisposableList();
+            try
+            {
+                var meshInfos = skinnedMeshRenderers.Select(context.GetMeshInfoFor)
+                    .Concat(basicRendererMeshInfos)
+                    .ToArray();
 
-            foreach (var meshInfo2 in meshInfos) meshInfo2.FlattenMultiPassRendering("Merge Skinned Mesh");
-            foreach (var meshInfo2 in meshInfos) meshInfo2.MakeBoned();
-            Profiler.EndSample();
+                foreach (var meshInfo2 in meshInfos) meshInfo2.FlattenMultiPassRendering("Merge Skinned Mesh");
+                foreach (var meshInfo2 in meshInfos) meshInfo2.MakeBoned();
+                Profiler.EndSample();
 
-            return meshInfos;
+                return (basicRendererMeshInfos, meshInfos);
+            }
+            catch
+            {
+                basicRendererMeshInfos.Dispose();
+                throw;
+            }
         }
 
-        public static void GenerateWarningsOrErrors(
-            BuildContext context, 
+        public static void GenerateWarningsOrErrors(BuildContext context,
             bool copyEnablementAnimation,
+            MergeSkinnedMesh.BlendShapeMode componentBlendShapeMode,
             MeshInfo2 target,
             MeshInfo2[] meshInfos
         ) {
             Profiler.BeginSample("Material / Shader Parameter Animation Warnings");
             MaterialParameterAnimationWarnings(meshInfos, target, context);
             Profiler.EndSample();
+
+            if (componentBlendShapeMode == MergeSkinnedMesh.BlendShapeMode.MergeSameName)
+            {
+                // error if multiple renderers have animated for one blend shape
+                var animatedComponentByBlendShape = new Dictionary<string, HashSet<MeshInfo2>>();
+
+                foreach (var meshInfo in meshInfos.Concat(new[] { target }))
+                foreach (var (name, _) in meshInfo.BlendShapes)
+                {
+                    var node = context.GetAnimationComponent(meshInfo.SourceRenderer).GetFloatNode($"blendShape.{name}");
+                    if (!node.ComponentNodes.Any()) continue;
+
+                    if (!animatedComponentByBlendShape.TryGetValue(name, out var set))
+                        animatedComponentByBlendShape.Add(name, set = new HashSet<MeshInfo2>());
+                    set.Add(meshInfo);
+                }
+
+                foreach (var (name, renderers) in animatedComponentByBlendShape.Where(x => x.Value.Count > 1))
+                {
+                    var locations = renderers.Select(renderer =>
+                            AnimationLocation.CollectAnimationLocation(context
+                                    .GetAnimationComponent(renderer.SourceRenderer)
+                                    .GetFloatNode($"blendShape.{name}"))
+                                .ToEqualsHashSet())
+                        .ToArray();
+
+                    if (locations.Distinct().LongCount() >= 1)
+                    {
+                        BuildLog.LogError("MergeSkinnedMesh:error:blendShape-animated-by-multiple-renderers",
+                            name, renderers);
+                    }
+                }
+            }
 
             Profiler.BeginSample("Material Normal Configuration Check");
             // check normal information.
@@ -156,16 +190,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.BeginSample("Warn / Error Unsupported Components");
             foreach (var renderer in meshInfos.Select(x => x.SourceRenderer).Where(x => x && x is SkinnedMeshRenderer))
             {
-                var removeZeroSizedPolygon = renderer.GetComponent<RemoveZeroSizedPolygon>();
-                if (removeZeroSizedPolygon)
+                if (renderer.TryGetComponent<RemoveZeroSizedPolygon>(out var removeZeroSizedPolygon))
                 {
                     BuildLog.LogWarning("MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources",
                         removeZeroSizedPolygon);
                     DestroyTracker.DestroyImmediate(removeZeroSizedPolygon);
                 }
 
-                var cloth = renderer.GetComponent<Cloth>();
-                if (cloth)
+                if (renderer.TryGetComponent<Cloth>(out var cloth))
                 {
                     BuildLog.LogError("MergeSkinnedMesh:error:clothOnSources", cloth);
                     DestroyTracker.DestroyImmediate(cloth);
@@ -256,19 +288,37 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             MeshInfo2 target,
             MeshInfo2[] meshInfos,
             int[][] subMeshIndexMap,
-            List<(MeshTopology topology, Material? material)> materials, 
-            ICollection<string>? targetAnimatedProperties) {
+            List<(MeshTopology topology, Material? material)> materials,
+            MergeSkinnedMesh.BlendShapeMode componentBlendShapeMode = MergeSkinnedMesh.BlendShapeMode.RenameToAvoidConflict,
+            ICollection<string>? targetAnimatedProperties = null) {
             targetAnimatedProperties ??= Array.Empty<string>();
 
             target.ClearMeshData();
             target.SubMeshes.Capacity = Math.Max(target.SubMeshes.Capacity, materials.Count);
             foreach (var material in materials)
+            {
                 target.SubMeshes.Add(new SubMesh(material.material, material.topology));
+                if (material.material != null
+                    && context.GetMaterialInformation(material.material) is { } information)
+                    information.UserRenderers.Add(target.SourceRenderer);
+            }
 
             TexCoordStatus TexCoordStatusMax(TexCoordStatus x, TexCoordStatus y) =>
                 (TexCoordStatus)Math.Max((int)x, (int)y);
 
             var mappings = new List<(string, string)>();
+
+            var rendererPrefixes = BlendShapePrefixComputer.Create();
+
+            var traceAndOptimizeState = context.GetState<TraceAndOptimizes.TraceAndOptimizeState>();
+
+            void AddPreserveBlendShapes(IEnumerable<string> preserves)
+            {
+                var targetRenderer = (SkinnedMeshRenderer)target.SourceRenderer;
+                if (!traceAndOptimizeState.PreserveBlendShapes.TryGetValue(targetRenderer, out var thisPreserve))
+                    traceAndOptimizeState.PreserveBlendShapes.Add(targetRenderer, thisPreserve = new HashSet<string>());
+                thisPreserve.UnionWith(preserves);
+            }
 
             for (var i = 0; i < meshInfos.Length; i++)
             {
@@ -278,7 +328,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 meshInfo.AssertInvariantContract($"processing source #{i} of {target.SourceRenderer.gameObject.name}");
 
-                target.Vertices.AddRange(meshInfo.Vertices);
+                // borrows
+                var copiedVertices = meshInfo.Vertices.ToList();
+
+                target.VerticesMutable.AddRange(meshInfo.Vertices);
+                meshInfo.VerticesMutable.Clear();
+
                 for (var j = 0; j < 8; j++)
                     target.SetTexCoordStatus(j,
                         TexCoordStatusMax(target.GetTexCoordStatus(j), meshInfo.GetTexCoordStatus(j)));
@@ -288,12 +343,43 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     var targetSubMeshIndex = subMeshIndexMap[i][j];
                     var targetSubMesh = target.SubMeshes[targetSubMeshIndex];
                     var sourceSubMesh = meshInfo.SubMeshes[j];
-                    System.Diagnostics.Debug.Assert(targetSubMesh.Topology == sourceSubMesh.Topology);
+                    Utils.Assert(targetSubMesh.Topology == sourceSubMesh.Topology);
                     targetSubMesh.Vertices.AddRange(sourceSubMesh.Vertices);
                     mappings.Add(($"m_Materials.Array.data[{j}]",
                         $"m_Materials.Array.data[{targetSubMeshIndex}]"));
                 }
+                meshInfo.SubMeshes.Clear();
 
+                var preserveShapes = meshInfo.SourceRenderer is SkinnedMeshRenderer skinnedRenderer
+                    ? traceAndOptimizeState.PreserveBlendShapes.GetValueOrDefault(skinnedRenderer)
+                    : null;
+
+                // rename if componentBlendShapeMode is RenameToAvoidConflict
+                if (componentBlendShapeMode == MergeSkinnedMesh.BlendShapeMode.RenameToAvoidConflict)
+                {
+                    var prefix = rendererPrefixes.GetPrefix(meshInfo.SourceRenderer.gameObject.name);
+                    var buffers = copiedVertices.Select(x => x.BlendShapeBuffer).Distinct().ToList();
+
+                    for (var sourceI = 0; sourceI < meshInfo.BlendShapes.Count; sourceI++)
+                    {
+                        var (name, weight) = meshInfo.BlendShapes[sourceI];
+                        var newName = $"{prefix}{name}";
+                        meshInfo.BlendShapes[sourceI] = (newName, weight);
+
+                        foreach (var buffer in buffers)
+                        {
+                            if (buffer.Shapes.Remove(name, out var shape))
+                                buffer.Shapes[newName] = shape;
+                        }
+
+                        mappings.Add(($"blendShape.{name}", $"blendShape.{newName}"));
+                        if (preserveShapes?.Contains(name) ?? false)
+                            preserveShapes.Add(newName);
+                    }
+                }
+
+                if (preserveShapes != null)
+                    AddPreserveBlendShapes(preserveShapes);
 
                 // add BlendShape if not defined by name
                 for (var sourceI = 0; sourceI < meshInfo.BlendShapes.Count; sourceI++)
@@ -334,6 +420,37 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 target.AssertInvariantContract($"processing meshInfo {target.SourceRenderer.gameObject.name}");
                 Profiler.EndSample();
+            }
+        }
+
+        private struct BlendShapePrefixComputer
+        {
+            private HashSet<string> _usedPrefixes;
+
+            public static BlendShapePrefixComputer Create()
+            {
+                return new BlendShapePrefixComputer
+                {
+                    _usedPrefixes = new HashSet<string>()
+                };
+            }
+
+            public string GetPrefix(string name)
+            {
+                var prefix = $"{name.Length}_{name}__";
+
+                if (_usedPrefixes.Contains(prefix))
+                {
+                    var j = 1;
+                    do
+                    {
+                        prefix = $"{name.Length}_{name}_{j}__";
+                        j++;
+                    } while (_usedPrefixes.Contains(prefix));
+                }
+                _usedPrefixes.Add(prefix);
+
+                return prefix;
             }
         }
 
@@ -507,7 +624,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             var propModNode = context.GetAnimationComponent(target.SourceRenderer).GetFloatNode(Props.EnabledFor(target.SourceRenderer));
             if (propModNode.ComponentNodes.Any())
             {
-                BuildLog.LogError("MergeSinnedMesh:copy-enablement-animation:error:enablement-of-merged-mesh-is-animated",
+                BuildLog.LogError("MergeSkinnedMesh:copy-enablement-animation:error:enablement-of-merged-mesh-is-animated",
                     target.SourceRenderer, propModNode);
             }
 
@@ -629,16 +746,31 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             public MeshInfoComputer(MergeSkinnedMeshProcessor processor) => _processor = processor;
 
-            public (string, float)[] BlendShapes() =>
-                _processor.SkinnedMeshRenderers
+            public (string, float)[] BlendShapes()
+            {
+                if (_processor.Component.blendShapeMode == MergeSkinnedMesh.BlendShapeMode.RenameToAvoidConflict)
+                {
+                    var rendererPrefixes = BlendShapePrefixComputer.Create();
+                    return _processor.SkinnedMeshRenderers
+                        .SelectMany(renderer =>
+                        {
+                            var blendShapes = EditSkinnedMeshComponentUtil.GetBlendShapes(renderer);
+                            var prefix = rendererPrefixes.GetPrefix(renderer.gameObject.name);
+                            return blendShapes.Select(x => (prefix + x.name, x.weight));
+                        })
+                        .ToArray();
+                }
+
+                return _processor.SkinnedMeshRenderers
                     .SelectMany(EditSkinnedMeshComponentUtil.GetBlendShapes)
                     .Distinct(BlendShapeNameComparator.Instance)
                     .ToArray();
+            }
 
             public Material?[] Materials(bool fast = true)
             {
                 var sourceMaterials = _processor.SkinnedMeshRenderers.Select(EditSkinnedMeshComponentUtil.GetMaterials)
-                    .Concat(_processor.StaticMeshRenderers.Select(x => x.sharedMaterials))
+                    .Concat(_processor.BasicMeshRenderers.Select(x => x.sharedMaterials))
                     .Select(a => a.Select(b => (MeshTopology.Triangles, b)).ToArray())
                     .ToArray();
 

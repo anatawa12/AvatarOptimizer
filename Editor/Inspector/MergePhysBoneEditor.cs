@@ -97,6 +97,7 @@ namespace Anatawa12.AvatarOptimizer
             }
             EditorGUILayout.LabelField("Ignore Transforms", "Automatically Merged");
             EndpointPositionProp("Endpoint Position", EndpointPosition);
+            PbProp("Ignore Other Phys Bones", IgnoreOtherPhysBones);
             EditorGUILayout.LabelField("Multi Child Type", "Must be Ignore");
             var multiChildType = GetSourceProperty("multiChildType");
             if (multiChildType.enumValueIndex != 0 || multiChildType.hasMultipleDifferentValues)
@@ -307,14 +308,81 @@ namespace Anatawa12.AvatarOptimizer
             string pbXCurveLabel, string pbYCurveLabel, string pbZCurveLabel, 
             CurveVector3ConfigProp prop, bool forceOverride = false)
         {
-            PbPropImpl(label, prop, forceOverride, (rect, merged, labelContent) =>
+            var (rect, overrideRect) = SplitRect(EditorGUILayout.GetControlRect(true, EditorGUIUtility.singleLineHeight), OverrideWidth);
+
+            switch (prop.GetOverride(forceOverride))
+            {
+                case MergePhysBone.CurveVector3Config.CurveOverride.Copy:
+                {
+                    var valueProp = prop.SourceValue!;
+                    var xCurveProp = prop.SourceCurveX!;
+                    var yCurveProp = prop.SourceCurveY!;
+                    var zCurveProp = prop.SourceCurveZ!;
+
+                    EditorGUI.BeginDisabledGroup(true);
+                    DrawProperties(rect, new GUIContent(label), valueProp, xCurveProp, yCurveProp, zCurveProp);
+                    EditorGUI.EndDisabledGroup();
+
+                    if (valueProp.hasMultipleDifferentValues
+                        || xCurveProp.hasMultipleDifferentValues
+                        || yCurveProp.hasMultipleDifferentValues
+                        || zCurveProp.hasMultipleDifferentValues)
+                    {
+                        EditorGUILayout.HelpBox(AAOL10N.Tr("MergePhysBone:error:differValueSingle"), MessageType.Error);
+                    }
+                }
+                    break;
+                case MergePhysBone.CurveVector3Config.CurveOverride.Override:
+                {
+                    var valueProp = prop.OverrideValue;
+                    var xCurveProp = prop.OverrideCurveX;
+                    var yCurveProp = prop.OverrideCurveY;
+                    var zCurveProp = prop.OverrideCurveZ;
+
+                    DrawProperties(rect, new GUIContent(label), valueProp, xCurveProp, yCurveProp, zCurveProp);
+                }
+                    break;
+                case MergePhysBone.CurveVector3Config.CurveOverride.Fix:
+                {
+                    EditorGUI.LabelField(rect, label, AAOL10N.Tr("MergePhysBone:message:fix-yaw-pitch"));
+                    
+                    if (SourcePhysBones.Any())
+                    {
+                        foreach (var physBone in SourcePhysBones)
+                            physBone.InitTransforms(force: false);
+
+                        // skew scaling is disallowed
+                        if (MergePhysBoneValidator.SkewBones(SourcePhysBones) is { Count: > 0 })
+                            EditorGUILayout.HelpBox(AAOL10N.Tr("MergePhysBone:error:LimitRotationFix:SkewScaling"), MessageType.Error);
+
+                        // error if there is different limit / rotation
+                        if (MergePhysBoneValidator.HasDifferentYawPitch(SourcePhysBones))
+                            EditorGUILayout.HelpBox(AAOL10N.Tr("MergePhysBone:error:LimitRotationFix:DifferRotation"), MessageType.Error);
+
+                        // endpoint position must be zero
+                        switch ((MergePhysBone.EndPointPositionConfig.Override)EndpointPosition.OverrideProperty.enumValueIndex)
+                        {
+                            case MergePhysBone.EndPointPositionConfig.Override.Copy when EndpointPosition.PhysBoneValue!.vector3Value != Vector3.zero:
+                            case MergePhysBone.EndPointPositionConfig.Override.Override when EndpointPosition.ValueProperty.vector3Value != Vector3.zero:
+                                EditorGUILayout.HelpBox(AAOL10N.Tr("MergePhysBone:error:LimitRotationFix:NonZeroEndpointPosition"), MessageType.Error);
+                                break;
+                        }
+                    }
+                }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            EditorGUI.BeginProperty(overrideRect, null, prop.OverrideProperty);
+            var selected = PopupNoIndent(overrideRect, prop.OverrideProperty.enumValueIndex, prop.OverrideProperty.enumDisplayNames);
+            if (selected != prop.OverrideProperty.enumValueIndex)
+                prop.OverrideProperty.enumValueIndex = selected;
+            EditorGUI.EndProperty();
+
+            void DrawProperties(Rect rect, GUIContent labelContent, SerializedProperty valueProp, SerializedProperty xCurveProp, SerializedProperty yCurveProp, SerializedProperty zCurveProp)
             {
                 var (valueRect, buttonRect) = SplitRect(rect, CurveButtonWidth);
-
-                var valueProp = prop.GetValueProperty(merged);
-                var xCurveProp = prop.GetCurveXProperty(merged);
-                var yCurveProp = prop.GetCurveYProperty(merged);
-                var zCurveProp = prop.GetCurveZProperty(merged);
 
                 void DrawCurve(string curveLabel, SerializedProperty curveProp)
                 {
@@ -337,7 +405,7 @@ namespace Anatawa12.AvatarOptimizer
                 {
                     // without curve: constant
                     EditorGUI.PropertyField(valueRect, valueProp, labelContent);
-                    
+
                     if (GUI.Button(buttonRect, "C"))
                     {
                         var curve = new AnimationCurve();
@@ -348,12 +416,7 @@ namespace Anatawa12.AvatarOptimizer
                         zCurveProp.animationCurveValue = curve;
                     }
                 }
-
-                return valueProp.hasMultipleDifferentValues
-                       || xCurveProp.hasMultipleDifferentValues
-                       || yCurveProp.hasMultipleDifferentValues
-                       || zCurveProp.hasMultipleDifferentValues;
-            });
+            }
         }
 
         private static readonly string[] CopyOverride = { "C:Copy", "O:Override" };
@@ -568,6 +631,9 @@ namespace Anatawa12.AvatarOptimizer
         {
             if (SourcePhysBones.Count() <= 1)
                 BuildLog.LogError("MergePhysBone:error:oneSource");
+
+            foreach (var vrcPhysBoneBase in SourcePhysBones)
+                vrcPhysBoneBase.InitTransforms(true);
         }
 
         protected override bool BeginSection(string name, string docTag) => true;
@@ -580,8 +646,6 @@ namespace Anatawa12.AvatarOptimizer
             
             if (_usingCopyCurve)
             {
-                foreach (var vrcPhysBoneBase in SourcePhysBones)
-                    vrcPhysBoneBase.InitTransforms(true);
                 var maxLength = SourcePhysBones.Max(x => x.BoneChainLength());
                 if (SourcePhysBones.Any(x => x.BoneChainLength() != maxLength))
                     BuildLog.LogWarning("MergePhysBone:warning:differChainLength",
@@ -609,6 +673,8 @@ namespace Anatawa12.AvatarOptimizer
                 if (EndpointPosition.PhysBoneValue!.hasMultipleDifferentValues)
                     _differProps.Add("Endpoint Position");
             }
+
+            // we don't produce errors for IgnoreOtherPhysBones since we merge the value
 
             var multiChildType = GetSourceProperty(nameof(VRCPhysBoneBase.multiChildType));
             if (multiChildType.enumValueIndex != 0 || multiChildType.hasMultipleDifferentValues)
@@ -646,17 +712,93 @@ namespace Anatawa12.AvatarOptimizer
             string pbXCurveLabel, string pbYCurveLabel, string pbZCurveLabel,
             CurveVector3ConfigProp prop, bool forceOverride = false)
         {
-            if (forceOverride || prop.IsOverride) return;
+            switch (prop.GetOverride(forceOverride))
+            {
+                case MergePhysBone.CurveVector3Config.CurveOverride.Copy:
+                    if (prop.SourceValue!.hasMultipleDifferentValues
+                        || prop.SourceCurveX!.hasMultipleDifferentValues
+                        || prop.SourceCurveY!.hasMultipleDifferentValues
+                        || prop.SourceCurveZ!.hasMultipleDifferentValues)
+                        _differProps.Add(label);
 
-            if (prop.SourceValue!.hasMultipleDifferentValues
-                || prop.SourceCurveX!.hasMultipleDifferentValues
-                || prop.SourceCurveY!.hasMultipleDifferentValues
-                || prop.SourceCurveZ!.hasMultipleDifferentValues)
-                _differProps.Add(label);
+                    _usingCopyCurve |= prop.SourceCurveX!.animationCurveValue.length > 0;
+                    _usingCopyCurve |= prop.SourceCurveY!.animationCurveValue.length > 0;
+                    _usingCopyCurve |= prop.SourceCurveZ!.animationCurveValue.length > 0;
+                    break;
+                case MergePhysBone.CurveVector3Config.CurveOverride.Override:
+                    break;
+                case MergePhysBone.CurveVector3Config.CurveOverride.Fix:
+                    if (SourcePhysBones.Any())
+                    {
+                        // skew scaling is disallowed
+                        if (SkewBones(SourcePhysBones) is { Count: > 0 } skewBones)
+                            BuildLog.LogError("MergePhysBone:error:LimitRotationFix:SkewScaling", skewBones);
 
-            _usingCopyCurve |= prop.GetCurveXProperty(false).animationCurveValue.length > 0;
-            _usingCopyCurve |= prop.GetCurveYProperty(false).animationCurveValue.length > 0;
-            _usingCopyCurve |= prop.GetCurveZProperty(false).animationCurveValue.length > 0;
+                        // error if there is different limit / rotation
+                        if (HasDifferentYawPitch(SourcePhysBones))
+                            BuildLog.LogError("MergePhysBone:error:LimitRotationFix:DifferRotation");
+
+                        // endpoint position must be zero
+                        switch ((MergePhysBone.EndPointPositionConfig.Override)EndpointPosition.OverrideProperty.enumValueIndex)
+                        {
+                            case MergePhysBone.EndPointPositionConfig.Override.Copy when EndpointPosition.PhysBoneValue!.vector3Value != Vector3.zero:
+                            case MergePhysBone.EndPointPositionConfig.Override.Override when EndpointPosition.ValueProperty.vector3Value != Vector3.zero:
+                                BuildLog.LogError("MergePhysBone:error:LimitRotationFix:NonZeroEndpointPosition");
+                                break;
+                        }
+                    }
+
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        public static List<Transform> SkewBones(IEnumerable<VRCPhysBoneBase> sourcePhysBones)
+        {
+            // skew scaling is disallowed
+            return sourcePhysBones
+                .SelectMany(x => x.GetAffectedTransforms())
+                .Where(x => !Utils.ScaledEvenly(x.localScale))
+                .ToList();
+        }
+
+        public static bool HasDifferentYawPitch(IEnumerable<VRCPhysBoneBase> sourcePhysBones)
+        {
+            var longestPhysBone = sourcePhysBones.MaxBy(x => x.BoneChainLength());
+
+            var fixedRotations = Enumerable.Range(0, longestPhysBone.BoneChainLength())
+                .Select(index =>
+                {
+                    var time = (float)index / longestPhysBone.BoneChainLength() - 1;
+
+                    var rotation = longestPhysBone.CalcLimitRotation(time);
+
+                    return Processors.MergePhysBoneProcessor.ConvertRotation(rotation)
+                        with
+                        {
+                            y = 0
+                        };
+                })
+                .ToList();
+
+            var differRotation = sourcePhysBones
+                .Any(physBone =>
+                {
+                    return Enumerable.Range(0, physBone.BoneChainLength()).Any(index =>
+                    {
+                        var time = (float)index / physBone.BoneChainLength() - 1;
+                        var rotation = longestPhysBone.CalcLimitRotation(time);
+                        var fixedRot = Processors.MergePhysBoneProcessor.ConvertRotation(rotation)with
+                        {
+                            y = 0
+                        };
+
+                        return fixedRot != fixedRotations[index];
+                    });
+                });
+
+            return differRotation;
         }
 
         protected override void PbPermissionProp(string label, PermissionConfigProp prop, bool forceOverride = false)

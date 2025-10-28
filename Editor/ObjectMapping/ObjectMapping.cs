@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.API;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -115,32 +116,8 @@ namespace Anatawa12.AvatarOptimizer
         public BeforeGameObjectTree? ResolvePath(string relative) =>
             relative == "" ? this : ResolvePathAll(relative).FirstOrDefault();
 
-        private IEnumerable<BeforeGameObjectTree> ResolvePathAll(string relative)
-        {
-            if (relative == "")
-                return new[] { this };
-            // otherwise, match as possible from start
-
-            // simplest
-            var slashIndex = relative.IndexOf('/');
-
-            if (slashIndex == -1)
-                return Children.Where(x => x.Name == relative);
-
-            for (;slashIndex != -1; slashIndex = relative.IndexOf('/', slashIndex + 1))
-            {
-                var name = relative.Substring(0, slashIndex);
-
-                if (Children.Any(x => x.Name == name))
-                {
-                    var remaining = relative.Substring(slashIndex + 1);
-
-                    return Children.Where(x => x.Name == name).SelectMany(x => x.ResolvePathAll(remaining));
-                }
-            }
-
-            return Array.Empty<BeforeGameObjectTree>();
-        }
+        private IEnumerable<BeforeGameObjectTree> ResolvePathAll(string relative) =>
+            Utils.ResolveAnimationPath(this, relative, (tree, path) => tree.Children.Where(x => x.Name == path));
     }
 
     class ComponentInfo
@@ -149,14 +126,17 @@ namespace Anatawa12.AvatarOptimizer
         public readonly int MergedInto;
         public readonly Type Type;
         public readonly IReadOnlyDictionary<string, MappedPropertyInfo> PropertyMapping;
+        public readonly VrmFirstPersonFlag? VrmFirstPersonFlag;
 
         public ComponentInfo(int instanceId, int mergedInto, Type type,
-            IReadOnlyDictionary<string, MappedPropertyInfo> propertyMapping)
+            IReadOnlyDictionary<string, MappedPropertyInfo> propertyMapping,
+            VrmFirstPersonFlag? vrmFirstPersonFlag)
         {
             InstanceId = instanceId;
             MergedInto = mergedInto;
             Type = type;
             PropertyMapping = propertyMapping;
+            VrmFirstPersonFlag = vrmFirstPersonFlag;
         }
     }
 

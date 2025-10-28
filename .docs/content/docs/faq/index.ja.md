@@ -6,7 +6,7 @@ weight: 2
 # よくある質問 {#faq}
 
 Avatar Optimizerに関するよくある質問のリストです。
-他に質問がある場合は、[GitHub Discussions]または[Fediverse (Misskey / Mastodon)][Fediverse]でお気軽にお尋ねください。
+他に質問がある場合は、[GitHub Discussions]、[NDMF Discord]、または[Fediverse (Misskey / Mastodon)][Fediverse]でお気軽にお尋ねください。
 
 ## `AAO Trace and Optimize`コンポーネントを使用すると、アバターの振る舞いや見た目が変わる {#avatar-behavior-or-appearance-changed-when-using-aao-trace-and-optimize-component}
 
@@ -46,12 +46,8 @@ Avatar Optimizerに関するよくある質問のリストです。
 
 ## `AAO Merge Skinned Mesh`コンポーネントを使用すると、BlendShapeに対するアニメーションが競合する {#blendshape-animations-conflict-when-using-aao-merge-skinned-mesh-component}
 
-この問題は既知のバグであり、現時点では競合してしまう仕様です。
-
-BlendShapeに対してアニメーションされるメッシュを統合する際は、競合しないようご注意ください。
-競合する場合は警告が表示されるので、そちらを確認してください。
-
-この問題のissue: [#568](https://github.com/anatawa12/AvatarOptimizer/issues/568)
+この問題は Avatar Optimizer 1.8.0 で修正されています。
+Avatar Optimizer 1.8.0 以降にアップデートしてください。
 
 ## OSCギミックで使用されているPhysBone / Contact Receiverが動作していない {#physbones-contact-receivers-that-are-used-in-the-osc-based-gimmick-are-not-working}
 
@@ -61,38 +57,20 @@ BlendShapeに対してアニメーションされるメッシュを統合する�
 最近のアバターは、PhysBone / Contact Receiverコンポーネントを使用した独自のギミックを持っていることがあるため、これらのコンポーネントを削除し忘れることがよくあります。
 そのため、`AAO Trace and Optimize`は、そのようなコンポーネントがOSCギミックで使用されていないと仮定して、それらが他の用途で使われていなければ削除します。
 
-もちろん、仮定が正しいとは限らないため、PhysBone / Contact ReceiverコンポーネントをOSCギミックに使用している場合には、それらが使用されていると分かるようにアバターを調整してもらわなければならないかもしれません。\
-`AAO Trace and Optimize`は、アバター内のAnimatorにあるパラメーターと同じパラメーターが使用されているPhysBone / Contact Receiverコンポーネントを削除しないようになっています。
-そのため、OSCギミックで使用されるパラメーターを、Animator Controllerのパラメーター一覧やExpression Parameterに追加することで、これらのコンポーネントが削除されないようになります。
+この仮定は正しいとは限らないため、PhysBone / Contact Receiverコンポーネントが(AnimatorやExpression Menuを使用せずに)OSCギミックで使用されている場合には、[Asset Description]ファイルを作成し、[Parameters Read By External Tools]を設定してください。
 
-また、改善のための議論の材料として、OSCギミックで使われているPhysBoneやContact Receiverが削除された場合には、それらに設定されているパラメータ名を教えていただけると助かります。
-将来的に、有名なOSCギミックによって使用されるパラメーターの一覧を実装して、それらのパラメータが使用されている場合はコンポーネントを保持するような形を取るかもしれませんし、他の方法で対処するかもしれません。\
-以下のissueや[Fediverse (Misskey / Mastodon)][Fediverse]、[Twitter]などでお気軽にお知らせください。
-
-この問題のissue: [#1090](https://github.com/anatawa12/AvatarOptimizer/issues/1090)
+そのギミックが公開・販売されているような場合には、そのギミックとAAOの互換性を改善するために、作成した Asset Descriptionファイルを共有していただけると助かります。
+そのAsset Descriptionを将来のAvatar Optimizerに組み込むことにより、そのギミックが正しく動作するようになるかもしれません。
+共有していただける場合は、[GitHub]、[NDMF Discord]、[Fediverse (Misskey / Mastodon)][Fediverse]、[Twitter]などからご連絡ください。
 
 ## ビルド前のハードリミットチェックのせいでアバターをアップロードできない {#i-cannot-upload-the-avatar-because-of-pre-build-hard-limit-check}
 
-Avatar Optimizerなどの非破壊的なアバター改変ツールを使うと、元々ハードリミットを超えているようなアバターでも、ビルド後にはハードリミットを超えないようになることがあります。
-しかし、VRCSDKのコントロールパネルにあるアップロードボタンは、シーン上のアバターがハードリミットを超えている場合には押せないようになっています。\
-そのような場合でも、以下のような方法を使って、ビルド前のハードリミットチェックを飛ばしてアップロードすることができます。
-(ビルド後のハードリミットチェックも存在するため、ビルド後にハードリミットを超える場合は以下の方法でもアップロードに失敗します。)
+これは、VRCSDKのコントロールパネルにあるアップロードボタンが、シーン上のアバターがハードリミットを超えている場合には押せないようになっていたためです。
 
-- `Manual bake avatar`で生成したアバターをアップロードする。\
+しかし、VRChat SDK 3.8.1以降では、シーン上のアバターがハードリミットを超えていても、アバターのビルドとアップロードを開始できるようになりました。
+そのため、この問題を解決するための推奨される方法は、VRCSDKを最新バージョンに更新することです。
 
-  アバターのGameObjectを右クリックして出てくるメニューの`NDM Framework`から`Manual bake avatar`をクリックすると、非破壊ツールによる処理を手動で適用することができます。
-  `Manual bake avatar`は初めにアバターを複製し、その複製に対して非破壊ツールの処理を適用させるため、元のアバターは変更されないままになります。
-- Sayamame-beansの[Upload without pre-check]を使用してアップロードする。
-
-  [Upload without pre-check]は、ビルド前のハードリミットチェックをスキップしてアップロードするためのツールです。
-- kurotuの[VRCQuestTools]を使用する
-
-  [VRCQuestTools]は、アバターをAndroid / Quest対応アバターに変換するためのツールです。\
-  このツールには、ビルド前チェックをスキップしてアバターをAndroid向けにビルドするための[VQT Avatar Builder]という機能が含まれています。
-
-[Upload without pre-check]: https://github.com/Sayamame-beans/Upload-without-preCheck?tab=readme-ov-file#upload-without-pre-check
-[VRCQuestTools]: https://kurotu.github.io/VRCQuestTools/
-[VQT Avatar Builder]: https://kurotu.github.io/VRCQuestTools/docs/references/main-menu/show-avatar-builder
+シーン上のアバターがハードリミットを超えている場合でも、VRCSDKコントロールパネルを使用せずにアップロードプロセスを開始できる外部ツールを使用することもできます。
 
 ## Avatar Optimizerの開発を支援したい {#i-want-to-support-the-development-of-avatar-optimizer}
 
@@ -114,5 +92,9 @@ Avatar Optimizerの開発を支援したい場合、[GitHub Discussions]での�
 [Booth]: https://anatawa12.booth.pm/items/4885109
 [good first issue]: https://github.com/anatawa12/AvatarOptimizer/labels/good%20first%20issue
 [help wanted]: https://github.com/anatawa12/AvatarOptimizer/labels/help%20wanted
+[NDMF Discord]: https://discord.gg/dV4cVpewmM
+[GitHub]: https://github.com/anatawa12/AvatarOptimizer/
+[Asset Description]: ../developers/asset-description/
+[Parameters Read By External Tools]: ../developers/asset-description/#parameters-read-by-external-tools
 
 [^merged-mesh]: 統合先のメッシュとは、`AAO Merge Skinned Mesh`コンポーネントと一緒に付いているSkinned Mesh Rendererのことです。

@@ -23,6 +23,7 @@ namespace Anatawa12.AvatarOptimizer
         // rootTransform
         // ignoreTransforms
         protected readonly EndpointPositionConfigProp EndpointPosition;
+        protected readonly ValueConfigProp IgnoreOtherPhysBones;
         // multiChildType
         #endregion
 
@@ -76,6 +77,7 @@ namespace Anatawa12.AvatarOptimizer
             Version = ValueProp(nameof(MergePhysBone.versionConfig), nameof(VRCPhysBoneBase.version));
             // == Transform ==
             EndpointPosition = EndpointPositionProp(nameof(MergePhysBone.endpointPositionConfig), nameof(VRCPhysBoneBase.endpointPosition));
+            IgnoreOtherPhysBones = ValueProp(nameof(MergePhysBone.ignoreOtherPhysBones), nameof(VRCPhysBoneBase.ignoreOtherPhysBones));
             //  == Forces ==
             IntegrationType = ValueProp(nameof(MergePhysBone.integrationTypeConfig), nameof(VRCPhysBoneBase.integrationType));
             Pull = CurveProp(nameof(MergePhysBone.pullConfig), nameof(VRCPhysBoneBase.pull), nameof(VRCPhysBoneBase.pullCurve));
@@ -376,6 +378,61 @@ namespace Anatawa12.AvatarOptimizer
             {
                 PhysBoneValue = sourcePb.FindProperty(PhysBoneValueName);
             }
+        }
+
+        // Very Special Case
+        protected partial class CurveVector3ConfigProp : PropBase
+        {
+            public readonly SerializedProperty OverrideProperty;
+            public readonly SerializedProperty OverrideValue;
+            public SerializedProperty? SourceValue { get; private set; }
+            public readonly string PhysBoneValueName;
+            public readonly SerializedProperty OverrideCurveX;
+            public SerializedProperty? SourceCurveX { get; private set; }
+            public readonly string PhysBoneCurveXName;
+            public readonly SerializedProperty OverrideCurveY;
+            public SerializedProperty? SourceCurveY { get; private set; }
+            public readonly string PhysBoneCurveYName;
+            public readonly SerializedProperty OverrideCurveZ;
+            public SerializedProperty? SourceCurveZ { get; private set; }
+            public readonly string PhysBoneCurveZName;
+
+            public CurveVector3ConfigProp(
+                SerializedProperty rootProperty
+                , string physBoneValueName
+                , string physBoneCurveXName
+                , string physBoneCurveYName
+                , string physBoneCurveZName
+                ) : base(rootProperty)
+            {
+                OverrideProperty = rootProperty.FindPropertyRelative("override");
+                OverrideValue = rootProperty.FindPropertyRelative("value");
+                PhysBoneValueName = physBoneValueName;
+                OverrideCurveX = rootProperty.FindPropertyRelative("curveX");
+                PhysBoneCurveXName = physBoneCurveXName;
+                OverrideCurveY = rootProperty.FindPropertyRelative("curveY");
+                PhysBoneCurveYName = physBoneCurveYName;
+                OverrideCurveZ = rootProperty.FindPropertyRelative("curveZ");
+                PhysBoneCurveZName = physBoneCurveZName;
+            }
+
+            internal override void UpdateSource(SerializedObject sourcePb)
+            {
+                SourceValue = sourcePb.FindProperty(PhysBoneValueName);
+                SourceCurveX = sourcePb.FindProperty(PhysBoneCurveXName);
+                SourceCurveY = sourcePb.FindProperty(PhysBoneCurveYName);
+                SourceCurveZ = sourcePb.FindProperty(PhysBoneCurveZName);
+            }
+
+            public MergePhysBone.CurveVector3Config.CurveOverride GetOverride(bool forceOverride) =>
+                forceOverride
+                    ? MergePhysBone.CurveVector3Config.CurveOverride.Override
+                    : (MergePhysBone.CurveVector3Config.CurveOverride)OverrideProperty.enumValueIndex;
+
+            public SerializedProperty GetValueProperty(bool @override) => @override ? OverrideValue : SourceValue!;
+            public SerializedProperty GetCurveXProperty(bool @override) => @override ? OverrideCurveX : SourceCurveX!;
+            public SerializedProperty GetCurveYProperty(bool @override) => @override ? OverrideCurveY : SourceCurveY!;
+            public SerializedProperty GetCurveZProperty(bool @override) => @override ? OverrideCurveZ : SourceCurveZ!;
         }
     }
 }

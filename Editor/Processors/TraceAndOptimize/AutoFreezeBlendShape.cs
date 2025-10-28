@@ -18,7 +18,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            if (!state.FreezeBlendShape) return;
+            if (!state.OptimizeBlendShape) return;
 
             if (!state.SkipFreezingNonAnimatedBlendShape)
                 FreezeNonAnimatedBlendShapes(context, state);
@@ -28,66 +28,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         void FreezeNonAnimatedBlendShapes(BuildContext context, TraceAndOptimizeState state)
         {
+            var mergeBlendShapeMergeSkinnedMeshSources = new HashSet<SkinnedMeshRenderer>();
+            foreach (var mergeSkinnedMesh in context.GetComponents<MergeSkinnedMesh>())
+            {
+                if (mergeSkinnedMesh.blendShapeMode == MergeSkinnedMesh.BlendShapeMode.MergeSameName)
+                    mergeBlendShapeMergeSkinnedMeshSources.UnionWith(mergeSkinnedMesh.renderersSet.GetAsSet());
+            }
+
             // first optimization: unused BlendShapes
             foreach (var skinnedMeshRenderer in context.GetComponents<SkinnedMeshRenderer>())
             {
                 if (state.Exclusions.Contains(skinnedMeshRenderer.gameObject)) continue; // manual exclusiton
-                if (skinnedMeshRenderer.GetComponent<Cloth>()) continue; // cloth is too complex https://github.com/anatawa12/AvatarOptimizer/issues/1027
-
-                var meshInfo = context.GetMeshInfoFor(skinnedMeshRenderer);
-
-                var modifies = context.GetAnimationComponent(skinnedMeshRenderer);
-
-                var unchanged = new HashSet<string>();
-
-                for (var i = 0; i < meshInfo.BlendShapes.Count; i++)
-                {
-                    var (name, weight) = meshInfo.BlendShapes[i];
-                    if (IsUnchangedBlendShape(name, weight, out var newWeight))
-                    {
-                        unchanged.Add(name);
-                        meshInfo.BlendShapes[i] = (name, newWeight);
-                    }
-                }
-                
-                bool IsUnchangedBlendShape(string name, float weight, out float newWeight)
-                {
-                    newWeight = weight;
-                    var prop = modifies.GetFloatNode($"blendShape.{name}");
-
-                    switch (prop.ApplyState)
-                    {
-                        case ApplyState.Always:
-                        {
-                            if (prop.Value.TryGetConstantValue(out var constWeight))
-                            {
-                                newWeight = constWeight;
-                                return true;
-                            }
-                            else
-                            {
-                                return false;
-                            }
-                        }
-                            break;
-                        case ApplyState.Partially:
-                        {
-                            return prop.Value.TryGetConstantValue(out var constWeight) && constWeight.Equals(weight);
-                        }
-                            break;
-                        case ApplyState.Never:
-                            return true;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                }
-
-                if (unchanged.Count == 0) continue;
-
-                var freeze = skinnedMeshRenderer.gameObject.GetOrAddComponent<FreezeBlendShape>();
-                var shapeKeys = freeze.shapeKeysSet.GetAsSet();
-                shapeKeys.UnionWith(unchanged);
-                freeze.shapeKeysSet.SetValueNonPrefab(shapeKeys);
+                if (skinnedMeshRenderer.TryGetComponent<Cloth>(out _)) continue; // cloth is too complex https://github.com/anatawa12/AvatarOptimizer/issues/1027
+                if (mergeBlendShapeMergeSkinnedMeshSources.Contains(skinnedMeshRenderer)) continue; // skip if it will be merged
+                skinnedMeshRenderer.gameObject.GetOrAddComponent<FreezeBlendShape>();
+                skinnedMeshRenderer.gameObject.GetOrAddComponent<InternalAutoFreezeNonAnimatedBlendShapes>();
             }
         }
 
@@ -98,7 +53,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var skinnedMeshRenderer in context.GetComponents<SkinnedMeshRenderer>())
             {
                 if (state.Exclusions.Contains(skinnedMeshRenderer.gameObject)) continue; // manual exclusion
-                if (skinnedMeshRenderer.GetComponent<Cloth>()) continue; // cloth is too complex https://github.com/anatawa12/AvatarOptimizer/issues/1027
+                if (skinnedMeshRenderer.TryGetComponent<Cloth>(out _)) continue; // cloth is too complex https://github.com/anatawa12/AvatarOptimizer/issues/1027
                 skinnedMeshRenderer.gameObject.GetOrAddComponent<FreezeBlendShape>();
                 skinnedMeshRenderer.gameObject.GetOrAddComponent<InternalAutoFreezeMeaninglessBlendShape>();
             }

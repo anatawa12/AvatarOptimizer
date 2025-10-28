@@ -101,13 +101,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     vertices => vertices.All(v => isRemoved(v.TexCoord0.x, v.TexCoord0.y)));
             }
 
-            // GC vertices
-            var usingVertices = new HashSet<Vertex>();
-            foreach (var subMesh in target.SubMeshes)
-            foreach (var vertex in subMesh.Vertices)
-                usingVertices.Add(vertex);
-
-            target.Vertices.RemoveAll(x => !usingVertices.Contains(x));
+            target.RemoveUnusedVertices();
         }
 
         public override IMeshInfoComputer GetComputer(IMeshInfoComputer upstream) => upstream;

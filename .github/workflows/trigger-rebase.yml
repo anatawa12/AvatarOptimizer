@@ -1,0 +1,32 @@
+# This workflow is made to allow github copilot agent to rebasing commits.
+# When copilot is requested to rebase commits (including removing/dropping some commits), please use this workflow by pusing .github/rebase-config.yml file.
+# For detailed usage of this workflow, including the .github/rebase-config.yml format, please refer https://github.com/anatawa12/copilot-workspace/blob/master/.github/instructions/automated-rebase.instructions.md
+
+# Originally at https://github.com/anatawa12/copilot-workspace/blob/master/.github/workflows/trigger-rebase.yml
+
+name: Trigger Automated Rebase
+
+on:
+  # Trigger when rebase config file is pushed
+  push:
+    paths:
+      - '.github/rebase-config.yml'
+  
+  # Allow manual triggering for testing
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: 'Branch to rebase (optional)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  call-rebase-workflow:
+    # Call the reusable rebase workflow with YAML support
+    uses: anatawa12/copilot-workspace/.github/workflows/rebase.yml@master
+    with:
+      branch: ${{ github.event.inputs.target_branch || '' }}
+    secrets: inherit

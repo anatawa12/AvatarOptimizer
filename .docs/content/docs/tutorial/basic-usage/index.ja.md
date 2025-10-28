@@ -40,7 +40,7 @@ AAO: Avatar Optimizerは非破壊改変ツールであり、Playモードに入�
 
 [skip-hard-limit-faq]: ../../faq/#i-cannot-upload-the-avatar-because-of-pre-build-hard-limit-check
 
-{{< hint info >}}
+<blockquote class="book-hint info">
 
 ### UploadせずにPerformance Rankを見る方法 {#performance-rank-without-upload}
 
@@ -52,7 +52,19 @@ AAO: Avatar Optimizerは非破壊改変ツールであり、Playモードに入�
 [gists-basic-usage]: https://vpm.anatawa12.com/gists/ja/docs/basic-usage/
 [Actual Performance Window]: https://vpm.anatawa12.com/gists/ja/docs/reference/actual-performance-window/
 
-{{< /hint >}}
+</blockquote>
+
+<blockquote class="book-hint info">
+
+### 非破壊改変ツールを手動で適用する方法 {#how-to-manual-bake}
+
+アバターのGameObjectを右クリックして出てくるメニューの`NDM Framework`から`Manual bake avatar`をクリックすると、非破壊ツールによる処理を手動で適用することができます。
+
+`Manual bake avatar`は初めにアバターを複製し、その複製に対して非破壊ツールの処理を適用させるため、元のアバターは変更されないままになります。
+
+VRChat向けアバターをVRM形式で出力したい場合などにご活用ください。
+
+</blockquote>
 
 貫通防止用BlendShapeを利用してポリゴンを減らす {#remove-mesh-by-blendshape}
 ---
@@ -60,14 +72,12 @@ AAO: Avatar Optimizerは非破壊改変ツールであり、Playモードに入�
 服で隠れていたりして見えないような部分のメッシュを削除すると、見た目に影響させずに描画負荷やBlendShapeの処理負荷などを減らして軽量化することができます。
 これを簡単に実現するために、AvatarOptimizerでは多くの素体に含まれている貫通防止用のBlendShapeを利用してメッシュを削除することができます！
 
-素体のメッシュに`AAO Remove Mesh By BlendShape`コンポーネントを追加しましょう！
+素体のメッシュに`AAO Remove Mesh By BlendShape`コンポーネントを追加して、削除したい部位の貫通防止用BlendShapeをコンポーネント下側の一覧から選択しましょう！
 
-想定外の部位が削除されてしまわないかを確認するために`プレビューのために切り替えたBlendShapeの値を自動的に変更する`にチェックし、
-削除したい部位の貫通防止用BlendShapeを下の一覧から選択しましょう！
 
-消えて欲しい箇所が消えない場合や、消えて欲しくない箇所が消えてしまう場合には、`許容差`の値を調整する必要があります！
+消えてほしい箇所が消えない場合や、消えてほしくない箇所が消えてしまう場合には、`許容差`の値を調整する必要があります！
 `許容差`は、頂点がBlendShapeによってどのぐらい動けば削除するかを決定するものです。
-前者の場合は値を少し大きく、後者の場合は値を少し小さくしましょう！
+消えてほしい箇所が消えない場合は値を少し大きく、消えてほしくない箇所が消えてしまう場合は値を少し小さくしましょう！
 
 ![remove mesh by BlendShape](./remove-mesh-by-blendshape.png)
 
@@ -79,14 +89,14 @@ AAO: Avatar Optimizerは非破壊改変ツールであり、Playモードに入�
 Avatar Optimizerを使用すると簡単にSkinned Meshを統合することができます！
 Skinned Meshを統合すると個別にオン・オフできなくなりますが、統合することで軽量化に繋がります！
 
-{{< hint info >}}
+<blockquote class="book-hint info">
 
 **なぜSkinned Meshを統合するの？**
 
 Skinned Meshを統合することでメッシュを変形させる処理の回数が減り、負荷が軽くなります。
 また、MergeSkinnedMeshでは、同じマテリアルを使用しているマテリアルスロットも統合することができるので、描画負荷も減らす事ができます。
 
-{{< /hint >}}
+</blockquote>
 
 一番単純なパターンとして、Anonちゃんを軽量化してみます。
 
@@ -114,14 +124,14 @@ Skinned Meshを統合することでメッシュを変形させる処理の回�
 
 ![drag-and-drop.png](./drag-and-drop.png)
 
-{{< hint info >}}
+<blockquote class="book-hint info">
 
 **なせ顔のメッシュは統合しないの？**
 
 BlendShape(シェイプキー)は頂点数とBlendShape数の積に比例して重くなる処理です。
 そのため、BlendShapeの数が多い顔のメッシュを頂点数の多い体のメッシュと統合するとかえって重くなってしまうため、顔は別のままにするのを推奨しています。
 
-{{< /hint >}}
+</blockquote>
 
 続いて、`Anon_Merged`の設定をしましょう！
 

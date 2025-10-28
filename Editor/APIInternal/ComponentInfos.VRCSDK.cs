@@ -45,9 +45,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             collector.AddDependency(component.GetComponent<PipelineManager>()).EvenIfDependantDisabled();
             collector.AddDependency(component.GetComponent<Animator>()).EvenIfDependantDisabled();
             
-            var animator = component.GetComponent<Animator>();
             // for empty Armature trick which is only valid for VRCSDK, we need to keep parent objects of Hips bone
-            if (animator && animator.isHuman)
+            if (component.TryGetComponent<Animator>(out var animator) && animator.isHuman)
             {
                 var hips = animator.GetBoneTransform(HumanBodyBones.Hips);
                 if (hips)
@@ -55,8 +54,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                     var avatarRoot = component.gameObject;
                     foreach (var parent in hips.ParentEnumerable(avatarRoot.transform))
                     {
-                        var path = RuntimeUtil.RelativePath(avatarRoot, parent.gameObject);
-                        var parentByPath = avatarRoot.transform.Find(path);
+                        var path = RuntimeUtil.RelativePath(avatarRoot, parent.gameObject)!;
+                        var parentByPath = Utils.ResolveAnimationPath(avatarRoot.transform, path);
                         collector.AddDependency(parentByPath).EvenIfDependantDisabled();
                     }
                 }
@@ -80,8 +79,6 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                     {
                         collector.ModifyProperties(component.VisemeSkinnedMesh,
                             $"blendShape.{component.MouthOpenBlendShapeName}");
-                    } else {
-                        BuildLog.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh", component);
                     }
                     break;
                 }
@@ -91,8 +88,6 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                     {
                         collector.ModifyProperties(component.VisemeSkinnedMesh,
                             component.VisemeBlendShapes.Select(blendShape => $"blendShape.{blendShape}"));
-                    } else {
-                        BuildLog.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh", component);
                     }
                     break;
                 }
@@ -204,7 +199,12 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                 {
                     case VRCAvatarDescriptor.ColliderConfig.State.Automatic:
                     case VRCAvatarDescriptor.ColliderConfig.State.Custom:
-                        collector.AddDependency(collider.transform).EvenIfDependantDisabled();
+                        if (collider.transform) {
+                            // The position of parent bone (iow local position of transform) will be used to 
+                            // determine the position and rotation of the collider
+                            collector.AddDependency(collider.transform).EvenIfDependantDisabled();
+                            collector.AddDependency(collider.transform.parent).EvenIfDependantDisabled();
+                        }
                         break;
                     case VRCAvatarDescriptor.ColliderConfig.State.Disabled:
                         break;
@@ -259,16 +259,6 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                                     where 0 <= index && index < mesh.blendShapeCount
                                     select $"blendShape.{mesh.GetBlendShapeName(index)}");
                             }
-                            else
-                            {
-                                BuildLog.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh",
-                                        component);
-                            }
-                        }
-                        else
-                        {
-                            BuildLog.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh",
-                                    component);
                         }
                     }
                         break;
@@ -395,6 +385,57 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             }
         }
 
+        public static void AddDependencyInformation(GCComponentInfo gcInfo, VRCPhysBone component, 
+            GCComponentInfoContext gcContext)
+        {
+            if (!IsOperatingPhysBone(component))
+                return;
+            if (gcInfo.Activeness == false)
+                return; // no-op if inactive
+
+            // first, Transform <=> PhysBone
+            // Transform is used even if the bone is inactive so Transform => PB is always dependency
+            // PhysBone works only if enabled so PB => Transform is active dependency
+            var ignoreTransforms = new HashSet<Transform>(component.ignoreTransforms);
+            var targetRoot = component.GetTarget();
+            if (gcContext.TryGetInfo(targetRoot) != null)
+                CollectTransforms(targetRoot);
+
+            void CollectTransforms(Transform bone)
+            {
+                gcContext.GetInfo(bone).AddDependency(component);
+                gcInfo.AddDependency(bone);
+                foreach (var child in bone.DirectChildrenEnumerable())
+                {
+                    if (!ignoreTransforms.Contains(child))
+                        CollectTransforms(child);
+                }
+            }
+
+            // then, PB => Collider
+            // in PB, PB Colliders work only if Colliders are enabled
+            foreach (var physBoneCollider in component.colliders)
+            {
+                var colliderInfo = gcContext.TryGetInfo(physBoneCollider);
+                if (colliderInfo?.Activeness != false)
+                    gcInfo.AddDependency(physBoneCollider);
+            }
+
+            gcInfo.MarkHeavyBehaviour();
+
+            // If parameter is not empty, the PB can be required for Animator Parameter so it's Entrypoint Component
+            // https://github.com/anatawa12/AvatarOptimizer/issues/450
+            // https://github.com/anatawa12/AvatarOptimizer/issues/898
+            if (!string.IsNullOrEmpty(component.parameter))
+            {
+                if (PhysBoneSuffix.Select(suffix => component.parameter + suffix)
+                    .Any(gcContext.IsParameterUsed.Invoke))
+                {
+                    gcInfo.MarkEntrypoint();
+                }
+            }
+        }
+
         // https://creators.vrchat.com/avatars/avatar-dynamics/physbones#options
         private static string[] PhysBoneSuffix = {
             "_IsGrabbed",
@@ -404,7 +445,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             "_Squish",
         };
 
-        private bool IsOperatingPhysBone(VRCPhysBoneBase component)
+        private static bool IsOperatingPhysBone(VRCPhysBoneBase component)
         {
             var ignoreTransforms = new HashSet<Transform>(component.ignoreTransforms);
             foreach (var bone in component.GetAffectedTransforms())
@@ -536,6 +577,17 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             foreach (var source in component.Sources)
                 collector.AddDependency(source.SourceTransform);
 
+            // If the constraint is solved in local space, we need to preserve the parent transform of the source transforms and target transform.
+            if (component.SolveInLocalSpace)
+            {
+                if (target.parent != null)
+                    collector.AddDependency(target.parent);
+
+                foreach (var source in component.Sources)
+                    if (source.SourceTransform != null && source.SourceTransform.parent != null)
+                        collector.AddDependency(source.SourceTransform.parent);
+            }
+
             // we may mark heavy behavior with complex rules but it's extremely difficult to implement
             // so mark behavior for now
             collector.MarkBehaviour();
@@ -558,6 +610,16 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         {
             base.CollectDependency(component, collector);
             collector.AddDependency(component.WorldUpTransform);
+        }
+    }
+    
+    // VRCPerPlatformOverrides
+    [ComponentInformationWithGUID("45da21a324e147228aaee066e399bff0", 11500000)]
+    internal class VRCPerPlatformOverridesInformation : ComponentInformation<Component>
+    {
+        protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
+        {
+            // this component is used only for storing platform overrides
         }
     }
 }

@@ -13,7 +13,7 @@ namespace Anatawa12.AvatarOptimizer
     [DisallowMultipleComponent]
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/merge-skinned-mesh/")]
     [PublicAPI]
-    public sealed class MergeSkinnedMesh : EditSkinnedMeshComponent, ISourceSkinnedMeshComponent
+    public sealed class MergeSkinnedMesh : EditSkinnedMeshComponent, ISourceSkinnedMeshComponent, ISerializationCallbackReceiver
     {
         [AAOLocalized("MergeSkinnedMesh:prop:renderers")]
         [SerializeField]
@@ -41,7 +41,40 @@ namespace Anatawa12.AvatarOptimizer
         [SerializeField]
         internal bool copyEnablementAnimation;
 
+        [AAOLocalized("MergeSkinnedMesh:prop:blendShapeMode")]
+        [NotKeyable]
+        [SerializeField]
+        internal BlendShapeMode blendShapeMode = BlendShapeMode.TraditionalCompability;
+
+        internal enum BlendShapeMode
+        {
+            /// <summary>
+            /// Merge the same name blend shapes.
+            ///
+            /// This mode will be considered by AutoFreezeBlendShape by Trace and Optimize so
+            /// if blendShape will be animated after merging, it will not be frozen. 
+            /// </summary>
+            MergeSameName,
+            /// <summary>
+            /// Rename BlendShapes to avoid conflict. This is the default behavior for new components.
+            /// </summary>
+            RenameToAvoidConflict,
+            /// <summary>
+            /// The v1.7.0 or earlier behavior. Default behavior for old components.
+            /// This mode cannot be specified manually unless you use debug inspector.
+            ///
+            /// This mode is similar to RenameToAvoidConflict, but AutoFreezeBlendShape by Trace and Optimize will not
+            /// consider this merge so if it's not animated directly, it will be frozen.
+            /// </summary>
+            TraditionalCompability,
+        }
+
         APIChecker _checker;
+
+        private void Reset()
+        {
+            blendShapeMode = BlendShapeMode.RenameToAvoidConflict;
+        }
 
         internal MergeSkinnedMesh()
         {
@@ -50,27 +83,49 @@ namespace Anatawa12.AvatarOptimizer
             doNotMergeMaterials = new PrefabSafeSet.PrefabSafeSet<Material>(this);
         }
 
-        private void OnValidate()
+        private void ValidatePSUC()
         {
             PrefabSafeSet.PrefabSafeSet.OnValidate(this, x => x.renderersSet);
             PrefabSafeSet.PrefabSafeSet.OnValidate(this, x => x.staticRenderersSet);
             PrefabSafeSet.PrefabSafeSet.OnValidate(this, x => x.doNotMergeMaterials);
         }
 
+        private void OnValidate() => ValidatePSUC();
+        void ISerializationCallbackReceiver.OnBeforeSerialize() => ValidatePSUC();
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
+        }
+
         /// <summary>
         /// Initializes the MergeSkinnedMesh with the specified default behavior version.
         ///
+        /// <p>
         /// As Described in the documentation, you have to call this method after `AddComponent` to make sure
         /// the default configuration is what you want.
         /// Without calling this method, the default configuration might be changed in the future.
+        /// </p>
         /// </summary>
         /// <param name="version">
+        /// <para>
         /// The default configuration version.
+        /// </para>
+        /// <para>
         /// Since 1.7.0, version 1 is supported.
+        /// </para>
         ///
-        /// Since 1.8.0, version 2 is supported.
-        /// Changes:
-        /// - Default value for skipEnablementMismatchedRenderers is changed. Before 1.8.0: true, 1.8.0 and later: false
+        /// <para>
+        /// Since 1.8.0, version 2 which changed the following value is supported.
+        /// <list type="bullet">
+        /// <item>Default value for skipEnablementMismatchedRenderers is changed. Before 1.8.0: true, 1.8.0 and later: false</item>
+        /// <item>
+        ///     BlendShape Mode is added. Before 1.8.0, the behavior is similar to merge sane name,
+        ///     but different behavior with Trace And Optimize. (Merging behavior is considered as bug in this version).
+        ///     With 1.8.0 and later, the default behavior is rename to avoid conflict, and you can configure to
+        ///     Merge same name blendShape with <see cref="MergeBlendShapes"/> property.
+        /// </item>
+        /// </list>
+        /// </para>
         /// </param>
         /// <exception cref="ArgumentOutOfRangeException">Unsupported configuration version</exception>
         [PublicAPI]
@@ -80,6 +135,7 @@ namespace Anatawa12.AvatarOptimizer
             {
                 case 1:
                     skipEnablementMismatchedRenderers = true;
+                    blendShapeMode = BlendShapeMode.RenameToAvoidConflict;
                     goto case 2;
                 case 2:
                     // nothing to do
@@ -132,8 +188,28 @@ namespace Anatawa12.AvatarOptimizer
         /// <summary>
         /// Gets the set of source MeshRenderers.
         /// </summary>
+        /// <remarks>Due to historical reasons, this named "static mesh renderers", but called "basic mesh renderers"</remarks>
         [PublicAPI]
         public API.PrefabSafeSetAccessor<MeshRenderer> SourceStaticMeshRenderers =>
             _checker.OnAPIUsage(this, new API.PrefabSafeSetAccessor<MeshRenderer>(staticRenderersSet));
+
+        /// <summary>
+        /// Gets or Sets behavior of blendShape merging.
+        ///
+        /// If this value is true, BlendShapes with same name will be merged.
+        /// If this value is false, BlendShape names will be mangled to avoid conflict.
+        /// </summary>
+        /// <remarks>
+        /// This API is added in v1.8.0 and available with Initialize version 2.
+        /// If you <see cref="Initialize"/>d with version 1 or earlier, this API will throw an exception.
+        /// </remarks>
+        /// <exception cref="InvalidOperationException">If the API is used before initialization or with unsupported version.</exception>
+        [PublicAPI]
+        public bool MergeBlendShapes
+        {
+            get => _checker.OnAPIUsageVersioned(this, 2, () => blendShapeMode == BlendShapeMode.MergeSameName);
+            set => _checker.OnAPIUsageVersioned(this, 2,
+                () => blendShapeMode = value ? BlendShapeMode.MergeSameName : BlendShapeMode.RenameToAvoidConflict);
+        }
     }
 }

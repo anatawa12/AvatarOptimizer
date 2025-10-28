@@ -33,6 +33,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
     // - all states have same write defaults value
     // - if write defaults is off, all states have same animating properties
     // - all states must not have motion time. you have to use 1d blend tree for gesture weight.
+    [RunsOnPlatforms(WellKnownPlatforms.VRChatAvatar30)] // EntryExit to BlendTree optimization heavily depends on VRChat's behavior
     public class EntryExitToBlendTree : AnimOptPassBase<EntryExitToBlendTree>
     {
         private static CachedGuidLoader<AnimationClip> _emptyClip = "ce6c609e7fd58444d9d59e98296eed35";
@@ -58,7 +59,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             var layerByParameter = new Dictionary<string, List<int>>();
             for (var i = 0; i < layers.Length; i++)
             {
-                var info = convertInfos[i] = TryParseLayer(layers[i], state, intOrBoolParameters);
+                var info = TryParseDiamondLayer(layers[i], state, intOrBoolParameters);
+                info ??= TryParseLinearLayer(layers[i], state, intOrBoolParameters);
+                convertInfos[i] = info;
                 if (info != null)
                 {
                     foreach (var parameter in info.Parameters)
@@ -165,13 +168,30 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             controller.parameters = parameters;
         }
 
-        private static ConvertibleLayerInfo? TryParseLayer(AOAnimatorControllerLayer layer,
+        /// <summary>
+        /// Parses diamond entry-exit state machine like the following:
+        /// 
+        /// <code>
+        ///                    +---------------+
+        ///                    | Default State |
+        ///                 /  +---------------+ \
+        ///                /   +---------------+  \      
+        ///   +----------+  /  |   2nd State   | \  +----------+
+        ///   |  Entry   |     +---------------+    |   Exit   |
+        ///   +----------+            ...           +----------+
+        ///                 \         ...         /        
+        ///                    +---------------+ 
+        ///                    |   nth State   |
+        ///                    +---------------+ 
+        /// </code>
+        /// </summary>
+        private static ConvertibleLayerInfo? TryParseDiamondLayer(AOAnimatorControllerLayer layer,
             AnimatorOptimizerState optimizerState, HashSet<string> intOrBoolParameters)
         {
+            if (!CheckForBasicStateCondition(layer, optimizerState)) return null;
+
             if (layer is not
                 {
-                    IsSynced: false,
-                    IsSyncedToOtherLayer: false,
                     stateMachine:
                     {
                         anyStateTransitions: { Length: 0 },
@@ -293,66 +313,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 if (stateValues.Count != states.Length - 1) return null;
             }
 
-            // check for each states
-            // we have to check
-            // - write defaults are same in the layer
-            // - if write defaults is off, check animating properties are same between layers
-            // - exit transitions are correct for that state
-            // - there are no other transitions
-            // - there are no behaviors
-
-            // check write defaults and animating properties
-            if (states[0].state.writeDefaultValues)
-            {
-                for (var index = 1; index < states.Length; index++)
-                {
-                    // check WD
-                    if (states[index] is not { state: { writeDefaultValues: true } }) return null;
-                }
-            }
-            else
-            {
-                if (states[0].state.motion == null) return null; // with WD=off, motion=None will cause broken animator
-                var expectAnimatingProperties = CollectAnimatingProperties(states[0].state.motion);
-                if (expectAnimatingProperties == null) return null; // we found unsupported motion
-
-                for (var index = 1; index < states.Length; index++)
-                {
-                    // check WD and animating properties
-                    var childStateInfo = states[index];
-                    if (childStateInfo is not { state: { motion: var motion, writeDefaultValues: false } })
-                        return null;
-
-                    if (motion == null) return null; // with WD=off, motion=None will cause broken animator
-                    var newAnimatingProperties = CollectAnimatingProperties(motion);
-                    if (newAnimatingProperties == null) return null; // we found unsupported motion
-                    if (!newAnimatingProperties.SetEquals(expectAnimatingProperties)) return null;
-                }
-            }
-
+            // check for transitions
             foreach (var childStateInfo in states)
             {
-                // TODO: for linear animation, we can simulate motion time with 1d blend tree
-                // https://github.com/anatawa12/AvatarOptimizer/issues/861
-
-                if (childStateInfo is not
-                    {
-                        state:
-                        {
-                            behaviours: { Length: 0 },
-                            timeParameterActive: false,
-                            motion: var motion,
-                            transitions: var transitions,
-                        } state,
-                    }) return null;
-
-                // the clip is time dependant, we cannot convert it to blend tree
-                foreach (var clip in ACUtils.AllClips(motion))
-                    if (optimizerState.IsTimeDependentClip(clip))
-                        return null;
-
-                // check for transitions
-
+                var state = childStateInfo.state;
+                var transitions = state.transitions;
                 // basic transition check: all transitions are exit transitions without blending
                 var allConditions = new AnimatorCondition[transitions.Length][];
                 for (var i = 0; i < transitions.Length; i++)
@@ -437,6 +402,231 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             }
 
             return new ConvertibleLayerInfo(conditionParameter, defaultState, stateValues);
+        }
+
+        /// <summary>
+        /// Parses linear entry-exit state machine like the following:
+        /// This pattern can only support exactly two states, one of which is the default state and the other is the second state.
+        ///
+        /// <code>
+        /// +----------+       +-----------+       +-----------+       +----------+
+        /// |  Entry   |  ==>  | 1st State |  ==>  | 2nd state |  ==>  |   Exit   |
+        /// +----------+       +-----------+       +-----------+       +----------+
+        /// </code>
+        /// </summary>
+        private static ConvertibleLayerInfo? TryParseLinearLayer(AOAnimatorControllerLayer layer,
+            AnimatorOptimizerState optimizerState, HashSet<string> intOrBoolParameters)
+        {
+            if (!CheckForBasicStateCondition(layer, optimizerState)) return null;
+
+            if (layer is not
+                {
+                    stateMachine:
+                    {
+                        anyStateTransitions: { Length: 0 },
+                        stateMachines: { Length: 0 },
+                        defaultState: { } defaultState,
+                        states: { Length: 2 } states,
+                        entryTransitions: { Length: 0 },
+                    }
+                })
+                return null;
+
+            // prerequirements of statemachine
+            if (!states.Any(x => x.state == defaultState)) return null; // default state must be one of the states
+            var anotherState = states.First(x => x.state != defaultState).state;
+
+            // basic transition check: all transitions does not have exit time, duration, and not solo nor mute.
+            if (!defaultState.transitions.Concat(anotherState.transitions).All(t => t is
+                {
+                    solo: false,
+                    mute: false,
+
+                    hasExitTime: false,
+                    duration: 0,
+                    offset: 0,
+                    // since duration is zero, interruption should not be happened
+                }))
+            {
+                return null;
+            }
+
+            string? conditionParameter = null;
+            var anotherStateValues = new HashSet<IntOrBool>();
+
+            // Check default => another state transition.
+            foreach (var defaultStateTransition in defaultState.transitions)
+            {
+                if (defaultStateTransition is not
+                    {
+                        // target
+                        isExit: false,
+                        destinationStateMachine: null,
+                        destinationState: { } dest,
+                        // condition
+                        conditions: { Length: 1 } conditions
+                    })
+                    return null;
+                if (dest != anotherState) return null; // default state must have transition to the 'another state'
+
+                conditionParameter ??= conditions[0].parameter;
+                if (CheckIntOrBoolCondition(conditions[0]) is not { } value) return null;
+                anotherStateValues.Add(value);
+            }
+
+            // this should means no transition from default state to another state
+            if (conditionParameter == null) return null;
+            if (!intOrBoolParameters.Contains(conditionParameter)) return null; // neither int nor bool parameter
+
+            IntOrBool? CheckIntOrBoolCondition(AnimatorCondition condition)
+            {
+                if (condition is not
+                    {
+                        mode: var mode,
+                        parameter: { } parameter,
+                        threshold: var threshold,
+                    }) return null;
+
+                if (parameter != conditionParameter) return null;
+
+                return mode switch
+                {
+                    // not finite makes casting to int undefined
+                    AnimatorConditionMode.Equals when float.IsFinite(threshold) => (int)threshold,
+                    AnimatorConditionMode.If => true,
+                    AnimatorConditionMode.IfNot => false,
+                    _ => null,
+                };
+            }
+
+            // check another => exit transition
+            {
+                var state = anotherState;
+                var transitions = state.transitions;
+                // basic transition check: all transitions are exit transitions without blending
+                var allConditions = new AnimatorCondition[transitions.Length][];
+                for (var i = 0; i < transitions.Length; i++)
+                {
+                    var transition = transitions[i];
+                    if (transition is not
+                        {
+                            // target
+                            isExit: true,
+                            destinationState: null,
+                            destinationStateMachine: null,
+                            // conditions
+                            conditions: { } conditions,
+                        }) return null;
+                    allConditions[i] = conditions;
+                }
+
+                // transition condition check.
+                {
+                    // for other states, it have to leave state if value is not any of current value
+                    // TODO: users can create condition like `< minValue` or `> maxValue` to leave state
+                    // TODO: users can exit state and immediately enter to same state infinitely
+                    // https://github.com/anatawa12/AvatarOptimizer/issues/862
+                    if (!PossibleValuesExitTransitionCheck(anotherStateValues)) return null;
+                }
+
+                bool PossibleValuesExitTransitionCheck(HashSet<IntOrBool> values)
+                {
+                    if (allConditions.Length != 1) return false;
+                    var conditions = allConditions[0];
+                    if (conditions.Length != values.Count) return false;
+
+                    values = new HashSet<IntOrBool>(values);
+                    foreach (var condition in conditions)
+                    {
+                        if (condition.mode != AnimatorConditionMode.NotEqual &&
+                            condition.mode != AnimatorConditionMode.IfNot &&
+                            condition.mode != AnimatorConditionMode.If) return false;
+                        if (condition.parameter != conditionParameter) return false;
+                        IntOrBool value =
+                            condition.mode == AnimatorConditionMode.NotEqual ? (int)condition.threshold :
+                            condition.mode == AnimatorConditionMode.IfNot ? true : false;
+                        if (!values.Remove(value)) return false;
+                    }
+
+                    return true;
+                }
+            }
+
+            return new ConvertibleLayerInfo(conditionParameter, defaultState, new Dictionary<AnimatorState, HashSet<IntOrBool>> {{anotherState, anotherStateValues}});
+        }
+
+        private static bool CheckForBasicStateCondition(AOAnimatorControllerLayer layer, AnimatorOptimizerState optimizerState)
+        {
+            if (layer is not
+                {
+                    IsSynced: false,
+                    IsSyncedToOtherLayer: false,
+                    stateMachine:
+                    {
+                        states: { Length: >= 2 } states,
+                    }
+                })
+                return false;
+
+            // check for each states
+            // we have to check
+            // - write defaults are same in the layer
+            // - if write defaults is off, check animating properties are same between layers
+            // - exit transitions are correct for that state
+            // - there are no other transitions
+            // - there are no behaviors
+
+            // check write defaults and animating properties
+            if (states[0].state.writeDefaultValues)
+            {
+                for (var index = 1; index < states.Length; index++)
+                {
+                    // check WD
+                    if (states[index] is not { state: { writeDefaultValues: true } }) return false;
+                }
+            }
+            else
+            {
+                if (states[0].state.motion == null) return false; // with WD=off, motion=None will cause broken animator
+                var expectAnimatingProperties = CollectAnimatingProperties(states[0].state.motion);
+                if (expectAnimatingProperties == null) return false; // we found unsupported motion
+
+                for (var index = 1; index < states.Length; index++)
+                {
+                    // check WD and animating properties
+                    var childStateInfo = states[index];
+                    if (childStateInfo is not { state: { motion: var motion, writeDefaultValues: false } })
+                        return false;
+
+                    if (motion == null) return false; // with WD=off, motion=None will cause broken animator
+                    var newAnimatingProperties = CollectAnimatingProperties(motion);
+                    if (newAnimatingProperties == null) return false; // we found unsupported motion
+                    if (!newAnimatingProperties.SetEquals(expectAnimatingProperties)) return false;
+                }
+            }
+
+            foreach (var childStateInfo in states)
+            {
+                // TODO: for linear animation, we can simulate motion time with 1d blend tree
+                // https://github.com/anatawa12/AvatarOptimizer/issues/861
+
+                if (childStateInfo is not
+                    {
+                        state:
+                        {
+                            behaviours: { Length: 0 },
+                            timeParameterActive: false,
+                            motion: var motion,
+                        },
+                    }) return false;
+
+                // the clip is time dependant, we cannot convert it to blend tree
+                foreach (var clip in ACUtils.AllClips(motion))
+                    if (optimizerState.IsTimeDependentClip(clip))
+                        return false;
+            }
+
+            return true;
         }
 
         readonly struct IntOrBool : IEquatable<IntOrBool>
@@ -530,7 +720,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 // ReSharper disable once CompareOfFloatsByEqualityOperator
                 if (rounded == after)
                 {
-                    Debug.Assert((int)Mathf.Round(Utils.PreviousFloat(threshold)) == before);
+                    Utils.Assert((int)Mathf.Round(Utils.PreviousFloat(threshold)) == before);
                     // in this case, .5 will go the motion so default is one before .5
                     children.Add(CreateChild(Utils.PreviousFloat(threshold), beforeMotion));
                     children.Add(CreateChild(threshold, afterMotion));
@@ -538,7 +728,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 // ReSharper disable once CompareOfFloatsByEqualityOperator
                 else if (rounded == before)
                 {
-                    Debug.Assert((int)Mathf.Round(Utils.NextFloat(threshold)) == after);
+                    Utils.Assert((int)Mathf.Round(Utils.NextFloat(threshold)) == after);
                     // in this case, .5 will go to default motion so default is .5
                     children.Add(CreateChild(threshold, beforeMotion));
                     children.Add(CreateChild(Utils.NextFloat(threshold), afterMotion));
@@ -708,9 +898,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         threshold = Utils.PreviousFloat(threshold);
 
                     // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Debug.Assert(Mathf.Round(threshold) == thresholdRound - 1);
+                    Utils.Assert(Mathf.Round(threshold) == thresholdRound - 1);
                     // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Debug.Assert(Mathf.Round(Utils.NextFloat(threshold)) == thresholdRound);
+                    Utils.Assert(Mathf.Round(Utils.NextFloat(threshold)) == thresholdRound);
 
                     return new[]
                     {
@@ -734,9 +924,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         threshold = Utils.NextFloat(threshold);
 
                     // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Debug.Assert(Mathf.Round(threshold) == thresholdRound + 1);
+                    Utils.Assert(Mathf.Round(threshold) == thresholdRound + 1);
                     // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Debug.Assert(Mathf.Round(Utils.PreviousFloat(threshold)) == thresholdRound);
+                    Utils.Assert(Mathf.Round(Utils.PreviousFloat(threshold)) == thresholdRound);
 
                     return new[]
                     {
@@ -765,13 +955,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         upperThreshold = Utils.NextFloat(upperThreshold);
 
                     // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Debug.Assert(Mathf.Round(lowerThreshold) == thresholdRound - 1);
+                    Utils.Assert(Mathf.Round(lowerThreshold) == thresholdRound - 1);
                     // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Debug.Assert(Mathf.Round(Utils.NextFloat(lowerThreshold)) == thresholdRound);
+                    Utils.Assert(Mathf.Round(Utils.NextFloat(lowerThreshold)) == thresholdRound);
                     // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Debug.Assert(Mathf.Round(Utils.PreviousFloat(upperThreshold)) == thresholdRound);
+                    Utils.Assert(Mathf.Round(Utils.PreviousFloat(upperThreshold)) == thresholdRound);
                     // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Debug.Assert(Mathf.Round(upperThreshold) == thresholdRound + 1);
+                    Utils.Assert(Mathf.Round(upperThreshold) == thresholdRound + 1);
 
                     // AND condition
                     return new[]
@@ -810,13 +1000,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         upperThreshold = Utils.PreviousFloat(upperThreshold);
 
                     // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Debug.Assert(Mathf.Round(Utils.PreviousFloat(lowerThreshold)) == thresholdRound - 1);
+                    Utils.Assert(Mathf.Round(Utils.PreviousFloat(lowerThreshold)) == thresholdRound - 1);
                     // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Debug.Assert(Mathf.Round(lowerThreshold) == thresholdRound);
+                    Utils.Assert(Mathf.Round(lowerThreshold) == thresholdRound);
                     // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Debug.Assert(Mathf.Round(upperThreshold) == thresholdRound);
+                    Utils.Assert(Mathf.Round(upperThreshold) == thresholdRound);
                     // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Debug.Assert(Mathf.Round(Utils.NextFloat(upperThreshold)) == thresholdRound + 1);
+                    Utils.Assert(Mathf.Round(Utils.NextFloat(upperThreshold)) == thresholdRound + 1);
 
                     // OR condition
                     return new[]

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.Animations;
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -12,7 +13,7 @@ namespace Anatawa12.AvatarOptimizer
     [AllowMultipleComponent]
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/remove-mesh-by-blendshape/")]
     [PublicAPI]
-    public sealed class RemoveMeshByBlendShape : EditSkinnedMeshComponent
+    public sealed class RemoveMeshByBlendShape : EditSkinnedMeshComponent, ISerializationCallbackReceiver
     {
         [SerializeField]
         internal PrefabSafeSet.PrefabSafeSet<string> shapeKeysSet;
@@ -20,6 +21,11 @@ namespace Anatawa12.AvatarOptimizer
             "RemoveMeshByBlendShape:tooltip:Tolerance")]
         [SerializeField]
         internal double tolerance = 0.001;
+        [SerializeField]
+        [ToggleLeft]
+        [NotKeyable]
+        internal bool invertSelection;
+
         internal RemoveMeshByBlendShape()
         {
             shapeKeysSet = new PrefabSafeSet.PrefabSafeSet<string>(this);
@@ -27,9 +33,16 @@ namespace Anatawa12.AvatarOptimizer
 
         internal HashSet<string> RemovingShapeKeys => shapeKeysSet.GetAsSet();
 
-        private void OnValidate()
+        private void ValidatePSUC()
         {
             PrefabSafeSet.PrefabSafeSet.OnValidate(this, x => x.shapeKeysSet);
+        }
+
+        private void OnValidate() => ValidatePSUC();
+        void ISerializationCallbackReceiver.OnBeforeSerialize() => ValidatePSUC();
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
         }
 
         APIChecker _checker;
@@ -58,6 +71,18 @@ namespace Anatawa12.AvatarOptimizer
                     throw new ArgumentOutOfRangeException(nameof(version), $"unsupported version: {version}");
             }
             _checker.OnInitialize(version, this);
+        }
+
+        /// <summary>
+        /// If this flag is false, this component will remove parts moved by the BlendShapes. This is the default behavior.
+        /// If this flag is true, this component will remove parts not moved by the BlendShapes.
+        /// </summary>
+        /// <remarks>This api is added in 1.9.0</remarks>
+        [PublicAPI]
+        public bool InvertSelection
+        {
+            get => _checker.OnAPIUsage(this, invertSelection);
+            set => _checker.OnAPIUsage(this, invertSelection = value);
         }
 
         /// <summary>

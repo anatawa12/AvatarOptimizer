@@ -156,6 +156,9 @@ msgid "MergePhysBone:error:unsupportedPbVersion"
 msgstr "このPhysBoneバージョンは(まだ)Avatar Optimizerによって対応されていません。\n"
 "作者にtwitter (@anatawa12_vrc)またはGitHub (anatawa12/AvatarOptimizer)で連絡してください！"
 
+msgid "MergePhysBone:message:fix-yaw-pitch"
+msgstr "ボーンを回転させてRollの値を揃える"
+
 msgid "MergePhysBone:error:differValues"
 msgstr "複数の統合対象の間で値に差異があります。以下の値は同じ値にするかOverrideする必要があります: {0}"
 
@@ -164,6 +167,26 @@ msgstr "複数の統合対象の間で値に差異があります。同じ値に
 
 msgid "MergePhysBone:warning:differChainLength"
 msgstr "複数の統合対象の間でチェーンの長さが異なります。短いチェーンのPBは元よりも太くなる可能性があります。"
+
+msgid "MergePhysBone:error:LimitRotationFix:SkewScaling"
+msgstr ""
+"Scaleが均一でないボーンの角度制限を統合することはサポートされていません。\n"
+"角度制限の設定をFix以外にするか、Scaleを均一にしてください。"
+
+msgid "MergePhysBone:error:LimitRotationFix:DifferRotation"
+msgstr ""
+"角度制限を統合できる状態ではありません。\n"
+"統合対象の角度制限の値を揃えるか、角度制限の設定をFix以外にしてください。"
+
+msgid "MergePhysBone:error:LimitRotationFix:DifferRotation:description"
+msgstr ""
+"角度制限の統合は、ボーンに対する捻るような回転(Roll)の値は揃えることができますが、他の軸の回転は揃えることができません。\n"
+"Roll回転の軸はローカル座標系におけるX軸になります。Yaw回転が含まれている場合はPBのInspectorにあるRollの表示とは異なることがあります。"
+
+msgid "MergePhysBone:error:LimitRotationFix:NonZeroEndpointPosition"
+msgstr ""
+"角度制限の設定がFixですが、Endpoint Positionが空ではありません。\n"
+"Endpoint Positionを空にするか、Endpoint Positionの設定をClearにするか、角度制限の設定をFix以外にしてください。"
 
 msgid "MergePhysBone:dialog:versionInfo:title"
 msgstr "バージョンについて" 
@@ -211,11 +234,29 @@ msgstr ""
 msgid "MergeSkinnedMesh:validation:self-recursive"
 msgstr "統合対象のスキンメッシュレンダラーに、MergeSkinnedMesh自身のスキンメッシュレンダラーが含まれています！"
 
+msgid "MergeSkinnedMesh:warn:TraditionalBlendShapeMode"
+msgstr ""
+"v1.7.x互換モードが選択されています。\n"
+"このモードはv1.7.x以前のAvatar Optimizerとの互換性を維持するためにのみ存在します。\n"
+"他のモードを選択することを検討してください。"
+
+msgid "MergeSkinnedMesh:prop:blendShapeMode"
+msgstr "BlendShapeモード"
+
+msgid "MergeSkinnedMesh:prop:blendShapeMode:MergeSameName"
+msgstr "同名のBlendShapeを統合する"
+
+msgid "MergeSkinnedMesh:prop:blendShapeMode:RenameToAvoidConflict"
+msgstr "BlendShape名を自動変更して重複を避ける"
+
+msgid "MergeSkinnedMesh:prop:blendShapeMode:TraditionalCompability"
+msgstr "v1.7.x互換モード"
+
 msgid "MergeSkinnedMesh:prop:renderers"
 msgstr "スキンメッシュレンダラー"
 
 msgid "MergeSkinnedMesh:prop:staticRenderers"
-msgstr "静的レンダラー"
+msgstr "メッシュレンダラー"
 
 msgid "MergeSkinnedMesh:prop:removeEmptyRendererObject"
 msgstr "空のレンダラーオブジェクトを削除する"
@@ -239,6 +280,16 @@ msgid "MergeSkinnedMesh:error:mix-normal-existence"
 msgstr ""
 "法線があるメッシュとないメッシュの両方を1つに統合する操作には対応していません。"
 "法線が含まれるようにモデルのインポート設定を変更してください！"
+
+msgid "MergeSkinnedMesh:error:blendShape-animated-by-multiple-renderers"
+msgstr "統合対象のメッシュ間で、以下のBlendShapeに対するアニメーションが揃っていません: {0}"
+
+msgid "MergeSkinnedMesh:error:blendShape-animated-by-multiple-renderers:description"
+msgstr ""
+"統合対象のメッシュ間で、同名のBlendShapeに対するアニメーションが揃っていません。\n"
+"同名のBlendShapeを統合するように設定されていますが、アニメーションが揃っていないと統合後の動作を決定することができません。\n"
+"\n"
+"そのBlendShapeを操作しているアニメーションの一部を削除するか、同じようにアニメーションされるようにしてください。"
 
 msgid "MergeSkinnedMesh:warning:removeZeroSizedPolygonOnSources"
 msgstr "Remove Zero Sized Polygonsは遅めに処理されるため、統合対象のメッシュにつけても効果がありません"
@@ -268,6 +319,26 @@ msgstr "MergeSkinnedMeshは統合先のメッシュのAnchor Overrideを自動�
 msgid "MergeSkinnedMesh:warning:no-probe-anchor:hint"
 msgstr "統合先のメッシュのAnchor Overrideを手動で設定する必要があります。\n"
 "Modular Avatarを使用している場合は、アバターのルートにMA Mesh Settingsコンポーネントを追加して設定することにより、アバター全体のAnchor Overrideをまとめて設定することもできます。"
+
+msgid "MergeSkinnedMesh:copy-enablement-animation:error:enablement-of-merged-mesh-is-animated"
+msgstr "統合先のSkinnedMeshRendererの有効無効状態がアニメーションされています。"
+
+msgid "MergeSkinnedMesh:copy-enablement-animation:error:enablement-of-merged-mesh-is-animated:description"
+msgstr "'有効無効状態に関するアニメーションをコピーする'が有効な場合、統合先のSkinnedMeshRendererの有効無効状態(enabled)を操作するアニメーションがMerge Skinned Meshによって作成されます。\n"
+"そのため、その項目を手動でアニメーションすることはできません。"
+
+msgid "MergeSkinnedMesh:copy-enablement-animation:error:too-many-activeness-animation"
+msgstr "以下の統合対象のメッシュの有効無効状態が、複数のプロパティをアニメーションすることによって決定されています。"
+
+msgid "MergeSkinnedMesh:copy-enablement-animation:error:too-many-activeness-animation:description"
+msgid "'有効無効状態に関するアニメーションをコピーする'は、有効無効状態に関する操作を統合先のSkinnedMeshRendererの有効無効状態(enabled)に対して適用するように設計されています。\n"
+"そのため、SkinnedMeshRendererの有効無効状態(enabled)とGameObjectの有効無効状態(activeSelf)の両方や、複数階層の有効無効状態(activeSelf)をアニメーションで操作しているような場合には、コピーすることができません。"
+
+msgid "MergeSkinnedMesh:copy-enablement-animation:error:activeness-animation-of-source-mismatch"
+msgid "統合対象のメッシュ間で、有効無効状態に関するアニメーションが揃っていません。"
+
+msgid "MergeSkinnedMesh:copy-enablement-animation:error:activeness-animation-of-source-mismatch:description"
+msgid "'有効無効状態に関するアニメーションをコピーする'は、統合対象の間で有効無効状態が同じようにアニメーションされている場合にのみ適用できます。"
 
 # endregion
 
@@ -387,6 +458,39 @@ msgstr "Skinned Mesh RendererにMeshが設定されていません。"
 msgid "RemoveMeshByMask:button:makeReadable"
 msgstr "読み取り可能にする"
 
+msgid "RemoveMeshByMask:button:create"
+msgstr "作成"
+
+msgid "RemoveMeshByMask:button:edit"
+msgstr "編集"
+
+msgid "RemoveMeshByMask:dialog:create"
+msgstr "作成"
+
+msgid "RemoveMeshByMask:dialog:error"
+msgstr "エラー"
+
+msgid "RemoveMeshByMask:dialog:createMaskFailed"
+msgstr "テクスチャの作成に失敗しました。詳細はログを参照してください。"
+
+msgid "RemoveMeshByMask:dialog:info"
+msgstr "情報"
+
+msgid "RemoveMeshByMask:dialog:maskTextureEditorNotFound"
+msgstr ""
+"マスクテクスチャエディターがインストールされていません。\n"
+"AvatarOptimizer v1.9.0から、マスクテクスチャエディターは別のVPMリポジトリのパッケージに移動しました。\n"
+"VPMリポジトリを追加して、このプロジェクトに「Mask Texture Editor」パッケージを追加してください。"
+
+msgid "RemoveMeshByMask:dialog:addRepo"
+msgstr "ALCOM(VCC)を開く"
+
+msgid "RemoveMeshByMask:dialog:openWeb"
+msgstr "GitHubを開く"
+
+msgid "RemoveMeshByMask:dialog:cancel"
+msgstr "キャンセル"
+
 msgid "RemoveMeshByMask:tooltip:textureIsNotImported"
 msgstr "画像ファイルから読み込まれたマスクテクスチャではありません。"
 
@@ -411,85 +515,6 @@ msgstr "UVチャンネルの{0}番は範囲外です。"
 
 # endregion
 
-# region MaskTextureEditor
-
-msgid "MaskTextureEditor:create"
-msgstr "作成"
-
-msgid "MaskTextureEditor:edit"
-msgstr "編集"
-
-msgid "MaskTextureEditor:title"
-msgstr "AAO マスクテクスチャエディター"
-
-msgid "MaskTextureEditor:renderer"
-msgstr "スキンメッシュレンダラー"
-
-msgid "MaskTextureEditor:subMesh"
-msgstr "マテリアルスロット"
-
-msgid "MaskTextureEditor:subMeshIndex"
-msgstr "{0}番"
-
-msgid "MaskTextureEditor:texture"
-msgstr "マスクテクスチャ"
-
-msgid "MaskTextureEditor:save"
-msgstr "保存する"
-
-msgid "MaskTextureEditor:viewScale"
-msgstr "表示倍率 (Scroll)"
-
-msgid "MaskTextureEditor:viewOpacity"
-msgstr "表示透明度"
-
-msgid "MaskTextureEditor:resetView"
-msgstr "表示をウィンドウに合わせる"
-
-msgid "MaskTextureEditor:brushSize"
-msgstr "ブラシサイズ (Shift + Scroll)"
-
-msgid "MaskTextureEditor:brushColor"
-msgstr "ブラシカラー"
-
-msgid "MaskTextureEditor:black"
-msgstr "黒"
-
-msgid "MaskTextureEditor:white"
-msgstr "白"
-
-msgid "MaskTextureEditor:fillBlack"
-msgstr "黒で塗りつぶす"
-
-msgid "MaskTextureEditor:fillWhite"
-msgstr "白で塗りつぶす"
-
-msgid "MaskTextureEditor:inverse"
-msgstr "色を反転させる"
-
-msgid "MaskTextureEditor:saveChangesMessage"
-msgstr "保存されていない変更があります。保存しますか？"
-
-msgid "MaskTextureEditor:saveChangesButtonSave"
-msgstr "保存"
-
-msgid "MaskTextureEditor:saveChangesButtonDiscard"
-msgstr "破棄"
-
-msgid "MaskTextureEditor:saveChangesButtonCancel"
-msgstr "キャンセル"
-
-msgid "MaskTextureEditor:errorTitle"
-msgstr "エラー"
-
-msgid "MaskTextureEditor:errorMessageCreateFailed"
-msgstr "テクスチャの作成に失敗しました。詳細はログを参照してください。"
-
-msgid "MaskTextureEditor:errorMessageSaveFailed"
-msgstr "テクスチャの保存に失敗しました。詳細はログを参照してください。"
-
-# endregion
-
 # region RenameBlendShape
 
 # used in inspector
@@ -507,26 +532,21 @@ msgid "RenameBlendShape:error:empty-name-some"
 msgstr "変更後の名前が空になっているものがあります。"
 
 msgid "RenameBlendShape:warning:name-conflict-some"
-msgstr "変更後の名前が重複しているものがあります。重複するBlendShapeは1つに統合されます。"
+msgstr "変更後の名前が重複しているものがあります。"
 
 msgid "RenameBlendShape:error:empty-name-this"
 msgstr "変更後の名前が空です。"
 
 msgid "RenameBlendShape:warning:name-conflict-this"
-msgstr "変更後の名前が他と重複しています。重複するBlendShapeは1つに統合されます。"
+msgstr "変更後の名前が他と重複しています。"
 
 # used in NDMF Console
 
 msgid "RenameBlendShape:error:empty-name"
 msgstr "BlendShape '{0}' の変更後の名前が空です。BlendShape名を空にすることはできません。"
 
-msgid "RenameBlendShape:warning:weight-conflict"
-msgstr "BlendShape '{0}' への統合対象となるBlendShapeの値が揃っていません。統合対象の内のいずれかの値が使用されます。\n"
-"該当する統合対象: {1}"
-
-msgid "RenameBlendShape:warning:animation-conflict"
-msgstr "BlendShape '{0}' への統合対象となるBlendShapeに対するアニメーションが異なります。\n"
-"該当する統合対象: {1}"
+msgid "RenameBlendShape:error:after-name-conflict"
+msgstr "BlendShape名 '{0}' は重複しています。Rename BlendShapeコンポーネントによる名前変更で同名のBlendShapeを作成することはできません。"
 
 # endregion
 
@@ -588,8 +608,8 @@ msgstr "Trace and Optimizeへの移行が完了しました！"
 msgid "TraceAndOptimize:description"
 msgstr "このコンポーネントをアバターにつけると、アバターを走査して自動的にできる限りの最適化を行います。"
 
-msgid "TraceAndOptimize:prop:freezeBlendShape"
-msgstr "BlendShapeを自動的に固定・除去する"
+msgid "TraceAndOptimize:prop:optimizeBlendShape"
+msgstr "BlendShapeを最適化する"
 
 msgid "TraceAndOptimize:prop:removeUnusedObjects"
 msgstr "使われていないObjectを自動的に削除する"
@@ -711,14 +731,6 @@ msgstr ""
 
 #region ComponentInfos
 
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh"
-msgstr "リップシンク用のSkinnedMeshRendererがありません。"
-
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoVisemeSkinnedMesh:hint"
-msgstr ""
-"リップシンクをBlendShapeで行う場合は、Avatar DescriptorにSkinnedMeshRendererを指定してください。\n"
-"リップシンクをBlendShapeで行わない場合は、Viseme TypeをBlendShape以外(Viseme Parameter Onlyなど)に変更してください。"
-
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownLipSyncStyle"
 msgstr "リップシンクの種類として未知の種類'{0}'が指定されています。"
 
@@ -730,22 +742,6 @@ msgstr "{1}のStandard Colliderに未知の設定'{0}'が指定されていま�
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownColliderState:hint"
 msgstr "多くの場合、これはAvatar Optimizerのバグです。この警告が表示された場合は、上記のメッセージとともにこの問題を報告してください。"
-
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh"
-msgstr "瞬き用のSkinnedMeshRendererにメッシュがありません。"
-
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoMeshInEyelidsSkinnedMesh:hint"
-msgstr ""
-"瞬きをBlendShapeで行う場合は、Avatar DescriptorにMeshが指定されたSkinnedMeshRendererを指定してください。\n"
-"瞬きをBlendShapeで行わない場合は、Eyelids TypeをBlendShape以外(Noneなど)に変更してください。"
-
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh"
-msgstr "瞬き用のSkinnedMeshRendererがありません。"
-
-msgid "ComponentInfos:VRCAvatarDescriptor:warning:NoEyelidsSkinnedMesh:hint"
-msgstr ""
-"瞬きをBlendShapeで行う場合は、Avatar DescriptorにSkinnedMeshRendererを指定してください。\n"
-"瞬きをBlendShapeで行わない場合は、Eyelids TypeをBlendShape以外(Noneなど)に変更してください。"
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType"
 msgstr "瞬きの種類として未知の種類'{0}'が指定されています。"
@@ -800,5 +796,15 @@ msgstr ""
 
 msgid "AssetDescription:OpenDocs"
 msgstr "Open Documentation"
+
+# endregion
+
+# region ContextMenus
+
+msgid "ContextMenus:AddTraceAndOptimize:FailedToAddTraceAndOptimize:Title"
+msgstr "Trace and Optimizeの追加に失敗しました"
+
+msgid "ContextMenus:AddTraceAndOptimize:FailedToAddTraceAndOptimize:Message"
+msgstr "Trace and Optimizeはアバターのルートにのみ追加することができます。アバターのルートを選択してもう一度お試しください。"
 
 # endregion

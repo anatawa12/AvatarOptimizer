@@ -1,5 +1,2 @@
-#"Shared csc.rsp file with null safe. origin is at .csc.rsp.nullsafe and symlinked to each assemblies of AAO"
 -langversion:10
 -nullable:enable
-#"PUBLISH DELETE MARKER // lines below are only for development to reduce unexpected compile errors"
--warnaserror:nullable

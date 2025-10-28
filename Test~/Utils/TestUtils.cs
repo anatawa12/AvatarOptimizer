@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using NUnit.Framework.Constraints;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
@@ -11,6 +12,8 @@ namespace Anatawa12.AvatarOptimizer.Test
 {
     public static class TestUtils
     {
+        class DummyAvatarTagComponent : AvatarTagComponent {}
+
         public static GameObject NewAvatar(string name = null)
         {
             var root = new GameObject();
@@ -20,6 +23,8 @@ namespace Anatawa12.AvatarOptimizer.Test
 #if AAO_VRCSDK3_AVATARS
             var descriptor = root.AddComponent<VRC.SDK3.Avatars.Components.VRCAvatarDescriptor>();
 #endif
+            // for any AvatarTagComponent checks on the avatar
+            root.AddComponent<DummyAvatarTagComponent>();
             return root;
         }
 
@@ -81,6 +86,19 @@ namespace Anatawa12.AvatarOptimizer.Test
         public static T GetAssetAt<T>(string testRelativePath) where T : Object =>
             AssetDatabase.LoadAssetAtPath<T>(GetAssetPath(testRelativePath));
 
+        public static string GetStateName(AnimatorStateInfo stateInfo, AnimatorController controller)
+        {
+            foreach (var state in controller.layers.Select(x => x.stateMachine).SelectMany(ACUtils.AllStates))
+            {
+                var hash = Animator.StringToHash(state.name);
+                if (hash == stateInfo.shortNameHash)
+                {
+                    return state.name;
+                }
+            }
+            return $"<unknown name({stateInfo.shortNameHash:x8})>";
+        }
+
         [MenuItem("Tools/TestNewCubeMesh")]
         static void TestNewCubeMesh()
         {
@@ -125,6 +143,13 @@ namespace Anatawa12.AvatarOptimizer.Test
             mesh.subMeshCount = 1;
             mesh.SetSubMesh(0, new SubMeshDescriptor(0, 12 * 3));
             return mesh;
+        }
+        
+        public static Vector3[] NewCubeBlendShapeFrame(params (int index, Vector3 delta)[] deltas)
+        {
+            var frame = new Vector3[8];
+            foreach (var (index, delta) in deltas) frame[index] = delta;
+            return frame;
         }
 
         public static SkinnedMeshRenderer NewSkinnedMeshRenderer(Mesh mesh)

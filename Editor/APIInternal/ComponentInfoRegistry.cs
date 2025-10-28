@@ -106,20 +106,15 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             return false;
         }
 
-        private static HashSet<Type>? _meaninglessTypes;
-
-        public static void InvalidateCache() => _meaninglessTypes = null;
-
         private static bool IsMeaninglessType(Type type)
         {
-            if (_meaninglessTypes == null)
-                _meaninglessTypes = new HashSet<Type>(AssetDescription.GetMeaninglessComponents());
+            var meaninglessTypes = AssetDescription.GetMeaninglessComponents();
 
             // fast path: simple check
-            if (_meaninglessTypes.Contains(type)) return true;
+            if (meaninglessTypes.Contains(type)) return true;
             // slow path: check for parent class
             for (var current = type.BaseType; current != null; current = current.BaseType)
-                if (_meaninglessTypes.Contains(current))
+                if (meaninglessTypes.Contains(current))
                     return true;
 
             return false;

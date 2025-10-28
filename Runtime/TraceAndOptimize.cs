@@ -23,10 +23,11 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         [NotKeyable]
-        [AAOLocalized("TraceAndOptimize:prop:freezeBlendShape")]
+        [AAOLocalized("TraceAndOptimize:prop:optimizeBlendShape")]
         [ToggleLeft]
         [SerializeField]
-        internal bool freezeBlendShape = true;
+        [FormerlySerializedAs("freezeBlendShape")] // renamed in 1.8.0
+        internal bool optimizeBlendShape = true;
         [NotKeyable]
         [AAOLocalized("TraceAndOptimize:prop:removeUnusedObjects")]
         [ToggleLeft]
@@ -70,14 +71,12 @@ namespace Anatawa12.AvatarOptimizer
         [SerializeField]
         internal bool mergeSkinnedMesh = true;
 
-        // TODO: make true by default if it's safe
-        // see https://github.com/anatawa12/AvatarOptimizer/issues/954
         [NotKeyable]
         [AAOLocalized("TraceAndOptimize:prop:allowShuffleMaterialSlots",
             "TraceAndOptimize:tooltip:allowShuffleMaterialSlots")]
         [ToggleLeft]
         [SerializeField]
-        internal bool allowShuffleMaterialSlots;
+        internal bool allowShuffleMaterialSlots = true;
 
         [NotKeyable]
         [AAOLocalized("TraceAndOptimize:prop:optimizeTexture")]
@@ -101,10 +100,12 @@ namespace Anatawa12.AvatarOptimizer
         internal struct DebugOptions
         {
             [Tooltip("Exclude some GameObjects from Trace and Optimize")]
-            public GameObject[] exclusions;
-            [Tooltip("Add GC Debug Components instead of setting GC components")]
+            public GameObject?[]? exclusions;
+            [Tooltip("Add GC Debug Components instead of setting GC components if set to non-None")]
+            public InternalGcDebugPosition gcDebug;
+            [Tooltip("Do Not Sweep (Remove) Components")]
             [ToggleLeft]
-            public bool gcDebug;
+            public bool noSweepComponents;
             [Tooltip("Do Not Configure MergeBone in New GC algorithm")]
             [ToggleLeft]
             public bool noConfigureMergeBone;
@@ -140,6 +141,25 @@ namespace Anatawa12.AvatarOptimizer
             public bool skipAnyStateToEntryExit;
             [ToggleLeft]
             public bool skipRemoveMaterialUnusedProperties;
+            [ToggleLeft]
+            public bool skipRemoveMaterialUnusedTextures;
+            [ToggleLeft]
+            public bool skipAutoMergeBlendShape;
+            [ToggleLeft]
+            public bool skipRemoveUnusedSubMesh;
+            [ToggleLeft]
+            public bool skipMergePhysBones;
         }
+    }
+    
+    internal enum InternalGcDebugPosition
+    {
+        None,
+        AtTheBeginning = 10,
+        AfterPhysBone = 20,
+        AfterMeshProcessing = 30,
+        AfterAutoMergeSkinnedMesh = 40,
+        AfterGcComponents = 50,
+        AtTheEnd = 1000000,
     }
 }

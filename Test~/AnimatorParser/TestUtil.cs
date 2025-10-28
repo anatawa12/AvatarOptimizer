@@ -22,6 +22,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorParserTest
         public static Expected Never() => new(ApplyState.Never, new FloatValueInfo(Array.Empty<float>()));
         public static Expected ConstantAlways(float value) => new(ApplyState.Always, new FloatValueInfo(value));
         public static Expected ConstantPartially(float value) => new(ApplyState.Partially, new FloatValueInfo(value));
+        public static Expected PartialConstant(float value, ApplyState applyState) => new(applyState, new FloatValueInfo(value, partialApplication: true));
         public static Expected Variable(ApplyState applyState = ApplyState.Always) => new(applyState, FloatValueInfo.Variable);
 
         public static Expected MultipleAlways(params float[] values) =>

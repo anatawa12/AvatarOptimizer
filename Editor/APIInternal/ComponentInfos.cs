@@ -14,6 +14,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     [ComponentInformation(typeof(AudioSource))]
     [ComponentInformation(typeof(nadena.dev.ndmf.runtime.AvatarActivator))]
     // nadena.dev.ndmf.VRChat.ContextHolder with reflection
+    [ComponentInformationWithGUID("52fa21b17bc14dc294959f976e3e184f", 11500000)] // NDMFAvatarRoot experimental component in NDMF 1.8.0
     internal class EntrypointComponentInformation : ComponentInformation<Component>
     {
         protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
@@ -28,7 +29,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(Transform component, ComponentDependencyCollector collector)
         {
-            var casted = (Processors.TraceAndOptimizes.ComponentDependencyCollector.Collector)collector;
+            var casted = (ComponentDependencyRetriever.Collector)collector;
             casted.AddParentDependency(component);
             // For compatibility with UnusedBonesByReferenceTool
             // https://github.com/anatawa12/AvatarOptimizer/issues/429
@@ -73,13 +74,22 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(T component, ComponentDependencyCollector collector)
         {
-            collector.MarkEntrypoint();
-            // anchor proves
-            if (component.reflectionProbeUsage != ReflectionProbeUsage.Off ||
-                component.lightProbeUsage != LightProbeUsage.Off)
-                collector.AddDependency(component.probeAnchor);
-            if (component.lightProbeUsage == LightProbeUsage.UseProxyVolume)
-                collector.AddDependency(component.lightProbeProxyVolumeOverride.transform);
+            var casted = (ComponentDependencyRetriever.Collector)collector;
+            AddDependencyInformation(casted._info!, component);
+        }
+
+        public static void AddDependencyInformation(GCComponentInfo info, Renderer renderer)
+        {
+            info.MarkEntrypoint();
+            if (info.Activeness != false)
+            {
+                // anchor proves when this renderer can be rendered.
+                if (renderer.reflectionProbeUsage != ReflectionProbeUsage.Off ||
+                    renderer.lightProbeUsage != LightProbeUsage.Off)
+                    info.AddDependency(renderer.probeAnchor);
+                if (renderer.lightProbeUsage == LightProbeUsage.UseProxyVolume)
+                    info.AddDependency(renderer.lightProbeProxyVolumeOverride.transform);
+            }
         }
     }
 
@@ -90,16 +100,24 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             ComponentDependencyCollector collector)
         {
             // IMPORTANT NOTE: We have to use MeshInfo to get information about the mesh!!!
-            var casted = (Processors.TraceAndOptimizes.ComponentDependencyCollector.Collector)collector;
+            var casted = (ComponentDependencyRetriever.Collector)collector;
             var meshInfo2 = casted.GetMeshInfoFor(component);
             // SMR without mesh does nothing.
             if (meshInfo2.IsEmpty()) return;
 
             base.CollectDependency(component, collector);
 
+            AddDependencyInformation(casted._info!, meshInfo2);
+        }
+
+        public static void AddDependencyInformation(GCComponentInfo info, Processors.SkinnedMeshes.MeshInfo2 meshInfo2)
+        {
+            info.MarkEntrypoint();
             foreach (var bone in meshInfo2.Bones)
-                casted.AddBoneDependency(bone.Transform);
-            collector.AddDependency(meshInfo2.RootBone);
+                info.AddDependency(bone.Transform, GCComponentInfo.DependencyType.Bone);
+            if (info.Activeness != false)
+                info.AddDependency(meshInfo2.RootBone);
+            RendererInformation<SkinnedMeshRenderer>.AddDependencyInformation(info, meshInfo2.SourceRenderer);
         }
     }
 
@@ -108,10 +126,9 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(MeshRenderer component, ComponentDependencyCollector collector)
         {
-            var meshFilter = component.GetComponent<MeshFilter>();
             // Mesh renderer without MeshFilter does nothing
             // Mesh renderer without Mesh does nothing
-            if (!meshFilter || !meshFilter.sharedMesh) return;
+            if (!component.TryGetComponent<MeshFilter>(out var meshFilter) || meshFilter.sharedMesh == null) return;
             base.CollectDependency(component, collector);
             collector.AddDependency(meshFilter).EvenIfDependantDisabled();
         }
@@ -286,8 +303,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(Joint component, ComponentDependencyCollector collector)
         {
-            var rigidBody = component.GetComponent<Rigidbody>();
-            if (rigidBody)
+            if (component.TryGetComponent<Rigidbody>(out var rigidBody))
             {
                 collector.AddDependency(rigidBody, component);
                 collector.AddDependency(rigidBody);

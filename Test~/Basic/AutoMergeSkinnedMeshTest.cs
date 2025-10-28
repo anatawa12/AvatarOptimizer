@@ -27,14 +27,15 @@ namespace Anatawa12.AvatarOptimizer.Test
             var material2 = new Material(shader);
             var material3 = new Material(shader);
             var material4 = new Material(shader);
-            var (indexMap, meshes) = AutoMergeSkinnedMesh.CreateSubMeshesMergePreserveOrder(new[]
+            using var meshInfo2s = new[]
             {
                 MakeMeshInfo2(material0, material1),
                 MakeMeshInfo2(material0, material2),
                 MakeMeshInfo2(material1, material2),
                 MakeMeshInfo2(material0, material4),
                 MakeMeshInfo2(material3, material4),
-            });
+            }.ToDisposableList();
+            var (indexMap, meshes) = AutoMergeSkinnedMesh.CreateSubMeshesMergePreserveOrder(meshInfo2s.ToArray());
 
             Assert.That(indexMap, Is.EquivalentTo(new[]
             {
@@ -114,11 +115,11 @@ namespace Anatawa12.AvatarOptimizer.Test
             var buildContext = PreprocessAvatar(avatar);
 
             // do process
-            var categorization = AutoMergeSkinnedMesh.CategoryMeshesForMerge(buildContext, new List<MeshInfo2>()
+            AutoMergeSkinnedMesh.CategoryMeshesForMerge(buildContext, new List<MeshInfo2>()
             {
                 buildContext.GetMeshInfoFor(renderer0), buildContext.GetMeshInfoFor(renderer1),
                 buildContext.GetMeshInfoFor(renderer2), buildContext.GetMeshInfoFor(renderer3),
-            });
+            }, out var categorization);
 
             Assert.That(categorization.Values, Is.EquivalentTo(new[]
             {
@@ -185,10 +186,10 @@ namespace Anatawa12.AvatarOptimizer.Test
                 Is.EqualTo(ApplyState.Always));
 
             // do process
-            var categorization = AutoMergeSkinnedMesh.CategoryMeshesForMerge(buildContext, new List<MeshInfo2>()
+            AutoMergeSkinnedMesh.CategoryMeshesForMerge(buildContext, new List<MeshInfo2>()
             {
                 buildContext.GetMeshInfoFor(avatar.renderer0), buildContext.GetMeshInfoFor(avatar.renderer1),
-            });
+            }, out var categorization);
 
             Assert.That(categorization.Values, Is.EquivalentTo(new[]
             {
@@ -226,10 +227,10 @@ namespace Anatawa12.AvatarOptimizer.Test
                 Is.EqualTo(ApplyState.Always));
 
             // do process
-            var categorization = AutoMergeSkinnedMesh.CategoryMeshesForMerge(buildContext, new List<MeshInfo2>()
+            AutoMergeSkinnedMesh.CategoryMeshesForMerge(buildContext, new List<MeshInfo2>()
             {
                 buildContext.GetMeshInfoFor(avatar.renderer0), buildContext.GetMeshInfoFor(avatar.renderer1),
-            });
+            }, out var categorization);
 
             Assert.That(categorization.Values, Is.EquivalentTo(new[]
             {
@@ -266,10 +267,10 @@ namespace Anatawa12.AvatarOptimizer.Test
                 Is.EqualTo(ApplyState.Partially));
 
             // do process
-            var categorization = AutoMergeSkinnedMesh.CategoryMeshesForMerge(buildContext, new List<MeshInfo2>()
+            AutoMergeSkinnedMesh.CategoryMeshesForMerge(buildContext, new List<MeshInfo2>()
             {
                 buildContext.GetMeshInfoFor(avatar.renderer0), buildContext.GetMeshInfoFor(avatar.renderer1),
-            });
+            }, out var categorization);
 
             Assert.That(categorization.Values, Is.EquivalentTo(new[]
             {
@@ -306,10 +307,10 @@ namespace Anatawa12.AvatarOptimizer.Test
                 Is.EqualTo(ApplyState.Partially));
 
             // do process
-            var categorization = AutoMergeSkinnedMesh.CategoryMeshesForMerge(buildContext, new List<MeshInfo2>()
+            AutoMergeSkinnedMesh.CategoryMeshesForMerge(buildContext, new List<MeshInfo2>()
             {
                 buildContext.GetMeshInfoFor(avatar.renderer0), buildContext.GetMeshInfoFor(avatar.renderer1),
-            });
+            }, out var categorization);
 
             Assert.That(categorization.Values, Is.EquivalentTo(Enumerable.Empty<List<MeshInfo2>>()));
         }
@@ -343,10 +344,10 @@ namespace Anatawa12.AvatarOptimizer.Test
                 Is.EqualTo(ApplyState.Never));
 
             // do process
-            var categorization = AutoMergeSkinnedMesh.CategoryMeshesForMerge(buildContext, new List<MeshInfo2>()
+            AutoMergeSkinnedMesh.CategoryMeshesForMerge(buildContext, new List<MeshInfo2>()
             {
                 buildContext.GetMeshInfoFor(avatar.renderer0), buildContext.GetMeshInfoFor(avatar.renderer1),
-            });
+            }, out var categorization);
 
             Assert.That(categorization.Values, Is.EquivalentTo(new[]
             {
@@ -385,10 +386,10 @@ namespace Anatawa12.AvatarOptimizer.Test
                 Is.EqualTo(ApplyState.Never));
 
             // do process
-            var categorization = AutoMergeSkinnedMesh.CategoryMeshesForMerge(buildContext, new List<MeshInfo2>()
+            AutoMergeSkinnedMesh.CategoryMeshesForMerge(buildContext, new List<MeshInfo2>()
             {
                 buildContext.GetMeshInfoFor(avatar.renderer0), buildContext.GetMeshInfoFor(avatar.renderer1),
-            });
+            }, out var categorization);
 
             Assert.That(categorization.Values, Is.EquivalentTo(Enumerable.Empty<List<MeshInfo2>>()));
         }
@@ -415,7 +416,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             AutoMergeSkinnedMesh.CategoryMeshesForMerge(buildContext, new List<MeshInfo2>()
             {
                 buildContext.GetMeshInfoFor(avatar.renderer0), buildContext.GetMeshInfoFor(avatar.renderer1),
-            });
+            }, out _);
 
             // No crash
         }

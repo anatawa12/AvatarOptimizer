@@ -29,12 +29,6 @@ All non-configured changes in the avatar behavior is treated as a bug, even if i
 In some cases, we may put off the bug since it does not affect so much for most use cases.\
 However, the buggy behavior may not be considered in other components.
 
-For example, `AAO Merge Skinned Mesh` component in 1.7.x or older merges BlendShapes which have the same name.\
-This behavior is treated as a bug since this makes impossible to animate them separately.\
-You may use this bug to sync the BlendShape animation of an Skinned Mesh Renderer with one of another Skinned Mesh Renderer.\
-However, this is not supported behavior and some other components may break the behavior.\
-For example, `Automatically Freeze BlendShape` in `AAO Trace and Optimize` component will freezes the BlendShapes which might be animated with this buggy behavior by being merged by `AAO Merge Skinned Mesh` component.
-
 ## How is the behavior of Avatar Optimizer stable for future versions? {#behavior-stability}
 
 Avatar Optimizer uses the [Semantic Versioning] for versioning and mostly applies the rules of Semantic Versioning to the behavior of the components.

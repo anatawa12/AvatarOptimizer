@@ -1,11 +1,13 @@
 {
     "name": "com.anatawa12.avatar-optimizer.test.animator-optimizer",
-    "rootNamespace": "",
+    "rootNamespace": "Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer",
     "references": [
         "com.anatawa12.avatar-optimizer.test.utils",
+        "com.anatawa12.avatar-optimizer.test.runtime",
         "com.anatawa12.avatar-optimizer.internal.animator-optimizer",
         "com.anatawa12.avatar-optimizer.internal.trace-and-optimize-base",
         "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner",
         "nadena.dev.ndmf"
     ],
     "includePlatforms": [

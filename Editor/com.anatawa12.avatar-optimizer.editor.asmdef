@@ -14,6 +14,7 @@
         "com.anatawa12.avatar-optimizer.internal.meshinfo2",
         "com.anatawa12.avatar-optimizer.internal.utils",
         "Unity.Burst",
+        "Unity.Mathematics",
         "nadena.dev.ndmf",
         "nadena.dev.ndmf.runtime",
         "nadena.dev.ndmf.reactive-query.core",
@@ -21,7 +22,8 @@
         "VRC.SDKBase",
         "UniHumanoid",
         "VRM",
-        "VRM10"
+        "VRM10",
+        "net.nekobako.MaskTextureEditor.Editor"
     ],
     "includePlatforms": [
         "Editor"
@@ -64,6 +66,11 @@
             "name": "com.vrmc.vrm",
             "expression": "",
             "define": "AAO_VRM1"
+        },
+        {
+            "name": "net.nekobako.mask-texture-editor",
+            "expression": "[1,2)",
+            "define": "AAO_MASK_TEXTURE_EDITOR"
         }
     ],
     "noEngineReferences": false

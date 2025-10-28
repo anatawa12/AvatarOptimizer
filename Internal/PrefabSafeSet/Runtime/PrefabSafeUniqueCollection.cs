@@ -23,7 +23,12 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
             if (currentPrefabStage != null)
             {
                 var instanceGameObject = instance as GameObject ?? (instance as Component)?.gameObject;
-                isAsset |= currentPrefabStage.IsPartOfPrefabContents(instanceGameObject);
+                // isAsset |= currentPrefabStage.IsPartOfPrefabContents(instanceGameObject);
+                // but ^^ will cause InvalidOperationException.
+                // This is because `OnValidate` invocation is from `PrefabStageUtility:LoadPrefabIntoPreviewScene`
+                // invocation in PrefabStage.LoadStage method, which assigns m_PrefabContentsRoot.
+                // scene property is already available so we use it instead for detecting GameObjects in the PrefabStage. 
+                isAsset |= instanceGameObject?.scene == currentPrefabStage.scene;
             }
 
             return isInstance && !isAsset;
@@ -369,9 +374,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 
             foreach (var value in initialize)
             {
-                if (value == null) continue;
+                if (value.IsNull()) continue;
                 var key = manipulator.GetKey(value);
-                if (key == null) continue;
+                if (key.IsNull()) continue;
                 _index.Add(key, _list.AddLast(value));
             }
         }
@@ -383,9 +388,9 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 
         public void Add(TAdditionValue? value)
         {
-            if (value == null) return;
+            if (value.IsNull()) return;
             var key = _manipulator.GetKey(value);
-            if (key == null) return;
+            if (key.IsNull()) return;
             if (_index.TryGetValue(key, out var node))
                 node.Value = value;
             else

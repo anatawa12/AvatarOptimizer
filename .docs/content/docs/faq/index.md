@@ -6,7 +6,7 @@ weight: 2
 # Frequently Asked Questions {#faq}
 
 Here is the list of frequently asked questions about Avatar Optimizer.
-If you have some other questions, please feel free to ask on the [GitHub Discussions] or on [Fediverse (Misskey / Mastodon)][Fediverse].
+If you have some other questions, please feel free to ask on the [GitHub Discussions], [NDMF Discord] or [Fediverse (Misskey / Mastodon)][Fediverse].
 I'm usually use Japanese, but you can ask me with English.
 
 ## The behavior or appearance of the avatar is changed when using `AAO Trace and Optimize` component {#avatar-behavior-or-appearance-changed-when-using-aao-trace-and-optimize-component}
@@ -48,12 +48,8 @@ If you have some material slots which will be replaced differently with animatio
 
 ## BlendShape animations conflict when using `AAO Merge Skinned Mesh` component {#blendshape-animations-conflict-when-using-aao-merge-skinned-mesh-component}
 
-This problem is a known bug and is currently expected to conflicts.
-
-When merging meshes with animated BlendShapes, be careful not to conflict.
-If there is a conflict, a warning will be displayed, so please check the warning.
-
-Issue of this problem: [#568](https://github.com/anatawa12/AvatarOptimizer/issues/568)
+This problem has been fixed since Avatar Optimizer 1.8.0.
+Please update to Avatar Optimizer 1.8.0 or later.
 
 ## PhysBones / Contact Receivers that are used in the OSC-based gimmick are not working {#physbones-contact-receivers-that-are-used-in-the-osc-based-gimmick-are-not-working}
 
@@ -63,41 +59,20 @@ However, for technical reasons, the `AAO Trace and Optimize` component cannot de
 Some modern avatars have their own gimmicks based on PhysBone / Contact Receiver components, so those components will be forgotten to remove in most cases.
 Therefore, `AAO Trace and Optimize` will assume that such components are not for OSC-based gimmick, and remove them if they are not used for other ways.
 
-Of course, this assumption is not always the case, so if you are using PhysBone / Contact Receiver components for the OSC-based gimmick without Animator or Expressions,
-please configure your avatar to detect them as used in the avatar.\
-`AAO Trace and Optimize` will not remove them if they are used in the Animator in the avatar.
-So, by adding parameters used in the OSC-based gimmick to the parameter list of Animator Controller or Expression Parameters,
-such components will not be removed.
+This assumption is not always the case, so if you are using PhysBone / Contact Receiver components for the OSC-based gimmick without Animator or Expressions,
+please create [Asset Description] and please configure [Parameters Read By External Tools] for your OSC-based gimmick.
 
-In addition, for future discussion, if your OSC-based gimmick is removed by `AAO Trace and Optimize`,
-could you let us know the name of parameter used in the OSC-based gimmicks?
-I may implement list of parameters likely to be used by OSC and keeping components for those parameters, or other ways to prevent removing them in the future.
-Please feel free to contact on the GitHub issue below, [Fediverse (Misskey / Mastodon)][Fediverse] or [Twitter].
-
-Issue of this problem: [#1090](https://github.com/anatawa12/AvatarOptimizer/issues/1090)
+If the gimmick is published or selling, I would like to bundle your Asset Description with AAO to improve compatibility with the gimmick.
+If you would like to, please contact us on [GitHub], [NDMF Discord], [Fediverse (Misskey / Mastodon)][Fediverse], or [Twitter].
 
 ## I cannot upload the avatar because of pre-build hard limit check {#i-cannot-upload-the-avatar-because-of-pre-build-hard-limit-check}
 
-Avatar Optimizer and some other non-destructive avatar modification tools may make your avatar not exceed the hard limit of VRChat.
-However, the upload button on the VRCSDK Control Panel will be disabled if the hard limit is exceeded with on-scene Avatar.
-You may use the following methods to skip pre-build hard limit check.
-Please note that those methods will not skip the post-build hard limit check.
+This is because the upload button on the VRCSDK Control Panel is disabled if the hard limit is exceeded with on-scene Avatar.
 
-- Manual bake avatar before uploading the avatar.
+However, since VRChat SDK 3.8.1, VRCSDK allows you to start building and uploading the avatar even if the hard limit is exceeded with on-scene Avatar.
+Therefore, the recommended way to fix this problem is to update the VRCSDK to the latest version.
 
-  You can use `NDM Framework/Manual bake avatar` on the context menu of the Avatar GameObject to apply non-destructive tools before uploading the avatar.
-  This will clone your avatar and apply non-destructive tools to the cloned avatar, so your original avatar will not be modified.
-- Use [Upload without pre-check] by Sayamame-beans.
-
-  [Upload without pre-check] is a tool that allows you to upload the avatar without pre-build hard limit check.
-- Use [VRCQuestTools] by kurotu.
-
-  [VRCQuestTools] is a tool to easily convert your avatar to Android / Quest compatible avatar.\
-  As a part of the tool, [VQT Avatar Builder] allows you to upload the avatar without pre-build hard limit check for Android build.
-
-[Upload without pre-check]: https://github.com/Sayamame-beans/Upload-without-preCheck?tab=readme-ov-file#upload-without-pre-check
-[VRCQuestTools]: https://kurotu.github.io/VRCQuestTools/
-[VQT Avatar Builder]: https://kurotu.github.io/VRCQuestTools/docs/references/main-menu/show-avatar-builder
+When you have some problems with upgrading the VRCSDK, you may use some external tools that can initiate the upload process without using the VRCSDK Control Panel.
 
 ## I want to support the development of Avatar Optimizer {#i-want-to-support-the-development-of-avatar-optimizer}
 
@@ -119,5 +94,9 @@ I also accept financial support on [GitHub Sponsors] and [Booth].
 [Booth]: https://anatawa12.booth.pm/items/4885109
 [good first issue]: https://github.com/anatawa12/AvatarOptimizer/labels/good%20first%20issue
 [help wanted]: https://github.com/anatawa12/AvatarOptimizer/labels/help%20wanted
+[NDMF Discord]: https://discord.gg/dV4cVpewmM
+[GitHub]: https://github.com/anatawa12/AvatarOptimizer/
+[Asset Description]: ../developers/asset-description/
+[Parameters Read By External Tools]: ../developers/asset-description/#parameters-read-by-external-tools
 
 [^merged-mesh]: Merged Mesh is a Skinned Mesh Renderer which is attached along with `AAO Merge Skinned Mesh` component.

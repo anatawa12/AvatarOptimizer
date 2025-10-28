@@ -14,17 +14,18 @@ aliases:
 
 このコンポーネントはアバターのルートに追加してください。(分類: [Avatar Global Component](../../component-kind/avatar-global-components))
 
-{{< hint info >}}
+<blockquote class="book-hint info">
 
 Trace and Optimizeは「**見た目に絶対に影響させてはならない**」という前提の下で、かなり慎重に作られています。\
 そのため、見た目に影響が出たり、何らかのギミックが機能しなくなったりといった問題が発生した場合はすべて、例外なくAAOのバグとなります。\
 従って、問題が起きた際は報告していただければ、出来る限り修正いたします。
 
-{{< /hint >}}
+</blockquote>
 
 現在、以下の機能を使った自動最適化が可能です。
-- `BlendShapeを自動的に固定・除去する`\
-  アニメーションなどで使われていないか、常に同じ値になっているBlendShapeを自動的に固定・除去します。
+- `BlendShapeを最適化する`\
+  <small>以前は`BlendShapeを自動的に固定・除去する`という名前でしたが、機能が増えたため名前が変わりました。</small>\
+  アニメーションなどを走査して、BlendShapeを自動的に固定・除去・統合することでBlendShapeの数を削減します。
 - `使われていないObjectを自動的に削除する`\
   アニメーションなどを走査して、使われていないObject(GameObjectやコンポーネントなど)を自動的に削除します。\
   また、切り替えるものと一緒に使われていて、他の方法で使われていないPhysBooneコンポーネントを自動的に切り替えるようにします。
@@ -42,6 +43,9 @@ Trace and Optimizeは「**見た目に絶対に影響させてはならない**�
   - `マテリアルスロットの前後関係を変えることを許可する`\
     マテリアルスロットの前後関係を変えることで、アバターの描画負荷を減らせる場合があります。\
     多くの場合、マテリアルスロットの前後関係は特に意味を持ちませんが、描画順に影響を与える場合もあるようです。
+- `テクスチャを最適化する`\
+  見た目に影響を与えずにテクスチャを最適化します。\
+  現在は、AvatarOptimizerが対応しているシェーダーが使用されているマテリアルに対してのみ、UVパッキングやテクスチャサイズの縮小を行います。
 
 また、以下の設定で自動設定を調節できます。
 - `MMDワールドとの互換性`\
@@ -62,13 +66,81 @@ Trace and Optimizeは「**見た目に絶対に影響させてはならない**�
 
 ## アニメーターの最適化 {#animator-optimizer}
 
-この機能では、アニメーターに対して以下の最適化を行います。
+この機能では、現在、アニメーターに対して以下の最適化を行います。
+
+(最適化処理の詳細な仕様は、将来的に変更される可能性があります。)
 
 - AnyState式のレイヤーをEntry-Exit式に変換\
-  アニメーターコントローラーのレイヤーをできる限りEntry-Exit式に変換します。
-  また、以下の最適化により、AnyState式のレイヤーがBlendTreeに変換されることがあります。
+  アニメーターコントローラーのレイヤーをできる限りDiamond型のEntry-Exit式に変換します。
+  また、後述の最適化により、AnyState式のレイヤーは最終的にBlendTreeに変換されることがあります。
+
+  ```mermaid
+  ---
+  title: AnyState式Layer
+  ---
+  graph LR;
+        AnyState(AnyState);
+        Entry(Entry) --> State1;
+        AnyState --> State1(State1);
+        AnyState --> State2(State2);
+        AnyState --> State3(State3);
+  
+  classDef default fill:#ab8211
+  classDef node stroke-width:0px,color:#ffffff
+  classDef state fill:#878787
+  style AnyState fill:#29a0cc
+  style Entry fill:#15910f
+  class Entry,State1,State2,Exit node
+  class State1 default
+  class State2,State3 state
+  ```
+
 - Entry-Exit式のレイヤーをBlendTreeに変換\
-  アニメーターコントローラーのレイヤーをできる限りBlendTreeに変換します。
+  アニメーターコントローラーのレイヤーをできる限りBlendTreeに変換します。\
+  現在、Diamond型、およびLinear型のEntry-Exit式のレイヤーがBlendTreeに変換されます。
+
+  ```mermaid
+  ---
+  title: Diamond型Entry-Exit式レイヤー
+  ---
+  graph LR;
+        Entry(Entry);
+        Entry --> State1(State1);
+        Entry --> State2(State2);
+        Entry --> State3(State3);
+        State1 --> Exit(Exit);
+        State2 --> Exit;
+        State3 --> Exit;
+  
+  classDef default fill:#ab8211
+  classDef node stroke-width:0px,color:#ffffff
+  classDef state fill:#878787
+  style Exit fill:#ba202f
+  style Entry fill:#15910f
+  class Entry,State1,State2,Exit node
+  class State1 default
+  class State2,State3 state
+  ```
+
+  ```mermaid
+  ---
+  title: Linear型Entry-Exit式レイヤー
+  ---
+  flowchart LR;
+        Entry(Entry) --> State1(State1);
+        State1 --> State2(State2);
+        State2 --> Exit(Exit);
+
+  classDef node stroke-width:0px,color:#ffffff
+  classDef defaultState fill:#ab8211
+  classDef state fill:#878787
+  style Exit fill:#ba202f
+  style Entry fill:#15910f
+  class Entry,State1,State2,Exit node
+  class State1 defaultState
+  class State2 state
+  ```
+
 - BlendTreeを統合\
   複数のBlendTreeレイヤーを1つのDirect BlendTreeに統合します。
 - 使われていないレイヤーを削除する\

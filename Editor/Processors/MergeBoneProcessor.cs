@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using nadena.dev.ndmf;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Profiling;
 using Object = UnityEngine.Object;
@@ -32,26 +33,19 @@ namespace Anatawa12.AvatarOptimizer.Processors
             if (AnyNotMergedBone(mergeBone.transform))
             {
                 // if the bone has non-merged bones, uneven scaling is not supported.
-                if (!ScaledEvenly(mergeBone.transform.localScale))
+                if (!Utils.ScaledEvenly(mergeBone.transform.localScale))
                     BuildLog.LogWarning("MergeBone:validation:unevenScaling");
             }
 
             bool AnyNotMergedBone(Transform bone)
             {
                 if (bone.CompareTag("EditorOnly")) return false;
-                if (!bone.GetComponent<MergeBone>()) return true;
+                if (!bone.TryGetComponent<MergeBone>(out _)) return true;
                 foreach (var transform in bone.DirectChildrenEnumerable())
                     if (AnyNotMergedBone(transform))
                         return true;
                 return false;
             }
-        }
-
-        public static bool ScaledEvenly(Vector3 localScale)
-        {
-            bool CheckScale(float scale) => 0.995 < scale && scale < 1.005;
-            return CheckScale(localScale.x / localScale.y) && CheckScale(localScale.x / localScale.z) &&
-                   CheckScale(localScale.y / localScale.z);
         }
 
         protected override void Execute(BuildContext context)
@@ -90,7 +84,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     Profiler.BeginSample("DoBoneMap");
                     var meshInfo2 = context.GetMeshInfoFor(renderer);
                     if (meshInfo2.Bones.Any(x => x.Transform != null && mergeMapping.ContainsKey(x.Transform)))
-                        DoBoneMap2(meshInfo2, mergeMapping);
+                        DoBoneMap2(meshInfo2, mergeMapping, context);
                     Profiler.EndSample();
                 }
             }
@@ -113,7 +107,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
                     var (position, rotation, scale) = parentInfo.ComputeInfoFor(child);
 
-                    child.parent = mapped;
+                    context.Extension<GCComponentInfoContext>().SetParent(child, mapped);
                     child.localPosition = position;
                     child.localRotation = rotation;
                     child.localScale = scale;
@@ -158,7 +152,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
         }
 #endif
 
-        private void DoBoneMap2(MeshInfo2 meshInfo2, Dictionary<Transform, Transform> mergeMapping)
+        private void DoBoneMap2(MeshInfo2 meshInfo2, Dictionary<Transform, Transform> mergeMapping, BuildContext context)
         {
             var primaryBones = new ConcurrentDictionary<Transform, Bone>();
             var boneReplaced = false;
@@ -171,8 +165,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 if (bone.Transform == null) continue;
                 if (mergeMapping.TryGetValue(bone.Transform, out var mapped))
                 {
-                    bone.Bindpose = mapped.worldToLocalMatrix * bone.Transform.localToWorldMatrix * bone.Bindpose;
+                    bone.Bindpose = RelativeTransform(mapped, bone.Transform) * bone.Bindpose;
                     bone.Transform = mapped;
+                    context.Extension<GCComponentInfoContext>().GetInfo(meshInfo2.SourceRenderer)
+                        .AddDependency(mapped, GCComponentInfo.DependencyType.Bone);
                     boneReplaced = true;
                 }
                 else
@@ -193,8 +189,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
             Parallel.ForEach(meshInfo2.Vertices, vertex =>
             {
                 var singleBoneTransform = vertex.BoneWeights.Select(x => x.bone.Transform)
-                    .DistinctSingleOrDefaultIfNoneOrMultiple();
-                if (singleBoneTransform == null) return;
+                    .DistinctSingleOrDefaultIfNoneOrMultiple<Transform?>(ReferenceEqualityComparer.Instance);
+                if (singleBoneTransform is null) return;
                 var finalBone = primaryBones.GetOrAdd(singleBoneTransform, vertex.BoneWeights[0].bone);
 
                 // about bindposes and bones
@@ -221,10 +217,14 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 var buffer = vertex.BlendShapeBuffer;
                 var bufferVertexIndex = vertex.BlendShapeBufferVertexIndex;
 
-                static void ApplyMatrixToArray(Matrix4x4 matrix, Vector3[][] arrayArray, int index)
+                static void ApplyMatrixToArray(Matrix4x4 matrix, NativeArray<Vector3>[] arrayArray, int index)
                 {
-                    foreach (var array in arrayArray)
+                    foreach (var array1 in arrayArray)
+                    {
+                        // Why NativeArray<Vector3>.[array] is not readonly accessor?
+                        var array = array1;
                         array[index] = matrix.MultiplyPoint3x3(array[index]);
+                    }
                 }
 
                 ApplyMatrixToArray(transBindPose, buffer.DeltaVertices, bufferVertexIndex);
@@ -265,6 +265,32 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
 
             Profiler.EndSample();
+        }
+
+        /// <summary>
+        /// Compute relative transform from one transform to another.
+        ///
+        /// Requires that `from` is a parent of `to`.
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <returns></returns>
+        private Matrix4x4 RelativeTransform(Transform from, Transform to)
+        {
+            // Same as the following, but supports zero scaling in parent
+            // from.worldToLocalMatrix * to.localToWorldMatrix
+            var result = Matrix4x4.identity;
+            for (var current = to; current != from; current = current.parent)
+            {
+                if (current == null)
+                {
+                    throw new ArgumentException("to is not a child of from", nameof(to));
+                }
+
+                // accumulate localToWorldMatrix
+                result = Matrix4x4.TRS(current.localPosition, current.localRotation, current.localScale) * result;
+            }
+            return result;
         }
 
         private bool ValidBindPose(Matrix4x4 matrix)

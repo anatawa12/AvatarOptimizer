@@ -15,45 +15,16 @@ internal class UVUsageCompabilityAPIImpl : UVUsageCompabilityAPI.IUVUsageCompabi
         UVUsageCompabilityAPI.Impl = new UVUsageCompabilityAPIImpl();
     }
 
-    public class Evacuate : EditSkinnedMeshComponent
-    {
-        public List<Evacuation> evacuations = new List<Evacuation>();
-        
-        [Serializable]
-        public struct Evacuation
-        {
-            public int originalChannel;
-            public int savedChannel;
-        }
-
-        public int EvacuateIndex(int index)
-        {
-            foreach (var evacuation in evacuations)
-                if (evacuation.originalChannel == index)
-                    index = evacuation.savedChannel;
-            return index;
-        }
-    }
-
-    public class RevertEvacuate : EditSkinnedMeshComponent
-    {
-        public Evacuate evacuate = null!; // initialized on add
-    }
-
     private BitArray GetUsedChannels(SkinnedMeshRenderer renderer)
     {
         var usedChannels = new BitArray(8);
 
-        var removeMeshByMask = renderer.GetComponent<RemoveMeshByMask>() as RemoveMeshByMask;
-        var removeMeshByUVTile = renderer.GetComponent<RemoveMeshByUVTile>() as RemoveMeshByUVTile;
-        var evacuate = renderer.GetComponent<Evacuate>() as Evacuate;
-
-        if (removeMeshByMask != null)
+        if (renderer.TryGetComponent<RemoveMeshByMask>(out _))
         {
             usedChannels[0] = true;
         }
 
-        if (removeMeshByUVTile != null)
+        if (renderer.TryGetComponent<RemoveMeshByUVTile>(out var removeMeshByUVTile))
         {
             foreach (var materialSlot in removeMeshByUVTile.materials)
             {
@@ -64,7 +35,7 @@ internal class UVUsageCompabilityAPIImpl : UVUsageCompabilityAPI.IUVUsageCompabi
             }
         }
 
-        if (evacuate != null)
+        if (renderer.TryGetComponent<InternalEvacuateUVChannel>(out var evacuate))
         {
             foreach (var evacuateEvacuation in evacuate.evacuations)
             {
@@ -82,13 +53,13 @@ internal class UVUsageCompabilityAPIImpl : UVUsageCompabilityAPI.IUVUsageCompabi
     {
         var channels = GetUsedChannels(renderer);
         if (channels[savedChannel]) throw new InvalidOperationException("savedChannel is used by AAO");
-        var evacuate = renderer.GetComponent<Evacuate>();
-        if (evacuate == null)
+
+        if (!renderer.TryGetComponent<InternalEvacuateUVChannel>(out var evacuate))
         {
-            evacuate = renderer.gameObject.AddComponent<Evacuate>();
-            renderer.gameObject.AddComponent<RevertEvacuate>().evacuate = evacuate;
+            evacuate = renderer.gameObject.AddComponent<InternalEvacuateUVChannel>();
+            renderer.gameObject.AddComponent<InternalRevertEvacuateUVChannel>().evacuate = evacuate;
         }
-        evacuate.evacuations.Add(new Evacuate.Evacuation
+        evacuate.evacuations.Add(new InternalEvacuateUVChannel.Evacuation
         {
             originalChannel = originalChannel,
             savedChannel = savedChannel,

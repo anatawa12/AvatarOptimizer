@@ -49,7 +49,7 @@ jobs:
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v2
         with:
-          hugo-version: '0.111.3'
+          hugo-version: '0.148.1'
           extended: true
 
       - name: Check release is public
@@ -89,20 +89,23 @@ jobs:
               ;;
           esac
 
-          case "$GITHUB_REF_NAME" in
-            master | master-* )
-              echo "head is master or master-*"
-              ;;
-            * )
-              echo "invalid release kind: $RELEASE_KIND_IN is not allowd for $GITHUB_REF_NAME"
-              exit 255
-              ;;
-          esac
+          if $PUBLISH; then
+            case "$GITHUB_REF_NAME" in
+              master | master-* )
+                echo "head is master or master-*"
+                ;;
+              * )
+                echo "invalid release kind: $RELEASE_KIND_IN is not allowd for $GITHUB_REF_NAME"
+                exit 255
+                ;;
+            esac
+          fi
 
           gh-export-variable VERSION "$(get-version)"
           gh-set-output version "$(get-version)"
         env:
           RELEASE_KIND_IN: ${{ github.event.inputs.release_kind }}
+          PUBLISH: ${{ inputs.publish }}
 
       # region changelog
       - name: Create Changelog
@@ -130,18 +133,18 @@ jobs:
             [installer for this]: https://api.anatawa12.com/create-vpai/?name=AvatarOptimizer-{}-installer.unitypackage&repo=https://vpm.anatawa12.com/vpm.json&package=com.anatawa12.avatar-optimizer&version=${{ env.VERSION }}
       - name: Upload CHANGELOG.md
         if: ${{ !fromJSON(env.PRERELEASE) }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: CHANGELOG
           path: CHANGELOG.md
       - name: Upload CHANGELOG-PRERELEASE.md
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: CHANGELOG-PRERELEASE
           path: CHANGELOG-PRERELEASE.md
       - run: cp "${{ steps.changelog.outputs.release-note }}" release-note.md
       - name: Upload release note
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: changelog
           path: release-note.md
@@ -172,15 +175,19 @@ jobs:
           
       - name: update csc.rsp
         run: |
+          # remove something after `PUBLISH DELETE MARKER` line
           sed -n '/PUBLISH DELETE MARKER/q;p' -i .csc.rsp.nullunsafe
           sed -n '/PUBLISH DELETE MARKER/q;p' -i .csc.rsp.nullsafe
+          # remove comments
+          sed '/#/d' -i .csc.rsp.nullunsafe
+          sed '/#/d' -i .csc.rsp.nullsafe
 
       # region vpm release
       - name: Build VPM release
         run: |
           zip -r "build/$PKG_NAME-$VERSION.zip" . -x 'build*' '.*' 'Test~/*'
       - name: Upload VPM release
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: vpm-package
           path: build/${{ env.PKG_NAME }}-${{ env.VERSION }}.zip
@@ -207,7 +214,7 @@ jobs:
       - name: zip docs
         run: cd .docs/public && zip ../../build/website.zip -r .
       - name: Upload docs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: website
           path: .docs/public

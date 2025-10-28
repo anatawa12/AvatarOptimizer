@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using NUnit.Framework;
 using UnityEngine;
@@ -60,9 +61,9 @@ namespace Anatawa12.AvatarOptimizer.Test
             var go = new GameObject();
             var smr = go.AddComponent<SkinnedMeshRenderer>();
             smr.sharedMesh = mesh;
-            var meshInfo2 = new MeshInfo2(smr);
+            using var meshInfo2 = new MeshInfo2(smr);
 
-            var vertex = meshInfo2.Vertices.Find(x => x.Position == new Vector3(+1, +1, +1));
+            var vertex = meshInfo2.Vertices.First(x => x.Position == new Vector3(+1, +1, +1));
 
             vertex.TryGetBlendShape("test0", weight, out var position, out _, out _);
 
@@ -81,10 +82,10 @@ namespace Anatawa12.AvatarOptimizer.Test
             var go = new GameObject();
             var smr = go.AddComponent<SkinnedMeshRenderer>();
             smr.sharedMesh = mesh;
-            var meshInfo2 = new MeshInfo2(smr);
+            using var meshInfo2 = new MeshInfo2(smr);
 
             var newMesh = new Mesh();
-            meshInfo2.WriteToMesh(newMesh);
+            meshInfo2.WriteToMesh(newMesh, isSkinnedMesh: true);
         }
 
         [Test]
@@ -94,7 +95,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var secondGo = new GameObject();
             var smr = go.AddComponent<SkinnedMeshRenderer>();
             smr.rootBone = secondGo.transform;
-            var meshInfo2 = new MeshInfo2(smr);
+            using var meshInfo2 = new MeshInfo2(smr);
             Assert.That(meshInfo2.RootBone, Is.EqualTo(secondGo.transform));
         }
 
@@ -114,7 +115,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var smr = go.AddComponent<SkinnedMeshRenderer>();
             smr.sharedMesh = mesh;
 
-            var meshInfo2 = new MeshInfo2(smr);
+            using var meshInfo2 = new MeshInfo2(smr);
 
             foreach (var vertex in meshInfo2.Vertices)
             {
@@ -144,7 +145,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var smr = go.AddComponent<SkinnedMeshRenderer>();
             smr.sharedMesh = mesh;
 
-            var meshInfo2 = new MeshInfo2(smr);
+            using var meshInfo2 = new MeshInfo2(smr);
 
             Vector3 position;
             var vertex = meshInfo2.Vertices[0];
@@ -164,13 +165,14 @@ namespace Anatawa12.AvatarOptimizer.Test
             var smr = go.AddComponent<SkinnedMeshRenderer>();
             smr.sharedMesh = mesh;
 
-            var meshInfo2 = new MeshInfo2(smr);
+            using var meshInfo2 = new MeshInfo2(smr);
 
             meshInfo2.SubMeshes[0].Vertices.Clear();
-            meshInfo2.Vertices.Clear();
+            Utils.DisposeAll(meshInfo2.VerticesMutable);
+            meshInfo2.VerticesMutable.Clear();
 
             var newMesh = new Mesh();
-            meshInfo2.WriteToMesh(newMesh);
+            meshInfo2.WriteToMesh(newMesh, isSkinnedMesh: true);
 
             Assert.That(newMesh.subMeshCount, Is.EqualTo(1));
         }
@@ -184,7 +186,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var smr = go.AddComponent<SkinnedMeshRenderer>();
             smr.sharedMesh = mesh;
 
-            var meshInfo2 = new MeshInfo2(smr);
+            using var meshInfo2 = new MeshInfo2(smr);
 
             foreach (var vertex in meshInfo2.Vertices)
             {
@@ -204,7 +206,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var smr = go.AddComponent<SkinnedMeshRenderer>();
             smr.sharedMesh = mesh;
 
-            var meshInfo2 = new MeshInfo2(smr);
+            using var meshInfo2 = new MeshInfo2(smr);
             meshInfo2.MakeBoned();
 
             foreach (var vertex in meshInfo2.Vertices)
@@ -214,6 +216,220 @@ namespace Anatawa12.AvatarOptimizer.Test
 
                 Assert.That(position, Is.EqualTo(vertex.Position));
             }
+        }
+
+        // test with binary-edited fbx which is originally exported from blender
+        [Test]
+        public void MultipleSameNameBlendShapeBlenderBinaryEdited()
+        {
+            var fbx = TestUtils.GetAssetAt<GameObject>("MeshInfo2/same-name-blendshape-blender-binary-edited.fbx");
+            var renderer = fbx.GetComponent<SkinnedMeshRenderer>();
+            var mesh = renderer.sharedMesh;
+
+            // check the mesh has same name blendShape
+            Assert.That(mesh.blendShapeCount, Is.EqualTo(2));
+            Assert.That(mesh.GetBlendShapeName(0), Is.EqualTo("BlendShape1"));
+            Assert.That(mesh.GetBlendShapeName(1), Is.EqualTo("BlendShape1"));
+            
+            using var meshInfo2 = new MeshInfo2(renderer);
+            // we've checked no exception is thrown
+            
+            // second shape is renamed
+            Assert.That(meshInfo2.BlendShapes[0].name, Is.EqualTo("BlendShape1"));
+            Assert.That(meshInfo2.BlendShapes[1].name, Does.StartWith("BlendShape1-nameConflict-"));
+            // and there is buffer for each vertex
+            foreach (var vertex in meshInfo2.Vertices)
+            {
+                Assert.That(vertex.BlendShapeBuffer.Shapes[meshInfo2.BlendShapes[0].name], Is.Not.Null);
+                Assert.That(vertex.BlendShapeBuffer.Shapes[meshInfo2.BlendShapes[1].name], Is.Not.Null);
+            }
+        }
+
+        // test with real fbx
+        [Test]
+        public void MultipleSameNameBlendShape3dsMax()
+        {
+            var fbx = TestUtils.GetAssetAt<GameObject>("MeshInfo2/same-name-blendshape-3ds-max.fbx");
+            var renderer = fbx.transform.Find("Box001").GetComponent<SkinnedMeshRenderer>();
+            var mesh = renderer.sharedMesh;
+
+            // check the mesh has same name blendShape
+            Assert.That(mesh.blendShapeCount, Is.EqualTo(2));
+            Assert.That(mesh.GetBlendShapeName(0), Is.EqualTo("Shape"));
+            Assert.That(mesh.GetBlendShapeName(1), Is.EqualTo("Shape"));
+
+            using var meshInfo2 = new MeshInfo2(renderer);
+            // we've checked no exception is thrown
+
+            // second shape is renamed
+            Assert.That(meshInfo2.BlendShapes[0].name, Is.EqualTo("Shape"));
+            Assert.That(meshInfo2.BlendShapes[1].name, Does.StartWith("Shape-nameConflict-"));
+            // and there is buffer for each vertex
+            foreach (var vertex in meshInfo2.Vertices)
+            {
+                Assert.That(vertex.BlendShapeBuffer.Shapes[meshInfo2.BlendShapes[0].name], Is.Not.Null);
+                Assert.That(vertex.BlendShapeBuffer.Shapes[meshInfo2.BlendShapes[1].name], Is.Not.Null);
+            }
+        }
+
+        [Test]
+        public void SkinnedMeshWithOnlyBlendShapesRemovedAddsDummy()
+        {
+            // This test specifically reproduces the issue described:
+            // "BlendShapeだけだったSkinneMeshからBlemdShapeを全部消すと" 
+            // (When removing all BlendShapes from a SkinnedMesh that only had BlendShapes)
+            
+            var mesh = TestUtils.NewCubeMesh();
+            
+            // Add some blend shapes to simulate a mesh that originally had only blend shapes
+            var deltas = new Vector3[8];
+            deltas.AsSpan().Fill(new Vector3(1, 0, 0));
+            mesh.AddBlendShapeFrame("OriginalShape1", 100, deltas, null, null);
+            deltas.AsSpan().Fill(new Vector3(0, 1, 0));
+            mesh.AddBlendShapeFrame("OriginalShape2", 100, deltas, null, null);
+
+            var go = new GameObject();
+            var smr = go.AddComponent<SkinnedMeshRenderer>();
+            smr.sharedMesh = mesh;
+
+            using var meshInfo2 = new MeshInfo2(smr);
+            
+            // Verify it originally had blend shapes but no bone weights
+            Assert.That(meshInfo2.BlendShapes.Count, Is.EqualTo(2));
+            Assert.That(meshInfo2.Vertices.All(v => v.BoneWeights.Count == 0), Is.True, "Should have no bone weights");
+            
+            // Simulate optimization removing all blend shapes
+            meshInfo2.BlendShapes.Clear();
+            
+            var newMesh = new Mesh();
+            meshInfo2.WriteToMesh(newMesh, isSkinnedMesh: true);
+
+            // Should have exactly 1 dummy blend shape added to prevent Unity error
+            Assert.That(newMesh.blendShapeCount, Is.EqualTo(1));
+            Assert.That(newMesh.GetBlendShapeName(0), Is.EqualTo("AAO_DummyBlendShape"));
+            
+            // Verify this doesn't cause Unity's error by checking the mesh has the required data
+            Assert.That(newMesh.blendShapeCount > 0 || newMesh.boneWeights.Length > 0, Is.True, 
+                "Mesh should have either blend shapes or bone weights to avoid Unity error");
+        }
+
+        [Test]
+        public void SkinnedMeshWithoutBlendShapesAddsDummy()
+        {
+            var mesh = TestUtils.NewCubeMesh();
+            var go = new GameObject();
+            var smr = go.AddComponent<SkinnedMeshRenderer>();
+            smr.sharedMesh = mesh;
+
+            using var meshInfo2 = new MeshInfo2(smr);
+            
+            // Remove all blend shapes to simulate the optimization scenario
+            meshInfo2.BlendShapes.Clear();
+            
+            var newMesh = new Mesh();
+            meshInfo2.WriteToMesh(newMesh, isSkinnedMesh: true);
+
+            // Should have exactly 1 dummy blend shape added
+            Assert.That(newMesh.blendShapeCount, Is.EqualTo(1));
+            Assert.That(newMesh.GetBlendShapeName(0), Is.EqualTo("AAO_DummyBlendShape"));
+            
+            // The dummy blend shape should have one frame with weight 100 and all zero deltas
+            Assert.That(newMesh.GetBlendShapeFrameCount(0), Is.EqualTo(1));
+            Assert.That(newMesh.GetBlendShapeFrameWeight(0, 0), Is.EqualTo(100f));
+            
+            var deltaVertices = new Vector3[newMesh.vertexCount];
+            var deltaNormals = new Vector3[newMesh.vertexCount];
+            var deltaTangents = new Vector3[newMesh.vertexCount];
+            newMesh.GetBlendShapeFrameVertices(0, 0, deltaVertices, deltaNormals, deltaTangents);
+            
+            // All deltas should be zero (dummy blend shape)
+            foreach (var delta in deltaVertices)
+                Assert.That(delta, Is.EqualTo(Vector3.zero));
+        }
+
+        [Test]
+        public void SkinnedMeshWithExistingBlendShapesDoesNotAddDummy()
+        {
+            var mesh = TestUtils.NewCubeMesh();
+            var deltas = new Vector3[8];
+            deltas.AsSpan().Fill(new Vector3(1, 1, 1));
+            mesh.AddBlendShapeFrame("ExistingShape", 100, deltas, null, null);
+
+            var go = new GameObject();
+            var smr = go.AddComponent<SkinnedMeshRenderer>();
+            smr.sharedMesh = mesh;
+
+            using var meshInfo2 = new MeshInfo2(smr);
+            
+            // Should have the original blend shape
+            Assert.That(meshInfo2.BlendShapes.Count, Is.EqualTo(1));
+            Assert.That(meshInfo2.BlendShapes[0].name, Is.EqualTo("ExistingShape"));
+            
+            var newMesh = new Mesh();
+            meshInfo2.WriteToMesh(newMesh, isSkinnedMesh: true);
+
+            // Should have exactly 1 blend shape (the original, no dummy added)
+            Assert.That(newMesh.blendShapeCount, Is.EqualTo(1));
+            Assert.That(newMesh.GetBlendShapeName(0), Is.EqualTo("ExistingShape"));
+        }
+
+        [Test]
+        public void MeshRendererWithoutBlendShapesDoesNotAddDummy()
+        {
+            var mesh = TestUtils.NewCubeMesh();
+            var go = new GameObject();
+            var mr = go.AddComponent<MeshRenderer>();
+            var mf = go.AddComponent<MeshFilter>();
+            mf.sharedMesh = mesh;
+
+            using var meshInfo2 = new MeshInfo2(mr);
+            
+            // Ensure no blend shapes
+            meshInfo2.BlendShapes.Clear();
+            
+            var newMesh = new Mesh();
+            meshInfo2.WriteToMesh(newMesh, isSkinnedMesh: false);
+
+            // Should have no blend shapes at all
+            Assert.That(newMesh.blendShapeCount, Is.EqualTo(0));
+        }
+
+        // https://github.com/anatawa12/AvatarOptimizer/issues/1496
+        // Freezing inifnimation (blendShapes with infinity offset) would result non-finite position.
+        // Unity simply use min/max to compute bounding box so it will result non-finite bounding box.
+        // However, unity will have issue when mesh has non-finite bounding box and clears mesh data. in some situation.
+        // Therefore, we need to ensure the bounding box is always finite.
+        [Test]
+        public void NonFinitePositionShouldResultGood()
+        {
+            var mesh = TestUtils.NewCubeMesh();
+            var go = new GameObject();
+            var mr = go.AddComponent<MeshRenderer>();
+            var mf = go.AddComponent<MeshFilter>();
+            mf.sharedMesh = mesh;
+
+            using var meshInfo2 = new MeshInfo2(mr);
+
+            var vertex = meshInfo2.Vertices[0];
+            vertex.Position = new Vector3(float.NaN, float.PositiveInfinity, float.NegativeInfinity);
+
+            var newMesh = new Mesh();
+            meshInfo2.WriteToMesh(newMesh, isSkinnedMesh: false);
+
+            Assert.That(newMesh.vertexCount, Is.EqualTo(mesh.vertexCount));
+            Assert.That(float.IsFinite(newMesh.bounds.center.x));
+            Assert.That(float.IsFinite(newMesh.bounds.center.y));
+            Assert.That(float.IsFinite(newMesh.bounds.center.z));
+            Assert.That(float.IsFinite(newMesh.bounds.extents.x));
+            Assert.That(float.IsFinite(newMesh.bounds.extents.y));
+            Assert.That(float.IsFinite(newMesh.bounds.extents.z));
+
+            // according to experiment with debugger, accessing vertexBufferCount would force mesh to be analyzed in some way
+            // and triggers clearing mesh data when non-finite bounding box is present.
+            // so we access it and check vertex count later.
+            // It's unlikely to fail this test since we checked bounding box is finite above, but for ensuring the original issue is fixed, we check vertex count too.
+            _ = newMesh.vertexBufferCount;
+            Assert.That(newMesh.vertexCount, Is.EqualTo(mesh.vertexCount));
         }
     }
 }

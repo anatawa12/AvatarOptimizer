@@ -5,7 +5,6 @@ using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
-using Debug = System.Diagnostics.Debug;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
@@ -63,11 +62,22 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
     internal readonly struct FloatValueInfo : IValueInfo<FloatValueInfo>, IEquatable<FloatValueInfo>
     {
+        /// <summary>
+        /// The application state of this value. Does not matter with variable value.
+        ///
+        /// In this context Partial Application means the value can be applied with weight in between 0 and 1.
+        /// </summary>
+        public bool PartialApplication { get; }
         public bool IsConstant => _possibleValues is { Length: 1 };
         private readonly float[]? _possibleValues;
 
-        public FloatValueInfo(float value) => _possibleValues = new[] { value };
-        public FloatValueInfo(float[] values) => _possibleValues = values;
+        public FloatValueInfo(float values, bool partialApplication = false) : this(new[] { values }, partialApplication) { }
+        public FloatValueInfo(float[] values, bool partialApplication = false)
+        {
+            _possibleValues = values ?? throw new ArgumentNullException(nameof(values));
+            PartialApplication = partialApplication;
+            if (_possibleValues.Length == 0) PartialApplication = true;
+        }
 
         public float ConstantValue
         {
@@ -78,21 +88,27 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
         }
 
+        /// <summary>
+        /// The possible animated values. If null, any value is possible (variable).
+        /// If the array has one value, it will be animated to the value (or just not animated)
+        /// If the array has more than one value, it will be animated to any of the values, or in between.
+        /// </summary>
         public float[]? PossibleValues => _possibleValues;
+        /// <summary>
+        /// The ValueInfo express any value.
+        /// </summary>
         public static FloatValueInfo Variable => default;
 
-        public bool TryGetConstantValue(out float o)
+        public bool TryGetConstantValue(float currentValue, out float o)
         {
-            if (IsConstant)
+            if (IsConstant && (!PartialApplication || currentValue.Equals(ConstantValue)))
             {
                 o = ConstantValue;
                 return true;
             }
-            else
-            {
-                o = default;
-                return false;
-            }
+
+            o = default;
+            return false;
         }
 
         public FloatValueInfo ConstantInfoForSideBySide(IEnumerable<PropModNode<FloatValueInfo>> nodes)
@@ -122,7 +138,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     case AnimatorWeightState.AlwaysZero:
                         continue; // Might have effect with write defaults true?
                     case AnimatorWeightState.AlwaysOne:
-                    case AnimatorWeightState.EitherZeroOrOne:
+                    case AnimatorWeightState.NonZeroOne:
                     {
                         if (layer.Node.Value.PossibleValues is not { } otherValues) return Variable;
 
@@ -151,21 +167,27 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                         }
                     }
                         break;
-                    case AnimatorWeightState.Variable:
-                        return Variable;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
             }
 
-            return new FloatValueInfo(allPossibleValues.ToArray());
+            return new FloatValueInfo(allPossibleValues.ToArray(), partialApplication: true);
         }
 
-        public bool Equals(FloatValueInfo other) => NodeImplUtils.SetEquals(_possibleValues, other._possibleValues);
+        public bool Equals(FloatValueInfo other) => NodeImplUtils.SetEquals(_possibleValues, other._possibleValues) && PartialApplication == other.PartialApplication;
         public override bool Equals(object? obj) => obj is FloatValueInfo other && Equals(other);
         public override int GetHashCode() => _possibleValues != null ? _possibleValues.GetSetHashCode() : 0;
         public static bool operator ==(FloatValueInfo left, FloatValueInfo right) => left.Equals(right);
         public static bool operator !=(FloatValueInfo left, FloatValueInfo right) => !left.Equals(right);
+
+        public override string ToString()
+        {
+            if (PossibleValues is not float[] values) return "Variable";
+            if (values.Length == 0) return "Never";
+            var isPartial = PartialApplication ? "Partial" : "Always";
+            return $"{isPartial}:Const:{string.Join(",", values)}";
+        }
     }
 
     // note: no default is allowed
@@ -268,8 +290,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             AnimatorWeightState.AlwaysZero => ApplyState.Never, // Might have effect with write defaults true?
             AnimatorWeightState.AlwaysOne => ApplyState.Always,
-            AnimatorWeightState.EitherZeroOrOne => ApplyState.Partially,
-            AnimatorWeightState.Variable => ApplyState.Partially,
+            AnimatorWeightState.NonZeroOne => ApplyState.Partially,
             _ => throw new ArgumentOutOfRangeException()
         };
 
@@ -409,31 +430,20 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public AnimationCurve Curve { get; }
         public AnimationClip Clip { get; }
 
-        public static FloatAnimationCurveNode? Create(AnimationClip clip, EditorCurveBinding binding,
+        public static FloatAnimationCurveNode Create(AnimationClip clip, EditorCurveBinding binding,
             AnimationClip? additiveReferenceClip, float additiveReferenceFrame)
         {
-            var curve = AnimationUtility.GetEditorCurve(clip, binding);
-            if (curve == null) return null;
-            if (curve.keys.Length == 0) return null;
-            
-            float referenceValue = 0;
-            if (additiveReferenceClip != null 
-                && AnimationUtility.GetEditorCurve(additiveReferenceClip, binding) is { } referenceCurve)
-                referenceValue = referenceCurve.Evaluate(additiveReferenceFrame);
-            else
-                referenceValue = curve.Evaluate(0);
-
-            return new FloatAnimationCurveNode(clip, curve, referenceValue);
+            return new FloatAnimationCurveNode(clip, binding, additiveReferenceClip, additiveReferenceFrame);
         }
 
-        private FloatAnimationCurveNode(AnimationClip clip, AnimationCurve curve, float referenceValue)
+        private FloatAnimationCurveNode(AnimationClip clip, EditorCurveBinding binding,
+            AnimationClip? additiveReferenceClip, float additiveReferenceFrame)
         {
             if (!clip) throw new ArgumentNullException(nameof(clip));
-            if (curve == null) throw new ArgumentNullException(nameof(curve));
-            Debug.Assert(curve.keys.Length > 0);
             Clip = clip;
-            Curve = curve;
-            _constantInfo = new Lazy<FloatValueInfo>(() => ParseProperty(curve, referenceValue), isThreadSafe: false);
+            var curve = AnimationUtility.GetEditorCurve(clip, binding);
+            Curve = curve ?? throw new ArgumentNullException(nameof(curve));
+            _constantInfo = new Lazy<FloatValueInfo>(() => ParseProperty(curve, additiveReferenceClip, binding, additiveReferenceFrame), isThreadSafe: false);
         }
 
         private readonly Lazy<FloatValueInfo> _constantInfo;
@@ -442,16 +452,26 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public override FloatValueInfo Value => _constantInfo.Value;
         public override IEnumerable<ObjectReference> ContextReferences => new[] { ObjectRegistry.GetReference(Clip) };
 
-        private static FloatValueInfo ParseProperty(AnimationCurve curve, float referenceValue)
+        private static FloatValueInfo ParseProperty(AnimationCurve curve,
+            AnimationClip? additiveReferenceClip, EditorCurveBinding binding, float additiveReferenceFrame)
         {
             var curveValue = ParseCurve(curve);
             if (curveValue.PossibleValues == null) return FloatValueInfo.Variable;
-            return new FloatValueInfo(curveValue.PossibleValues.Concat(new[] { referenceValue }).Distinct()
-                .ToArray());
+
+            float referenceValue = 0;
+            if (additiveReferenceClip != null 
+                && AnimationUtility.GetEditorCurve(additiveReferenceClip, binding) is { } referenceCurve)
+                referenceValue = referenceCurve.Evaluate(additiveReferenceFrame);
+            else
+                referenceValue = curve.Evaluate(0);
+
+            return new FloatValueInfo(curveValue.PossibleValues.Concat(new[] { referenceValue }).Distinct().ToArray());
         }
 
         private static FloatValueInfo ParseCurve(AnimationCurve curve)
         {
+            // TODO: we should check actual behavior with no keyframes
+            if (curve.keys.Length == 0) return FloatValueInfo.Variable; 
             if (curve.keys.Length == 1) return new FloatValueInfo(curve.keys[0].value);
 
             float constValue = 0;
@@ -488,7 +508,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         private ObjectAnimationCurveNode(AnimationClip clip, ObjectReferenceKeyframe[] frames)
         {
-            Debug.Assert(frames.Length > 0);
+            Utils.Assert(frames.Length > 0);
             Clip = clip;
             Frames = frames;
             _constantInfo = new Lazy<ObjectValueInfo>(() => ParseProperty(frames), isThreadSafe: false);
@@ -530,7 +550,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             // expected to pass list or array
             // ReSharper disable once PossibleMultipleEnumeration
-            Debug.Assert(children.Any());
+            Utils.Assert(children.Any());
             // ReSharper disable once PossibleMultipleEnumeration
             _children = children;
             _blendTreeType = blendTreeType;

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using nadena.dev.ndmf;
 using UnityEngine;
@@ -7,7 +8,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     public class TraceAndOptimizeState
     {
         public bool Enabled;
-        public bool FreezeBlendShape;
+        public bool OptimizeBlendShape;
         public bool RemoveUnusedObjects;
         public bool RemoveZeroSizedPolygon;
         public bool OptimizePhysBone;
@@ -18,8 +19,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool MmdWorldCompatibility = true;
 
         public bool PreserveEndBone;
-        public HashSet<GameObject> Exclusions = new HashSet<GameObject>();
-        public bool GCDebug;
+        public HashSet<GameObject?> Exclusions = new();
+        public int GCDebug;
+        public bool NoSweepComponents;
         public bool NoConfigureMergeBone;
         public bool NoActivenessAnimation;
         public bool SkipFreezingNonAnimatedBlendShape;
@@ -37,13 +39,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool SkipRemoveEmptySubMesh;
         public bool SkipAnyStateToEntryExit;
         public bool SkipRemoveMaterialUnusedProperties;
+        public bool SkipRemoveMaterialUnusedTextures;
+        public bool SkipAutoMergeBlendShape;
+        public bool SkipRemoveUnusedSubMesh;
+        public bool SkipMergePhysBones;
 
         public Dictionary<SkinnedMeshRenderer, HashSet<string>> PreserveBlendShapes =
             new Dictionary<SkinnedMeshRenderer, HashSet<string>>();
 
         internal void Initialize(TraceAndOptimize config)
         {
-            FreezeBlendShape = config.freezeBlendShape;
+            OptimizeBlendShape = config.optimizeBlendShape;
             RemoveUnusedObjects = config.removeUnusedObjects;
             RemoveZeroSizedPolygon = config.removeZeroSizedPolygons;
             OptimizePhysBone = config.optimizePhysBone;
@@ -55,8 +61,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             PreserveEndBone = config.preserveEndBone;
 
-            Exclusions = new HashSet<GameObject>(config.debugOptions.exclusions);
-            GCDebug = config.debugOptions.gcDebug;
+            Exclusions = new HashSet<GameObject?>(config.debugOptions.exclusions ?? Array.Empty<GameObject?>());
+            GCDebug = (int)config.debugOptions.gcDebug;
+            NoSweepComponents = config.debugOptions.noSweepComponents;
             NoConfigureMergeBone = config.debugOptions.noConfigureMergeBone;
             NoActivenessAnimation = config.debugOptions.noActivenessAnimation;
             SkipFreezingNonAnimatedBlendShape = config.debugOptions.skipFreezingNonAnimatedBlendShape;
@@ -74,6 +81,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             SkipRemoveEmptySubMesh = config.debugOptions.skipRemoveEmptySubMesh;
             SkipAnyStateToEntryExit = config.debugOptions.skipAnyStateToEntryExit;
             SkipRemoveMaterialUnusedProperties = config.debugOptions.skipRemoveMaterialUnusedProperties;
+            SkipRemoveMaterialUnusedTextures = config.debugOptions.skipRemoveMaterialUnusedTextures;
+            SkipAutoMergeBlendShape = config.debugOptions.skipAutoMergeBlendShape;
+            SkipRemoveUnusedSubMesh = config.debugOptions.skipRemoveUnusedSubMesh;
+            SkipMergePhysBones = config.debugOptions.skipMergePhysBones;
 
             Enabled = true;
         }

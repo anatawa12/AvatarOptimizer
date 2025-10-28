@@ -16,8 +16,7 @@ namespace Anatawa12.AvatarOptimizer
 
         private void Reset()
         {
-            var renderer = GetComponent<SkinnedMeshRenderer>();
-            if (renderer == null) return;
+            if (!TryGetComponent<SkinnedMeshRenderer>(out var renderer)) return;
             var mesh = renderer.sharedMesh;
             if (mesh == null) return;
             materials = new MaterialSlot[mesh.subMeshCount];

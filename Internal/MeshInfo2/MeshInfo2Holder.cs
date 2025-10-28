@@ -28,6 +28,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             {
                 Holder.SaveToMesh();
             }
+            Holder.Dispose();
             Holder = null;
         }
     }
@@ -52,7 +53,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
         }
     }
 
-    internal class MeshInfo2Holder
+    internal class MeshInfo2Holder : IDisposable
     {
         private readonly Dictionary<SkinnedMeshRenderer, MeshInfo2> _skinnedCache =
             new Dictionary<SkinnedMeshRenderer, MeshInfo2>();
@@ -63,7 +64,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             if (avatarTagComponent == null) return;
             foreach (var renderer in rootObject.GetComponentsInChildren<SkinnedMeshRenderer>(true))
             {
-                Profiler.BeginSample($"Read Skinned Mesh");
+                Profiler.BeginSample($"GetMeshInfoFor");
                 GetMeshInfoFor(renderer);
                 Profiler.EndSample();
             }
@@ -86,6 +87,12 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 keyValuePair.Value.WriteToSkinnedMeshRenderer(targetRenderer);
                 Profiler.EndSample();
             }
+        }
+
+        public void Dispose()
+        {
+            Utils.DisposeAll(_skinnedCache.Values);
+            _skinnedCache.Clear();
         }
     }
 }

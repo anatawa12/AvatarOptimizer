@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 672cf279ebc041f5b87addc7c6c980bb, type: 3}
+  m_Name: CASIO G-SHOCK
+  m_EditorClassIdentifier: 
+  comment: 'CASIO G-SHOCK [MY G-SHOCK]
+
+    https://booth.pm/ja/items/5054545 and
+    some avatar for short priod of time'
+  meaninglessComponents: []
+  parametersReadByExternalTools: []
+  parametersChangedByExternalTools:
+  - name: Gshock_Sec
+    matchMode: 0
+  - name: Gshock_Min
+    matchMode: 0
+  - name: Gshock_Hour
+    matchMode: 0
+  - name: Gshock_Week
+    matchMode: 0
+  - name: Gshock_Day
+    matchMode: 0
+  - name: Gshock_Month
+    matchMode: 0

@@ -31,8 +31,7 @@ namespace Anatawa12.AvatarOptimizer
                 var component = (UnusedBonesByReferencesTool)target;
 
                 // first, migrate configuration
-                var traceAndOptimize = component.GetComponent<TraceAndOptimize>();
-                if (!traceAndOptimize)
+                if (!component.TryGetComponent<TraceAndOptimize>(out var traceAndOptimize))
                     traceAndOptimize = Undo.AddComponent<TraceAndOptimize>(component.gameObject);
                 Undo.RecordObject(traceAndOptimize, CONTENT_UNDO_NAME);
 

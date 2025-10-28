@@ -17,15 +17,28 @@ namespace Anatawa12.AvatarOptimizer.Processors
             foreach (var component in context.GetComponents<ClearEndpointPosition>())
             foreach (var vrcPhysBoneBase in component.GetComponents<VRCPhysBoneBase>())
                 using (ErrorReport.WithContextObject(vrcPhysBoneBase))
-                    Process(vrcPhysBoneBase);
+                    Process(vrcPhysBoneBase, context);
         }
 
-        public static void Process(VRCPhysBoneBase pb)
+        public static void Process(VRCPhysBoneBase pb, BuildContext? context)
         {
+            var gcContext = context?.Extension<GCComponentInfoContext>();
+            var pbInfo = gcContext?.GetInfo(pb);
+            if (pbInfo?.Activeness == false) pbInfo = null;
             CreateEndBones(pb, (name, parent, localPosition) =>
             {
-                new GameObject(name) { transform = { localPosition = localPosition } }
-                    .transform.SetParent(parent, worldPositionStays: false);
+                var gameObject = new GameObject(name);
+                gameObject.transform.localPosition = localPosition;
+                gameObject.transform.SetParent(parent, worldPositionStays: false);
+                if (gcContext != null)
+                {
+                    var newInfo = gcContext.NewComponent(gameObject.transform);
+                    if (pbInfo != null)
+                    {
+                        pbInfo.AddDependency(gameObject.transform);
+                        newInfo.AddDependency(pb);
+                    }
+                }
             });
             pb.endpointPosition = Vector3.zero;
             EditorUtility.SetDirty(pb);

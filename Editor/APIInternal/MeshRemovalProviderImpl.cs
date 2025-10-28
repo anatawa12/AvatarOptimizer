@@ -21,7 +21,7 @@ internal class MeshRemovalProviderImpl : MeshRemovalProvider
         var removeMeshByMask = renderer.GetComponent<RemoveMeshByMask>();
         var removeMeshByBlendShape = renderer.GetComponents<RemoveMeshByBlendShape>();
         var removeMeshInBox = renderer.GetComponents<RemoveMeshInBox>();
-        var evacuate = renderer.GetComponent<UVUsageCompabilityAPIImpl.Evacuate>();
+        var evacuate = renderer.GetComponent<InternalEvacuateUVChannel>();
 
         if (removeMeshByMask == null && removeMeshByBlendShape.Length == 0 && removeMeshInBox.Length == 0)
             return null;
@@ -52,15 +52,14 @@ internal class MeshRemovalProviderImpl : MeshRemovalProvider
     }
 
     private MeshRemovalProviderImpl(SkinnedMeshRenderer renderer,
-        UVUsageCompabilityAPIImpl.Evacuate? evacuate,
+        InternalEvacuateUVChannel? evacuate,
         RemoveMeshByMask? removeMeshByMask,
         RemoveMeshByBlendShape[] removeMeshByBlendShape,
         RemoveMeshInBox[] removeMeshInBox)
     {
         if (removeMeshByBlendShape.Length != 0)
         {
-            var toleranceSqrByShape = EditModePreview.RemoveMeshByBlendShapeRendererNode.CalculateToleranceSqrByShape(removeMeshByBlendShape);
-            _removedByBlendShape = EditModePreview.RemoveMeshByBlendShapeRendererNode.ComputeShouldRemoveVertex(renderer.sharedMesh, toleranceSqrByShape);
+            _removedByBlendShape = EditModePreview.RemoveMeshByBlendShapeRendererNode.ComputeShouldRemoveVertex(renderer.sharedMesh, removeMeshByBlendShape);
         }
 
         if (removeMeshInBox.Length != 0)

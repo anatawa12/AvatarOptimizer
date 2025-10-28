@@ -5,7 +5,7 @@ namespace Anatawa12.AvatarOptimizer
     public static class AnimatorWeightChanges
     {
         public static AnimatorWeightChange ForDurationAndWeight(float duration, float weight) =>
-            duration != 0 ? AnimatorWeightChange.Variable : ForWeight(weight);
+            duration != 0 ? AnimatorWeightChange.NonZeroOneChange : ForWeight(weight);
 
         public static AnimatorWeightChange ForWeight(float weight)
         {
@@ -16,7 +16,7 @@ namespace Anatawa12.AvatarOptimizer
                 case 1:
                     return AnimatorWeightChange.AlwaysOne;
                 default:
-                    return AnimatorWeightChange.Variable;
+                    return AnimatorWeightChange.NonZeroOneChange;
             }
         }
         
@@ -28,23 +28,13 @@ namespace Anatawa12.AvatarOptimizer
             if (a == AnimatorWeightChange.NotChanged) return b;
             if (b == AnimatorWeightChange.NotChanged) return a;
 
-            if (a == AnimatorWeightChange.Variable) return AnimatorWeightChange.Variable;
-            if (b == AnimatorWeightChange.Variable) return AnimatorWeightChange.Variable;
+            if (a == AnimatorWeightChange.NonZeroOneChange) return AnimatorWeightChange.NonZeroOneChange;
+            if (b == AnimatorWeightChange.NonZeroOneChange) return AnimatorWeightChange.NonZeroOneChange;
 
             if (a == AnimatorWeightChange.AlwaysOne && b == AnimatorWeightChange.AlwaysZero)
-                return AnimatorWeightChange.EitherZeroOrOne;
+                return AnimatorWeightChange.NonZeroOneChange;
             if (b == AnimatorWeightChange.AlwaysOne && a == AnimatorWeightChange.AlwaysZero)
-                return AnimatorWeightChange.EitherZeroOrOne;
-
-            if (a == AnimatorWeightChange.EitherZeroOrOne && b == AnimatorWeightChange.AlwaysZero)
-                return AnimatorWeightChange.EitherZeroOrOne;
-            if (b == AnimatorWeightChange.EitherZeroOrOne && a == AnimatorWeightChange.AlwaysZero)
-                return AnimatorWeightChange.EitherZeroOrOne;
-
-            if (a == AnimatorWeightChange.EitherZeroOrOne && b == AnimatorWeightChange.AlwaysOne)
-                return AnimatorWeightChange.EitherZeroOrOne;
-            if (b == AnimatorWeightChange.EitherZeroOrOne && a == AnimatorWeightChange.AlwaysOne)
-                return AnimatorWeightChange.EitherZeroOrOne;
+                return AnimatorWeightChange.NonZeroOneChange;
 
             throw new ArgumentOutOfRangeException();
         }
@@ -77,7 +67,6 @@ namespace Anatawa12.AvatarOptimizer
         NotChanged,
         AlwaysZero,
         AlwaysOne,
-        EitherZeroOrOne,
-        Variable
+        NonZeroOneChange,
     }
 }

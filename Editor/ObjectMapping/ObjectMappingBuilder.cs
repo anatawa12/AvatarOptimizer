@@ -1,8 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Anatawa12.AvatarOptimizer.API;
 using UnityEditor;
 using UnityEngine;
+
+#if AAO_VRM0
+using VRM;
+#endif
+
+#if AAO_VRM1
+using UniVRM10;
+using UniGLTF.Extensions.VRMC_vrm;
+#endif
 
 namespace Anatawa12.AvatarOptimizer
 {
@@ -16,6 +26,7 @@ namespace Anatawa12.AvatarOptimizer
         // - Track moving GameObjects
         // - Track renaming Properties in Component
         // - Track merging Components
+        // - Track VrmFirstPersonFlags
 
         private readonly IReadOnlyDictionary<int, BeforeGameObjectTree> _beforeGameObjectInfos;
 
@@ -41,10 +52,45 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             _beforeGameObjectInfos[rootObject.GetInstanceID()].InitializeRecursive();
+            
+#if AAO_VRM0
+            if (rootObject.TryGetComponent<VRMFirstPerson>(out var firstPerson))
+            {
+                foreach (var renderer in firstPerson.Renderers)
+                {
+                    GetComponentInfo(renderer.Renderer).VrmFirstPersonFlag = renderer.FirstPersonFlag switch
+                    {
+                        FirstPersonFlag.Auto => VrmFirstPersonFlag.Auto,
+                        FirstPersonFlag.Both => VrmFirstPersonFlag.Both,
+                        FirstPersonFlag.ThirdPersonOnly => VrmFirstPersonFlag.ThirdPersonOnly,
+                        FirstPersonFlag.FirstPersonOnly => VrmFirstPersonFlag.FirstPersonOnly,
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
+                }
+            }
+#endif
+
+#if AAO_VRM1
+            if (rootObject.TryGetComponent<Vrm10Instance>(out var vrm10Instance))
+            {
+                foreach (var renderer in vrm10Instance.Vrm.FirstPerson.Renderers)
+                {
+                    GetComponentInfo(renderer.GetRenderer(rootObject.transform)).VrmFirstPersonFlag = renderer.FirstPersonFlag switch
+                    {
+                        FirstPersonType.auto => VrmFirstPersonFlag.Auto,
+                        FirstPersonType.both => VrmFirstPersonFlag.Both,
+                        FirstPersonType.thirdPersonOnly => VrmFirstPersonFlag.ThirdPersonOnly,
+                        FirstPersonType.firstPersonOnly => VrmFirstPersonFlag.FirstPersonOnly,
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
+                }
+            }
+#endif
         }
 
         public void RecordMergeComponent<T>(T from, T mergeTo) where T: Component
         {
+            Tracing.Trace(TracingArea.BuildObjectMapping, $"RecordMergeComponent: {from} -> {mergeTo}");
             if (!_componentInfos.TryGetValue(mergeTo.GetInstanceID(), out var mergeToInfo))
             {
                 var newMergeToInfo = new BuildingComponentInfo(mergeTo);
@@ -61,26 +107,61 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        public void RecordMoveProperties(ComponentOrGameObject from, params (string old, string @new)[] props) =>
+        static VrmFirstPersonFlag? MergeVrmFirstPersonFlags(VrmFirstPersonFlag? from, VrmFirstPersonFlag? to)
+        {
+            switch (from, to)
+            {
+                case (null, var other): return other;
+                case (var other, null): return other; 
+                case ({ } fromFlag, { } toFlag) when fromFlag == toFlag: return fromFlag;
+                case ({ } fromFlag, { } toFlag):
+                {
+                    var mergedFirstPersonFlag = fromFlag == VrmFirstPersonFlag.Both || toFlag == VrmFirstPersonFlag.Both
+                        ? VrmFirstPersonFlag.Both : VrmFirstPersonFlag.Auto; 
+                    BuildLog.LogWarning("MergeSkinnedMesh:warning:VRM:FirstPersonFlagsMismatch", mergedFirstPersonFlag.ToString());
+                    return mergedFirstPersonFlag;
+                }
+            }
+        }
+
+        public void RecordMoveProperties(ComponentOrGameObject from, params (string old, string @new)[] props)
+        {
+            Tracing.Trace(TracingArea.BuildObjectMapping, $"RecordMoveProperties: {from} {string.Join(", ", props)}");
             GetComponentInfo(from).MoveProperties(props);
+        }
 
-        public void RecordMoveProperty(ComponentOrGameObject from, string oldProp, string newProp) =>
+        public void RecordMoveProperty(ComponentOrGameObject from, string oldProp, string newProp)
+        {
+            Tracing.Trace(TracingArea.BuildObjectMapping, $"RecordMoveProperty: {from} {oldProp} -> {newProp}");
             GetComponentInfo(from).MoveProperties((oldProp, newProp));
+        }
 
-        public void RecordMoveProperty(ComponentOrGameObject fromComponent, string oldProp, ComponentOrGameObject toComponent, string newProp) =>
+        public void RecordMoveProperty(ComponentOrGameObject fromComponent, string oldProp, ComponentOrGameObject toComponent, string newProp)
+        {
+            Tracing.Trace(TracingArea.BuildObjectMapping, $"RecordMoveProperty: {fromComponent} {oldProp} -> {toComponent} {newProp}");
             GetComponentInfo(fromComponent).MoveProperty(GetComponentInfo(toComponent), oldProp, newProp);
+        }
 
-        public void RecordCopyProperty(ComponentOrGameObject fromComponent, string oldProp, ComponentOrGameObject toComponent, string newProp) =>
+        public void RecordCopyProperty(ComponentOrGameObject fromComponent, string oldProp, ComponentOrGameObject toComponent, string newProp)
+        {
+            Tracing.Trace(TracingArea.BuildObjectMapping, $"RecordCopyProperty: {fromComponent} {oldProp} -> {toComponent} {newProp}");
             GetComponentInfo(fromComponent).CopyProperty(GetComponentInfo(toComponent), oldProp, newProp);
+        }
 
-        public void RecordRemoveProperty(ComponentOrGameObject from, string oldProp) =>
+        public void RecordRemoveProperty(ComponentOrGameObject from, string oldProp)
+        {
+            Tracing.Trace(TracingArea.BuildObjectMapping, $"RecordRemoveProperty: {from} {oldProp}");
             GetComponentInfo(from).RemoveProperty(oldProp);
+        }
 
         public AnimationComponentInfo<TPropInfo> GetAnimationComponent(ComponentOrGameObject component)
             => GetComponentInfo(component);
 
         public IEnumerable<AnimationComponentInfo<TPropInfo>> GetAllAnimationComponents() =>
             _componentInfos.Values.Where(x => !x.IsMerged);
+
+        public VrmFirstPersonFlag? GetVrmFirstPersonFlag(ComponentOrGameObject component)
+            => _componentInfos.TryGetValue(component.GetInstanceID(), out var info) ? info.VrmFirstPersonFlag : null;
 
         private BuildingComponentInfo GetComponentInfo(ComponentOrGameObject component)
         {
@@ -196,6 +277,8 @@ namespace Anatawa12.AvatarOptimizer
 
             private readonly Dictionary<string, AnimationPropertyInfo> _afterPropertyIds = new();
 
+            internal VrmFirstPersonFlag? VrmFirstPersonFlag;
+
             public BuildingComponentInfo(ComponentOrGameObject component)
             {
                 InstanceId = component.GetInstanceID();
@@ -229,6 +312,8 @@ namespace Anatawa12.AvatarOptimizer
                 foreach (var property in _afterPropertyIds.Values)
                     property.MergeTo(mergeTo.GetProperty(property.Name!));
                 _afterPropertyIds.Clear();
+
+                mergeTo.VrmFirstPersonFlag = MergeVrmFirstPersonFlags(VrmFirstPersonFlag, mergeTo.VrmFirstPersonFlag);
             }
 
             public void MoveProperties(params (string old, string @new)[] props)
@@ -277,7 +362,7 @@ namespace Anatawa12.AvatarOptimizer
                             propertyMapping.Add(key, value.GetMappedInfo());
                 }
 
-                return new ComponentInfo(InstanceId, mergedInfo.InstanceId, Type, propertyMapping);
+                return new ComponentInfo(InstanceId, mergedInfo.InstanceId, Type, propertyMapping, mergedInfo.VrmFirstPersonFlag);
             }
 
             public override ComponentOrGameObject TargetComponent

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Animations;
+using UnityEngine.Serialization;
 using VRC.Dynamics;
 
 namespace Anatawa12.AvatarOptimizer
@@ -15,7 +16,7 @@ namespace Anatawa12.AvatarOptimizer
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/merge-physbone/")]
     // INetworkID is implemented to make it possible to assign networkID to this components GameObject
     // Note: when MergePhysBone become a public API, we should consider removing INetworkID implementation
-    internal class MergePhysBone : AvatarTagComponent, VRC.SDKBase.INetworkID
+    internal class MergePhysBone : AvatarTagComponent, VRC.SDKBase.INetworkID, ISerializationCallbackReceiver
     {
         [NotKeyable]
         [AAOLocalized("MergePhysBone:prop:makeParent", "MergePhysBone:tooltip:makeParent")]
@@ -29,6 +30,7 @@ namespace Anatawa12.AvatarOptimizer
         // rootTransform
         // ignoreTransforms
         [NotKeyable] public EndPointPositionConfig endpointPositionConfig;
+        [NotKeyable] public BoolConfig ignoreOtherPhysBones;
         // multiChildType
         #endregion
 
@@ -150,11 +152,19 @@ namespace Anatawa12.AvatarOptimizer
         [Serializable]
         public struct CurveVector3Config
         {
-            public bool @override;
+            public CurveOverride @override;
             public Vector3 value;
             public AnimationCurve curveX;
             public AnimationCurve curveY;
             public AnimationCurve curveZ;
+            
+            public enum CurveOverride
+            {
+                Copy,
+                Override,
+                // Change bone angle to match the curve
+                Fix,
+            }
         }
 
         [Serializable]
@@ -163,6 +173,14 @@ namespace Anatawa12.AvatarOptimizer
             public bool @override;
             [Range(0f, 1f)]
             public float value;
+        }
+
+        [Serializable]
+        public struct NewBoolConfig
+        {
+            public bool @override;
+            public bool errorConflictedSettings;
+            public bool value;
         }
 
         [Serializable]
@@ -246,9 +264,16 @@ namespace Anatawa12.AvatarOptimizer
             componentsSet = new PrefabSafeSet.PrefabSafeSet<VRCPhysBoneBase>(this);
         }
 
-        private void OnValidate()
+        private void ValidatePSUC()
         {
             PrefabSafeSet.PrefabSafeSet.OnValidate(this, x => x.componentsSet);
+        }
+
+        private void OnValidate() => ValidatePSUC();
+        void ISerializationCallbackReceiver.OnBeforeSerialize() => ValidatePSUC();
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
         }
     }
 
