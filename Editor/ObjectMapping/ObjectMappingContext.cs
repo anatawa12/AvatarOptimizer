@@ -393,7 +393,11 @@ namespace Anatawa12.AvatarOptimizer
                 // length of newClip can be changed which is bad.
                 Tracing.Trace(TracingArea.ApplyObjectMapping, $"Animation Clip Length Mismatch; {clip.length} -> {newClip.length}");
                 
-                // In Play Mode, use a descriptive localized name to help users understand what happened
+                // In Play Mode, use a descriptive localized name to help users understand what happened.
+                // We check isPlayingOrWillChangePlaymode (not just isPlaying) because NDMF builds happen
+                // during the transition to Play Mode (when willChangePlaymode is true), before isPlaying becomes true.
+                // This ensures upload builds (which happen in Edit Mode) use the terse internal identifier,
+                // while Play Mode testing uses the descriptive message.
                 string dummyObjectName;
                 if (EditorApplication.isPlayingOrWillChangePlaymode)
                 {
