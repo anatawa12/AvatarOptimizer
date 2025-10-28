@@ -147,6 +147,8 @@ namespace Anatawa12.AvatarOptimizer
             public bool skipAutoMergeBlendShape;
             [ToggleLeft]
             public bool skipRemoveUnusedSubMesh;
+            [ToggleLeft]
+            public bool skipMergePhysBones;
         }
     }
     
