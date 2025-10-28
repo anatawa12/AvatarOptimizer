@@ -85,6 +85,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                             .Then.Run(Processors.TraceAndOptimizes.AddRemoveEmptySubMesh.Instance)
                             .Then.Run(Processors.TraceAndOptimizes.AutoFreezeBlendShape.Instance)
 #if AAO_VRCSDK3_AVATARS
+                            .Then.Run(Processors.TraceAndOptimizes.AutoMergeCompatiblePhysBone.Instance)
                             .Then.Run(Processors.ClearEndpointPositionProcessor.Instance)
                             .Then.Run(Processors.MergePhysBoneProcessor.Instance)
                             .Then.Run(new Processors.GCDebugPass(InternalGcDebugPosition.AfterPhysBone))
