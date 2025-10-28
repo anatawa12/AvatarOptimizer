@@ -392,8 +392,20 @@ namespace Anatawa12.AvatarOptimizer
                 // if newClip has less properties than original clip (especially for no properties), 
                 // length of newClip can be changed which is bad.
                 Tracing.Trace(TracingArea.ApplyObjectMapping, $"Animation Clip Length Mismatch; {clip.length} -> {newClip.length}");
+                
+                // In Play Mode, use a descriptive localized name to help users understand what happened
+                string dummyObjectName;
+                if (EditorApplication.isPlayingOrWillChangePlaymode)
+                {
+                    dummyObjectName = AAOL10N.Tr("ObjectMapping:DummyAnimationObject");
+                }
+                else
+                {
+                    dummyObjectName = "$AvatarOptimizerClipLengthDummy$";
+                }
+                
                 AnimationUtility.SetEditorCurve(newClip,
-                    EditorCurveBinding.FloatCurve("$AvatarOptimizerClipLengthDummy$", typeof(GameObject), Props.IsActive), 
+                    EditorCurveBinding.FloatCurve(dummyObjectName, typeof(GameObject), Props.IsActive), 
                     AnimationCurve.Constant(clip.length, clip.length, 1f));
             }
 

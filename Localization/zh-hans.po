@@ -58,6 +58,18 @@ msgstr "(已删除但未找到)"
 
 # endregion
 
+# region ObjectMapping
+
+msgid "ObjectMapping:DummyAnimationObject"
+msgstr ""
+"此对象由Avatar Optimizer创建以保持动画长度。\n"
+"Avatar Optimizer判断该动画是不必要的，因为目标对象不存在。\n"
+"Avatar Optimizer可能已将目标对象识别为始终禁用并将其删除。\n"
+"如果Avatar Optimizer的判断不正确，这是Avatar Optimizer的错误。\n"
+"要禁用Avatar Optimizer并排查问题，请参阅：https://ndmf.nadena.dev/docs/users/disable"
+
+# endregion
+
 # start Avatar Optimizer core modules
 
 # region ClearEndpointPosition
