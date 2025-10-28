@@ -61,13 +61,13 @@ msgstr "(見つからないが削除済)"
 # region ObjectMapping
 
 msgid "ObjectMapping:DummyAnimationObject:1"
-msgstr "(Play Modeのみ) 対象のオブジェクトが存在しません"
+msgstr "(Play Modeのみ) 対象オブジェクトが不在。キーはAAOにより削除されました。"
 
 msgid "ObjectMapping:DummyAnimationObject:2"
-msgstr "(Play Modeのみ) AAOがオブジェクトを削除した可能性があります"
+msgstr "(Play Modeのみ) AAOが対象オブジェクトを削除した可能性があります。"
 
 msgid "ObjectMapping:DummyAnimationObject:3"
-msgstr "(Play Modeのみ) バグの場合は報告してください"
+msgstr "(Play Modeのみ) バグの場合はAAOに報告してください。"
 
 # endregion
 

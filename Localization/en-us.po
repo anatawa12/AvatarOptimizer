@@ -61,13 +61,13 @@ msgstr "(Removed but not found)"
 # region ObjectMapping
 
 msgid "ObjectMapping:DummyAnimationObject:1"
-msgstr "(Play Mode Only) Target object does not exist"
+msgstr "(Play Mode Only) Target object is absent. Keys removed by AAO."
 
 msgid "ObjectMapping:DummyAnimationObject:2"
-msgstr "(Play Mode Only) AAO may have deleted the object"
+msgstr "(Play Mode Only) AAO may have deleted the target object."
 
 msgid "ObjectMapping:DummyAnimationObject:3"
-msgstr "(Play Mode Only) Report if this is a bug"
+msgstr "(Play Mode Only) Report to AAO if this is a bug."
 
 # endregion
 
