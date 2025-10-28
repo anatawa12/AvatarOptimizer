@@ -51,7 +51,9 @@ The list of SkinnedMeshRenderers to be merged.
 
 Drop to None element at the bottom to add renderer and reset to None to remove from the list.
 
-### Static Renderers
+<div id="static-renderers"></div>
+
+### Basic Renderers
 
 The list of MeshRenderers (without mesh transform).
 

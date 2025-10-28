@@ -51,6 +51,7 @@ The format is based on [Keep a Changelog].
 - Missing `Ignore Other Phys Bone` support for Merge Phys Bone `#1532`
   - Ignore Other Phys Bone property is not supported by Merge Phys Bone. This was a bug.
   - This version fixes this bug.
+- Fixed Optimize Texture may throw error in rare cases `#1538`
 
 ### Security
 
