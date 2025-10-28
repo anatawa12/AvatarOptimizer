@@ -60,13 +60,14 @@ msgstr "(Removed but not found)"
 
 # region ObjectMapping
 
-msgid "ObjectMapping:DummyAnimationObject"
-msgstr ""
-"This object was created by Avatar Optimizer to preserve animation length.\n"
-"Avatar Optimizer determined that the animation targeting the original object is unnecessary because the target object does not exist.\n"
-"Avatar Optimizer may have recognized the target object as always disabled and deleted it.\n"
-"If Avatar Optimizer's determination is incorrect, this is a bug in Avatar Optimizer.\n"
-"To disable Avatar Optimizer and troubleshoot, please see: https://ndmf.nadena.dev/docs/users/disable"
+msgid "ObjectMapping:DummyAnimationObject:1"
+msgstr "(Play Mode Only) Target object does not exist"
+
+msgid "ObjectMapping:DummyAnimationObject:2"
+msgstr "(Play Mode Only) AAO may have deleted the object"
+
+msgid "ObjectMapping:DummyAnimationObject:3"
+msgstr "(Play Mode Only) Report if this is a bug"
 
 # endregion
 

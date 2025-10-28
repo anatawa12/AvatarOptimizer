@@ -387,30 +387,51 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             // ReSharper disable once CompareOfFloatsByEqualityOperator
-            if (newClip.length != clip.length)
+            var hasLengthMismatch = newClip.length != clip.length;
+            var hasKeysRemoved = (floatBindings.Length > 0 || objectBindings.Length > 0) && 
+                                 AnimationUtility.GetCurveBindings(newClip).Length == 0 && 
+                                 AnimationUtility.GetObjectReferenceCurveBindings(newClip).Length == 0;
+            
+            if (hasLengthMismatch || hasKeysRemoved)
             {
                 // if newClip has less properties than original clip (especially for no properties), 
                 // length of newClip can be changed which is bad.
-                Tracing.Trace(TracingArea.ApplyObjectMapping, $"Animation Clip Length Mismatch; {clip.length} -> {newClip.length}");
+                // Also, if all keys were removed, add descriptive messages to help users understand.
+                if (hasLengthMismatch)
+                {
+                    Tracing.Trace(TracingArea.ApplyObjectMapping, $"Animation Clip Length Mismatch; {clip.length} -> {newClip.length}");
+                }
+                if (hasKeysRemoved)
+                {
+                    Tracing.Trace(TracingArea.ApplyObjectMapping, $"All animation keys removed from clip {clip.name}");
+                }
                 
-                // In Play Mode, use a descriptive localized name to help users understand what happened.
+                // In Play Mode, use descriptive localized messages to help users understand what happened.
                 // We check isPlayingOrWillChangePlaymode (not just isPlaying) because NDMF builds happen
                 // during the transition to Play Mode (when willChangePlaymode is true), before isPlaying becomes true.
                 // This ensures upload builds (which happen in Edit Mode) use the terse internal identifier,
-                // while Play Mode testing uses the descriptive message.
-                string dummyObjectName;
+                // while Play Mode testing uses the descriptive messages.
+                // Split messages into multiple curves to avoid multi-line object names.
                 if (EditorApplication.isPlayingOrWillChangePlaymode)
                 {
-                    dummyObjectName = AAOL10N.Tr("ObjectMapping:DummyAnimationObject");
+                    // Add multiple short messages as separate curves
+                    AnimationUtility.SetEditorCurve(newClip,
+                        EditorCurveBinding.FloatCurve(AAOL10N.Tr("ObjectMapping:DummyAnimationObject:1"), typeof(GameObject), Props.IsActive), 
+                        AnimationCurve.Constant(clip.length, clip.length, 1f));
+                    AnimationUtility.SetEditorCurve(newClip,
+                        EditorCurveBinding.FloatCurve(AAOL10N.Tr("ObjectMapping:DummyAnimationObject:2"), typeof(GameObject), Props.IsActive), 
+                        AnimationCurve.Constant(clip.length, clip.length, 1f));
+                    AnimationUtility.SetEditorCurve(newClip,
+                        EditorCurveBinding.FloatCurve(AAOL10N.Tr("ObjectMapping:DummyAnimationObject:3"), typeof(GameObject), Props.IsActive), 
+                        AnimationCurve.Constant(clip.length, clip.length, 1f));
                 }
                 else
                 {
-                    dummyObjectName = "$AvatarOptimizerClipLengthDummy$";
+                    // For upload builds, use terse internal identifier to minimize size
+                    AnimationUtility.SetEditorCurve(newClip,
+                        EditorCurveBinding.FloatCurve("$AvatarOptimizerClipLengthDummy$", typeof(GameObject), Props.IsActive), 
+                        AnimationCurve.Constant(clip.length, clip.length, 1f));
                 }
-                
-                AnimationUtility.SetEditorCurve(newClip,
-                    EditorCurveBinding.FloatCurve(dummyObjectName, typeof(GameObject), Props.IsActive), 
-                    AnimationCurve.Constant(clip.length, clip.length, 1f));
             }
 
             newClip.wrapMode = clip.wrapMode;

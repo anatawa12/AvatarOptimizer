@@ -60,13 +60,14 @@ msgstr "(見つからないが削除済)"
 
 # region ObjectMapping
 
-msgid "ObjectMapping:DummyAnimationObject"
-msgstr ""
-"このオブジェクトはアニメーションの長さを保持するためにAvatar Optimizerによって作成されました。\n"
-"Avatar Optimizerは対象のオブジェクトが存在しないため、このアニメーションが不要であると判断しました。\n"
-"Avatar Optimizerは対象のオブジェクトを常に無効であると認識して削除した可能性があります。\n"
-"Avatar Optimizerの判断が誤っている場合、これはAvatar Optimizerのバグです。\n"
-"Avatar Optimizerを無効化してトラブルシュートするには、以下を参照してください: https://ndmf.nadena.dev/docs/users/disable"
+msgid "ObjectMapping:DummyAnimationObject:1"
+msgstr "(Play Modeのみ) 対象のオブジェクトが存在しません"
+
+msgid "ObjectMapping:DummyAnimationObject:2"
+msgstr "(Play Modeのみ) AAOがオブジェクトを削除した可能性があります"
+
+msgid "ObjectMapping:DummyAnimationObject:3"
+msgstr "(Play Modeのみ) バグの場合は報告してください"
 
 # endregion
 
