@@ -392,20 +392,28 @@ namespace Anatawa12.AvatarOptimizer
                                  AnimationUtility.GetCurveBindings(newClip).Length == 0 && 
                                  AnimationUtility.GetObjectReferenceCurveBindings(newClip).Length == 0;
             
-            if (hasLengthMismatch || hasKeysRemoved)
+            // In Play Mode, add descriptive messages for both length mismatch and keys removed.
+            // In Edit Mode (upload builds), only add dummy curve for length mismatch to preserve clip length.
+            var shouldAddDummyCurves = false;
+            
+            if (hasLengthMismatch)
             {
-                // if newClip has less properties than original clip (especially for no properties), 
-                // length of newClip can be changed which is bad.
-                // Also, if all keys were removed, add descriptive messages to help users understand.
-                if (hasLengthMismatch)
+                Tracing.Trace(TracingArea.ApplyObjectMapping, $"Animation Clip Length Mismatch; {clip.length} -> {newClip.length}");
+                shouldAddDummyCurves = true;
+            }
+            
+            if (hasKeysRemoved)
+            {
+                Tracing.Trace(TracingArea.ApplyObjectMapping, $"All animation keys removed from clip {clip.name}");
+                // Only add dummy curves for keys removed in Play Mode, not in Edit Mode
+                if (EditorApplication.isPlayingOrWillChangePlaymode)
                 {
-                    Tracing.Trace(TracingArea.ApplyObjectMapping, $"Animation Clip Length Mismatch; {clip.length} -> {newClip.length}");
+                    shouldAddDummyCurves = true;
                 }
-                if (hasKeysRemoved)
-                {
-                    Tracing.Trace(TracingArea.ApplyObjectMapping, $"All animation keys removed from clip {clip.name}");
-                }
-                
+            }
+            
+            if (shouldAddDummyCurves)
+            {
                 // In Play Mode, use descriptive localized messages to help users understand what happened.
                 // We check isPlayingOrWillChangePlaymode (not just isPlaying) because NDMF builds happen
                 // during the transition to Play Mode (when willChangePlaymode is true), before isPlaying becomes true.
