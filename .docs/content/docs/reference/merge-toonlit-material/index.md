@@ -8,8 +8,9 @@ weight: 200
 <blockquote class="book-hint warning">
 
 This component is obsolete.
-Please use [Merge Material](../merge-material/) component, which supports more shaders than this component and has better save format.
-This component will not receive any further improvements.
+
+Please use [Merge Material](../merge-material/) component, which supports more shaders than this component and has better save format.\
+This component will never receive any further improvements.
 
 </blockquote>
 

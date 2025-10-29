@@ -8,7 +8,8 @@ weight: 200
 <blockquote class="book-hint warning">
 
 このコンポーネントは非推奨です。
-代わりに、多くのシェーダーをサポートし、保存形式も改善された[Merge Material](../merge-material/)コンポーネントを使用してください。
+
+代わりに、多くのシェーダーをサポートし、保存形式も改善された[Merge Material](../merge-material/)コンポーネントを使用してください。\
 このコンポーネントの動作が改善されることはありません。
 
 </blockquote>
