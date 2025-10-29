@@ -371,7 +371,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 else
                 {
                     // for other states, it have to leave state if value is not any of current value
-                    // TODO: users can create condition like `< minValue` or `> maxValue` to leave state
                     // TODO: users can exit state and immediately enter to same state infinitely
                     // https://github.com/anatawa12/AvatarOptimizer/issues/862
                     var values = stateValues[state];
@@ -382,22 +381,83 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 {
                     if (allConditions.Length != 1) return false;
                     var conditions = allConditions[0];
-                    if (conditions.Length != values.Count) return false;
 
-                    values = new HashSet<IntOrBool>(values);
-                    foreach (var condition in conditions)
+                    // Check if all values are integers (for Greater/Less support)
+                    if (values.All(v => v.IntValue.HasValue))
                     {
-                        if (condition.mode != AnimatorConditionMode.NotEqual &&
-                            condition.mode != AnimatorConditionMode.IfNot &&
-                            condition.mode != AnimatorConditionMode.If) return false;
-                        if (condition.parameter != conditionParameter) return false;
-                        IntOrBool value =
-                            condition.mode == AnimatorConditionMode.NotEqual ? (int)condition.threshold :
-                            condition.mode == AnimatorConditionMode.IfNot ? true : false;
-                        if (!values.Remove(value)) return false;
+                        var intValues = values.Select(v => v.IntValue!.Value).ToList();
+                        var minValue = intValues.Min();
+                        var maxValue = intValues.Max();
+
+                        // Try to match conditions with NotEqual/Greater/Less patterns
+                        var remainingValues = new HashSet<IntOrBool>(values);
+                        var hasGreater = false;
+                        var hasLess = false;
+
+                        foreach (var condition in conditions)
+                        {
+                            if (condition.parameter != conditionParameter) return false;
+
+                            switch (condition.mode)
+                            {
+                                case AnimatorConditionMode.NotEqual:
+                                {
+                                    IntOrBool value = (int)condition.threshold;
+                                    if (!remainingValues.Remove(value)) return false;
+                                    break;
+                                }
+                                case AnimatorConditionMode.Greater:
+                                {
+                                    // Greater should be: value > maxValue (exits when above max)
+                                    // This means condition.threshold should be >= maxValue
+                                    var threshold = (int)condition.threshold;
+                                    if (threshold < maxValue) return false;
+                                    hasGreater = true;
+                                    break;
+                                }
+                                case AnimatorConditionMode.Less:
+                                {
+                                    // Less should be: value < minValue (exits when below min)
+                                    // This means condition.threshold should be <= minValue
+                                    var threshold = (int)condition.threshold;
+                                    if (threshold > minValue) return false;
+                                    hasLess = true;
+                                    break;
+                                }
+                                default:
+                                    return false;
+                            }
+                        }
+
+                        // If we have Greater/Less, we should have covered all values
+                        if (hasGreater || hasLess)
+                        {
+                            // All values should be covered by the range
+                            return remainingValues.Count == 0;
+                        }
+
+                        // Otherwise, all values must be covered by NotEqual
+                        return remainingValues.Count == 0 && conditions.Length == values.Count;
+                    }
+                    else if (values.All(v => v.BoolValue.HasValue))
+                    {
+                        // Bool values - original logic
+                        if (conditions.Length != values.Count) return false;
+
+                        var remainingValues = new HashSet<IntOrBool>(values);
+                        foreach (var condition in conditions)
+                        {
+                            if (condition.mode != AnimatorConditionMode.IfNot &&
+                                condition.mode != AnimatorConditionMode.If) return false;
+                            if (condition.parameter != conditionParameter) return false;
+                            IntOrBool value = condition.mode == AnimatorConditionMode.IfNot ? true : false;
+                            if (!remainingValues.Remove(value)) return false;
+                        }
+
+                        return true;
                     }
 
-                    return true;
+                    return false;
                 }
             }
 
@@ -523,7 +583,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 // transition condition check.
                 {
                     // for other states, it have to leave state if value is not any of current value
-                    // TODO: users can create condition like `< minValue` or `> maxValue` to leave state
                     // TODO: users can exit state and immediately enter to same state infinitely
                     // https://github.com/anatawa12/AvatarOptimizer/issues/862
                     if (!PossibleValuesExitTransitionCheck(anotherStateValues)) return null;
@@ -533,22 +592,83 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 {
                     if (allConditions.Length != 1) return false;
                     var conditions = allConditions[0];
-                    if (conditions.Length != values.Count) return false;
 
-                    values = new HashSet<IntOrBool>(values);
-                    foreach (var condition in conditions)
+                    // Check if all values are integers (for Greater/Less support)
+                    if (values.All(v => v.IntValue.HasValue))
                     {
-                        if (condition.mode != AnimatorConditionMode.NotEqual &&
-                            condition.mode != AnimatorConditionMode.IfNot &&
-                            condition.mode != AnimatorConditionMode.If) return false;
-                        if (condition.parameter != conditionParameter) return false;
-                        IntOrBool value =
-                            condition.mode == AnimatorConditionMode.NotEqual ? (int)condition.threshold :
-                            condition.mode == AnimatorConditionMode.IfNot ? true : false;
-                        if (!values.Remove(value)) return false;
+                        var intValues = values.Select(v => v.IntValue!.Value).ToList();
+                        var minValue = intValues.Min();
+                        var maxValue = intValues.Max();
+
+                        // Try to match conditions with NotEqual/Greater/Less patterns
+                        var remainingValues = new HashSet<IntOrBool>(values);
+                        var hasGreater = false;
+                        var hasLess = false;
+
+                        foreach (var condition in conditions)
+                        {
+                            if (condition.parameter != conditionParameter) return false;
+
+                            switch (condition.mode)
+                            {
+                                case AnimatorConditionMode.NotEqual:
+                                {
+                                    IntOrBool value = (int)condition.threshold;
+                                    if (!remainingValues.Remove(value)) return false;
+                                    break;
+                                }
+                                case AnimatorConditionMode.Greater:
+                                {
+                                    // Greater should be: value > maxValue (exits when above max)
+                                    // This means condition.threshold should be >= maxValue
+                                    var threshold = (int)condition.threshold;
+                                    if (threshold < maxValue) return false;
+                                    hasGreater = true;
+                                    break;
+                                }
+                                case AnimatorConditionMode.Less:
+                                {
+                                    // Less should be: value < minValue (exits when below min)
+                                    // This means condition.threshold should be <= minValue
+                                    var threshold = (int)condition.threshold;
+                                    if (threshold > minValue) return false;
+                                    hasLess = true;
+                                    break;
+                                }
+                                default:
+                                    return false;
+                            }
+                        }
+
+                        // If we have Greater/Less, we should have covered all values
+                        if (hasGreater || hasLess)
+                        {
+                            // All values should be covered by the range
+                            return remainingValues.Count == 0;
+                        }
+
+                        // Otherwise, all values must be covered by NotEqual
+                        return remainingValues.Count == 0 && conditions.Length == values.Count;
+                    }
+                    else if (values.All(v => v.BoolValue.HasValue))
+                    {
+                        // Bool values - original logic
+                        if (conditions.Length != values.Count) return false;
+
+                        var remainingValues = new HashSet<IntOrBool>(values);
+                        foreach (var condition in conditions)
+                        {
+                            if (condition.mode != AnimatorConditionMode.IfNot &&
+                                condition.mode != AnimatorConditionMode.If) return false;
+                            if (condition.parameter != conditionParameter) return false;
+                            IntOrBool value = condition.mode == AnimatorConditionMode.IfNot ? true : false;
+                            if (!remainingValues.Remove(value)) return false;
+                        }
+
+                        return true;
                     }
 
-                    return true;
+                    return false;
                 }
             }
 
