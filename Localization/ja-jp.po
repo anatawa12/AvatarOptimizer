@@ -376,8 +376,8 @@ msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:message"
 msgstr ""
 "MergeToonLitMaterialコンポーネントからMergeMaterialコンポーネントに移行しようとしています。\n"
 "これにより、すべての設定が新しいMergeMaterialコンポーネントにコピーされ、このコンポーネントは削除されます。\n"
-"ただし、この移行が完全な移行を保証するものではありません。移行後に結果を確認してください。\n"
-"さらに、この移行はプレハブをサポートしていません。プレハブを使用している場合は手動で移行してください。"
+"ただし、移行後に完全に同じ結果になることを保証することができません。移行後に結果を確認してください。\n"
+"また、この移行はPrefabに対応していません。Prefab上で使用している場合は手動で移行する必要があります。"
 
 msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:ok"
 msgstr "移行する"
@@ -845,7 +845,7 @@ msgid "MergeMaterial:label:Texture Size"
 msgstr "テクスチャのサイズ"
 
 msgid "MergeMaterial:label:Reference Material"
-msgstr "代表マテリアル"
+msgstr "設定参照用マテリアル"
 
 msgid "MergeMaterial:Reference Material:tooltip"
 msgstr "統合先のマテリアルとして使用されるマテリアルです。このマテリアルのシェーダーの設定が統合後のマテリアルに使用されます。"
@@ -866,16 +866,16 @@ msgid "MergeMaterial:label:Texture Format Override"
 msgstr "フォーマットのオーバーライド"
 
 
-# region MergeMaterial
+# region errors
 
 msgid "MergeMaterial:error:DuplicateMaterialInMergeSetting"
-msgstr "複数の統合設定が同じマテリアルを統合対象として使用しています。これはサポートされていない動作です。"
+msgstr "複数の統合設定で同じマテリアルが統合対象として指定されています。これはサポートされていません。"
 
 msgid "MergeMaterial:error:MaterialNotFoundInMesh"
-msgstr "MergeMaterialに設定されたマテリアルがSkinned Mesh Rendererに存在しません。"
+msgstr "MergeMaterialの設定で指定されたマテリアルがSkinned Mesh Renderer上に存在しません。"
 
 msgid "MergeMaterial:error:MaterialUsedInMultipleSubMeshes"
-msgstr "Skinned Mesh Rendererの複数のマテリアルで設定されたマテリアルが使用されています。サブメッシュを統合してから処理を行う必要があります。"
+msgstr "SkinnedMeshRendererの複数のマテリアルで設定されたマテリアルが使用されています。サブメッシュを統合してから処理を行う必要があります。"
 
 msgid "MergeMaterial:error:MultiMaterialSubMesh"
 msgstr "設定されたマテリアルを使用しているサブメッシュが、複数のマテリアルを持っています。MergeMaterialコンポーネントでは、マルチマテリアルマルチパスレンダリングはサポートされていません。"
