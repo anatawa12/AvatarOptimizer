@@ -37,7 +37,8 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             var uv = duplicated.uv;
             using var uvJob = new NativeArray<Vector2>(uv, Allocator.TempJob);
 
-            var materialSettings = context.Observe(component, c => c.materials.ToArray(), (a, b) => a.SequenceEqual(b));
+            var materialSettings = context.Observe(component, c => c.materials.ToArray(), 
+                (a, b) => a.SequenceEqual(b, RemoveMeshByMask.MaterialSlotComparer.Instance));
             for (var subMeshI = 0; subMeshI < duplicated.subMeshCount; subMeshI++)
             {
                 if (subMeshI < materialSettings.Length)

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -23,7 +24,7 @@ namespace Anatawa12.AvatarOptimizer
 
         [Serializable]
         [PublicAPI]
-        public struct MaterialSlot : IEquatable<MaterialSlot>
+        public struct MaterialSlot
         {
             [SerializeField] [ToggleLeft] internal bool enabled;
 
@@ -62,14 +63,6 @@ namespace Anatawa12.AvatarOptimizer
                 get => mode;
                 set => mode = value;
             }
-
-            public bool Equals(MaterialSlot other) =>
-                enabled == other.enabled && Equals(mask, other.mask) && mode == other.mode;
-
-            public override bool Equals(object? obj) => obj is MaterialSlot other && Equals(other);
-            public override int GetHashCode() => HashCode.Combine(enabled, mask, (int)mode);
-            public static bool operator ==(MaterialSlot left, MaterialSlot right) => left.Equals(right);
-            public static bool operator !=(MaterialSlot left, MaterialSlot right) => !left.Equals(right);
         }
 
         /// <summary>
@@ -124,6 +117,17 @@ namespace Anatawa12.AvatarOptimizer
             // clone them for future API changes
             get => _checker.OnAPIUsage(this, materials.ToArray());
             set => _checker.OnAPIUsage(this, materials = value.ToArray());
+        }
+
+        internal class MaterialSlotComparer : IEqualityComparer<MaterialSlot>
+        {
+            public static MaterialSlotComparer Instance { get; } = new();
+            
+            public bool Equals(MaterialSlot x, MaterialSlot y) =>
+                x.enabled == y.enabled && Equals(x.mask, y.mask) && x.mode == y.mode;
+
+            public int GetHashCode(MaterialSlot obj) =>
+                HashCode.Combine(obj.enabled, obj.mask, (int)obj.mode);
         }
     }
 }
