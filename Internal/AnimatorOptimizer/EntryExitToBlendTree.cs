@@ -382,12 +382,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     // Check if all values are integers (for Greater/Less support)
                     if (values.All(v => v.IntValue.HasValue))
                     {
-                        var intValues = values.Select(v => v.IntValue!.Value).OrderBy(v => v).ToList();
-                        var minValue = intValues.First();
-                        var maxValue = intValues.Last();
+                        var intValues = values.Select(v => v.IntValue!.Value).ToList();
+                        var minValue = intValues.Min();
+                        var maxValue = intValues.Max();
 
                         // Check if values form a contiguous range
                         bool isContiguous = true;
+                        intValues.Sort();
                         for (int i = 0; i < intValues.Count - 1; i++)
                         {
                             if (intValues[i + 1] != intValues[i] + 1)
@@ -456,10 +457,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                             return true;
 
                         // Strategy 2: Values are contiguous and both Greater and Less cover the ranges
+                        // remainingValues.Count == values.Count means no NotEqual conditions were used
                         if (isContiguous && hasGreater && hasLess && remainingValues.Count == values.Count)
                             return true;
 
                         // Strategy 3: Single value covered by either Greater or Less
+                        // This handles cases like a toggle with one state having Greater/Less exit
                         if (values.Count == 1 && (hasGreater || hasLess) && remainingValues.Count == 1)
                             return true;
 
@@ -621,12 +624,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     // Check if all values are integers (for Greater/Less support)
                     if (values.All(v => v.IntValue.HasValue))
                     {
-                        var intValues = values.Select(v => v.IntValue!.Value).OrderBy(v => v).ToList();
-                        var minValue = intValues.First();
-                        var maxValue = intValues.Last();
+                        var intValues = values.Select(v => v.IntValue!.Value).ToList();
+                        var minValue = intValues.Min();
+                        var maxValue = intValues.Max();
 
                         // Check if values form a contiguous range
                         bool isContiguous = true;
+                        intValues.Sort();
                         for (int i = 0; i < intValues.Count - 1; i++)
                         {
                             if (intValues[i + 1] != intValues[i] + 1)
@@ -695,10 +699,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                             return true;
 
                         // Strategy 2: Values are contiguous and both Greater and Less cover the ranges
+                        // remainingValues.Count == values.Count means no NotEqual conditions were used
                         if (isContiguous && hasGreater && hasLess && remainingValues.Count == values.Count)
                             return true;
 
                         // Strategy 3: Single value covered by either Greater or Less
+                        // This handles cases like a toggle with one state having Greater/Less exit
                         if (values.Count == 1 && (hasGreater || hasLess) && remainingValues.Count == 1)
                             return true;
 
