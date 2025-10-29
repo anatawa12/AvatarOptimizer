@@ -10,11 +10,14 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
     /// </summary>
     public static class CompleteGraphToEntryExitTestGenerator
     {
-        private const string BasePath = "Assets/Test~/AnimatorOptimizer/CompleteGraphToEntryExit/";
+        private const string BasePath = "Assets/AAOTest/AnimatorOptimizer/CompleteGraphToEntryExit/";
 
         [MenuItem("Avatar Optimizer/Tests/Generate CompleteGraphToEntryExit Test Controllers")]
         public static void GenerateAllTestControllers()
         {
+            // Ensure shared animation clips exist before generating controllers
+            GenerateSharedClips();
+
             GenerateSimpleCompleteGraph();
             GenerateCompleteGraphWithSelfTransitions();
             GenerateCompleteGraphWithDifferentConditions();
@@ -27,25 +30,56 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             Debug.Log("Generated all CompleteGraphToEntryExit test controllers");
         }
 
+        // Create shared clips once under BasePath/SharedClips and provide loader
+        private static void GenerateSharedClips()
+        {
+            var baseFolder = BasePath.TrimEnd('/');
+            var sharedFolder = baseFolder + "/SharedClips";
+            if (!AssetDatabase.IsValidFolder(sharedFolder))
+                AssetDatabase.CreateFolder(baseFolder, "SharedClips");
+
+            CreateClipIfMissing("ClipA", sharedFolder);
+            CreateClipIfMissing("ClipB", sharedFolder);
+            CreateClipIfMissing("ClipC", sharedFolder);
+            CreateClipIfMissing("Clip1", sharedFolder);
+            CreateClipIfMissing("Clip2", sharedFolder);
+            AssetDatabase.SaveAssets();
+        }
+
+        private static void CreateClipIfMissing(string name, string folder)
+        {
+            var path = folder + "/" + name + ".anim";
+            if (AssetDatabase.LoadAssetAtPath<AnimationClip>(path) != null) return;
+            var clip = new AnimationClip { name = name };
+            AssetDatabase.CreateAsset(clip, path);
+        }
+
+        private static AnimationClip GetSharedClip(string name)
+        {
+            var baseFolder = BasePath.TrimEnd('/');
+            var path = baseFolder + "/SharedClips/" + name + ".anim";
+            return AssetDatabase.LoadAssetAtPath<AnimationClip>(path);
+        }
+
         private static void GenerateSimpleCompleteGraph()
         {
             var controller = new AnimatorController();
             controller.name = "SimpleCompleteGraph";
+            AssetDatabase.CreateAsset(controller, BasePath + "SimpleCompleteGraph.controller");
             
             // Add parameters
             controller.AddParameter("StateA", AnimatorControllerParameterType.Bool);
             controller.AddParameter("StateB", AnimatorControllerParameterType.Bool);
 
             // Create animation clips
-            var clipA = new AnimationClip { name = "ClipA" };
-            var clipB = new AnimationClip { name = "ClipB" };
+            var clipA = GetSharedClip("ClipA");
+            var clipB = GetSharedClip("ClipB");
 
-            // Create layer
-            var layer = new AnimatorControllerLayer
-            {
-                name = "Base Layer",
-                stateMachine = new AnimatorStateMachine { name = "Base Layer" }
-            };
+            // Create layer via AddLayer instead of new-ing it manually
+            controller.AddLayer("Base Layer");
+            var layer = controller.layers[^1];
+            layer.name = "Base Layer";
+            layer.stateMachine.name = "Base Layer";
 
             // Create states
             var stateA = layer.stateMachine.AddState("StateA");
@@ -77,35 +111,31 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             selfB.duration = 0.25f;
             selfB.AddCondition(AnimatorConditionMode.If, 0, "StateB");
 
-            controller.AddLayer(layer);
+            // clips are shared assets now (no AddObjectToAsset)
             
-            AssetDatabase.CreateAsset(controller, BasePath + "SimpleCompleteGraph.controller");
-            AssetDatabase.AddObjectToAsset(clipA, controller);
-            AssetDatabase.AddObjectToAsset(clipB, controller);
-            
-            // Generate expected output
-            GenerateSimpleCompleteGraphConverted();
-        }
+             // Generate expected output
+             GenerateSimpleCompleteGraphConverted();
+         }
 
         private static void GenerateSimpleCompleteGraphConverted()
         {
             var controller = new AnimatorController();
             controller.name = "SimpleCompleteGraph.converted";
+            AssetDatabase.CreateAsset(controller, BasePath + "SimpleCompleteGraph.converted.controller");
             
             // Add parameters
             controller.AddParameter("StateA", AnimatorControllerParameterType.Bool);
             controller.AddParameter("StateB", AnimatorControllerParameterType.Bool);
 
             // Create animation clips
-            var clipA = new AnimationClip { name = "ClipA" };
-            var clipB = new AnimationClip { name = "ClipB" };
+            var clipA = GetSharedClip("ClipA");
+            var clipB = GetSharedClip("ClipB");
 
-            // Create layer
-            var layer = new AnimatorControllerLayer
-            {
-                name = "Base Layer",
-                stateMachine = new AnimatorStateMachine { name = "Base Layer" }
-            };
+            // Create layer via AddLayer instead of new-ing it manually
+            controller.AddLayer("Base Layer");
+            var layer = controller.layers[^1];
+            layer.name = "Base Layer";
+            layer.stateMachine.name = "Base Layer";
 
             // Create states
             var stateA = layer.stateMachine.AddState("StateA");
@@ -115,26 +145,13 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             stateB.motion = clipB;
 
             // Create entry transitions
-            var entryToA = new AnimatorTransition
-            {
-                destinationState = stateA
-            };
+            var entryToA = layer.stateMachine.AddEntryTransition(stateA);
             entryToA.AddCondition(AnimatorConditionMode.If, 0, "StateA");
-            layer.stateMachine.AddEntryTransition(entryToA);
 
-            var entryToB = new AnimatorTransition
-            {
-                destinationState = stateB
-            };
+            var entryToB = layer.stateMachine.AddEntryTransition(stateB);
             entryToB.AddCondition(AnimatorConditionMode.If, 0, "StateB");
-            layer.stateMachine.AddEntryTransition(entryToB);
 
             // Create exit transitions from each state
-            var exitA = stateA.AddExitTransition();
-            exitA.hasExitTime = false;
-            exitA.duration = 0.25f;
-            exitA.AddCondition(AnimatorConditionMode.If, 0, "StateA");
-
             var exitA2 = stateA.AddExitTransition();
             exitA2.hasExitTime = false;
             exitA2.duration = 0.25f;
@@ -144,11 +161,6 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             exitB.hasExitTime = false;
             exitB.duration = 0.25f;
             exitB.AddCondition(AnimatorConditionMode.If, 0, "StateA");
-
-            var exitB2 = stateB.AddExitTransition();
-            exitB2.hasExitTime = false;
-            exitB2.duration = 0.25f;
-            exitB2.AddCondition(AnimatorConditionMode.If, 0, "StateB");
 
             // Self-transitions are preserved
             var selfA = stateA.AddTransition(stateA);
@@ -161,29 +173,25 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             selfB.duration = 0.25f;
             selfB.AddCondition(AnimatorConditionMode.If, 0, "StateB");
 
-            controller.AddLayer(layer);
-            
-            AssetDatabase.CreateAsset(controller, BasePath + "SimpleCompleteGraph.converted.controller");
-            AssetDatabase.AddObjectToAsset(clipA, controller);
-            AssetDatabase.AddObjectToAsset(clipB, controller);
+            // clips are shared assets now
         }
 
         private static void GenerateCompleteGraphWithSelfTransitions()
         {
             var controller = new AnimatorController();
             controller.name = "CompleteGraphWithSelfTransitions";
+            AssetDatabase.CreateAsset(controller, BasePath + "CompleteGraphWithSelfTransitions.controller");
             
             controller.AddParameter("Param1", AnimatorControllerParameterType.Bool);
             controller.AddParameter("Param2", AnimatorControllerParameterType.Bool);
 
-            var clip1 = new AnimationClip { name = "Clip1" };
-            var clip2 = new AnimationClip { name = "Clip2" };
+            var clip1 = GetSharedClip("Clip1");
+            var clip2 = GetSharedClip("Clip2");
 
-            var layer = new AnimatorControllerLayer
-            {
-                name = "Base Layer",
-                stateMachine = new AnimatorStateMachine { name = "Base Layer" }
-            };
+            controller.AddLayer("Base Layer");
+            var layer = controller.layers[^1];
+            layer.name = "Base Layer";
+            layer.stateMachine.name = "Base Layer";
 
             var state1 = layer.stateMachine.AddState("State1");
             state1.motion = clip1;
@@ -212,12 +220,8 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             self2.duration = 0.1f;
             self2.AddCondition(AnimatorConditionMode.If, 0, "Param2");
 
-            controller.AddLayer(layer);
+            // clips are shared assets now
             
-            AssetDatabase.CreateAsset(controller, BasePath + "CompleteGraphWithSelfTransitions.controller");
-            AssetDatabase.AddObjectToAsset(clip1, controller);
-            AssetDatabase.AddObjectToAsset(clip2, controller);
-
             GenerateCompleteGraphWithSelfTransitionsConverted();
         }
 
@@ -225,18 +229,18 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
         {
             var controller = new AnimatorController();
             controller.name = "CompleteGraphWithSelfTransitions.converted";
+            AssetDatabase.CreateAsset(controller, BasePath + "CompleteGraphWithSelfTransitions.converted.controller");
             
             controller.AddParameter("Param1", AnimatorControllerParameterType.Bool);
             controller.AddParameter("Param2", AnimatorControllerParameterType.Bool);
 
-            var clip1 = new AnimationClip { name = "Clip1" };
-            var clip2 = new AnimationClip { name = "Clip2" };
+            var clip1 = GetSharedClip("Clip1");
+            var clip2 = GetSharedClip("Clip2");
 
-            var layer = new AnimatorControllerLayer
-            {
-                name = "Base Layer",
-                stateMachine = new AnimatorStateMachine { name = "Base Layer" }
-            };
+            controller.AddLayer("Base Layer");
+            var layer = controller.layers[^1];
+            layer.name = "Base Layer";
+            layer.stateMachine.name = "Base Layer";
 
             var state1 = layer.stateMachine.AddState("State1");
             state1.motion = clip1;
@@ -245,19 +249,13 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             state2.motion = clip2;
 
             // Entry transitions
-            var entry1 = new AnimatorTransition { destinationState = state1 };
+            var entry1 = layer.stateMachine.AddEntryTransition(state1);
             entry1.AddCondition(AnimatorConditionMode.If, 0, "Param1");
-            layer.stateMachine.AddEntryTransition(entry1);
 
-            var entry2 = new AnimatorTransition { destinationState = state2 };
+            var entry2 = layer.stateMachine.AddEntryTransition(state2);
             entry2.AddCondition(AnimatorConditionMode.If, 0, "Param2");
-            layer.stateMachine.AddEntryTransition(entry2);
 
             // Exit transitions
-            var exit1a = state1.AddExitTransition();
-            exit1a.hasExitTime = false;
-            exit1a.duration = 0.1f;
-            exit1a.AddCondition(AnimatorConditionMode.If, 0, "Param1");
 
             var exit1b = state1.AddExitTransition();
             exit1b.hasExitTime = false;
@@ -275,41 +273,32 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             exit2a.duration = 0.1f;
             exit2a.AddCondition(AnimatorConditionMode.If, 0, "Param1");
 
-            var exit2b = state2.AddExitTransition();
-            exit2b.hasExitTime = false;
-            exit2b.duration = 0.1f;
-            exit2b.AddCondition(AnimatorConditionMode.If, 0, "Param2");
-
             var self2 = state2.AddTransition(state2);
             self2.hasExitTime = false;
             self2.duration = 0.1f;
             self2.AddCondition(AnimatorConditionMode.If, 0, "Param2");
 
-            controller.AddLayer(layer);
-            
-            AssetDatabase.CreateAsset(controller, BasePath + "CompleteGraphWithSelfTransitions.converted.controller");
-            AssetDatabase.AddObjectToAsset(clip1, controller);
-            AssetDatabase.AddObjectToAsset(clip2, controller);
+            // clips are shared assets now
         }
 
         private static void GenerateCompleteGraphWithDifferentConditions()
         {
             var controller = new AnimatorController();
             controller.name = "CompleteGraphWithDifferentConditions";
+            AssetDatabase.CreateAsset(controller, BasePath + "CompleteGraphWithDifferentConditions.controller");
             
             controller.AddParameter("ToA", AnimatorControllerParameterType.Bool);
             controller.AddParameter("ToB", AnimatorControllerParameterType.Bool);
             controller.AddParameter("ToC", AnimatorControllerParameterType.Bool);
 
-            var clipA = new AnimationClip { name = "ClipA" };
-            var clipB = new AnimationClip { name = "ClipB" };
-            var clipC = new AnimationClip { name = "ClipC" };
+            var clipA = GetSharedClip("ClipA");
+            var clipB = GetSharedClip("ClipB");
+            var clipC = GetSharedClip("ClipC");
 
-            var layer = new AnimatorControllerLayer
-            {
-                name = "Base Layer",
-                stateMachine = new AnimatorStateMachine { name = "Base Layer" }
-            };
+            controller.AddLayer("Base Layer");
+            var layer = controller.layers[^1];
+            layer.name = "Base Layer";
+            layer.stateMachine.name = "Base Layer";
 
             var stateA = layer.stateMachine.AddState("StateA");
             stateA.motion = clipA;
@@ -369,12 +358,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             cToC.duration = 0.2f;
             cToC.AddCondition(AnimatorConditionMode.If, 0, "ToC");
 
-            controller.AddLayer(layer);
-            
-            AssetDatabase.CreateAsset(controller, BasePath + "CompleteGraphWithDifferentConditions.controller");
-            AssetDatabase.AddObjectToAsset(clipA, controller);
-            AssetDatabase.AddObjectToAsset(clipB, controller);
-            AssetDatabase.AddObjectToAsset(clipC, controller);
+            // clips are shared assets now
 
             GenerateCompleteGraphWithDifferentConditionsConverted();
         }
@@ -383,20 +367,20 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
         {
             var controller = new AnimatorController();
             controller.name = "CompleteGraphWithDifferentConditions.converted";
+            AssetDatabase.CreateAsset(controller, BasePath + "CompleteGraphWithDifferentConditions.converted.controller");
             
             controller.AddParameter("ToA", AnimatorControllerParameterType.Bool);
             controller.AddParameter("ToB", AnimatorControllerParameterType.Bool);
             controller.AddParameter("ToC", AnimatorControllerParameterType.Bool);
 
-            var clipA = new AnimationClip { name = "ClipA" };
-            var clipB = new AnimationClip { name = "ClipB" };
-            var clipC = new AnimationClip { name = "ClipC" };
+            var clipA = GetSharedClip("ClipA");
+            var clipB = GetSharedClip("ClipB");
+            var clipC = GetSharedClip("ClipC");
 
-            var layer = new AnimatorControllerLayer
-            {
-                name = "Base Layer",
-                stateMachine = new AnimatorStateMachine { name = "Base Layer" }
-            };
+            controller.AddLayer("Base Layer");
+            var layer = controller.layers[^1];
+            layer.name = "Base Layer";
+            layer.stateMachine.name = "Base Layer";
 
             var stateA = layer.stateMachine.AddState("StateA");
             stateA.motion = clipA;
@@ -408,17 +392,14 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             stateC.motion = clipC;
 
             // Entry transitions
-            var entryA = new AnimatorTransition { destinationState = stateA };
+            var entryA = layer.stateMachine.AddEntryTransition(stateA);
             entryA.AddCondition(AnimatorConditionMode.If, 0, "ToA");
-            layer.stateMachine.AddEntryTransition(entryA);
 
-            var entryB = new AnimatorTransition { destinationState = stateB };
+            var entryB = layer.stateMachine.AddEntryTransition(stateB);
             entryB.AddCondition(AnimatorConditionMode.If, 0, "ToB");
-            layer.stateMachine.AddEntryTransition(entryB);
 
-            var entryC = new AnimatorTransition { destinationState = stateC };
+            var entryC = layer.stateMachine.AddEntryTransition(stateC);
             entryC.AddCondition(AnimatorConditionMode.If, 0, "ToC");
-            layer.stateMachine.AddEntryTransition(entryC);
 
             // Exit transitions (one for each possible target state condition)
             // State A
@@ -485,30 +466,25 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             selfC.duration = 0.2f;
             selfC.AddCondition(AnimatorConditionMode.If, 0, "ToC");
 
-            controller.AddLayer(layer);
-            
-            AssetDatabase.CreateAsset(controller, BasePath + "CompleteGraphWithDifferentConditions.converted.controller");
-            AssetDatabase.AddObjectToAsset(clipA, controller);
-            AssetDatabase.AddObjectToAsset(clipB, controller);
-            AssetDatabase.AddObjectToAsset(clipC, controller);
+            // clips are shared assets now
         }
 
         private static void GenerateNonConvertibleIncompleteGraph()
         {
             var controller = new AnimatorController();
             controller.name = "NonConvertibleIncompleteGraph";
+            AssetDatabase.CreateAsset(controller, BasePath + "NonConvertibleIncompleteGraph.controller");
             
             controller.AddParameter("Param1", AnimatorControllerParameterType.Bool);
             controller.AddParameter("Param2", AnimatorControllerParameterType.Bool);
 
-            var clip1 = new AnimationClip { name = "Clip1" };
-            var clip2 = new AnimationClip { name = "Clip2" };
+            var clip1 = GetSharedClip("Clip1");
+            var clip2 = GetSharedClip("Clip2");
 
-            var layer = new AnimatorControllerLayer
-            {
-                name = "Base Layer",
-                stateMachine = new AnimatorStateMachine { name = "Base Layer" }
-            };
+            controller.AddLayer("Base Layer");
+            var layer = controller.layers[^1];
+            layer.name = "Base Layer";
+            layer.stateMachine.name = "Base Layer";
 
             var state1 = layer.stateMachine.AddState("State1");
             state1.motion = clip1;
@@ -529,11 +505,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             self2.hasExitTime = false;
             self2.AddCondition(AnimatorConditionMode.If, 0, "Param2");
 
-            controller.AddLayer(layer);
-            
-            AssetDatabase.CreateAsset(controller, BasePath + "NonConvertibleIncompleteGraph.controller");
-            AssetDatabase.AddObjectToAsset(clip1, controller);
-            AssetDatabase.AddObjectToAsset(clip2, controller);
+            // clips are shared assets now
         }
 
         private static void GenerateNonConvertibleDifferentTransitionSettings()
@@ -544,14 +516,13 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             controller.AddParameter("Param1", AnimatorControllerParameterType.Bool);
             controller.AddParameter("Param2", AnimatorControllerParameterType.Bool);
 
-            var clip1 = new AnimationClip { name = "Clip1" };
-            var clip2 = new AnimationClip { name = "Clip2" };
+            var clip1 = GetSharedClip("Clip1");
+            var clip2 = GetSharedClip("Clip2");
 
-            var layer = new AnimatorControllerLayer
-            {
-                name = "Base Layer",
-                stateMachine = new AnimatorStateMachine { name = "Base Layer" }
-            };
+            controller.AddLayer("Base Layer");
+            var layer = controller.layers[^1];
+            layer.name = "Base Layer";
+            layer.stateMachine.name = "Base Layer";
 
             var state1 = layer.stateMachine.AddState("State1");
             state1.motion = clip1;
@@ -580,27 +551,24 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             self2.duration = 0.25f;
             self2.AddCondition(AnimatorConditionMode.If, 0, "Param2");
 
-            controller.AddLayer(layer);
-            
             AssetDatabase.CreateAsset(controller, BasePath + "NonConvertibleDifferentTransitionSettings.controller");
-            AssetDatabase.AddObjectToAsset(clip1, controller);
-            AssetDatabase.AddObjectToAsset(clip2, controller);
-        }
+            // clips are shared assets now
+         }
 
         private static void GenerateNonConvertibleHasStateMachine()
         {
             var controller = new AnimatorController();
             controller.name = "NonConvertibleHasStateMachine";
+            AssetDatabase.CreateAsset(controller, BasePath + "NonConvertibleHasStateMachine.controller");
             
             controller.AddParameter("Param1", AnimatorControllerParameterType.Bool);
 
-            var clip1 = new AnimationClip { name = "Clip1" };
+            var clip1 = GetSharedClip("Clip1");
 
-            var layer = new AnimatorControllerLayer
-            {
-                name = "Base Layer",
-                stateMachine = new AnimatorStateMachine { name = "Base Layer" }
-            };
+            controller.AddLayer("Base Layer");
+            var layer = controller.layers[^1];
+            layer.name = "Base Layer";
+            layer.stateMachine.name = "Base Layer";
 
             var state1 = layer.stateMachine.AddState("State1");
             state1.motion = clip1;
@@ -608,29 +576,26 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             // Add a child state machine
             layer.stateMachine.AddStateMachine("SubStateMachine");
 
-            controller.AddLayer(layer);
-            
-            AssetDatabase.CreateAsset(controller, BasePath + "NonConvertibleHasStateMachine.controller");
-            AssetDatabase.AddObjectToAsset(clip1, controller);
+            // clip is a shared asset now
         }
 
         private static void GenerateNonConvertibleDifferentConditionsForSameTarget()
         {
             var controller = new AnimatorController();
             controller.name = "NonConvertibleDifferentConditionsForSameTarget";
+            AssetDatabase.CreateAsset(controller, BasePath + "NonConvertibleDifferentConditionsForSameTarget.controller");
             
             controller.AddParameter("Param1", AnimatorControllerParameterType.Bool);
             controller.AddParameter("Param2", AnimatorControllerParameterType.Bool);
             controller.AddParameter("Param3", AnimatorControllerParameterType.Bool);
 
-            var clip1 = new AnimationClip { name = "Clip1" };
-            var clip2 = new AnimationClip { name = "Clip2" };
+            var clip1 = GetSharedClip("Clip1");
+            var clip2 = GetSharedClip("Clip2");
 
-            var layer = new AnimatorControllerLayer
-            {
-                name = "Base Layer",
-                stateMachine = new AnimatorStateMachine { name = "Base Layer" }
-            };
+            controller.AddLayer("Base Layer");
+            var layer = controller.layers[^1];
+            layer.name = "Base Layer";
+            layer.stateMachine.name = "Base Layer";
 
             var state1 = layer.stateMachine.AddState("State1");
             state1.motion = clip1;
@@ -660,11 +625,6 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             self2.duration = 0.25f;
             self2.AddCondition(AnimatorConditionMode.If, 0, "Param2");
 
-            controller.AddLayer(layer);
-            
-            AssetDatabase.CreateAsset(controller, BasePath + "NonConvertibleDifferentConditionsForSameTarget.controller");
-            AssetDatabase.AddObjectToAsset(clip1, controller);
-            AssetDatabase.AddObjectToAsset(clip2, controller);
         }
     }
 }

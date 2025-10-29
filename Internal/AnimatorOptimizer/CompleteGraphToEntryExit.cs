@@ -172,7 +172,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
                 var referenceTransition = state.transitions.First(x => x.destinationState != state);
 
-                var exitTransitions = OptimizeCondition(transitonByTargetState.Values.Select(x => x.conditions).ToArray())
+                var exitTransitions = OptimizeCondition(transitonByTargetState.Where(x => x.Key != state).Select(x => x.Value.conditions).ToArray())
                     .Select(conditions => new AnimatorStateTransition()
                     {
                         isExit = true,
@@ -180,6 +180,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         destinationStateMachine = null,
 
                         duration = referenceTransition.duration,
+                        hasFixedDuration = referenceTransition.hasFixedDuration,
                         offset = referenceTransition.offset,
                         interruptionSource = referenceTransition.interruptionSource,
                         orderedInterruption = referenceTransition.orderedInterruption,
@@ -192,6 +193,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
                 state.transitions = exitTransitions.Concat(selfTransitions).ToArray();
             }
+
+            stateMachine.entryTransitions = entryTransitions.ToArray();
         }
 
         private static AnimatorCondition[][] OptimizeCondition(AnimatorCondition[][] conditions)
