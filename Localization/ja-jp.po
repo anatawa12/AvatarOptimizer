@@ -619,7 +619,16 @@ msgstr "Trace and Optimizeへの移行が完了しました！"
 # region TraceAndOptimize
 
 msgid "TraceAndOptimize:description"
-msgstr "このコンポーネントをアバターにつけると、アバターを走査して自動的にできる限りの最適化を行います。"
+msgstr "このコンポーネントをアバターにつけると、アバターを走査して自動的にできる限りの最適化を行います。\n"
+"Trace and Optimize はほとんどのユーザーにとって設定変更不要になるよう設計されています。"
+"設定を変更する必要がある場合は、Avatar Optimizerのバグに遭遇した可能性があります。"
+
+msgid "TraceAndOptimize:warn:changeFeaturesNotNecessary"
+msgstr ""
+"一般的に、これらの機能を無効化する必要はありません。\n"
+"VRChatアバターの場合、デフォルト設定が最適です。変更する必要がある場合は、Avatar Optimizerのバグに遭遇した可能性があります。\n"
+"いくつかの最適化を無効にするのではなく、私たちに報告してください。\n"
+"問題の報告方法については、 https://an12.net/aao/ja/faq-tao-issues をご覧ください。"
 
 msgid "TraceAndOptimize:prop:optimizeBlendShape"
 msgstr "BlendShapeを最適化する"
@@ -661,6 +670,19 @@ msgstr ""
 
 msgid "TraceAndOptimize:prop:debugOptions"
 msgstr "デバッグ用オプション"
+
+msgid "TraceAndOptimize:dialog:debugOptions:description"
+msgstr ""
+"デバッグ用オプションはAvatarOptimizerのバグを回避するための設定です。\n"
+"これらの設定を変更すると、アバターが適切に最適化されなくなったり、最適化処理が失敗したりする可能性があります。\n"
+"また、一部のデバッグ用オプションが正しく機能しなかったり、その動作が変更されたりする可能性があります。\n"
+"このことを理解して、これらの設定を変更しますか？"
+
+msgid "TraceAndOptimize:dialog:debugOptions:proceed"
+msgstr "設定を変更する"
+
+msgid "TraceAndOptimize:dialog:debugOptions:cancel"
+msgstr "キャンセル"
 
 msgid "TraceAndOptimize:warn:debugOptions"
 msgstr "デバッグ用オプションはAvatarOptimizerのバグを回避するための設定です。\n"
