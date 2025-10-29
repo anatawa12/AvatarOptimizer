@@ -10,14 +10,22 @@ This directory contains tests for the `CompleteGraphToEntryExit` animator optimi
 
 ## Generating Test Assets
 
+**IMPORTANT**: The test controller assets must be generated before running the tests.
+
 The test animator controllers need to be generated using Unity Editor:
 
 1. Open a Unity project with AvatarOptimizer installed as a UPM package
-2. Copy the Test~ directory into your project's Assets folder temporarily
-3. In Unity Editor menu, select: **Avatar Optimizer > Tests > Generate CompleteGraphToEntryExit Test Controllers**
-4. The script will generate all required `.controller` files in `Assets/Test~/AnimatorOptimizer/CompleteGraphToEntryExit/`
-5. Copy the generated `.controller` and `.controller.meta` files back to the repository's `Test~/AnimatorOptimizer/CompleteGraphToEntryExit/` directory
-6. Remove the Test~ directory from your Assets folder
+2. In Unity Editor menu, select: **Avatar Optimizer > Tests > Generate CompleteGraphToEntryExit Test Controllers**
+3. The script will generate all required `.controller` files in the test directory
+4. Commit the generated `.controller` and `.controller.meta` files to the repository
+
+### Manual Generation (Alternative)
+
+If the menu item is not available:
+
+1. Copy `GenerateTestControllers.cs` to an Editor folder in your Unity project
+2. Call `CompleteGraphToEntryExitTestGenerator.GenerateAllTestControllers()` from a custom editor script
+3. Copy the generated files from the project to the repository's test directory
 
 ## Test Cases
 
