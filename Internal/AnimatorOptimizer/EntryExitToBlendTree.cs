@@ -382,18 +382,30 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     // Check if all values are integers (for Greater/Less support)
                     if (values.All(v => v.IntValue.HasValue))
                     {
-                        var intValues = values.Select(v => v.IntValue!.Value).ToList();
-                        var minValue = intValues.Min();
-                        var maxValue = intValues.Max();
+                        var intValues = values.Select(v => v.IntValue!.Value).OrderBy(v => v).ToList();
+                        var minValue = intValues.First();
+                        var maxValue = intValues.Last();
 
-                        // Track which values are covered by exit transitions
+                        // Check if values form a contiguous range
+                        bool isContiguous = true;
+                        for (int i = 0; i < intValues.Count - 1; i++)
+                        {
+                            if (intValues[i + 1] != intValues[i] + 1)
+                            {
+                                isContiguous = false;
+                                break;
+                            }
+                        }
+
+                        // Track which exit strategies we've found
+                        bool hasGreater = false;
+                        bool hasLess = false;
                         var remainingValues = new HashSet<IntOrBool>(values);
 
                         // Process each transition (transitions are OR'd together)
                         foreach (var conditions in allConditions)
                         {
-                            // Each transition has conditions that are AND'd together
-                            // Check if this is a single-condition Greater or Less
+                            // Check for single-condition Greater or Less
                             if (conditions.Length == 1 && conditions[0].parameter == conditionParameter)
                             {
                                 var condition = conditions[0];
@@ -402,33 +414,29 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                                     case AnimatorConditionMode.Greater:
                                     {
                                         // Greater: value > threshold
-                                        // For exit condition, threshold should be >= maxValue to cover all values > maxValue
+                                        // This covers the upper range if threshold >= maxValue
                                         var threshold = (int)condition.threshold;
                                         if (threshold >= maxValue)
                                         {
-                                            // This transition covers all values from threshold+1 onwards
-                                            // Mark all values > threshold as covered
-                                            remainingValues.RemoveWhere(v => v.IntValue!.Value > threshold);
+                                            hasGreater = true;
                                         }
                                         continue;
                                     }
                                     case AnimatorConditionMode.Less:
                                     {
                                         // Less: value < threshold
-                                        // For exit condition, threshold should be <= minValue to cover all values < minValue
+                                        // This covers the lower range if threshold <= minValue
                                         var threshold = (int)condition.threshold;
                                         if (threshold <= minValue)
                                         {
-                                            // This transition covers all values up to threshold-1
-                                            // Mark all values < threshold as covered
-                                            remainingValues.RemoveWhere(v => v.IntValue!.Value < threshold);
+                                            hasLess = true;
                                         }
                                         continue;
                                     }
                                 }
                             }
                             
-                            // Check if all conditions are NotEqual for our parameter
+                            // Check for NotEqual conditions (original pattern)
                             bool allNotEqual = conditions.All(c => 
                                 c.parameter == conditionParameter && c.mode == AnimatorConditionMode.NotEqual);
                             
@@ -442,8 +450,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                             }
                         }
 
-                        // Check if all values are covered
-                        return remainingValues.Count == 0;
+                        // Check if exit strategy is complete
+                        // Strategy 1: All state values are covered by NotEqual conditions
+                        if (remainingValues.Count == 0)
+                            return true;
+
+                        // Strategy 2: Values are contiguous and both Greater and Less cover the ranges
+                        if (isContiguous && hasGreater && hasLess && remainingValues.Count == values.Count)
+                            return true;
+
+                        // Strategy 3: Single value covered by either Greater or Less
+                        if (values.Count == 1 && (hasGreater || hasLess) && remainingValues.Count == 1)
+                            return true;
+
+                        return false;
                     }
                     else if (values.All(v => v.BoolValue.HasValue))
                     {
@@ -601,18 +621,30 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     // Check if all values are integers (for Greater/Less support)
                     if (values.All(v => v.IntValue.HasValue))
                     {
-                        var intValues = values.Select(v => v.IntValue!.Value).ToList();
-                        var minValue = intValues.Min();
-                        var maxValue = intValues.Max();
+                        var intValues = values.Select(v => v.IntValue!.Value).OrderBy(v => v).ToList();
+                        var minValue = intValues.First();
+                        var maxValue = intValues.Last();
 
-                        // Track which values are covered by exit transitions
+                        // Check if values form a contiguous range
+                        bool isContiguous = true;
+                        for (int i = 0; i < intValues.Count - 1; i++)
+                        {
+                            if (intValues[i + 1] != intValues[i] + 1)
+                            {
+                                isContiguous = false;
+                                break;
+                            }
+                        }
+
+                        // Track which exit strategies we've found
+                        bool hasGreater = false;
+                        bool hasLess = false;
                         var remainingValues = new HashSet<IntOrBool>(values);
 
                         // Process each transition (transitions are OR'd together)
                         foreach (var conditions in allConditions)
                         {
-                            // Each transition has conditions that are AND'd together
-                            // Check if this is a single-condition Greater or Less
+                            // Check for single-condition Greater or Less
                             if (conditions.Length == 1 && conditions[0].parameter == conditionParameter)
                             {
                                 var condition = conditions[0];
@@ -621,33 +653,29 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                                     case AnimatorConditionMode.Greater:
                                     {
                                         // Greater: value > threshold
-                                        // For exit condition, threshold should be >= maxValue to cover all values > maxValue
+                                        // This covers the upper range if threshold >= maxValue
                                         var threshold = (int)condition.threshold;
                                         if (threshold >= maxValue)
                                         {
-                                            // This transition covers all values from threshold+1 onwards
-                                            // Mark all values > threshold as covered
-                                            remainingValues.RemoveWhere(v => v.IntValue!.Value > threshold);
+                                            hasGreater = true;
                                         }
                                         continue;
                                     }
                                     case AnimatorConditionMode.Less:
                                     {
                                         // Less: value < threshold
-                                        // For exit condition, threshold should be <= minValue to cover all values < minValue
+                                        // This covers the lower range if threshold <= minValue
                                         var threshold = (int)condition.threshold;
                                         if (threshold <= minValue)
                                         {
-                                            // This transition covers all values up to threshold-1
-                                            // Mark all values < threshold as covered
-                                            remainingValues.RemoveWhere(v => v.IntValue!.Value < threshold);
+                                            hasLess = true;
                                         }
                                         continue;
                                     }
                                 }
                             }
                             
-                            // Check if all conditions are NotEqual for our parameter
+                            // Check for NotEqual conditions (original pattern)
                             bool allNotEqual = conditions.All(c => 
                                 c.parameter == conditionParameter && c.mode == AnimatorConditionMode.NotEqual);
                             
@@ -661,8 +689,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                             }
                         }
 
-                        // Check if all values are covered
-                        return remainingValues.Count == 0;
+                        // Check if exit strategy is complete
+                        // Strategy 1: All state values are covered by NotEqual conditions
+                        if (remainingValues.Count == 0)
+                            return true;
+
+                        // Strategy 2: Values are contiguous and both Greater and Less cover the ranges
+                        if (isContiguous && hasGreater && hasLess && remainingValues.Count == values.Count)
+                            return true;
+
+                        // Strategy 3: Single value covered by either Greater or Less
+                        if (values.Count == 1 && (hasGreater || hasLess) && remainingValues.Count == 1)
+                            return true;
+
+                        return false;
                     }
                     else if (values.All(v => v.BoolValue.HasValue))
                     {
