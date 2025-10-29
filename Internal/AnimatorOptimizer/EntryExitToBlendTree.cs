@@ -379,9 +379,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
                 bool PossibleValuesExitTransitionCheck(HashSet<IntOrBool> values)
                 {
-                    if (allConditions.Length != 1) return false;
-                    var conditions = allConditions[0];
-
                     // Check if all values are integers (for Greater/Less support)
                     if (values.All(v => v.IntValue.HasValue))
                     {
@@ -389,59 +386,70 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         var minValue = intValues.Min();
                         var maxValue = intValues.Max();
 
-                        // Try to match conditions with NotEqual/Greater/Less patterns
+                        // Track which values are covered by exit transitions
                         var remainingValues = new HashSet<IntOrBool>(values);
-                        var hasGreater = false;
-                        var hasLess = false;
 
-                        foreach (var condition in conditions)
+                        // Process each transition (transitions are OR'd together)
+                        foreach (var conditions in allConditions)
                         {
-                            if (condition.parameter != conditionParameter) return false;
-
-                            switch (condition.mode)
+                            // Each transition has conditions that are AND'd together
+                            // Check if this is a single-condition Greater or Less
+                            if (conditions.Length == 1 && conditions[0].parameter == conditionParameter)
                             {
-                                case AnimatorConditionMode.NotEqual:
+                                var condition = conditions[0];
+                                switch (condition.mode)
                                 {
-                                    IntOrBool value = (int)condition.threshold;
-                                    if (!remainingValues.Remove(value)) return false;
-                                    break;
+                                    case AnimatorConditionMode.Greater:
+                                    {
+                                        // Greater: value > threshold
+                                        // For exit condition, threshold should be >= maxValue to cover all values > maxValue
+                                        var threshold = (int)condition.threshold;
+                                        if (threshold >= maxValue)
+                                        {
+                                            // This transition covers all values from threshold+1 onwards
+                                            // Mark all values > threshold as covered
+                                            remainingValues.RemoveWhere(v => v.IntValue!.Value > threshold);
+                                        }
+                                        continue;
+                                    }
+                                    case AnimatorConditionMode.Less:
+                                    {
+                                        // Less: value < threshold
+                                        // For exit condition, threshold should be <= minValue to cover all values < minValue
+                                        var threshold = (int)condition.threshold;
+                                        if (threshold <= minValue)
+                                        {
+                                            // This transition covers all values up to threshold-1
+                                            // Mark all values < threshold as covered
+                                            remainingValues.RemoveWhere(v => v.IntValue!.Value < threshold);
+                                        }
+                                        continue;
+                                    }
                                 }
-                                case AnimatorConditionMode.Greater:
-                                {
-                                    // Greater should be: value > maxValue (exits when above max)
-                                    // This means condition.threshold should be >= maxValue
-                                    var threshold = (int)condition.threshold;
-                                    if (threshold < maxValue) return false;
-                                    hasGreater = true;
-                                    break;
-                                }
-                                case AnimatorConditionMode.Less:
-                                {
-                                    // Less should be: value < minValue (exits when below min)
-                                    // This means condition.threshold should be <= minValue
-                                    var threshold = (int)condition.threshold;
-                                    if (threshold > minValue) return false;
-                                    hasLess = true;
-                                    break;
-                                }
-                                default:
-                                    return false;
+                            }
+                            
+                            // Check if all conditions are NotEqual for our parameter
+                            bool allNotEqual = conditions.All(c => 
+                                c.parameter == conditionParameter && c.mode == AnimatorConditionMode.NotEqual);
+                            
+                            if (!allNotEqual) continue; // Skip transitions we don't understand
+
+                            // For NotEqual conditions, mark those values as covered
+                            foreach (var condition in conditions)
+                            {
+                                IntOrBool value = (int)condition.threshold;
+                                remainingValues.Remove(value);
                             }
                         }
 
-                        // If we have Greater/Less, we should have covered all values
-                        if (hasGreater || hasLess)
-                        {
-                            // All values should be covered by the range
-                            return remainingValues.Count == 0;
-                        }
-
-                        // Otherwise, all values must be covered by NotEqual
-                        return remainingValues.Count == 0 && conditions.Length == values.Count;
+                        // Check if all values are covered
+                        return remainingValues.Count == 0;
                     }
                     else if (values.All(v => v.BoolValue.HasValue))
                     {
-                        // Bool values - original logic
+                        // Bool values - original logic (single transition with If/IfNot conditions)
+                        if (allConditions.Length != 1) return false;
+                        var conditions = allConditions[0];
                         if (conditions.Length != values.Count) return false;
 
                         var remainingValues = new HashSet<IntOrBool>(values);
@@ -590,9 +598,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
                 bool PossibleValuesExitTransitionCheck(HashSet<IntOrBool> values)
                 {
-                    if (allConditions.Length != 1) return false;
-                    var conditions = allConditions[0];
-
                     // Check if all values are integers (for Greater/Less support)
                     if (values.All(v => v.IntValue.HasValue))
                     {
@@ -600,59 +605,70 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         var minValue = intValues.Min();
                         var maxValue = intValues.Max();
 
-                        // Try to match conditions with NotEqual/Greater/Less patterns
+                        // Track which values are covered by exit transitions
                         var remainingValues = new HashSet<IntOrBool>(values);
-                        var hasGreater = false;
-                        var hasLess = false;
 
-                        foreach (var condition in conditions)
+                        // Process each transition (transitions are OR'd together)
+                        foreach (var conditions in allConditions)
                         {
-                            if (condition.parameter != conditionParameter) return false;
-
-                            switch (condition.mode)
+                            // Each transition has conditions that are AND'd together
+                            // Check if this is a single-condition Greater or Less
+                            if (conditions.Length == 1 && conditions[0].parameter == conditionParameter)
                             {
-                                case AnimatorConditionMode.NotEqual:
+                                var condition = conditions[0];
+                                switch (condition.mode)
                                 {
-                                    IntOrBool value = (int)condition.threshold;
-                                    if (!remainingValues.Remove(value)) return false;
-                                    break;
+                                    case AnimatorConditionMode.Greater:
+                                    {
+                                        // Greater: value > threshold
+                                        // For exit condition, threshold should be >= maxValue to cover all values > maxValue
+                                        var threshold = (int)condition.threshold;
+                                        if (threshold >= maxValue)
+                                        {
+                                            // This transition covers all values from threshold+1 onwards
+                                            // Mark all values > threshold as covered
+                                            remainingValues.RemoveWhere(v => v.IntValue!.Value > threshold);
+                                        }
+                                        continue;
+                                    }
+                                    case AnimatorConditionMode.Less:
+                                    {
+                                        // Less: value < threshold
+                                        // For exit condition, threshold should be <= minValue to cover all values < minValue
+                                        var threshold = (int)condition.threshold;
+                                        if (threshold <= minValue)
+                                        {
+                                            // This transition covers all values up to threshold-1
+                                            // Mark all values < threshold as covered
+                                            remainingValues.RemoveWhere(v => v.IntValue!.Value < threshold);
+                                        }
+                                        continue;
+                                    }
                                 }
-                                case AnimatorConditionMode.Greater:
-                                {
-                                    // Greater should be: value > maxValue (exits when above max)
-                                    // This means condition.threshold should be >= maxValue
-                                    var threshold = (int)condition.threshold;
-                                    if (threshold < maxValue) return false;
-                                    hasGreater = true;
-                                    break;
-                                }
-                                case AnimatorConditionMode.Less:
-                                {
-                                    // Less should be: value < minValue (exits when below min)
-                                    // This means condition.threshold should be <= minValue
-                                    var threshold = (int)condition.threshold;
-                                    if (threshold > minValue) return false;
-                                    hasLess = true;
-                                    break;
-                                }
-                                default:
-                                    return false;
+                            }
+                            
+                            // Check if all conditions are NotEqual for our parameter
+                            bool allNotEqual = conditions.All(c => 
+                                c.parameter == conditionParameter && c.mode == AnimatorConditionMode.NotEqual);
+                            
+                            if (!allNotEqual) continue; // Skip transitions we don't understand
+
+                            // For NotEqual conditions, mark those values as covered
+                            foreach (var condition in conditions)
+                            {
+                                IntOrBool value = (int)condition.threshold;
+                                remainingValues.Remove(value);
                             }
                         }
 
-                        // If we have Greater/Less, we should have covered all values
-                        if (hasGreater || hasLess)
-                        {
-                            // All values should be covered by the range
-                            return remainingValues.Count == 0;
-                        }
-
-                        // Otherwise, all values must be covered by NotEqual
-                        return remainingValues.Count == 0 && conditions.Length == values.Count;
+                        // Check if all values are covered
+                        return remainingValues.Count == 0;
                     }
                     else if (values.All(v => v.BoolValue.HasValue))
                     {
-                        // Bool values - original logic
+                        // Bool values - original logic (single transition with If/IfNot conditions)
+                        if (allConditions.Length != 1) return false;
+                        var conditions = allConditions[0];
                         if (conditions.Length != values.Count) return false;
 
                         var remainingValues = new HashSet<IntOrBool>(values);
