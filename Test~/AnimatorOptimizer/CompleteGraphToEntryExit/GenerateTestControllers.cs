@@ -591,6 +591,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
 
             var clip1 = GetSharedClip("Clip1");
             var clip2 = GetSharedClip("Clip2");
+            var clip3 = GetSharedClip("Clip3");
 
             controller.AddLayer("Base Layer");
             var layer = controller.layers[^1];
@@ -603,27 +604,63 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             var state2 = layer.stateMachine.AddState("State2");
             state2.motion = clip2;
 
+            var state3 = layer.stateMachine.AddState("State3");
+            state3.motion = clip3;
+
+            // Create complete graph but with different conditions targeting State1
             // State1 -> State2 with Param2
             var trans12 = state1.AddTransition(state2);
             trans12.hasExitTime = false;
             trans12.duration = 0.25f;
             trans12.AddCondition(AnimatorConditionMode.If, 0, "Param2");
 
+            // State1 -> State3 with Param3
+            var trans13 = state1.AddTransition(state3);
+            trans13.hasExitTime = false;
+            trans13.duration = 0.25f;
+            trans13.AddCondition(AnimatorConditionMode.If, 0, "Param3");
+
+            // State1 -> State1 (self) with Param1
             var self1 = state1.AddTransition(state1);
             self1.hasExitTime = false;
             self1.duration = 0.25f;
             self1.AddCondition(AnimatorConditionMode.If, 0, "Param1");
 
-            // State2 -> State1 with Param3 (different from State1's condition!)
+            // State2 -> State1 with Param1 (same as State3's condition to State1)
             var trans21 = state2.AddTransition(state1);
             trans21.hasExitTime = false;
             trans21.duration = 0.25f;
-            trans21.AddCondition(AnimatorConditionMode.If, 0, "Param3"); // Different condition!
+            trans21.AddCondition(AnimatorConditionMode.If, 0, "Param1");
 
+            // State2 -> State3 with Param3
+            var trans23 = state2.AddTransition(state3);
+            trans23.hasExitTime = false;
+            trans23.duration = 0.25f;
+            trans23.AddCondition(AnimatorConditionMode.If, 0, "Param3");
+
+            // State2 -> State2 (self) with Param2
             var self2 = state2.AddTransition(state2);
             self2.hasExitTime = false;
             self2.duration = 0.25f;
             self2.AddCondition(AnimatorConditionMode.If, 0, "Param2");
+
+            // State3 -> State1 with Param3 (DIFFERENT from State2's Param1 - this makes it non-convertible!)
+            var trans31 = state3.AddTransition(state1);
+            trans31.hasExitTime = false;
+            trans31.duration = 0.25f;
+            trans31.AddCondition(AnimatorConditionMode.If, 0, "Param3");
+
+            // State3 -> State2 with Param2
+            var trans32 = state3.AddTransition(state2);
+            trans32.hasExitTime = false;
+            trans32.duration = 0.25f;
+            trans32.AddCondition(AnimatorConditionMode.If, 0, "Param2");
+
+            // State3 -> State3 (self) with Param3
+            var self3 = state3.AddTransition(state3);
+            self3.hasExitTime = false;
+            self3.duration = 0.25f;
+            self3.AddCondition(AnimatorConditionMode.If, 0, "Param3");
 
         }
     }

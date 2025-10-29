@@ -53,7 +53,8 @@ If the menu item is not available:
 6. **NonConvertibleHasStateMachine** - Layer with child state machine
    - Should NOT be converted (child state machines not supported)
 
-7. **NonConvertibleDifferentConditionsForSameTarget** - Same target, different conditions
+7. **NonConvertibleDifferentConditionsForSameTarget** - 3-state graph with different conditions to same target
+   - State2 → State1 (Param1), State3 → State1 (Param3)
    - Should NOT be converted (violates same-conditions-per-target requirement)
 
 ## Implementation Notes
