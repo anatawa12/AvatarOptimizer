@@ -727,7 +727,7 @@ msgid "TraceAndOptimize:warn:changeFeaturesNotNecessary"
 msgstr "In general, disabling features is not necessary.\n"
 "For VRChat avatars, default settings are best. If you need to change them, it's likely that you have encountered some Avatar Optimizer's bugs.\n"
 "Please report us instead of disabling some optimizations.\n"
-"https://an12.net/aao/en/faq-tao-issues for how to report issues."
+"https://an12.net/aao/en/tao-bug for how to report issues."
 
 msgid "TraceAndOptimize:prop:optimizeBlendShape"
 msgstr "Optimize BlendShape"

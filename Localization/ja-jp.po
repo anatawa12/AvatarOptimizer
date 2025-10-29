@@ -628,7 +628,7 @@ msgstr ""
 "一般的に、これらの機能を無効化する必要はありません。\n"
 "VRChatアバターの場合、デフォルト設定が最適です。変更する必要がある場合は、Avatar Optimizerのバグに遭遇した可能性があります。\n"
 "いくつかの最適化を無効にするのではなく、私たちに報告してください。\n"
-"問題の報告方法については、 https://an12.net/aao/ja/faq-tao-issues をご覧ください。"
+"問題の報告方法については、 https://an12.net/aao/en/tao-bug をご覧ください。"
 
 msgid "TraceAndOptimize:prop:optimizeBlendShape"
 msgstr "BlendShapeを最適化する"
