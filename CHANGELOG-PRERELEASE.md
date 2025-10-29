@@ -31,6 +31,10 @@ The format is based on [Keep a Changelog].
     - Vertices that are not part of any triangle will be kept.
     - Orphan vertices are likely to be used to control the bounds of the mesh so they will be kept.
 - Allow Shuffle Material Slots is now enabled by default `#1533`
+- Descriptive localized messages are shown in Play Mode when animation keys are removed `#1461`
+  - When AAO removes animation keys because target objects are absent, descriptive messages in the user's language are now shown in Play Mode to help understand what happened.
+  - These messages explain that the target object is absent, keys were removed by AAO, and suggest reporting if this is incorrect.
+  - In Edit Mode (upload builds), the behavior remains unchanged with a terse internal identifier to minimize avatar size.
 
 [`AfterPlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_AfterPlugin_System_String_System_String_System_Int32_
 [`BeforePlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_BeforePlugin_System_String_System_String_System_Int32_

@@ -58,6 +58,19 @@ msgstr "(見つからないが削除済)"
 
 # endregion
 
+# region ObjectMapping
+
+msgid "ObjectMapping:DummyAnimationObject:1"
+msgstr "対象のオブジェクトが不在なため、キーはAAOにより削除されました。(このメッセージはPlayモードでのみ表示されます)"
+
+msgid "ObjectMapping:DummyAnimationObject:2"
+msgstr "AAOが対象オブジェクトを削除した結果対象のオブジェクトが存在しなくなった可能性もあります。"
+
+msgid "ObjectMapping:DummyAnimationObject:3"
+msgstr "誤った判断により削除された場合にはAAOに報告してください。"
+
+# endregion
+
 # start Avatar Optimizer core modules
 
 # region ClearEndpointPosition

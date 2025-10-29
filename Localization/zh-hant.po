@@ -55,6 +55,19 @@ msgstr "（已移除但未找到）"
 
 # endregion
 
+# region ObjectMapping
+
+msgid "ObjectMapping:DummyAnimationObject:1"
+msgstr "物件不存在導致AAO刪除了鍵。(此訊息僅在Play模式下顯示)"
+
+msgid "ObjectMapping:DummyAnimationObject:2"
+msgstr "AAO可能將物件作為「未使用」而刪除了目標物件。"
+
+msgid "ObjectMapping:DummyAnimationObject:3"
+msgstr "如果這破壞了您的動畫，請向AAO回報。"
+
+# endregion
+
 # start Avatar Optimizer core modules
 
 # region ClearEndpointPosition

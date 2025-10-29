@@ -58,6 +58,19 @@ msgstr "(Removed but not found)"
 
 # endregion
 
+# region ObjectMapping
+
+msgid "ObjectMapping:DummyAnimationObject:1"
+msgstr "Keys removed by AAO becuase Target object is absent. (This message is only available in play mode)"
+
+msgid "ObjectMapping:DummyAnimationObject:2"
+msgstr "AAO may have deleted the target object if target object is 'unused'."
+
+msgid "ObjectMapping:DummyAnimationObject:3"
+msgstr "Report to AAO if this breaks your animation."
+
+# endregion
+
 # start Avatar Optimizer core modules
 
 # region ClearEndpointPosition
