@@ -403,11 +403,6 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
 
             // Exit transitions (one for each possible target state condition)
             // State A
-            var exitA1 = stateA.AddExitTransition();
-            exitA1.hasExitTime = false;
-            exitA1.duration = 0.2f;
-            exitA1.AddCondition(AnimatorConditionMode.If, 0, "ToA");
-
             var exitA2 = stateA.AddExitTransition();
             exitA2.hasExitTime = false;
             exitA2.duration = 0.2f;
@@ -430,11 +425,6 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             exitB1.duration = 0.2f;
             exitB1.AddCondition(AnimatorConditionMode.If, 0, "ToA");
 
-            var exitB2 = stateB.AddExitTransition();
-            exitB2.hasExitTime = false;
-            exitB2.duration = 0.2f;
-            exitB2.AddCondition(AnimatorConditionMode.If, 0, "ToB");
-
             var exitB3 = stateB.AddExitTransition();
             exitB3.hasExitTime = false;
             exitB3.duration = 0.2f;
@@ -455,11 +445,6 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             exitC2.hasExitTime = false;
             exitC2.duration = 0.2f;
             exitC2.AddCondition(AnimatorConditionMode.If, 0, "ToB");
-
-            var exitC3 = stateC.AddExitTransition();
-            exitC3.hasExitTime = false;
-            exitC3.duration = 0.2f;
-            exitC3.AddCondition(AnimatorConditionMode.If, 0, "ToC");
 
             var selfC = stateC.AddTransition(stateC);
             selfC.hasExitTime = false;
