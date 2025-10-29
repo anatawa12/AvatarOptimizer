@@ -79,11 +79,11 @@ namespace Anatawa12.AvatarOptimizer
         public enum RemoveMode
         {
             /// <summary>
-            /// Remove mesh where the mask texture is black (0,0,0).
+            /// Remove mesh where the mask texture is black (HSV Value is less than 0.5).
             /// </summary>
             RemoveBlack,
             /// <summary>
-            /// Remove mesh where the mask texture is white (1,1,1).
+            /// Remove mesh where the mask texture is white  (HSV Value is greater than 0.5).
             /// </summary>
             RemoveWhite,
         }
