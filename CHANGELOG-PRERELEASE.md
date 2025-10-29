@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog].
 - Invert option of Remove Mesh by BlendShape `#1535`
 - Automatically merge PhysBone when no grabbing PhysBone is detected `#1539`
 - Automatic Merge BlendTree support for WriteDefaults off BlendTree `#1283`
+- Component API for Remove Mesh By Mask `#1541`
+  - External tools can now programmatically add and configure RemoveMeshByMask components.
 
 ### Changed
 - Avatar Optimizer will run as late as possible in NDMF Pipeline by default `#1493`
