@@ -6,7 +6,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
 {
     public class CompleteGraphToEntryExitTest : AnimatorOptimizerTestBase
     {
-        private AnimatorOptimizerState _state = new AnimatorOptimizerState();
+        private readonly AnimatorOptimizerState _state = new AnimatorOptimizerState();
 
         [Test]
         public void SimpleCompleteGraph()

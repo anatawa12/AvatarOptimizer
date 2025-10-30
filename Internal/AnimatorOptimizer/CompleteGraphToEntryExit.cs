@@ -32,7 +32,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         private protected override void Execute(BuildContext context, AOAnimatorController controller,
             TraceAndOptimizeState settings)
         {
-            if (settings.SkipAnyStateToEntryExit) return; // feature disabled
+            if (settings.SkipCompleteGraphToEntryExit) return; // feature disabled
 
             var state = context.GetState<AnimatorOptimizerState>();
             Execute(state, controller);
@@ -131,7 +131,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
         private class AnimatorConditionComparator : IEqualityComparer<AnimatorCondition>
         {
-            public static AnimatorConditionComparator Instance = new();
+            public static readonly AnimatorConditionComparator Instance = new();
             public bool Equals(AnimatorCondition x, AnimatorCondition y) => x.mode == y.mode && x.parameter == y.parameter && Equals(x.threshold, y.threshold);
 
             public int GetHashCode(AnimatorCondition obj) => HashCode.Combine(obj.mode, obj.parameter, obj.threshold);
@@ -534,8 +534,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             // subtract single value v; may split range into up to two ranges
             public IEnumerable<IntClosedRange> ExcludeValue(int v)
             {
-                if (v == NEG_INF)return new[] { new IntClosedRange(Math.Max(Min, v + 1), Max) }.Where(r => !r.IsEmpty()); 
-                if (v == POS_INF)return new[] { new IntClosedRange(Min, Math.Min(Max, v - 1)) }.Where(r => !r.IsEmpty()); 
+                if (v == NEG_INF) return new[] { new IntClosedRange(Math.Max(Min, v + 1), Max) }.Where(r => !r.IsEmpty()); 
+                if (v == POS_INF) return new[] { new IntClosedRange(Min, Math.Min(Max, v - 1)) }.Where(r => !r.IsEmpty()); 
                 return new[]
                 {
                     new IntClosedRange(Min, Math.Min(Max, v - 1)),

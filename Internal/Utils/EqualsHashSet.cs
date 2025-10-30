@@ -23,7 +23,7 @@ namespace Anatawa12.AvatarOptimizer
         public override int GetHashCode() => backedSet.GetSetHashCode();
 
         public bool Equals(EqualsHashSet<T> other) =>
-            !ReferenceEquals(null, other) && (ReferenceEquals(this, other) || backedSet.SetEquals(other.backedSet) && backedSet.Comparer.Equals(backedSet.Comparer));
+            !ReferenceEquals(null, other) && (ReferenceEquals(this, other) || backedSet.SetEquals(other.backedSet) && backedSet.Comparer.Equals(other.backedSet.Comparer));
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
