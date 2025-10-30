@@ -209,6 +209,9 @@ namespace Anatawa12.AvatarOptimizer
         public static EqualsHashSet<T> ToEqualsHashSet<T>(this IEnumerable<T> enumerable) =>
             new EqualsHashSet<T>(new HashSet<T>(enumerable));
 
+        public static EqualsHashSet<T> ToEqualsHashSet<T>(this IEnumerable<T> enumerable, IEqualityComparer<T> comparator) =>
+            new EqualsHashSet<T>(new HashSet<T>(enumerable, comparator));
+
         public static EqualsHashSet<T> ToEqualsHashSet<T>(this HashSet<T> hashSet) =>
             new EqualsHashSet<T>(hashSet);
 

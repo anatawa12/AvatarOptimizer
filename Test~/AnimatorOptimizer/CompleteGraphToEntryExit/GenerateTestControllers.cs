@@ -2,7 +2,7 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 
-namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
+namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer.CompleteGraphToEntryExits
 {
     /// <summary>
     /// Editor script to generate test animator controllers for CompleteGraphToEntryExit tests.
