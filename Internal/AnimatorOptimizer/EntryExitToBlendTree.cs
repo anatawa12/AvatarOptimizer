@@ -620,10 +620,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         },
                     }) return false;
 
-                // the clip is time dependant, we cannot convert it to blend tree
-                foreach (var clip in ACUtils.AllClips(motion))
-                    if (optimizerState.IsTimeDependentClip(clip))
-                        return false;
+                // In previous version of AAO, we denied motion with time dependency.
+                // However, it seems unity's BlendTree can handle motion with time dependency correctly.
+                // BlendTree does change the length of the motion field depending on the weight.
+                // If there is two motion with 1s and 2s length respectively,
+                // when weight for first motion is 0.0, the length of blend tree is 2s,
+                // when weight for second motion is 0.0, the length of blend tree is 1s.
+                // The BlendTree after this optimization will never have weight other than 0.0 for motions,
+                // so the length of the BlendTree will always be same as the motion which has weight.
+                // So if the motion has time dependency, the behavior is same as expected.
             }
 
             return true;
