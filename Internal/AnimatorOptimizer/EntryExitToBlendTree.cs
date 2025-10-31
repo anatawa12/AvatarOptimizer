@@ -8,6 +8,11 @@ using UnityEditor.Animations;
 using UnityEngine;
 using Debug = System.Diagnostics.Debug;
 
+#if AAO_VRCSDK3_AVATARS
+using VRC.SDK3.Avatars.Components;
+using VRC.SDKBase;
+#endif
+
 namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
     /// <summary>
@@ -83,9 +88,27 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             }
 
             var parameters = controller.parameters;
+            
+            // Track parameter type changes for driver correction
+            var parameterTypeChanges = new Dictionary<string, AnimatorControllerParameterType>();
+            foreach (var parameter in parameters)
+            {
+                if (layerByParameter.ContainsKey(parameter.name) && 
+                    parameter.type != AnimatorControllerParameterType.Float)
+                {
+                    parameterTypeChanges[parameter.name] = parameter.type;
+                }
+            }
+            
+            // Change parameter types to float
             foreach (ref var parameter in parameters.AsSpan())
                 if (layerByParameter.ContainsKey(parameter.name))
                     parameter.type = AnimatorControllerParameterType.Float;
+
+#if AAO_VRCSDK3_AVATARS
+            // Correct parameter drivers to preserve behavior after type change
+            CorrectParameterDrivers(controller, parameterTypeChanges, ref parameters);
+#endif
 
             Predicate<string> needsConvert = parameter => layerByParameter.ContainsKey(parameter);
 
@@ -1082,5 +1105,124 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     throw new ArgumentOutOfRangeException();
             }
         }
+
+#if AAO_VRCSDK3_AVATARS
+        /// <summary>
+        /// Corrects VRChat parameter drivers when parameter types are changed from bool/int to float.
+        /// This preserves the original behavior by creating intermediate parameters with the original type.
+        /// Based on NDMF PR #693: https://github.com/bdunderscore/ndmf/pull/693
+        /// </summary>
+        private static void CorrectParameterDrivers(AOAnimatorController controller,
+            Dictionary<string, AnimatorControllerParameterType> parameterTypeChanges,
+            ref AnimatorControllerParameter[] parameters)
+        {
+            if (parameterTypeChanges.Count == 0) return;
+
+            var parametersToAdd = new List<AnimatorControllerParameter>();
+
+            foreach (var layer in controller.layers)
+            {
+                if (layer.stateMachine == null) continue;
+
+                foreach (var stateMachine in ACUtils.AllStateMachines(layer.stateMachine))
+                {
+                    // Check state machine behaviors
+                    if (stateMachine.behaviours != null)
+                    {
+                        foreach (var behaviour in stateMachine.behaviours)
+                        {
+                            if (behaviour is VRCAvatarParameterDriver driver)
+                            {
+                                CorrectDriverParameters(driver, parameterTypeChanges, parametersToAdd);
+                            }
+                        }
+                    }
+
+                    // Check state behaviors
+                    foreach (var childState in stateMachine.states)
+                    {
+                        if (childState.state.behaviours != null)
+                        {
+                            foreach (var behaviour in childState.state.behaviours)
+                            {
+                                if (behaviour is VRCAvatarParameterDriver driver)
+                                {
+                                    CorrectDriverParameters(driver, parameterTypeChanges, parametersToAdd);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Add any new temporary parameters that were created
+            if (parametersToAdd.Count > 0)
+            {
+                parameters = parameters.Concat(parametersToAdd).ToArray();
+            }
+        }
+
+        private static void CorrectDriverParameters(
+            VRCAvatarParameterDriver driver,
+            Dictionary<string, AnimatorControllerParameterType> parameterTypeChanges,
+            List<AnimatorControllerParameter> parametersToAdd)
+        {
+            var originalParameters = driver.parameters;
+            var newParameters = new List<VRC_AvatarParameterDriver.Parameter>();
+
+            foreach (var param in originalParameters)
+            {
+                if (parameterTypeChanges.TryGetValue(param.name, out var oldType))
+                {
+                    // This parameter was changed from bool/int to float
+                    // Create an intermediate parameter with the original type
+                    var tmpName = $"__AAO_tmp_{param.name}_{Guid.NewGuid():N}";
+
+                    // Add the temporary parameter
+                    parametersToAdd.Add(new AnimatorControllerParameter
+                    {
+                        name = tmpName,
+                        type = oldType,
+                        defaultFloat = 0,
+                        defaultInt = 0,
+                        defaultBool = false
+                    });
+
+                    // Create a new parameter that sets the temporary parameter
+                    var tmpParam = new VRC_AvatarParameterDriver.Parameter
+                    {
+                        name = tmpName,
+                        type = param.type,
+                        value = param.value,
+                        valueMin = param.valueMin,
+                        valueMax = param.valueMax,
+                        chance = param.chance,
+                        convertRange = param.convertRange,
+                        destMin = param.destMin,
+                        destMax = param.destMax,
+                        source = param.source
+                    };
+
+                    // Create a copy parameter that copies the temp to the final float parameter
+                    var copyParam = new VRC_AvatarParameterDriver.Parameter
+                    {
+                        name = param.name,
+                        type = VRC_AvatarParameterDriver.ChangeType.Copy,
+                        source = tmpName
+                    };
+
+                    newParameters.Add(tmpParam);
+                    newParameters.Add(copyParam);
+                }
+                else
+                {
+                    // Parameter wasn't changed, keep as-is
+                    newParameters.Add(param);
+                }
+            }
+
+            driver.parameters = newParameters;
+        }
+#endif
     }
 }
