@@ -1168,10 +1168,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             List<AnimatorControllerParameter> parametersToAdd)
         {
             var originalParameters = driver.parameters;
+            if (originalParameters == null || originalParameters.Count == 0) return;
+            
             var newParameters = new List<VRC_AvatarParameterDriver.Parameter>();
 
             foreach (var param in originalParameters)
             {
+                if (string.IsNullOrEmpty(param.name))
+                {
+                    // Keep parameters with no name as-is
+                    newParameters.Add(param);
+                    continue;
+                }
+                
                 if (parameterTypeChanges.TryGetValue(param.name, out var oldType))
                 {
                     // This parameter was changed from bool/int to float
