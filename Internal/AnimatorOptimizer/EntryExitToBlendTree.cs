@@ -1162,6 +1162,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             }
         }
 
+        private static int _tempParameterCounter = 0;
+        
         private static void CorrectDriverParameters(
             VRCAvatarParameterDriver driver,
             Dictionary<string, AnimatorControllerParameterType> parameterTypeChanges,
@@ -1185,7 +1187,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 {
                     // This parameter was changed from bool/int to float
                     // Create an intermediate parameter with the original type
-                    var tmpName = $"__AAO_tmp_{param.name}_{Guid.NewGuid():N}";
+                    var tmpName = $"__AAO_tmp_{param.name}_{System.Threading.Interlocked.Increment(ref _tempParameterCounter)}";
 
                     // Add the temporary parameter
                     parametersToAdd.Add(new AnimatorControllerParameter
