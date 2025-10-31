@@ -95,9 +95,9 @@ Trace and Optimizeは「**見た目に絶対に影響させてはならない**�
   class State2,State3 state
   ```
 
-- 完全グラフ式のレイヤーをEntry-Exit式に変換\
-  完全グラフを構成しているアニメーターコントローラーのレイヤーをできる限りDiamond型のEntry-Exit式に変換します。\
-  また、後述の最適化により、完全グラフのレイヤーは最終的にBlendTreeに変換されることがあります。
+- 完全グラフ構造のレイヤーをEntry-Exit式に変換\
+  完全グラフを構成しているレイヤーをできる限りDiamond型のEntry-Exit式に変換します。\
+  また、後述の最適化により、完全グラフ構造のレイヤーは最終的にBlendTreeに変換されることがあります。
 
   ```mermaid
   ---
@@ -123,7 +123,7 @@ Trace and Optimizeは「**見た目に絶対に影響させてはならない**�
   ```
 
 - Entry-Exit式のレイヤーをBlendTreeに変換\
-  アニメーターコントローラーのレイヤーをできる限りBlendTreeに変換します。\
+  Entry-Exit式のレイヤーをできる限りBlendTreeに変換します。\
   現在、Diamond型、およびLinear型のEntry-Exit式のレイヤーがBlendTreeに変換されます。
 
   ```mermaid
