@@ -78,7 +78,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
         }
 
 #if AAO_VRCSDK3_AVATARS
-        // https://github.com/anatawa12/AvatarOptimizer/issues/XXXX (from MA #1725, NDMF #693)
+        // https://github.com/anatawa12/AvatarOptimizer/issues/1509 (from MA #1725, NDMF #693)
         // Parameter drivers need correction when parameter types change from bool/int to float
         [Test]
         public void ParameterDriverCorrectionForRandomBool()
@@ -89,38 +89,62 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             // Add a bool parameter that will be converted to float
             controller.AddParameter("TestBool", AnimatorControllerParameterType.Bool);
             
-            // Create a layer with a diamond pattern that will trigger conversion
-            var layer = new AnimatorControllerLayer
+            // Create a layer with a diamond pattern that will trigger conversion (no behaviors)
+            var convertibleLayer = new AnimatorControllerLayer
             {
-                name = "TestLayer",
+                name = "ConvertibleLayer",
                 defaultWeight = 1.0f,
                 stateMachine = new AnimatorStateMachine
                 {
-                    name = "TestLayer",
+                    name = "ConvertibleLayer",
                     hideFlags = HideFlags.HideInHierarchy
                 }
             };
             
             // Create states for the diamond pattern
-            var defaultState = layer.stateMachine.AddState("DefaultState");
-            var trueState = layer.stateMachine.AddState("TrueState");
+            var defaultState = convertibleLayer.stateMachine.AddState("DefaultState");
+            var trueState = convertibleLayer.stateMachine.AddState("TrueState");
             
             // Set up the diamond pattern: Entry -> states, states -> Exit
-            layer.stateMachine.defaultState = defaultState;
+            convertibleLayer.stateMachine.defaultState = defaultState;
             
             // Entry transitions
-            layer.stateMachine.AddEntryTransition(trueState)
+            convertibleLayer.stateMachine.AddEntryTransition(trueState)
                 .AddCondition(AnimatorConditionMode.If, 0, "TestBool");
             
             // Exit transitions
-            defaultState.AddExitTransition(defaultExitTime: false)
-                .AddCondition(AnimatorConditionMode.If, 0, "TestBool");
+            var transition = defaultState.AddExitTransition(defaultExitTime: false);
+            transition.duration = 0;
+            transition.AddCondition(AnimatorConditionMode.If, 0, "TestBool");
 
-            trueState.AddExitTransition(defaultExitTime: false)
-                .AddCondition(AnimatorConditionMode.IfNot, 0, "TestBool");
+            transition = trueState.AddExitTransition(defaultExitTime: false);
+            transition.duration = 0;
+            transition.AddCondition(AnimatorConditionMode.IfNot, 0, "TestBool");
             
-            // Add a parameter driver to one of the states
-            var driver = trueState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+            // Set motions to empty clips
+            defaultState.motion = new AnimationClip { name = "DefaultClip" };
+            trueState.motion = new AnimationClip { name = "TrueClip" };
+            
+            controller.AddLayer(convertibleLayer);
+            
+            // Create a separate layer with a parameter driver (will not be converted)
+            var driverLayer = new AnimatorControllerLayer
+            {
+                name = "DriverLayer",
+                defaultWeight = 1.0f,
+                stateMachine = new AnimatorStateMachine
+                {
+                    name = "DriverLayer",
+                    hideFlags = HideFlags.HideInHierarchy
+                }
+            };
+            
+            var driverState = driverLayer.stateMachine.AddState("StateWithDriver");
+            driverLayer.stateMachine.defaultState = driverState;
+            driverState.motion = new AnimationClip { name = "DriverClip" };
+            
+            // Add a parameter driver to the driver layer state
+            var driver = driverState.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
             driver.parameters = new System.Collections.Generic.List<VRC_AvatarParameterDriver.Parameter>
             {
                 new VRC_AvatarParameterDriver.Parameter
@@ -132,11 +156,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
                 }
             };
             
-            // Set motions to empty clips
-            defaultState.motion = new AnimationClip { name = "DefaultClip" };
-            trueState.motion = new AnimationClip { name = "TrueClip" };
-            
-            controller.AddLayer(layer);
+            controller.AddLayer(driverLayer);
             
             // Execute the optimization
             var aoController = new AOAnimatorController(controller);
