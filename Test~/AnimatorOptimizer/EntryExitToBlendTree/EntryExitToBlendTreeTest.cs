@@ -114,11 +114,11 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             
             // Exit transitions
             var transition = defaultState.AddExitTransition(defaultExitTime: false);
-            transition.duration = 0;
+            transition.duration = 0.0f;
             transition.AddCondition(AnimatorConditionMode.If, 0, "TestBool");
 
             transition = trueState.AddExitTransition(defaultExitTime: false);
-            transition.duration = 0;
+            transition.duration = 0.0f;
             transition.AddCondition(AnimatorConditionMode.IfNot, 0, "TestBool");
             
             // Set motions to empty clips
