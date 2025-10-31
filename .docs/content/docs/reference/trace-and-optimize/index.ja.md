@@ -71,7 +71,7 @@ Trace and Optimizeは「**見た目に絶対に影響させてはならない**�
 (最適化処理の詳細な仕様は、将来的に変更される可能性があります。)
 
 - AnyState式のレイヤーをEntry-Exit式に変換\
-  アニメーターコントローラーのレイヤーをできる限りDiamond型のEntry-Exit式に変換します。
+  AnyState式のレイヤーをできる限りDiamond型のEntry-Exit式に変換します。
   また、後述の最適化により、AnyState式のレイヤーは最終的にBlendTreeに変換されることがあります。
 
   ```mermaid
