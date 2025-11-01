@@ -1,3 +1,5 @@
+using nadena.dev.ndmf;
+using nadena.dev.ndmf.platform;
 using UnityEditor;
 using UnityEngine;
 
@@ -19,6 +21,8 @@ namespace Anatawa12.AvatarOptimizer
         private SerializedProperty _debugOptions = null!; // Initialized in OnEnable
         private GUIContent _advancedSettingsLabel = new GUIContent();
         private GUIContent _debugOptionsLabel = new GUIContent();
+        private bool _openFeatures = false;
+        private bool _openDebugOptions = false;
 
         private void OnEnable()
         {
@@ -42,25 +46,35 @@ namespace Anatawa12.AvatarOptimizer
 
             GUILayout.Label("General Settings", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(_mmdWorldCompatibility);
-            GUILayout.Label("Features", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(_freezeBlendShape);
-            EditorGUILayout.PropertyField(_removeUnusedObjects);
-            if (_removeUnusedObjects.boolValue)
+            _openFeatures = EditorGUILayout.Foldout(_openFeatures, "Features");
+            if (_openFeatures)
             {
-                EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(_preserveEndBone);
-                EditorGUI.indentLevel--;
+                if (AmbientPlatform.DefaultPlatform.QualifiedName == WellKnownPlatforms.VRChatAvatar30)
+                {
+                    EditorGUILayout.HelpBox(AAOL10N.Tr("TraceAndOptimize:warn:changeFeaturesNotNecessary"), MessageType.Info);
+                }
+
+                EditorGUILayout.PropertyField(_freezeBlendShape);
+                EditorGUILayout.PropertyField(_removeUnusedObjects);
+                if (_removeUnusedObjects.boolValue)
+                {
+                    EditorGUI.indentLevel++;
+                    EditorGUILayout.PropertyField(_preserveEndBone);
+                    EditorGUI.indentLevel--;
+                }
+
+                EditorGUILayout.PropertyField(_optimizePhysBone);
+                EditorGUILayout.PropertyField(_optimizeAnimator);
+                EditorGUILayout.PropertyField(_mergeSkinnedMesh);
+                if (_mergeSkinnedMesh.boolValue)
+                {
+                    EditorGUI.indentLevel++;
+                    EditorGUILayout.PropertyField(_allowShuffleMaterialSlots);
+                    EditorGUI.indentLevel--;
+                }
+
+                EditorGUILayout.PropertyField(_optimizeTexture);
             }
-            EditorGUILayout.PropertyField(_optimizePhysBone);
-            EditorGUILayout.PropertyField(_optimizeAnimator);
-            EditorGUILayout.PropertyField(_mergeSkinnedMesh);
-            if (_mergeSkinnedMesh.boolValue)
-            {
-                EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(_allowShuffleMaterialSlots);
-                EditorGUI.indentLevel--;
-            }
-            EditorGUILayout.PropertyField(_optimizeTexture);
 
             _advancedSettingsLabel.text = AAOL10N.Tr("TraceAndOptimize:prop:advancedOptimization");
             AdvancedOpened = EditorGUILayout.Foldout(AdvancedOpened, _advancedSettingsLabel);
@@ -73,7 +87,21 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             _debugOptionsLabel.text = AAOL10N.Tr("TraceAndOptimize:prop:debugOptions");
-            if (EditorGUILayout.PropertyField(_debugOptions, _debugOptionsLabel, false))
+            var openDebugOptionsNew = EditorGUILayout.Foldout(_openDebugOptions, _debugOptionsLabel);
+            if (openDebugOptionsNew && !_openDebugOptions)
+            {
+                // Just opened
+                if (EditorUtility.DisplayDialog(
+                        AAOL10N.Tr("TraceAndOptimize:prop:debugOptions"),
+                        AAOL10N.Tr("TraceAndOptimize:dialog:debugOptions:description"),
+                        AAOL10N.Tr("TraceAndOptimize:dialog:debugOptions:proceed"),
+                        AAOL10N.Tr("TraceAndOptimize:dialog:debugOptions:cancel")
+                    ))
+                {
+                    _openDebugOptions = true;
+                }
+            }
+            if (_openDebugOptions)
             {
                 EditorGUI.indentLevel++;
                 EditorGUILayout.HelpBox(AAOL10N.Tr("TraceAndOptimize:warn:debugOptions"), MessageType.Warning);
