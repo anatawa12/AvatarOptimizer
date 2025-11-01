@@ -919,6 +919,7 @@ internal struct OptimizeTextureImpl {
                 newTexture.mipMapBias = texture2D.mipMapBias;
                 newTexture.SetPixelData(destTextureData, 0);
                 newTexture.Apply(true, !texture2D.isReadable);
+                ForceSetStreamingMipMap(newTexture);
             }
             else
             {
@@ -973,6 +974,7 @@ internal struct OptimizeTextureImpl {
                     newTexture.anisoLevel = texture2D.anisoLevel;
                     newTexture.mipMapBias = texture2D.mipMapBias;
                     newTexture.Apply(true, !texture2D.isReadable);
+                    ForceSetStreamingMipMap(newTexture);
                 }
             }
 
@@ -1006,7 +1008,13 @@ internal struct OptimizeTextureImpl {
 
         return new AtlasResult(textureMapping, newUVs);
     }
-
+    private static void ForceSetStreamingMipMap(Texture2D tex)
+    {
+        using var serializedTexture = new SerializedObject(tex);
+        var streamingMipmapsProperty = serializedTexture.FindProperty("m_StreamingMipmaps");
+        streamingMipmapsProperty.boolValue = true;
+        serializedTexture.ApplyModifiedPropertiesWithoutUndo();
+    }
     private static bool IsSingleColor(Texture2D texture, AtlasIsland[] islands, Vector2 atlasSize, out Color color)
     {
         Color? commonColor = null;
