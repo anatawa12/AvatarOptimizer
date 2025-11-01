@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 
-public class OptimizationWarnings : TraceAndOptimizePass<OptimizationWarnings>
+internal class OptimizationWarnings : TraceAndOptimizePass<OptimizationWarnings>
 {
     public override string DisplayName => "T&O: Analyze and show Optimization warnings";
 
