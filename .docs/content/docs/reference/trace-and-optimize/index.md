@@ -96,6 +96,33 @@ This feature currently applies the following optimizations.
   class State2,State3 state
   ```
 
+- Convert Complete Graph to Entry-Exit\
+  This tries to convert Animator Controller layers with complete graph structure to Diamond-style Entry-Exit type as possible.
+  With other optimizations, such layers may be converted to BlendTree.
+
+  ```mermaid
+  ---
+  title: Complete Graph layer
+  ---
+  graph LR;
+        Entry(Entry) --> State1;
+        State1(State1) --> State2(State2);
+        State1 --> State3(State3);
+        State2 --> State1;
+        State2 --> State3;
+        State3 --> State1;
+        State3 --> State2;
+  
+  classDef default fill:#ab8211
+  classDef node stroke-width:0px,color:#ffffff
+  classDef state fill:#878787
+  %%style AnyState fill:#29a0cc
+  style Entry fill:#15910f
+  class Entry,State1,State2,Exit node
+  class State1 default
+  class State2,State3 state
+  ```
+
 - Convert Entry-Exit to BlendTree\
   This tries to convert Animator Controller layers of Entry-Exit type to BlendTree as possible.\
   Currently, this is applied to Diamond-style and Linear-style Entry-Exit layers.

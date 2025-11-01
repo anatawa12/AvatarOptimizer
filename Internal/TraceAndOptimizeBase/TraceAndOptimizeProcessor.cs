@@ -43,6 +43,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool SkipAutoMergeBlendShape;
         public bool SkipRemoveUnusedSubMesh;
         public bool SkipMergePhysBones;
+        public bool SkipCompleteGraphToEntryExit;
         public bool SkipOptimizationWarnings;
 
         public Dictionary<SkinnedMeshRenderer, HashSet<string>> PreserveBlendShapes =
@@ -86,6 +87,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             SkipAutoMergeBlendShape = config.debugOptions.skipAutoMergeBlendShape;
             SkipRemoveUnusedSubMesh = config.debugOptions.skipRemoveUnusedSubMesh;
             SkipMergePhysBones = config.debugOptions.skipMergePhysBones;
+            SkipCompleteGraphToEntryExit = config.debugOptions.skipCompleteGraphToEntryExit;
             SkipOptimizationWarnings = config.debugOptions.skipOptimizationWarnings;
 
             Enabled = true;
