@@ -22,6 +22,9 @@ The format is based on [Keep a Changelog].
     - New optimization in the Animator Optimizer, which is part of Trace and Optimize.
     - It's expected that this optimization will reduce the number of transitions computed every frame.
     - After this optimization, Entry Exit to BlendTree optimization may be applied.
+- Minimum linting for some mistakes that reduces the avatar performance `#1549`
+  - AAO now performs basic linting to identify common mistakes that can negatively impact avatar performance.
+  - Currently, multi-pass rendering with exactly the same material is detected since it's likely a mistake that clicks '+' button on the inspector by mistake.
 
 ### Changed
 - Avatar Optimizer will run as late as possible in NDMF Pipeline by default `#1493`
