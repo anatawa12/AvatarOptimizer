@@ -777,6 +777,16 @@ msgstr "アバターのルートにAnimatorコンポーネントがありませ�
 
 #endregion
 
+#region OptimizationWarnings
+
+msgid "OptimizationWarnings:multi-pass-rendering-with-same-material"
+msgstr ""
+"同じマテリアルを使用して、multi pass renderingを行うレンダラーが存在します。\n"
+"多くの場合、同じマテリアルでのmulti pass renderingは不要であり、ドローコールを増やすだけです。\n"
+"もし意図的にmulti pass renderingを行っている場合は、どのような意図で行っているかとともに、 Avatar Optimizer の作者に連絡してください。"
+
+#endregion
+
 #region MeshInfo2
 
 msgid "MeshInfo2:warning:multiPassRendering"
