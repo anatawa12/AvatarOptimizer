@@ -5,15 +5,19 @@ weight: 50
 
 # Assumptions we make for external tools
 
+This page describes assumptions Avatar Optimizer makes about external tools and data structures. If you are developing tools that integrate with Avatar Optimizer, ensure your tools respect these assumptions.
+
 ## Transform Instance Uniqueness {#transform-instance-uniqueness}
 
-The same Transform instance is not used for multiple different purposes. For example, the Transform is used to calculate remove mesh in box.
+The same instance of Transform is used to express the same bone in Avatar Optimizer.
 
-If you create tools that manipulate transforms, ensure each Transform has a single, well-defined purpose.
+Avatar Optimizer may use transform matrices from the resolving phase to determine which vertices will be removed with remove mesh in box.
+
+If you create tools that manipulate transforms, ensure each Transform instance represents a single, consistent bone or purpose throughout the optimization process.
 
 ## Vertex Index Usage {#vertex-index-usage}
 
-Vertex index is not used in shaders or other plugins that run after Avatar Optimizer, unless explicitly registered to use in ShaderInformation.
+Vertex index is not used in shaders or other plugins that run after Avatar Optimizer, unless explicitly registered in ShaderInformation.
 
 Avatar Optimizer may merge meshes and change vertex indices during optimization. If your shader or tool uses vertex indices, you must register this usage via ShaderInformation API to prevent incorrect optimization.
 
