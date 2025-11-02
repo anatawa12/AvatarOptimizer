@@ -211,7 +211,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         private static ConvertibleLayerInfo? TryParseDiamondLayer(AOAnimatorControllerLayer layer,
             AnimatorOptimizerState optimizerState, HashSet<string> intOrBoolParameters)
         {
-            if (!CheckForBasicStateCondition(layer, optimizerState)) return null;
+            if (!CheckForBasicStateCondition(layer, optimizerState, out var timeMotionParameter)) return null;
 
             if (layer is not
                 {
@@ -424,7 +424,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 }
             }
 
-            return new ConvertibleLayerInfo(conditionParameter, defaultState, stateValues);
+            return new ConvertibleLayerInfo(conditionParameter, defaultState, stateValues, timeMotionParameter);
         }
 
         /// <summary>
@@ -440,7 +440,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         private static ConvertibleLayerInfo? TryParseLinearLayer(AOAnimatorControllerLayer layer,
             AnimatorOptimizerState optimizerState, HashSet<string> intOrBoolParameters)
         {
-            if (!CheckForBasicStateCondition(layer, optimizerState)) return null;
+            if (!CheckForBasicStateCondition(layer, optimizerState, out var timeMotionParameter)) return null;
 
             if (layer is not
                 {
@@ -575,11 +575,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 }
             }
 
-            return new ConvertibleLayerInfo(conditionParameter, defaultState, new Dictionary<AnimatorState, HashSet<IntOrBool>> {{anotherState, anotherStateValues}});
+            return new ConvertibleLayerInfo(conditionParameter, defaultState, new Dictionary<AnimatorState, HashSet<IntOrBool>> {{anotherState, anotherStateValues}}, timeMotionParameter);
         }
 
-        private static bool CheckForBasicStateCondition(AOAnimatorControllerLayer layer, AnimatorOptimizerState optimizerState)
+        private static bool CheckForBasicStateCondition(AOAnimatorControllerLayer layer, AnimatorOptimizerState optimizerState, out string? timeMotionParameter)
         {
+            timeMotionParameter = null;
             if (layer is not
                 {
                     IsSynced: false,
@@ -640,8 +641,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             // Please note that we cannot optimize if there is no motion time parameter because
             // in original state machine, the 'time' is reset to 0 when entering state,
             // but in BlendTree, the 'time' is never reset.
-
-            string? timeMotionParameter = null;
 
             foreach (var childStateInfo in states)
             {
@@ -715,14 +714,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             public readonly string ParameterName;
             public readonly AnimatorState DefaultState;
             public readonly Dictionary<AnimatorState, HashSet<IntOrBool>> ValueForStates;
+            public readonly string? TimeMotionParameter;
 
             public ConvertibleLayerInfo(string parameterName, AnimatorState defaultState,
-                Dictionary<AnimatorState, HashSet<IntOrBool>> valueForStates)
+                Dictionary<AnimatorState, HashSet<IntOrBool>> valueForStates,
+                string? timeMotionParameter)
             {
                 ParameterName = parameterName;
                 DefaultState = defaultState;
                 ValueForStates = valueForStates;
+                TimeMotionParameter = timeMotionParameter;
             }
+
 
             public IEnumerable<string> Parameters => new[] { ParameterName };
         }
@@ -870,6 +873,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 // since it's 1d BlendTree, it's always be normalized wo WD off will not cause weird behavior.
                 // changing to WD on will cause problem with WD off-based animators
                 writeDefaultValues = info.DefaultState.writeDefaultValues,
+                timeParameterActive = info.TimeMotionParameter != null,
+                timeParameter = info.TimeMotionParameter,
             };
 
             layer.stateMachine!.states = new[]
