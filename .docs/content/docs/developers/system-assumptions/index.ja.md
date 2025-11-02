@@ -5,7 +5,7 @@ weight: 50
 
 # 外部ツールに求める前提条件
 
-このページは、Avatar Optimizerが外部ツールとデータ構造について行う前提条件を説明しています。Avatar Optimizerと統合するツールを開発している場合は、これらの前提条件を尊重してください。
+このページは、Avatar Optimizerが外部ツールとデータ構造について行う前提条件を説明しています。Avatar Optimizerと統合するツールを開発している場合は、これらの前提条件を尊重していただけると幸いです。
 
 ## Transformインスタンスの一意性 {#transform-instance-uniqueness}
 

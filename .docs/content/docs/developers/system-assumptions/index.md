@@ -5,7 +5,7 @@ weight: 50
 
 # Assumptions we make for external tools
 
-This page describes assumptions Avatar Optimizer makes about external tools and data structures. If you are developing tools that integrate with Avatar Optimizer, ensure your tools respect these assumptions.
+This page describes assumptions Avatar Optimizer makes about external tools and data structures. If you are developing tools that integrate with Avatar Optimizer, please ensure your tools respect these assumptions.
 
 ## Transform Instance Uniqueness {#transform-instance-uniqueness}
 
