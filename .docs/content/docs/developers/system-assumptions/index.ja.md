@@ -7,7 +7,7 @@ weight: 50
 
 このページは、Avatar Optimizerが外部ツールとデータ構造について行う前提条件を説明しています。Avatar Optimizerと統合するツールを開発している場合は、これらの前提条件を尊重していただけると幸いです。
 
-## Transformインスタンスの一意性 {#transform-instance-uniqueness}
+## Transformインスタンスの使用方法 {#transform-instance-uniqueness}
 
 同じTransformインスタンスは、Avatar Optimizer内で同じボーンを表現するために使用されます。
 
