@@ -211,7 +211,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         private static ConvertibleLayerInfo? TryParseDiamondLayer(AOAnimatorControllerLayer layer,
             AnimatorOptimizerState optimizerState, HashSet<string> intOrBoolParameters)
         {
-            if (!CheckForBasicStateCondition(layer, optimizerState)) return null;
+            if (!CheckForBasicStateCondition(layer, optimizerState, out var timeMotionParameter)) return null;
 
             if (layer is not
                 {
@@ -424,7 +424,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 }
             }
 
-            return new ConvertibleLayerInfo(conditionParameter, defaultState, stateValues);
+            return new ConvertibleLayerInfo(conditionParameter, defaultState, stateValues, timeMotionParameter);
         }
 
         /// <summary>
@@ -440,7 +440,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         private static ConvertibleLayerInfo? TryParseLinearLayer(AOAnimatorControllerLayer layer,
             AnimatorOptimizerState optimizerState, HashSet<string> intOrBoolParameters)
         {
-            if (!CheckForBasicStateCondition(layer, optimizerState)) return null;
+            if (!CheckForBasicStateCondition(layer, optimizerState, out var timeMotionParameter)) return null;
 
             if (layer is not
                 {
@@ -575,11 +575,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 }
             }
 
-            return new ConvertibleLayerInfo(conditionParameter, defaultState, new Dictionary<AnimatorState, HashSet<IntOrBool>> {{anotherState, anotherStateValues}});
+            return new ConvertibleLayerInfo(conditionParameter, defaultState, new Dictionary<AnimatorState, HashSet<IntOrBool>> {{anotherState, anotherStateValues}}, timeMotionParameter);
         }
 
-        private static bool CheckForBasicStateCondition(AOAnimatorControllerLayer layer, AnimatorOptimizerState optimizerState)
+        private static bool CheckForBasicStateCondition(AOAnimatorControllerLayer layer, AnimatorOptimizerState optimizerState, out string? timeMotionParameter)
         {
+            timeMotionParameter = null;
             if (layer is not
                 {
                     IsSynced: false,
@@ -628,6 +629,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 }
             }
 
+            // In previous version of AAO, we denied motion with time dependency.
+            // However, it seems unity's BlendTree can handle motion with time dependency correctly.
+            // BlendTree does change the length of the motion field depending on the weight.
+            // If there is two motion with 1s and 2s length respectively,
+            // when weight for first motion is 0.0, the length of blend tree is 2s,
+            // when weight for second motion is 0.0, the length of blend tree is 1s.
+            // The BlendTree after this optimization will never have weight other than 0.0 for motions,
+            // so the length of the BlendTree will always be same as the motion which has weight.
+            // So if the motion has time dependency, the behavior is same as expecte if motion time is used.
+            // Please note that we cannot optimize if there is no motion time parameter because
+            // in original state machine, the 'time' is reset to 0 when entering state,
+            // but in BlendTree, the 'time' is never reset.
+
             foreach (var childStateInfo in states)
             {
                 // TODO: for linear animation, we can simulate motion time with 1d blend tree
@@ -638,15 +652,30 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         state:
                         {
                             behaviours: { Length: 0 },
-                            timeParameterActive: false,
                             motion: var motion,
                         },
                     }) return false;
 
-                // the clip is time dependant, we cannot convert it to blend tree
-                foreach (var clip in ACUtils.AllClips(motion))
-                    if (optimizerState.IsTimeDependentClip(clip))
-                        return false;
+                if (childStateInfo.state.timeParameterActive)
+                {
+                    // we allow any motion including time dependency motion if timeParameter is assigned
+                    // however, all timeParameter must be same
+                    if (timeMotionParameter == null)
+                    {
+                        timeMotionParameter = childStateInfo.state.timeParameter ?? "";
+                    }
+                    else
+                    {
+                        if (timeMotionParameter != childStateInfo.state.timeParameter) return false;
+                    }
+                }
+                else
+                {
+                    // if timeParameter is not assigned, motion must not have time dependency
+                    foreach (var clip in ACUtils.AllClips(motion))
+                        if (optimizerState.IsTimeDependentClip(clip))
+                            return false;
+                }
             }
 
             return true;
@@ -685,14 +714,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             public readonly string ParameterName;
             public readonly AnimatorState DefaultState;
             public readonly Dictionary<AnimatorState, HashSet<IntOrBool>> ValueForStates;
+            public readonly string? TimeMotionParameter;
 
             public ConvertibleLayerInfo(string parameterName, AnimatorState defaultState,
-                Dictionary<AnimatorState, HashSet<IntOrBool>> valueForStates)
+                Dictionary<AnimatorState, HashSet<IntOrBool>> valueForStates,
+                string? timeMotionParameter)
             {
                 ParameterName = parameterName;
                 DefaultState = defaultState;
                 ValueForStates = valueForStates;
+                TimeMotionParameter = timeMotionParameter;
             }
+
 
             public IEnumerable<string> Parameters => new[] { ParameterName };
         }
@@ -840,6 +873,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 // since it's 1d BlendTree, it's always be normalized wo WD off will not cause weird behavior.
                 // changing to WD on will cause problem with WD off-based animators
                 writeDefaultValues = info.DefaultState.writeDefaultValues,
+                timeParameterActive = info.TimeMotionParameter != null,
+                timeParameter = info.TimeMotionParameter,
             };
 
             layer.stateMachine!.states = new[]
