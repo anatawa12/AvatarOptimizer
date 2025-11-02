@@ -720,12 +720,13 @@ msgstr "Migrating to Trace and Optimize is finished!"
 # region TraceAndOptimize
 
 msgid "TraceAndOptimize:description"
-msgstr "When you added this component to your avatar, AvatarOptimizer will trace your avatar and optimize automatically.\n"
-"Trace and Optimize is designed to be zero-config for most users, so you don't need to change settings in most cases, otherwise you may have encountered some bugs of Avatar Optimizer."
+msgstr "When you added this component to your avatar, Avatar Optimizer will trace your avatar and optimize automatically.\n"
+"Trace and Optimize is designed to be zero-config for most users, so you don't need to change settings in general.\n"
+"If not, you may be encountering some bugs of Avatar Optimizer."
 
 msgid "TraceAndOptimize:warn:changeFeaturesNotNecessary"
 msgstr "In general, disabling features is not necessary.\n"
-"For VRChat avatars, default settings are best. If you need to change them, it's likely that you have encountered some Avatar Optimizer's bugs.\n"
+"For VRChat avatars, default settings are best. If you need to change them, it's likely that you are encountering some Avatar Optimizer's bugs.\n"
 "Please report us instead of disabling some optimizations.\n"
 "https://an12.net/aao/en/tao-bug for how to report issues."
 
