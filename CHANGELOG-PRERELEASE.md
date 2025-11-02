@@ -44,6 +44,9 @@ The format is based on [Keep a Changelog].
 - VRChat parameter drivers now work correctly when parameters are converted from bool/int to float during Entry-Exit to BlendTree optimization `#1547`
   - Based on fix from NDMF (bdunderscore/ndmf#693)
   - Parameter drivers now use intermediate parameters to preserve original type semantics
+- Motion time state is now supported in EntryExit to BlendTree optimization `#1552`
+  - Motion time state is safe to convert to BlendTree since it does not affect parameter evaluation.
+  - This change may increase the number of states converted to BlendTree.
 
 [`AfterPlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_AfterPlugin_System_String_System_String_System_Int32_
 [`BeforePlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_BeforePlugin_System_String_System_String_System_Int32_
