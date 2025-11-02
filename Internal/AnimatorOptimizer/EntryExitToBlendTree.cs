@@ -628,6 +628,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 }
             }
 
+            // In previous version of AAO, we denied motion with time dependency.
+            // However, it seems unity's BlendTree can handle motion with time dependency correctly.
+            // BlendTree does change the length of the motion field depending on the weight.
+            // If there is two motion with 1s and 2s length respectively,
+            // when weight for first motion is 0.0, the length of blend tree is 2s,
+            // when weight for second motion is 0.0, the length of blend tree is 1s.
+            // The BlendTree after this optimization will never have weight other than 0.0 for motions,
+            // so the length of the BlendTree will always be same as the motion which has weight.
+            // So if the motion has time dependency, the behavior is same as expecte if motion time is used.
+            // Please note that we cannot optimize if there is no motion time parameter because
+            // in original state machine, the 'time' is reset to 0 when entering state,
+            // but in BlendTree, the 'time' is never reset.
+
+            string? timeMotionParameter = null;
+
             foreach (var childStateInfo in states)
             {
                 // TODO: for linear animation, we can simulate motion time with 1d blend tree
@@ -638,20 +653,30 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         state:
                         {
                             behaviours: { Length: 0 },
-                            timeParameterActive: false,
                             motion: var motion,
                         },
                     }) return false;
 
-                // In previous version of AAO, we denied motion with time dependency.
-                // However, it seems unity's BlendTree can handle motion with time dependency correctly.
-                // BlendTree does change the length of the motion field depending on the weight.
-                // If there is two motion with 1s and 2s length respectively,
-                // when weight for first motion is 0.0, the length of blend tree is 2s,
-                // when weight for second motion is 0.0, the length of blend tree is 1s.
-                // The BlendTree after this optimization will never have weight other than 0.0 for motions,
-                // so the length of the BlendTree will always be same as the motion which has weight.
-                // So if the motion has time dependency, the behavior is same as expected.
+                if (childStateInfo.state.timeParameterActive)
+                {
+                    // we allow any motion including time dependency motion if timeParameter is assigned
+                    // however, all timeParameter must be same
+                    if (timeMotionParameter == null)
+                    {
+                        timeMotionParameter = childStateInfo.state.timeParameter ?? "";
+                    }
+                    else
+                    {
+                        if (timeMotionParameter != childStateInfo.state.timeParameter) return false;
+                    }
+                }
+                else
+                {
+                    // if timeParameter is not assigned, motion must not have time dependency
+                    foreach (var clip in ACUtils.AllClips(motion))
+                        if (optimizerState.IsTimeDependentClip(clip))
+                            return false;
+                }
             }
 
             return true;
