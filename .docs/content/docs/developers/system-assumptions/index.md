@@ -7,7 +7,7 @@ weight: 50
 
 This page describes assumptions Avatar Optimizer makes about external tools and data structures. If you are developing tools that integrate with Avatar Optimizer, please ensure your tools respect these assumptions.
 
-## Transform Instance Usage {#transform-instance-uniqueness}
+## Transform Instance Usage {#transform-instance-usage}
 
 The same instance of Transform is used to express the same bone in Avatar Optimizer.
 
