@@ -71,7 +71,7 @@ Trace and Optimizeは「**見た目に絶対に影響させてはならない**�
 (最適化処理の詳細な仕様は、将来的に変更される可能性があります。)
 
 - AnyState式のレイヤーをEntry-Exit式に変換\
-  アニメーターコントローラーのレイヤーをできる限りDiamond型のEntry-Exit式に変換します。
+  AnyState式のレイヤーをできる限りDiamond型のEntry-Exit式に変換します。
   また、後述の最適化により、AnyState式のレイヤーは最終的にBlendTreeに変換されることがあります。
 
   ```mermaid
@@ -95,8 +95,35 @@ Trace and Optimizeは「**見た目に絶対に影響させてはならない**�
   class State2,State3 state
   ```
 
+- 完全グラフ構造のレイヤーをEntry-Exit式に変換\
+  完全グラフを構成しているレイヤーをできる限りDiamond型のEntry-Exit式に変換します。\
+  また、後述の最適化により、完全グラフ構造のレイヤーは最終的にBlendTreeに変換されることがあります。
+
+  ```mermaid
+  ---
+  title: Complete Graph layer
+  ---
+  graph LR;
+        Entry(Entry) --> State1;
+        State1(State1) --> State2(State2);
+        State1 --> State3(State3);
+        State2 --> State1;
+        State2 --> State3;
+        State3 --> State1;
+        State3 --> State2;
+  
+  classDef default fill:#ab8211
+  classDef node stroke-width:0px,color:#ffffff
+  classDef state fill:#878787
+  %%style AnyState fill:#29a0cc
+  style Entry fill:#15910f
+  class Entry,State1,State2,Exit node
+  class State1 default
+  class State2,State3 state
+  ```
+
 - Entry-Exit式のレイヤーをBlendTreeに変換\
-  アニメーターコントローラーのレイヤーをできる限りBlendTreeに変換します。\
+  Entry-Exit式のレイヤーをできる限りBlendTreeに変換します。\
   現在、Diamond型、およびLinear型のEntry-Exit式のレイヤーがBlendTreeに変換されます。
 
   ```mermaid

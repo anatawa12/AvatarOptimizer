@@ -19,6 +19,10 @@ The format is based on [Keep a Changelog].
 - Automatic Merge BlendTree support for WriteDefaults off BlendTree `#1283`
 - Component API for Remove Mesh By Mask `#XXXX`
   - External tools can now programmatically add and configure RemoveMeshByMask components.
+- Complete Graph to Entry Exit optimization `#1544`
+  - New optimization in the Animator Optimizer, which is part of Trace and Optimize.
+  - It's expected that this optimization will reduce the number of transitions computed every frame. 
+  - After this optimization, Entry Exit to BlendTree optimization may be applied.
 
 ### Changed
 - Avatar Optimizer will run as late as possible in NDMF Pipeline by default `#1493`
@@ -62,6 +66,9 @@ The format is based on [Keep a Changelog].
   - Ignore Other Phys Bone property is not supported by Merge Phys Bone. This was a bug.
   - This version fixes this bug.
 - Fixed Optimize Texture may throw error in rare cases `#1538`
+- VRChat parameter drivers now work correctly when parameters are converted from bool/int to float during Entry-Exit to BlendTree optimization `#1547`
+  - Based on fix from NDMF (bdunderscore/ndmf#693)
+  - Parameter drivers now use intermediate parameters to preserve original type semantics
 
 ### Security
 

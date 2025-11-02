@@ -18,6 +18,10 @@ The format is based on [Keep a Changelog].
 - Automatic Merge BlendTree support for WriteDefaults off BlendTree `#1283`
 - Component API for Remove Mesh By Mask `#1541`
   - External tools can now programmatically add and configure RemoveMeshByMask components.
+- Complete Graph to Entry Exit optimization `#1544`
+    - New optimization in the Animator Optimizer, which is part of Trace and Optimize.
+    - It's expected that this optimization will reduce the number of transitions computed every frame.
+    - After this optimization, Entry Exit to BlendTree optimization may be applied.
 
 ### Changed
 - Avatar Optimizer will run as late as possible in NDMF Pipeline by default `#1493`
@@ -37,6 +41,9 @@ The format is based on [Keep a Changelog].
   - When AAO removes animation keys because target objects are absent, descriptive messages in the user's language are now shown in Play Mode to help understand what happened.
   - These messages explain that the target object is absent, keys were removed by AAO, and suggest reporting if this is incorrect.
   - In Edit Mode (upload builds), the behavior remains unchanged with a terse internal identifier to minimize avatar size.
+- VRChat parameter drivers now work correctly when parameters are converted from bool/int to float during Entry-Exit to BlendTree optimization `#1547`
+  - Based on fix from NDMF (bdunderscore/ndmf#693)
+  - Parameter drivers now use intermediate parameters to preserve original type semantics
 
 [`AfterPlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_AfterPlugin_System_String_System_String_System_Int32_
 [`BeforePlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_BeforePlugin_System_String_System_String_System_Int32_

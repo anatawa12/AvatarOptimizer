@@ -121,6 +121,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
             // animator optimizer is written in newer C# so requires 2021.3 or newer 
             mainSequence.Run(Processors.AnimatorOptimizer.InitializeAnimatorOptimizer.Instance)
                 .Then.Run(Processors.AnimatorOptimizer.AnyStateToEntryExit.Instance)
+                .Then.Run(Processors.AnimatorOptimizer.CompleteGraphToEntryExit.Instance)
 #if AAO_VRCSDK3_AVATARS
                 // EntryExit to BlendTree optimization heavily depends on VRChat's behavior
                 .Then.Run(Processors.AnimatorOptimizer.EntryExitToBlendTree.Instance)
