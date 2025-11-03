@@ -524,18 +524,35 @@ public static class RangesUtil
     {
         return FloatRangeSet.Union(intRangeSet.Ranges.Select(iRange =>
         {
-            var lowerBound = iRange.MinInclusive - 0.5f;
-            var upperBound = iRange.MaxInclusive + 0.5f;
-            var lowerBoundRounded = Mathf.RoundToInt(lowerBound);
-            var upperBoundRounded = Mathf.RoundToInt(upperBound);
+            float lowerBound;
+            if (iRange.MinInclusive == int.MinValue)
+            {
+                lowerBound = float.NegativeInfinity;
+            }
+            else
+            {
+                lowerBound = iRange.MinInclusive - 0.5f;
+                var lowerBoundRounded = Mathf.RoundToInt(lowerBound);
+                if (lowerBoundRounded != iRange.MinInclusive)
+                    lowerBound = Utils.NextFloat(lowerBound);
+                Utils.Assert(Mathf.RoundToInt(lowerBound) == iRange.MinInclusive,
+                    $"lower bound conversion failed: {lowerBound:G} ({Mathf.RoundToInt(lowerBound)}) != {iRange.MinInclusive}");
+            }
 
-            if (lowerBoundRounded != iRange.MinInclusive)
-                lowerBound = Utils.NextFloat(lowerBound);
-            if (upperBoundRounded != iRange.MaxInclusive)
-                upperBound = Utils.PreviousFloat(upperBound);
-
-            Utils.Assert(Mathf.RoundToInt(lowerBound) == iRange.MinInclusive, "lower bound conversion failed");
-            Utils.Assert(Mathf.RoundToInt(upperBound) == iRange.MaxInclusive, "upper bound conversion failed");
+            float upperBound;
+            if (iRange.MaxInclusive == int.MaxValue)
+            {
+                upperBound = float.PositiveInfinity;
+            }
+            else
+            {
+                upperBound = iRange.MaxInclusive + 0.5f;
+                var upperBoundRounded = Mathf.RoundToInt(upperBound);
+                if (upperBoundRounded != iRange.MaxInclusive)
+                    upperBound = Utils.PreviousFloat(upperBound);
+                Utils.Assert(Mathf.RoundToInt(upperBound) == iRange.MaxInclusive,
+                    $"upper bound conversion failed: {upperBound:G} ({Mathf.RoundToInt(upperBound)}) != {iRange.MaxInclusive}");
+            }
 
             return FloatRange.FromInclusiveBounds(lowerBound, upperBound);
         }));

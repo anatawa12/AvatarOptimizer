@@ -664,6 +664,17 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             yield return new TestCaseData(
                 IntRangeSet.FromRange(IntRange.FromInclusiveBounds(-1, 0)),
                 FloatRangeSet.FromRange(FloatRange.FromInclusiveBounds(-1.4999999f, 0.5f)));
+
+            // unbounded or half-bounded ranges
+            yield return new TestCaseData(IntRangeSet.Entire, FloatRangeSet.Entire);
+
+            yield return new TestCaseData(
+                IntRangeSet.FromRange(IntRange.GreaterThanInclusive(6)),
+                FloatRangeSet.FromRange(FloatRange.GreaterThanInclusive(5.5f)));
+
+            yield return new TestCaseData(
+                IntRangeSet.FromRange(IntRange.LessThanInclusive(6)),
+                FloatRangeSet.FromRange(FloatRange.LessThanInclusive(6.5f)));
         }
 
         [Test, TestCaseSource(nameof(RageIntToFloatConvertion))]
