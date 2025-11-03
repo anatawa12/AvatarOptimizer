@@ -262,8 +262,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 {
                     range = cond.mode switch
                     {
-                        AnimatorConditionMode.Less => range.Intersect(FloatOpenRange.LessThan(cond.threshold)),
-                        AnimatorConditionMode.Greater => range.Intersect(FloatOpenRange.GreaterThan(cond.threshold)),
+                        AnimatorConditionMode.Less => range.Intersect(FloatOpenRange.LessThanExclusive(cond.threshold)),
+                        AnimatorConditionMode.Greater => range.Intersect(FloatOpenRange.GreaterThanExclusive(cond.threshold)),
                         _ => throw new ArgumentOutOfRangeException()
                     };
                 }
@@ -272,7 +272,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
             if (ranges.Count == 0) return new List<AnimatorCondition[]>();
 
-            ranges.Sort((a, b) => (a.Min, b.Min) switch
+            ranges.Sort((a, b) => (a.MinExclusive, b.MinExclusive) switch
             {
                 (null, null) => 0,
                 (null, _) => -1,
@@ -327,9 +327,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         AnimatorConditionMode.Equals => current.Select(r => r.Intersect(IntClosedRange.Point(t))),
                         AnimatorConditionMode.NotEqual => current.SelectMany(r => r.ExcludeValue(t)),
                         // param > t => allowed ints >= t+1
-                        AnimatorConditionMode.Greater => current.Select(r => r.Intersect(IntClosedRange.FromMinInclusive(t + 1))),
+                        AnimatorConditionMode.Greater => current.Select(r => r.Intersect(IntClosedRange.GreaterThanInclusive(t + 1))),
                         // param < t => allowed ints <= t-1
-                        AnimatorConditionMode.Less => current.Select(r => r.Intersect(IntClosedRange.FromMaxInclusive(t - 1))),
+                        AnimatorConditionMode.Less => current.Select(r => r.Intersect(IntClosedRange.LessThanInclusive(t - 1))),
                         _ => throw new ArgumentOutOfRangeException()
                     }).Where(intersect => !intersect.IsEmpty()).ToList();
 
@@ -343,7 +343,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             // flatten ranges from all conjunctions, then sort and merge adjacent/overlapping ranges
             if (allRanges.Count == 0) return new List<AnimatorCondition[]>();
 
-            allRanges.Sort((a, b) => a.Min.CompareTo(b.Min));
+            allRanges.Sort((a, b) => a.MinInclusive.CompareTo(b.MinInclusive));
 
             var merged = new List<IntClosedRange> { allRanges[0] };
             for (var i = 1; i < allRanges.Count; i++)
@@ -376,16 +376,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
                 var (lastRange, holes) = finalRanges[^1];
                 // check if we can merge current range into lastRange with holes
-                if (range.Min - lastRange.Max > 0 && range.Min - lastRange.Max <= 3)
+                if (range.MinInclusive - lastRange.MaxInclusive > 0 && range.MinInclusive - lastRange.MaxInclusive <= 3)
                 {
                     // can merge
                     // add holes for the gap
-                    for (int v = lastRange.Max + 1; v < range.Min; v++)
+                    for (int v = lastRange.MaxInclusive + 1; v < range.MinInclusive; v++)
                     {
                         holes.Add(v);
                     }
                     // update last range to cover current range
-                    finalRanges[^1] = (new IntClosedRange(lastRange.Min, range.Max), holes);
+                    finalRanges[^1] = (new IntClosedRange(lastRange.MinInclusive, range.MaxInclusive), holes);
                 }
                 else
                 {
