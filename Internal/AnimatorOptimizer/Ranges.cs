@@ -220,69 +220,28 @@ public struct FloatOpenRange : IEquatable<FloatOpenRange>
     };
 }
 
-/// <summary>
-/// Represents a closed range of integer values: [Min, Max], where each bound is inclusive.
-/// </summary>
-public struct IntClosedRange : IEquatable<IntClosedRange>
+public static class RangesUtil
 {
-    // inclusive bounds; use sentinels to represent unbounded
-    private const int NEG_INF = int.MinValue;
-    private const int POS_INF = int.MaxValue;
-
-    private readonly IntRangeImpl _innerRange;
-    public int Min => _innerRange.Min; // inclusive
-    public int Max => _innerRange.Max; // inclusive
-
-    public IntClosedRange(int min, int max) => _innerRange = new IntRangeImpl(min, max);
-    private IntClosedRange(IntRangeImpl innerRange) => _innerRange = innerRange;
-
-    public static IntClosedRange Empty => new(IntRangeImpl.Empty);
-    public static IntClosedRange Entire => new(IntRangeImpl.Entire);
-    public static IntClosedRange FromMinInclusive(int min) => new(IntRangeImpl.FromMinInclusive(min));
-    public static IntClosedRange FromMaxInclusive(int max) => new(IntRangeImpl.FromMaxInclusive(max));
-    public static IntClosedRange Point(int v) => new(IntRangeImpl.Point(v));
-
-    public bool IsEmpty() => _innerRange.IsEmpty();
-
-    public IntClosedRange Intersect(IntClosedRange other) => new(_innerRange.Intersect(other._innerRange));
-
-    // subtract single value v; may split range into up to two ranges
-    public IEnumerable<IntClosedRange> ExcludeValue(int v) => _innerRange.ExcludeValue(v).Select(r => new IntClosedRange(r));
-
-    // try union: if adjacent or overlapping, return union; otherwise null
-    public IntClosedRange? Union(IntClosedRange other) => _innerRange.Union(other._innerRange) is {} range ? new IntClosedRange(range) : null;
-
-    public bool Equals(IntClosedRange other) => _innerRange.Equals(other._innerRange);
-    public override bool Equals(object? obj) => obj is IntClosedRange other && Equals(other);
-    public override int GetHashCode() => IsEmpty() ? 0 : HashCode.Combine(Min, Max);
-    public static bool operator ==(IntClosedRange left, IntClosedRange right) => left.Equals(right);
-    public static bool operator !=(IntClosedRange left, IntClosedRange right) => !left.Equals(right);
-
-    public override string ToString() => _innerRange.ToString();
-
     // convert to animator conditions for a given parameter name
-    public AnimatorCondition[] ToConditions(string parameter)
+    public static AnimatorCondition[] ToConditions(this IntRangeImpl range, string parameter)
     {
-        var hasMin = Min != NEG_INF;
-        var hasMax = Max != POS_INF;
+        var hasMin = range.MinInclusive != int.MinValue;
+        var hasMax = range.MaxInclusive != int.MaxValue;
 
         return (hasMin, hasMax) switch
         {
             (false, false) => Array.Empty<AnimatorCondition>(),
-            (true, false) => new[] { RangesUtil.GreaterCondition(parameter, Min - 1) },
-            (false, true) => new[] { RangesUtil.LessCondition(parameter, Max + 1f) },
-            (true, true) => Min == Max
-                ? new[] { RangesUtil.EqualsCondition(parameter, Min) }
+            (true, false) => new[] { GreaterCondition(parameter, range.MinInclusive - 1) },
+            (false, true) => new[] { LessCondition(parameter, range.MaxInclusive + 1f) },
+            (true, true) => range.MinInclusive == range.MaxInclusive
+                ? new[] { EqualsCondition(parameter, range.MinInclusive) }
                 : new[]
                 {
-                    RangesUtil.GreaterCondition(parameter, Min - 1f), RangesUtil.LessCondition(parameter, Max + 1f)
+                    GreaterCondition(parameter, range.MinInclusive - 1f), LessCondition(parameter, range.MaxInclusive + 1f)
                 }
         };
     }
-}
 
-static class RangesUtil
-{
     // utilities
     static AnimatorCondition AnimatorCondition(string parameter, AnimatorConditionMode mode, float threshold = 0) =>
         new()

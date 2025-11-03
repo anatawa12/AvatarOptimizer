@@ -6,6 +6,8 @@ using NUnit.Framework;
 
 namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
 {
+    using IntClosedRange = ClosedRange<int, RangeIntTrait>;
+
     [TestFixture]
     public class IntClosedRangeTest
     {
