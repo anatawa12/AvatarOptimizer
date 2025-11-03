@@ -8,6 +8,7 @@ using UnityEngine;
 namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer;
 
 using IntRangeImpl = ClosedRange<int, RangeIntTrait>;
+using FloatOpenRange = ClosedRange<float, RangeFloatTrait>;
 
 // This file includes 'range' related utilities for animator optimization.
 
@@ -169,75 +170,22 @@ public struct RangeIntTrait : IRangeTrait<int>
     public int Max(int a, int b) => Math.Max(a, b);
 }
 
-/// <summary>
-/// Represents an open range of float values: (Min, Max), where each bound is exclusive.
-/// Null bound means unbounded (infinity + 1).
-/// </summary>
-public struct FloatOpenRange : IEquatable<FloatOpenRange>
+public struct RangeFloatTrait : IRangeTrait<float>
 {
-    // each value is exclusive, null means unbounded (infinity + 1)
-    public float? MinExclusive;
-    public float? MaxExclusive;
+    public float MinValue => float.NegativeInfinity;
+    public float MaxValue => float.PositiveInfinity;
 
-    private FloatOpenRange(float? minExclusive = null, float? maxExclusive = null)
-    {
-        MinExclusive = minExclusive;
-        MaxExclusive = maxExclusive;
-    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public float? Next(float element) => float.IsPositiveInfinity(element) ? null : Utils.NextFloat(element);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public float? Previous(float element) => float.IsNegativeInfinity(element) ? null : Utils.PreviousFloat(element);
 
-    public static FloatOpenRange Empty => new(0f, 0f);
-    public static FloatOpenRange Entire => default;
-    public static FloatOpenRange FromExclusiveBounds(float? minExclusive, float? maxExclusive) => new(minExclusive, maxExclusive);
-    public static FloatOpenRange LessThanExclusive(float value) => new(maxExclusive: value);
-    public static FloatOpenRange GreaterThanExclusive(float value) => new(minExclusive: value);
-
-    public readonly bool IsEmpty() => MinExclusive.HasValue && MaxExclusive.HasValue && MinExclusive.Value >= MaxExclusive.Value;
-
-    public readonly FloatOpenRange Intersect(FloatOpenRange other)
-    {
-        var result = this;
-        if (other.MinExclusive is { } minOther) result.MinExclusive = MinExclusive is { } minSelf ? Mathf.Max(minSelf, minOther) : minOther;
-        if (other.MaxExclusive is { } maxOther) result.MaxExclusive = MaxExclusive is { } maxSelf ? Mathf.Min(maxSelf, maxOther) : maxOther;
-        return result;
-    }
-
-    public readonly FloatOpenRange? Union(FloatOpenRange other)
-    {
-        // union-ing empty range and another will result another
-        if (IsEmpty()) return other;
-        if (other.IsEmpty()) return this;
-
-        // check if two ranges are adjacent or overlapping
-        if (Intersect(other).IsEmpty()) return null;
-
-        var result = this;
-        result.MinExclusive = (this.MinExclusive, other.MinExclusive) is ({ } minSelf, { } minOther) ? Mathf.Min(minSelf, minOther) : null;
-        result.MaxExclusive = (this.MaxExclusive, other.MaxExclusive) is ({ } maxSelf, { } maxOther) ? Mathf.Max(maxSelf, maxOther) : null;
-        return result;
-    }
-
-    public readonly bool Equals(FloatOpenRange other) =>
-        IsEmpty() && other.IsEmpty() || Nullable.Equals(MinExclusive, other.MinExclusive) && Nullable.Equals(MaxExclusive, other.MaxExclusive);
-
-    public readonly override bool Equals(object? obj) => obj is FloatOpenRange other && Equals(other);
-    public readonly override int GetHashCode() => IsEmpty() ? 0 : HashCode.Combine(MinExclusive, MaxExclusive);
-    public static bool operator ==(FloatOpenRange left, FloatOpenRange right) => left.Equals(right);
-    public static bool operator !=(FloatOpenRange left, FloatOpenRange right) => !left.Equals(right);
-
-    public override string ToString() =>
-        IsEmpty() ? "Empty" : $"({MinExclusive?.ToString() ?? "none"}, {MaxExclusive?.ToString() ?? "none"})";
-
-    public readonly AnimatorCondition[] ToConditions(string parameter) => (Min: MinExclusive, Max: MaxExclusive) switch
-    {
-        (null, null) => Array.Empty<AnimatorCondition>(),
-        ({ } min, null) => new[] { RangesUtil.GreaterCondition(parameter, min) },
-        (null, { } max) => new[] { RangesUtil.LessCondition(parameter, max) },
-        ({ } min, { } max) => new[]
-        {
-            RangesUtil.GreaterCondition(parameter, min),
-            RangesUtil.LessCondition(parameter, max),
-        },
-    };
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int Compare(float a, float b) => a.CompareTo(b);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public float Min(float a, float b) => Math.Min(a, b);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public float Max(float a, float b) => Math.Max(a, b);
 }
 
 public static class RangesUtil
@@ -257,6 +205,14 @@ public static class RangesUtil
             ({ } min, { } max) => new[] { GreaterCondition(parameter, min), LessCondition(parameter, max), }
         };
     }
+
+    public static AnimatorCondition[] ToConditions(this FloatOpenRange range, string parameter) => (Min: range.MinExclusive, Max: range.MaxExclusive) switch
+    {
+        (null, null) => Array.Empty<AnimatorCondition>(),
+        ({ } min, null) => new[] { GreaterCondition(parameter, min) },
+        (null, { } max) => new[] { LessCondition(parameter, max) },
+        ({ } min, { } max) => new[] { GreaterCondition(parameter, min), LessCondition(parameter, max) },
+    };
 
     // utilities
     static AnimatorCondition AnimatorCondition(string parameter, AnimatorConditionMode mode, float threshold = 0) =>

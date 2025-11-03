@@ -5,6 +5,8 @@ using NUnit.Framework;
 
 namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
 {
+    using FloatOpenRange = ClosedRange<float, RangeFloatTrait>;
+
     [TestFixture]
     public class FloatOpenRangeTest
     {

@@ -11,6 +11,7 @@ using Object = UnityEngine.Object;
 namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
     using IntClosedRange = ClosedRange<int, RangeIntTrait>;
+    using FloatOpenRange = ClosedRange<float, RangeFloatTrait>;
 
     /// <summary>
     /// Converts Complete Graph state machine to Entry-Exit state machine
