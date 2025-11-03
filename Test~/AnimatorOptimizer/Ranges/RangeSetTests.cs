@@ -137,6 +137,134 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             Assert.That(res.Ranges.ToList(), Is.EqualTo(expectedRanges));
         }
 
+        // ---------------- Intersect (set) ----------------
+        // New tests exercising the Intersect(RangeSet<TValue, TTrait>) overload.
+
+        private static IEnumerable<TestCaseData> Intersect_TwoRangeSetsSource()
+        {
+            // Both empty -> empty
+            yield return new TestCaseData(
+                IntRangeSet.Empty,
+                IntRangeSet.Empty,
+                new IntRange[0]
+            ).SetName("Intersect_TwoRangeSets_BothEmpty");
+
+            // Left empty -> empty
+            yield return new TestCaseData(
+                IntRangeSet.Empty,
+                IntRangeSet.FromRange(IntRange.FromInclusiveBounds(1, 3)),
+                new IntRange[0]
+            ).SetName("Intersect_TwoRangeSets_LeftEmpty");
+
+            // Right empty -> empty
+            yield return new TestCaseData(
+                IntRangeSet.FromRange(IntRange.FromInclusiveBounds(2, 4)),
+                IntRangeSet.Empty,
+                new IntRange[0]
+            ).SetName("Intersect_TwoRangeSets_RightEmpty");
+
+            // Partial overlaps across multiple ranges
+            yield return new TestCaseData(
+                IntRangeSet.Union(IntRange.FromInclusiveBounds(1, 3),
+                    IntRange.FromInclusiveBounds(5, 7)),
+                IntRangeSet.Empty
+                    .Union(IntRange.FromInclusiveBounds(2, 6)),
+                new[]
+                {
+                    IntRange.FromInclusiveBounds(2, 3),
+                    IntRange.FromInclusiveBounds(5, 6)
+                }
+            ).SetName("Intersect_TwoRangeSets_PartialOverlap");
+
+            // Contained: right is subset of left -> result equals right
+            yield return new TestCaseData(
+                IntRangeSet.FromRange(IntRange.FromInclusiveBounds(1, 10)),
+                IntRangeSet.FromRange(IntRange.FromInclusiveBounds(3, 5)),
+                new[]
+                {
+                    IntRange.FromInclusiveBounds(3, 5)
+                }
+            ).SetName("Intersect_TwoRangeSets_Contained");
+
+            // Disjoint -> empty
+            yield return new TestCaseData(
+                IntRangeSet.FromRange(IntRange.FromInclusiveBounds(1, 2)),
+                IntRangeSet.FromRange(IntRange.FromInclusiveBounds(5, 6)),
+                new IntRange[0]
+            ).SetName("Intersect_TwoRangeSets_Disjoint");
+
+            // Touching boundaries -> point intersections preserved
+            yield return new TestCaseData(
+                IntRangeSet.Union(IntRange.FromInclusiveBounds(1, 3), IntRange.FromInclusiveBounds(5, 7)),
+                IntRangeSet.FromRange(IntRange.FromInclusiveBounds(3, 5)),
+                new[]
+                {
+                    IntRange.FromInclusiveBounds(3, 3),
+                    IntRange.FromInclusiveBounds(5, 5)
+                }
+            ).SetName("Intersect_TwoRangeSets_TouchingBoundaries");
+
+            // Bridge case: right intersects both left blocks producing point intersections
+            yield return new TestCaseData(
+                IntRangeSet.Union(IntRange.FromInclusiveBounds(1, 2), IntRange.FromInclusiveBounds(8, 9)),
+                IntRangeSet.FromRange(IntRange.FromInclusiveBounds(2, 8)),
+                new[]
+                {
+                    IntRange.FromInclusiveBounds(2, 2),
+                    IntRange.FromInclusiveBounds(8, 8)
+                }
+            ).SetName("Intersect_TwoRangeSets_Bridge");
+
+            // Entire involvement: left Entire -> result equals right
+            yield return new TestCaseData(
+                IntRangeSet.Entire,
+                IntRangeSet.Union(IntRange.FromInclusiveBounds(1, 3), IntRange.FromInclusiveBounds(5, 5)),
+                new[]
+                {
+                    IntRange.FromInclusiveBounds(1, 3),
+                    IntRange.FromInclusiveBounds(5, 5)
+                }
+            ).SetName("Intersect_TwoRangeSets_LeftEntire");
+
+            // Entire involvement: right Entire -> result equals left
+            yield return new TestCaseData(
+                IntRangeSet.FromRange(IntRange.FromInclusiveBounds(2, 4)),
+                IntRangeSet.Entire,
+                new[]
+                {
+                    IntRange.FromInclusiveBounds(2, 4)
+                }
+            ).SetName("Intersect_TwoRangeSets_RightEntire");
+
+            // Both Entire -> Entire
+            yield return new TestCaseData(
+                IntRangeSet.Entire,
+                IntRangeSet.Entire,
+                new[]
+                {
+                    IntRange.FromInclusiveBounds(default(RangeIntTrait).MinValue, default(RangeIntTrait).MaxValue)
+                }
+            ).SetName("Intersect_TwoRangeSets_BothEntire");
+
+            // Multiple overlapping ranges produce multiple intersections and ordering preserved
+            yield return new TestCaseData(
+                IntRangeSet.Union(IntRange.FromInclusiveBounds(1, 5), IntRange.FromInclusiveBounds(10, 15)),
+                IntRangeSet.FromRange(IntRange.FromInclusiveBounds(3, 12)),
+                new[]
+                {
+                    IntRange.FromInclusiveBounds(3, 5),
+                    IntRange.FromInclusiveBounds(10, 12)
+                }
+            ).SetName("Intersect_TwoRangeSets_MultiOverlap");
+        }
+
+        [Test, TestCaseSource(nameof(Intersect_TwoRangeSetsSource))]
+        public void Intersect_TwoRangeSets(IntRangeSet left, IntRangeSet right, IntRange[] expectedRanges)
+        {
+            var res = left.Intersect(right);
+            Assert.That(res.Ranges.ToList(), Is.EqualTo(expectedRanges));
+        }
+
         // ---------------- ExcludeValue ----------------
 
         private static IEnumerable<TestCaseData> ExcludeValueSource()

@@ -177,6 +177,35 @@ public readonly struct RangeSet<TValue, TTrait> : IEquatable<RangeSet<TValue, TT
     public RangeSet<TValue, TTrait> Intersect(Range<TValue, TTrait> other) => _ranges == null ? Empty 
         : new(_ranges.Select(r => r.Intersect(other)).Where(r => !r.IsEmpty()).ToImmutableArray());
 
+    public RangeSet<TValue, TTrait> Intersect(RangeSet<TValue, TTrait> other)
+    {
+        if (_ranges == null) return Empty;
+        if (other._ranges == null) return Empty;
+
+        // since both are sorted non-overlapping ranges, we can do merge intersection
+        return new(_ranges.SelectMany(r1 => IntersectRangeWithSet(r1, other)).ToImmutableArray());
+
+        IEnumerable<Range<TValue, TTrait>> IntersectRangeWithSet(Range<TValue, TTrait> r1, RangeSet<TValue, TTrait> set2)
+        {
+            // In most case range only has a small number of ranges, so we do simple linear scan rather than binary search
+            var index = 0;
+            while (index < set2._ranges.Length && default(TTrait).Compare(set2._ranges[index].MaxInclusive, r1.MinInclusive) < 0)
+                index++;
+
+            for (; index < set2._ranges.Length; index++)
+            {
+                var r2 = set2._ranges[index];
+                // stop if r2.Min > r1.Max
+                if (default(TTrait).Compare(r2.MinInclusive, r1.MaxInclusive) > 0)
+                    break;
+
+                var intersected = r1.Intersect(r2);
+                if (!intersected.IsEmpty())
+                    yield return intersected;
+            }
+        }
+    }
+
     public RangeSet<TValue, TTrait> ExcludeValue(TValue v) => _ranges == null ? this 
         : new(_ranges.SelectMany(r => r.ExcludeValue(v)).ToImmutableArray());
 
