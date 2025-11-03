@@ -336,6 +336,51 @@ public struct RangeFloatTrait : IRangeTrait<float>
     public float Max(float a, float b) => Math.Max(a, b);
 }
 
+// BoolSet is not a range or range set, but it's similar conceptually so we put it here.
+public readonly struct BoolSet : IEquatable<BoolSet>
+{
+    private readonly byte _bits;
+    public bool HasFalse => (_bits & 1) != 0;
+    public bool HasTrue => (_bits & 2) != 0;
+
+    public BoolSet(bool hasFalse, bool hasTrue) => _bits = (byte)((hasFalse ? 1 : 0) | (hasTrue ? 2 : 0));
+    private BoolSet(byte bits) => _bits = bits;
+
+    public static BoolSet Empty => new(false, false);
+    public static BoolSet Entire => new(true, true);
+
+    public bool IsEmpty() => _bits == 0;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static BoolSet FromValue(bool b) => b ? new BoolSet(false, true) : new BoolSet(true, false);
+
+    // set operations
+    public BoolSet Union(BoolSet other) => new((byte)(_bits | other._bits));
+    public BoolSet Intersect(BoolSet other) => new((byte)(_bits & other._bits));
+    public BoolSet Exclude(BoolSet other) => new((byte)(_bits & ~other._bits));
+    public BoolSet Complement() => new((byte)((~_bits) & 3));
+
+    public static BoolSet Union(IEnumerable<BoolSet> sets)
+    {
+        var bits = 0;
+        foreach (var set in sets)
+            bits |= set._bits;
+        return new BoolSet((byte)bits);
+    }
+
+    public override string ToString() => (HasTrue, HasFalse) switch
+    {
+        (false, false) => "{}",
+        (true, false) => "{True}",
+        (false, true) => "{False}",
+        (true, true) => "{True, False}",
+    };
+
+    public bool Equals(BoolSet other) => _bits == other._bits;
+    public override bool Equals(object? obj) => obj is BoolSet other && Equals(other);
+    public override int GetHashCode() => _bits.GetHashCode();
+}
+
 public static class RangesUtil
 {
     // convert to animator conditions for a given parameter name
@@ -432,7 +477,15 @@ public static class RangesUtil
         }));
     }
 
-    public static IntRangeSet IntRangeSetFromConditions(AnimatorCondition[] conditions) => conditions
+    public static FloatRangeSet BoolSetToFloatRangeSet(BoolSet boolSet) => (boolSet.HasTrue, boolSet.HasFalse) switch
+    {
+        (false, false) => FloatRangeSet.Empty,
+        (true, true) => FloatRangeSet.Entire,
+        (true, false) => FloatRangeSet.Entire.ExcludeValue(0),
+        (false, true) => FloatRangeSet.FromRange(FloatRange.Point(0)),
+    };
+
+    public static IntRangeSet IntRangeSetFromConditions(IEnumerable<AnimatorCondition> conditions) => conditions
         .Aggregate(IntRangeSet.Entire, (current, c) => c.mode switch
         {
             AnimatorConditionMode.Equals => current.Intersect(IntRange.Point(Mathf.FloorToInt(c.threshold))),
@@ -442,11 +495,19 @@ public static class RangesUtil
             _ => throw new ArgumentOutOfRangeException(),
         });
 
-    public static FloatRangeSet FloatRangeSetFromConditions(AnimatorCondition[] conditions) => conditions
+    public static FloatRangeSet FloatRangeSetFromConditions(IEnumerable<AnimatorCondition> conditions) => conditions
         .Aggregate(FloatRangeSet.Entire, (current, c) => c.mode switch
         {
             AnimatorConditionMode.Greater => current.Intersect(FloatRange.GreaterThanExclusive(c.threshold)),
             AnimatorConditionMode.Less => current.Intersect(FloatRange.LessThanExclusive(c.threshold)),
+            _ => throw new ArgumentOutOfRangeException(),
+        });
+
+    public static BoolSet BoolSetFromConditions(IEnumerable<AnimatorCondition> conditions) => conditions
+        .Aggregate(BoolSet.Entire, (current, c) => c.mode switch
+        {
+            AnimatorConditionMode.If => current.Intersect(BoolSet.FromValue(true)),
+            AnimatorConditionMode.IfNot => current.Intersect(BoolSet.FromValue(false)),
             _ => throw new ArgumentOutOfRangeException(),
         });
 
