@@ -472,6 +472,14 @@ public static class RangesUtil
     public static List<AnimatorCondition[]> ToConditions(this FloatRangeSet rangeSet, string parameter) =>
         rangeSet.Ranges.Select(range => range.ToConditions(parameter)).ToList();
 
+    public static List<AnimatorCondition[]> ToConditions(this BoolSet range, string parameter) => (range.HasTrue, range.HasFalse) switch
+    {
+        (false, false) => new List<AnimatorCondition[]>(),
+        (true, true) => new List<AnimatorCondition[]> { Array.Empty<AnimatorCondition>() },
+        (true, false) => new List<AnimatorCondition[]> { new[] { AnimatorCondition(parameter, AnimatorConditionMode.If) } },
+        (false, true) => new List<AnimatorCondition[]> { new[] { AnimatorCondition(parameter, AnimatorConditionMode.IfNot) } },
+    };
+
     public static FloatRangeSet IntRangeSetToFloatRangeSet(IntRangeSet intRangeSet)
     {
         return FloatRangeSet.Union(intRangeSet.Ranges.Select(iRange =>

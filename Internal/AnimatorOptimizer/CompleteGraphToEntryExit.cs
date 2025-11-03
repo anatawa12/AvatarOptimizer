@@ -279,26 +279,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
         public static List<AnimatorCondition[]> OptimizeBoolConditions(List<AnimatorCondition[]> conditions)
         {
-            var parameter = conditions.SelectMany(x => x).First().parameter;
+            // convert each conjunction to a set of integer ranges (may be multiple ranges due to NotEqual)
+            var allRangesSet = BoolSet.Union(conditions.Select(RangesUtil.BoolSetFromConditions));
 
-            var allNever = conditions.All(conds =>
-                conds.Any(c => c.mode == AnimatorConditionMode.If) &&
-                conds.Any(c => c.mode == AnimatorConditionMode.IfNot));
-            if (allNever) return new List<AnimatorCondition[]>(); // never true
+            // flatten ranges from all conjunctions, then sort and merge adjacent/overlapping ranges
+            if (allRangesSet.IsEmpty()) return new List<AnimatorCondition[]>();
 
-            var hasTrue = conditions.Any(conds => conds.Any(c => c.mode == AnimatorConditionMode.If));
-            var hasFalse = conditions.Any(conds => conds.Any(c => c.mode == AnimatorConditionMode.IfNot));
-            return (hasTrue, hasFalse) switch
-            {
-                // both true and false exists, whole condition is always true
-                (true, true) => new List<AnimatorCondition[]> { Array.Empty<AnimatorCondition>() },
-                // only true exists
-                (true, false) => new List<AnimatorCondition[]> { new[] { IfCondition(parameter) } },
-                // only false exists
-                (false, true) => new List<AnimatorCondition[]> { new[] { IfNotCondition(parameter) } },
-                // never true
-                (false, false) => new List<AnimatorCondition[]>()
-            };
+            // convert merged ranges back to AnimatorCondition[] arrays; parameter name from input conditions
+            var parameter = conditions.SelectMany(x => x).FirstOrDefault().parameter;
+            return allRangesSet.ToConditions(parameter);
         }
 
         public static List<AnimatorCondition[]> OptimizeTriggerConditions(List<AnimatorCondition[]> conditions)
