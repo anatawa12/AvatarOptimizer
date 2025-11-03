@@ -93,18 +93,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 DoConvert(info, layer);
             }
 
+            Predicate<string> needsConvert = parameter => layerByParameter.ContainsKey(parameter) && parameterType[parameter] != AnimatorControllerParameterType.Float;
+
             var parameters = controller.parameters;
             
             // Track parameter type changes for driver correction
             var parameterTypeChanges = new Dictionary<string, AnimatorControllerParameterType>();
             foreach (var parameter in parameters)
-            {
-                if (layerByParameter.ContainsKey(parameter.name) && 
-                    parameter.type != AnimatorControllerParameterType.Float)
-                {
+                if (needsConvert(parameter.name))
                     parameterTypeChanges[parameter.name] = parameter.type;
-                }
-            }
             
             // Change parameter types to float
             foreach (ref var parameter in parameters.AsSpan())
@@ -115,8 +112,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             // Correct parameter drivers to preserve behavior after type change
             CorrectParameterDrivers(controller, parameterTypeChanges, ref parameters);
 #endif
-
-            Predicate<string> needsConvert = parameter => layerByParameter.ContainsKey(parameter);
 
             T[] ConvertTransitions<T>(T[] transitions, Func<T, AnimatorCondition[], T> clone)
                 where T : AnimatorTransitionBase
