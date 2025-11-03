@@ -254,9 +254,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
         public static List<AnimatorCondition[]> OptimizeFloatConditions(List<AnimatorCondition[]> conditions)
         {
-            // ensure the all conditions are valid. Float conditions only has Less and Greater modes.
-            if (!conditions.All(conds => conds.All(c => c.IsValidForFloat())))
-                return conditions;
             // We convert each conditions to set of ranges, then merge them.
             var ranges = FloatRangeSet.Union(conditions.Select(RangesUtil.FloatRangeSetFromConditions));
 
@@ -269,10 +266,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
         public static List<AnimatorCondition[]> OptimizeIntConditions(List<AnimatorCondition[]> conditions)
         {
-            // accepted modes for int optimization: Equals, NotEqual, Greater, Less
-            if (!conditions.All(conds => conds.All(c => c.IsValidForInt())))
-                return conditions;
-
             // convert each conjunction to a set of integer ranges (may be multiple ranges due to NotEqual)
             var allRangesSet = IntRangeSet.Union(conditions.Select(RangesUtil.IntRangeSetFromConditions));
 
@@ -286,9 +279,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
         public static List<AnimatorCondition[]> OptimizeBoolConditions(List<AnimatorCondition[]> conditions)
         {
-            // The only valid conditions for bool are If (true) and IfNot (false)
-            if (!conditions.All(conds => conds.All(c => c.IsValidForBool())))
-                return conditions;
             var parameter = conditions.SelectMany(x => x).First().parameter;
 
             var allNever = conditions.All(conds =>

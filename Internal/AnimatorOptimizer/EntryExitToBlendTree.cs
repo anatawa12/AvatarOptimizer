@@ -272,8 +272,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     var stateRanges = new Dictionary<AnimatorState, TRangeSet>();
                     foreach (var entryTransition in entryTransitions)
                     {
-                        if (entryTransition.conditions.Any(cond => !default(TTrait).IsValidCondition(cond)))
-                            return null;
                         var range = default(TTrait).SetFromConditions(entryTransition.conditions!);
                         var state = entryTransition.destinationState!;
 
@@ -327,8 +325,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                             {
                                 // conditions with parameters other than conditionParameter can be false
                                 if (conditions.Any(c => c.parameter != conditionParameter)) continue;
-                                if (conditions.Any(c => !default(TTrait).IsValidCondition(c)))
-                                    return null; // invalid condition
 
                                 exitValues = exitValues.Exclude(default(TTrait).SetFromConditions(conditions));
                             }
@@ -342,9 +338,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                             // conditions with parameters other than conditionParameter can be false
                             if (allConditions.Any(conditions => conditions.Any(c => c.parameter != conditionParameter)))
                                 return null; // non-conditionParameter condition found
-                            if (allConditions.Any(conditions =>
-                                    conditions.Any(c => !default(TTrait).IsValidCondition(c))))
-                                return null; // invalid condition
 
                             var exitingValues =
                                 default(TTrait).Union(allConditions.Select(default(TTrait).SetFromConditions));
@@ -453,7 +446,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             foreach (var defaultStateTransition in defaultState.transitions)
             {
                 var conditions = defaultStateTransition.conditions!;
-                if (!conditions.Any(c => default(TTrait).IsValidCondition(c))) return null;
                 anotherStateValues = anotherStateValues.Union(default(TTrait).SetFromConditions(conditions));
             }
 
@@ -479,7 +471,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
                 // transition condition check.
                 if (allConditions.Any(conditions => conditions.Any(c => c.parameter != conditionParameter))) return null;
-                if (allConditions.Any(conditions => conditions.Any(c => !default(TTrait).IsValidCondition(c)))) return null; // invalid condition
 
                 var expectedToExitRange = anotherStateValues.Complement();
                 var exitingValues = default(TTrait).Union(allConditions.Select(default(TTrait).SetFromConditions));
@@ -595,7 +586,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         interface IConditionTrait<TRangeSet> where TRangeSet : struct, IRangeSet<TRangeSet>
         {
             public TRangeSet Empty { get; }
-            public bool IsValidCondition(AnimatorCondition condition);
             public TRangeSet SetFromConditions(AnimatorCondition[] conditions);
             public TRangeSet Union(IEnumerable<TRangeSet> ranges);
             public FloatRangeSet ConvertToFloatRangeSet(TRangeSet rangeSet);
@@ -604,7 +594,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         struct BoolConditionTrait : IConditionTrait<BoolSet>
         {
             public BoolSet Empty => BoolSet.Empty;
-            public bool IsValidCondition(AnimatorCondition condition) => condition.IsValidForBool();
             public BoolSet SetFromConditions(AnimatorCondition[] conditions) => RangesUtil.BoolSetFromConditions(conditions);
             public BoolSet Union(IEnumerable<BoolSet> ranges) => BoolSet.Union(ranges);
             public FloatRangeSet ConvertToFloatRangeSet(BoolSet rangeSet) => RangesUtil.BoolSetToFloatRangeSet(rangeSet);
@@ -612,7 +601,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         struct IntConditionTrait : IConditionTrait<IntRangeSet>
         {
             public IntRangeSet Empty => IntRangeSet.Empty;
-            public bool IsValidCondition(AnimatorCondition condition) => condition.IsValidForInt();
             public IntRangeSet SetFromConditions(AnimatorCondition[] conditions) => RangesUtil.IntRangeSetFromConditions(conditions);
             public IntRangeSet Union(IEnumerable<IntRangeSet> ranges) => IntRangeSet.Union(ranges);
             public FloatRangeSet ConvertToFloatRangeSet(IntRangeSet rangeSet) => RangesUtil.IntRangeSetToFloatRangeSet(rangeSet);
@@ -621,7 +609,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         struct FloatConditionTrait : IConditionTrait<FloatRangeSet>
         {
             public FloatRangeSet Empty => FloatRangeSet.Empty;
-            public bool IsValidCondition(AnimatorCondition condition) => condition.IsValidForFloat();
             public FloatRangeSet SetFromConditions(AnimatorCondition[] conditions) => RangesUtil.FloatRangeSetFromConditions(conditions);
             public FloatRangeSet Union(IEnumerable<FloatRangeSet> ranges) => FloatRangeSet.Union(ranges);
             public FloatRangeSet ConvertToFloatRangeSet(FloatRangeSet rangeSet) => rangeSet;
