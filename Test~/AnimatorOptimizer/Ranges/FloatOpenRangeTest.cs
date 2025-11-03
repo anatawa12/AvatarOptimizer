@@ -11,16 +11,16 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
         // Test data for IsEmpty cases
         private static IEnumerable<TestCaseData> IsEmptyCases()
         {
-            yield return new TestCaseData(new FloatOpenRange(null, null), false).SetName("Entire_NotEmpty");
-            yield return new TestCaseData(new FloatOpenRange(0f, 1f), false).SetName("BoundedNonEmpty");
-            yield return new TestCaseData(new FloatOpenRange(1f, 1f), true).SetName("EqualEndpoints_Empty");
-            yield return new TestCaseData(new FloatOpenRange(2f, 1f), true).SetName("Inverted_Empty");
-            yield return new TestCaseData(new FloatOpenRange(null, 1f), false).SetName("LeftUnbounded_NotEmpty");
-            yield return new TestCaseData(new FloatOpenRange(1f, null), false).SetName("RightUnbounded_NotEmpty");
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(null, null), false).SetName("Entire_NotEmpty");
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(0f, 1f), false).SetName("BoundedNonEmpty");
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(1f, 1f), true).SetName("EqualEndpoints_Empty");
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(2f, 1f), true).SetName("Inverted_Empty");
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(null, 1f), false).SetName("LeftUnbounded_NotEmpty");
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(1f, null), false).SetName("RightUnbounded_NotEmpty");
 
             // general (non-edge) cases
-            yield return new TestCaseData(new FloatOpenRange(-5f, -1f), false).SetName("NegativeRange_NonEmpty");
-            yield return new TestCaseData(new FloatOpenRange(1f, 1.00001f), false).SetName("SmallDecimalRange_NonEmpty");
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(-5f, -1f), false).SetName("NegativeRange_NonEmpty");
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(1f, 1.00001f), false).SetName("SmallDecimalRange_NonEmpty");
         }
 
         [Test, TestCaseSource(nameof(IsEmptyCases))]
@@ -33,25 +33,25 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
         // parameters: a, b, expectedRange (use FloatOpenRange.Empty for empty results)
         private static IEnumerable<TestCaseData> IntersectCases()
         {
-            yield return new TestCaseData(new FloatOpenRange(1f, 3f), new FloatOpenRange(2f, 4f), new FloatOpenRange(2f, 3f))
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(1f, 3f), FloatOpenRange.FromExclusiveBounds(2f, 4f), FloatOpenRange.FromExclusiveBounds(2f, 3f))
                 .SetName("Intersect_Overlapping");
-            yield return new TestCaseData(new FloatOpenRange(1f, 2f), new FloatOpenRange(3f, 4f), FloatOpenRange.Empty)
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(1f, 2f), FloatOpenRange.FromExclusiveBounds(3f, 4f), FloatOpenRange.Empty)
                 .SetName("Intersect_Disjoint_Empty");
-            yield return new TestCaseData(new FloatOpenRange(1f, 2f), new FloatOpenRange(2f, 3f), FloatOpenRange.Empty)
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(1f, 2f), FloatOpenRange.FromExclusiveBounds(2f, 3f), FloatOpenRange.Empty)
                 .SetName("Intersect_Touching_Empty");
-            yield return new TestCaseData(new FloatOpenRange(null, 2f), new FloatOpenRange(1f, null), new FloatOpenRange(1f, 2f))
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(null, 2f), FloatOpenRange.FromExclusiveBounds(1f, null), FloatOpenRange.FromExclusiveBounds(1f, 2f))
                 .SetName("Intersect_Unbounded");
-            yield return new TestCaseData(new FloatOpenRange(1f, 1f), new FloatOpenRange(0f, 2f), FloatOpenRange.Empty)
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(1f, 1f), FloatOpenRange.FromExclusiveBounds(0f, 2f), FloatOpenRange.Empty)
                 .SetName("Intersect_Empty_Left");
-            yield return new TestCaseData(new FloatOpenRange(0f, 2f), new FloatOpenRange(1f, 1f), FloatOpenRange.Empty)
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(0f, 2f), FloatOpenRange.FromExclusiveBounds(1f, 1f), FloatOpenRange.Empty)
                 .SetName("Intersect_Empty_Right");
 
             // general (non-edge) cases
-            yield return new TestCaseData(new FloatOpenRange(1f, 10f), new FloatOpenRange(3f, 4f), new FloatOpenRange(3f, 4f))
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(1f, 10f), FloatOpenRange.FromExclusiveBounds(3f, 4f), FloatOpenRange.FromExclusiveBounds(3f, 4f))
                 .SetName("Intersect_Contained");
-            yield return new TestCaseData(new FloatOpenRange(0.1f, 0.5f), new FloatOpenRange(0.3f, 0.8f), new FloatOpenRange(0.3f, 0.5f))
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(0.1f, 0.5f), FloatOpenRange.FromExclusiveBounds(0.3f, 0.8f), FloatOpenRange.FromExclusiveBounds(0.3f, 0.5f))
                 .SetName("Intersect_DecimalOverlap");
-            yield return new TestCaseData(new FloatOpenRange(-2f, 1f), new FloatOpenRange(0f, 3f), new FloatOpenRange(0f, 1f))
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(-2f, 1f), FloatOpenRange.FromExclusiveBounds(0f, 3f), FloatOpenRange.FromExclusiveBounds(0f, 1f))
                 .SetName("Intersect_CrossZero");
         }
 
@@ -65,27 +65,27 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
         // parameters: a, b, expectedRangeNullable (null means Union returns null)
         private static IEnumerable<TestCaseData> UnionCases()
         {
-            yield return new TestCaseData(new FloatOpenRange(1f, 3f), new FloatOpenRange(2f, 4f), new FloatOpenRange(1f, 4f))
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(1f, 3f), FloatOpenRange.FromExclusiveBounds(2f, 4f), FloatOpenRange.FromExclusiveBounds(1f, 4f))
                 .SetName("Union_Overlapping_Merge");
-            yield return new TestCaseData(new FloatOpenRange(1f, 5f), new FloatOpenRange(2f, 3f), new FloatOpenRange(1f, 5f))
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(1f, 5f), FloatOpenRange.FromExclusiveBounds(2f, 3f), FloatOpenRange.FromExclusiveBounds(1f, 5f))
                 .SetName("Union_Contained_ReturnOuter");
-            yield return new TestCaseData(new FloatOpenRange(1f, 2f), new FloatOpenRange(3f, 4f), (FloatOpenRange?)null)
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(1f, 2f), FloatOpenRange.FromExclusiveBounds(3f, 4f), (FloatOpenRange?)null)
                 .SetName("Union_Disjoint_Null");
-            yield return new TestCaseData(new FloatOpenRange(1f, 2f), new FloatOpenRange(2f, 3f), (FloatOpenRange?)null)
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(1f, 2f), FloatOpenRange.FromExclusiveBounds(2f, 3f), (FloatOpenRange?)null)
                 .SetName("Union_Touching_Null");
-            yield return new TestCaseData(new FloatOpenRange(null, 2f), new FloatOpenRange(1f, null), new FloatOpenRange(null, null))
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(null, 2f), FloatOpenRange.FromExclusiveBounds(1f, null), FloatOpenRange.FromExclusiveBounds(null, null))
                 .SetName("Union_Unbounded_ToEntire");
-            yield return new TestCaseData(new FloatOpenRange(1f, 1f), new FloatOpenRange(1f, 2f), new FloatOpenRange(1f, 2f))
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(1f, 1f), FloatOpenRange.FromExclusiveBounds(1f, 2f), FloatOpenRange.FromExclusiveBounds(1f, 2f))
                 .SetName("Union_Empty_LeftReturnsOther");
-            yield return new TestCaseData(new FloatOpenRange(1f, 2f), new FloatOpenRange(1f, 1f), new FloatOpenRange(1f, 2f))
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(1f, 2f), FloatOpenRange.FromExclusiveBounds(1f, 1f), FloatOpenRange.FromExclusiveBounds(1f, 2f))
                 .SetName("Union_Empty_RightReturnsOther");
 
             // general (non-edge) cases
-            yield return new TestCaseData(new FloatOpenRange(0.1f, 0.5f), new FloatOpenRange(0.3f, 0.8f), new FloatOpenRange(0.1f, 0.8f))
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(0.1f, 0.5f), FloatOpenRange.FromExclusiveBounds(0.3f, 0.8f), FloatOpenRange.FromExclusiveBounds(0.1f, 0.8f))
                 .SetName("Union_DecimalMerge");
-            yield return new TestCaseData(new FloatOpenRange(-3f, -1f), new FloatOpenRange(-2f, 2f), new FloatOpenRange(-3f, 2f))
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(-3f, -1f), FloatOpenRange.FromExclusiveBounds(-2f, 2f), FloatOpenRange.FromExclusiveBounds(-3f, 2f))
                 .SetName("Union_NegativeMerge");
-            yield return new TestCaseData(new FloatOpenRange(1f, 10f), new FloatOpenRange(3f, 4f), new FloatOpenRange(1f, 10f))
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(1f, 10f), FloatOpenRange.FromExclusiveBounds(3f, 4f), FloatOpenRange.FromExclusiveBounds(1f, 10f))
                 .SetName("Union_Contained_General");
         }
 
@@ -98,8 +98,8 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
         [Test]
         public void Union_BothEmpty_ReturnsEmpty()
         {
-            var e1 = new FloatOpenRange(1f, 1f);
-            var e2 = new FloatOpenRange(2f, 2f);
+            var e1 = FloatOpenRange.FromExclusiveBounds(1f, 1f);
+            var e2 = FloatOpenRange.FromExclusiveBounds(2f, 2f);
             var u = e1.Union(e2);
             Assert.That(u, Is.Not.Null);
             // equality treats all empty ranges as equal, so asserting equality with e1 is sufficient
@@ -109,15 +109,15 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
         // Equality test cases: (a, b, expectedEquals)
         private static IEnumerable<TestCaseData> EqualityCases()
         {
-            yield return new TestCaseData(new FloatOpenRange(1f, 2f), new FloatOpenRange(1f, 2f), true).SetName("Equals_SameValues");
-            yield return new TestCaseData(new FloatOpenRange(1f, 2f), new FloatOpenRange(2f, 3f), false).SetName("Equals_DifferentValues");
-            yield return new TestCaseData(new FloatOpenRange(1f, 1f), new FloatOpenRange(2f, 2f), true).SetName("Equals_BothEmpty");
-            yield return new TestCaseData(new FloatOpenRange(null, null), new FloatOpenRange(null, null), true).SetName("Equals_Entire");
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(1f, 2f), FloatOpenRange.FromExclusiveBounds(1f, 2f), true).SetName("Equals_SameValues");
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(1f, 2f), FloatOpenRange.FromExclusiveBounds(2f, 3f), false).SetName("Equals_DifferentValues");
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(1f, 1f), FloatOpenRange.FromExclusiveBounds(2f, 2f), true).SetName("Equals_BothEmpty");
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(null, null), FloatOpenRange.FromExclusiveBounds(null, null), true).SetName("Equals_Entire");
 
             // half-open (one side unbounded) equality cases
-            yield return new TestCaseData(new FloatOpenRange(null, 1f), new FloatOpenRange(null, 1f), true).SetName("Equals_LeftUnbounded_Same");
-            yield return new TestCaseData(new FloatOpenRange(1f, null), new FloatOpenRange(1f, null), true).SetName("Equals_RightUnbounded_Same");
-            yield return new TestCaseData(new FloatOpenRange(null, 1f), new FloatOpenRange(1f, null), false).SetName("Equals_LeftUnbounded_Vs_RightUnbounded");
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(null, 1f), FloatOpenRange.FromExclusiveBounds(null, 1f), true).SetName("Equals_LeftUnbounded_Same");
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(1f, null), FloatOpenRange.FromExclusiveBounds(1f, null), true).SetName("Equals_RightUnbounded_Same");
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(null, 1f), FloatOpenRange.FromExclusiveBounds(1f, null), false).SetName("Equals_LeftUnbounded_Vs_RightUnbounded");
         }
 
         [Test, TestCaseSource(nameof(EqualityCases))]
@@ -129,12 +129,12 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
         // HashCode test cases: (a, b, expectEqualHash)
         private static IEnumerable<TestCaseData> HashCodeCases()
         {
-            yield return new TestCaseData(new FloatOpenRange(1f, 2f), new FloatOpenRange(1f, 2f), true)
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(1f, 2f), FloatOpenRange.FromExclusiveBounds(1f, 2f), true)
                 .SetName("Hash_EqualRanges");
-            yield return new TestCaseData(new FloatOpenRange(1f, 1f), new FloatOpenRange(2f, 2f), true)
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(1f, 1f), FloatOpenRange.FromExclusiveBounds(2f, 2f), true)
                 .SetName("Hash_BothEmpty");
             // include one distinct case to catch obvious incorrect implementations
-            yield return new TestCaseData(new FloatOpenRange(1f, 2f), new FloatOpenRange(2f, 3f), false)
+            yield return new TestCaseData(FloatOpenRange.FromExclusiveBounds(1f, 2f), FloatOpenRange.FromExclusiveBounds(2f, 3f), false)
                 .SetName("Hash_DifferentRanges");
         }
 

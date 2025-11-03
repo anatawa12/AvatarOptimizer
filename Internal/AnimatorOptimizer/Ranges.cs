@@ -42,7 +42,7 @@ public readonly struct ClosedRange<TValue, TTrait> : IEquatable<ClosedRange<TVal
     public TValue? MinExclusive => IsEmpty() ? MinInclusive : default(TTrait).Previous(MinInclusive);
     public TValue? MaxExclusive => IsEmpty() ? MaxInclusive : default(TTrait).Next(MaxInclusive);
 
-    public ClosedRange(TValue minInclusive, TValue maxInclusive)
+    private ClosedRange(TValue minInclusive, TValue maxInclusive)
     {
         MinInclusive = minInclusive;
         MaxInclusive = maxInclusive;
@@ -50,6 +50,19 @@ public readonly struct ClosedRange<TValue, TTrait> : IEquatable<ClosedRange<TVal
 
     public static ClosedRange<TValue, TTrait> Empty => new(POS_INF, NEG_INF); // Min > Max => empty
     public static ClosedRange<TValue, TTrait> Entire => new(NEG_INF, POS_INF);
+    public static ClosedRange<TValue, TTrait> FromInclusiveBounds(TValue minInclusive, TValue maxInclusive) => new(minInclusive, maxInclusive);
+    public static ClosedRange<TValue, TTrait> FromExclusiveBounds(TValue? minExclusive, TValue? maxExclusive)
+    {
+        var minInclusiveOpt = minExclusive is {} minEx ? default(TTrait).Next(minEx) : NEG_INF;
+        var maxInclusiveOpt = maxExclusive is {} maxEx ? default(TTrait).Previous(maxEx) : POS_INF;
+        return (minInclusiveOpt, maxInclusiveOpt) switch
+        {
+            (null, _) => Empty, // no next value for minExclusive => empty
+            (_, null) => Empty, // no previous value for maxExclusive => empty
+            ({} minInclusive, {} maxInclusive) => new ClosedRange<TValue, TTrait>(minInclusive, maxInclusive),
+        };
+    }
+
     public static ClosedRange<TValue, TTrait> GreaterThanInclusive(TValue min) => new(min, POS_INF);
     public static ClosedRange<TValue, TTrait> LessThanInclusive(TValue max) => new(NEG_INF, max);
     public static ClosedRange<TValue, TTrait> GreaterThanExclusive(TValue min) => default(TTrait).Next(min) is {} minInclusive ? GreaterThanInclusive(minInclusive) : Empty;
@@ -166,7 +179,7 @@ public struct FloatOpenRange : IEquatable<FloatOpenRange>
     public float? MinExclusive;
     public float? MaxExclusive;
 
-    public FloatOpenRange(float? minExclusive = null, float? maxExclusive = null)
+    private FloatOpenRange(float? minExclusive = null, float? maxExclusive = null)
     {
         MinExclusive = minExclusive;
         MaxExclusive = maxExclusive;
@@ -174,6 +187,7 @@ public struct FloatOpenRange : IEquatable<FloatOpenRange>
 
     public static FloatOpenRange Empty => new(0f, 0f);
     public static FloatOpenRange Entire => default;
+    public static FloatOpenRange FromExclusiveBounds(float? minExclusive, float? maxExclusive) => new(minExclusive, maxExclusive);
     public static FloatOpenRange LessThanExclusive(float value) => new(maxExclusive: value);
     public static FloatOpenRange GreaterThanExclusive(float value) => new(minExclusive: value);
 

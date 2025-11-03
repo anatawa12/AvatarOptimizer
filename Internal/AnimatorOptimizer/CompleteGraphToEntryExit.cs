@@ -385,7 +385,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         holes.Add(v);
                     }
                     // update last range to cover current range
-                    finalRanges[^1] = (new IntClosedRange(lastRange.MinInclusive, range.MaxInclusive), holes);
+                    finalRanges[^1] = (IntClosedRange.FromInclusiveBounds(lastRange.MinInclusive, range.MaxInclusive), holes);
                 }
                 else
                 {
