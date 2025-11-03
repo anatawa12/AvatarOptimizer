@@ -1,11 +1,10 @@
 using System.Collections.Generic;
+using Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer;
 using NUnit.Framework;
 
 
-namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer.CompleteGraphToEntryExits
+namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
 {
-    using FloatOpenRange = Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer.CompleteGraphToEntryExit.FloatOpenRange;
-
     [TestFixture]
     public class FloatOpenRangeTest
     {
