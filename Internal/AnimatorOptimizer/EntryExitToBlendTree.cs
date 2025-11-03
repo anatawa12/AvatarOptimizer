@@ -70,7 +70,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             var layerByParameter = new Dictionary<string, List<int>>();
             for (var i = 0; i < layers.Length; i++)
             {
-                var info = TryParseDiamondLayer(layers[i], state, intOrBoolParameters, parameterType);
+                var info = TryParseDiamondLayer(layers[i], state, parameterType);
                 info ??= TryParseLinearLayer(layers[i], state, intOrBoolParameters);
                 convertInfos[i] = info;
                 if (info != null)
@@ -215,8 +215,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         /// </code>
         /// </summary>
         private static ConvertibleLayerInfo? TryParseDiamondLayer(AOAnimatorControllerLayer layer,
-            AnimatorOptimizerState optimizerState, HashSet<string> intOrBoolParameters,
-            Dictionary<string, AnimatorControllerParameterType> parameterType)
+            AnimatorOptimizerState optimizerState, Dictionary<string, AnimatorControllerParameterType> parameterType)
         {
             if (!CheckForBasicStateCondition(layer, optimizerState, out var timeMotionParameter)) return null;
 
@@ -252,8 +251,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             }
 
             // 3rd check: parameter is int or bool
-            if (!intOrBoolParameters.Contains(conditionParameter)) return null; // neither int nor bool parameter
-
             if (!parameterType.TryGetValue(conditionParameter, out var paramType)) return null; // parameter type is not int nor bool
 
             switch (paramType)
