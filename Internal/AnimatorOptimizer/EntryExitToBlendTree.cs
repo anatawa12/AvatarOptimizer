@@ -15,6 +15,11 @@ using VRC.SDKBase;
 
 namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
+    using IntRange = Range<int, RangeIntTrait>;
+    using IntRangeSet = RangeSet<int, RangeIntTrait>;
+    using FloatRange = Range<float, RangeFloatTrait>;
+    using FloatRangeSet = RangeSet<float, RangeFloatTrait>;
+
     /// <summary>
     /// converts entry-exit state machine to 1d blend tree
     ///
@@ -673,7 +678,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         {
             public readonly string ParameterName;
             public readonly AnimatorState DefaultState;
-            public readonly Dictionary<AnimatorState, HashSet<IntOrBool>> ValueForStates;
+            public readonly Dictionary<AnimatorState, FloatRangeSet> RangeForStates;
             public readonly string? TimeMotionParameter;
 
             public ConvertibleLayerInfo(string parameterName, AnimatorState defaultState,
@@ -682,7 +687,28 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             {
                 ParameterName = parameterName;
                 DefaultState = defaultState;
-                ValueForStates = valueForStates;
+                RangeForStates = valueForStates.ToDictionary(p => p.Key, p =>
+                {
+                    if (p.Value.All(v => v.BoolValue.HasValue))
+                        return RangesUtil.BoolSetToFloatRangeSet(BoolSet.Union(
+                            p.Value.Select(v => BoolSet.FromValue(v.BoolValue!.Value))));
+
+                    if (p.Value.All(v => v.IntValue.HasValue))
+                        return RangesUtil.IntRangeSetToFloatRangeSet(IntRangeSet.Union(
+                            p.Value.Select(v => IntRangeSet.FromRange(IntRange.Point(v.IntValue!.Value)))));
+
+                    throw new InvalidOperationException("mixed condition types");
+                });
+                TimeMotionParameter = timeMotionParameter;
+            }
+
+            public ConvertibleLayerInfo(string parameterName, AnimatorState defaultState,
+                Dictionary<AnimatorState, FloatRangeSet> rangeForStates,
+                string? timeMotionParameter)
+            {
+                ParameterName = parameterName;
+                DefaultState = defaultState;
+                RangeForStates = rangeForStates; 
                 TimeMotionParameter = timeMotionParameter;
             }
 
@@ -717,102 +743,29 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
         private static void DoConvert(ConvertibleLayerInfo info, AOAnimatorControllerLayer layer)
         {
-            var valueForStates = info.ValueForStates;
+            var valueForStates = info.RangeForStates;
             valueForStates.Remove(info.DefaultState); // default states are proceed always so remove from this list
             var defaultMotion = info.DefaultState.motion ? info.DefaultState.motion : _emptyClip.Value;
 
-            var states = new List<(IntOrBool value, Motion motion)>();
+            var usedRanges = FloatRangeSet.Union(valueForStates.Values);
+            var rangeForDefault = usedRanges.Complement();
 
-            foreach (var (state, values) in valueForStates)
-            foreach (var value in values)
-                states.Add((value, state.motion ? state.motion : _emptyClip.Value));
+            var statesWithRange = new List<(FloatRange range, Motion motion)>();
+            foreach (var (state, rangeSet) in valueForStates)
+            foreach (var range in rangeSet.Ranges)
+                statesWithRange.Add((range, state.motion ? state.motion : _emptyClip.Value));
+            foreach (var range in rangeForDefault.Ranges)
+                statesWithRange.Add((range, defaultMotion));
+
+            statesWithRange.Sort((a, b) => a.range.MinInclusive.CompareTo(b.range.MinInclusive));
 
             var children = new List<ChildMotion>();
 
-            void AddFrames(int before, Motion beforeMotion, int after, Motion afterMotion)
+            foreach (var ((prevRange, prevMotion), (nextRange, nextMoton)) in statesWithRange.ZipWithNext())
             {
-                var threshold = before + 0.5f;
-                var rounded = Mathf.Round(threshold);
-                // ReSharper disable once CompareOfFloatsByEqualityOperator
-                if (rounded == after)
-                {
-                    Utils.Assert((int)Mathf.Round(Utils.PreviousFloat(threshold)) == before);
-                    // in this case, .5 will go the motion so default is one before .5
-                    children.Add(CreateChild(Utils.PreviousFloat(threshold), beforeMotion));
-                    children.Add(CreateChild(threshold, afterMotion));
-                }
-                // ReSharper disable once CompareOfFloatsByEqualityOperator
-                else if (rounded == before)
-                {
-                    Utils.Assert((int)Mathf.Round(Utils.NextFloat(threshold)) == after);
-                    // in this case, .5 will go to default motion so default is .5
-                    children.Add(CreateChild(threshold, beforeMotion));
-                    children.Add(CreateChild(Utils.NextFloat(threshold), afterMotion));
-                }
-                else
-                {
-                    throw new InvalidOperationException("unexpected: rounding x - 0.5 is not x - 1 or x");
-                }
-            }
-
-            if (states.All(x => x.value.IntValue.HasValue))
-            {
-                // sort increasing order
-                states.Sort((x, y) => x.value.IntValue!.Value.CompareTo(y.value.IntValue!.Value));
-
-                {
-                    // first frame: add defaultMotion before first state
-                    var (value, motion) = states[0];
-                    AddFrames(value.IntValue!.Value - 1, defaultMotion,
-                        value.IntValue.Value, motion);
-                }
-
-                for (var i = 1; i < states.Count; i++)
-                {
-                    // other frames: add motions if needed
-                    var (prevValue, prevMotion) = states[i - 1];
-                    var (currentValue, currentMotion) = states[i];
-
-                    if (currentValue.IntValue!.Value - prevValue.IntValue!.Value > 1)
-                    {
-                        AddFrames(prevValue.IntValue.Value, prevMotion,
-                            prevValue.IntValue.Value + 1, defaultMotion);
-                        AddFrames(currentValue.IntValue.Value - 1, defaultMotion,
-                            currentValue.IntValue.Value, currentMotion);
-                    }
-                    else if (prevMotion != currentMotion)
-                    {
-                        AddFrames(prevValue.IntValue.Value, prevMotion,
-                            currentValue.IntValue.Value, currentMotion);
-                    }
-                }
-
-                {
-                    // last frame: add last state to defaultMotion
-                    var (value, motion) = states[^1];
-                    AddFrames(value.IntValue!.Value, motion,
-                        value.IntValue.Value + 1, defaultMotion);
-                }
-            }
-            else if (states.All(x => x.value.BoolValue.HasValue))
-            {
-                var (_, trueMotion) = states.SingleOrDefault(x => x.value.BoolValue is true);
-                if (trueMotion == null) trueMotion = defaultMotion;
-                var (_, falseMotion) = states.SingleOrDefault(x => x.value.BoolValue is false);
-                if (falseMotion == null) falseMotion = defaultMotion;
-
-                // add true motion for negative
-                children.Add(CreateChild(Utils.PreviousFloat(0), trueMotion));
-
-                // add false motion for zero
-                children.Add(CreateChild(0, falseMotion));
-
-                // add true motion for positive
-                children.Add(CreateChild(Utils.NextFloat(0), trueMotion));
-            }
-            else
-            {
-                throw new InvalidOperationException("unexpected: mixed condition types");
+                if (!prevRange.MinInclusive.Equals(prevRange.MaxInclusive))
+                    children.Add(CreateChild(prevRange.MaxInclusive, prevMotion));
+                children.Add(CreateChild(nextRange.MinInclusive, nextMoton));
             }
 
             var blendTree = new BlendTree
