@@ -255,8 +255,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         public static List<AnimatorCondition[]> OptimizeFloatConditions(List<AnimatorCondition[]> conditions)
         {
             // ensure the all conditions are valid. Float conditions only has Less and Greater modes.
-            if (!conditions.All(conds =>
-                    conds.All(c => c.mode is AnimatorConditionMode.Less or AnimatorConditionMode.Greater)))
+            if (!conditions.All(conds => conds.All(c => c.IsValidForFloat())))
                 return conditions;
             // We convert each conditions to set of ranges, then merge them.
             var ranges = FloatRangeSet.Union(conditions.Select(RangesUtil.FloatRangeSetFromConditions));
@@ -271,9 +270,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         public static List<AnimatorCondition[]> OptimizeIntConditions(List<AnimatorCondition[]> conditions)
         {
             // accepted modes for int optimization: Equals, NotEqual, Greater, Less
-            if (!conditions.All(conds => conds.All(c =>
-                    c.mode is AnimatorConditionMode.Equals or AnimatorConditionMode.NotEqual or
-                        AnimatorConditionMode.Greater or AnimatorConditionMode.Less)))
+            if (!conditions.All(conds => conds.All(c => c.IsValidForInt())))
                 return conditions;
 
             // convert each conjunction to a set of integer ranges (may be multiple ranges due to NotEqual)
@@ -290,7 +287,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         public static List<AnimatorCondition[]> OptimizeBoolConditions(List<AnimatorCondition[]> conditions)
         {
             // The only valid conditions for bool are If (true) and IfNot (false)
-            if (!conditions.All(conds => conds.All(c => c.mode is AnimatorConditionMode.If or AnimatorConditionMode.IfNot)))
+            if (!conditions.All(conds => conds.All(c => c.IsValidForBool())))
                 return conditions;
             var parameter = conditions.SelectMany(x => x).First().parameter;
 
