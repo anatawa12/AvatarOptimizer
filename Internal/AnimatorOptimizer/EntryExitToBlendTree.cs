@@ -71,7 +71,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             for (var i = 0; i < layers.Length; i++)
             {
                 var info = TryParseDiamondLayer(layers[i], state, parameterType);
-                info ??= TryParseLinearLayer(layers[i], state, intOrBoolParameters);
+                info ??= TryParseLinearLayer(layers[i], state, parameterType);
                 convertInfos[i] = info;
                 if (info != null)
                 {
@@ -380,7 +380,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         /// </code>
         /// </summary>
         private static ConvertibleLayerInfo? TryParseLinearLayer(AOAnimatorControllerLayer layer,
-            AnimatorOptimizerState optimizerState, HashSet<string> intOrBoolParameters)
+            AnimatorOptimizerState optimizerState,
+            Dictionary<string, AnimatorControllerParameterType> parameterType)
         {
             if (!CheckForBasicStateCondition(layer, optimizerState, out var timeMotionParameter)) return null;
 
@@ -416,58 +417,58 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 return null;
             }
 
-            string? conditionParameter = null;
-            var anotherStateValues = new HashSet<IntOrBool>();
+            var conditionParameter = defaultState.transitions.Concat(anotherState.transitions).SelectMany(x => x.conditions).Select(x => x.parameter).DistinctSingleOrDefaultIfNoneOrMultiple();
+            if (conditionParameter == null) return null; // no entry transitions or multiple parameters used in entry transitions
 
+            if (!parameterType.TryGetValue(conditionParameter, out var paramType)) return null; // parameter type is not int nor bool
+
+            switch (paramType)
+            {
+                case AnimatorControllerParameterType.Float:
+                    return TryParseLinearLayerByType<FloatRangeSet, FloatConditionTrait>(conditionParameter, timeMotionParameter, defaultState, anotherState);
+                case AnimatorControllerParameterType.Int:
+                    return TryParseLinearLayerByType<IntRangeSet, IntConditionTrait>(conditionParameter, timeMotionParameter, defaultState, anotherState);
+                case AnimatorControllerParameterType.Bool:
+                    return TryParseLinearLayerByType<BoolSet, BoolConditionTrait>(conditionParameter, timeMotionParameter, defaultState, anotherState);
+                default:
+                    return null;
+            }
+        }
+
+        private static ConvertibleLayerInfo? TryParseLinearLayerByType<TRangeSet, TTrait>(
+            string conditionParameter,
+            string? timeMotionParameter,
+            AnimatorState defaultState,
+            AnimatorState anotherState)
+            where TRangeSet : struct, IRangeSet<TRangeSet>
+            where TTrait : struct, IConditionTrait<TRangeSet>
+        {
             // Check default => another state transition.
             foreach (var defaultStateTransition in defaultState.transitions)
             {
                 if (defaultStateTransition is not
                     {
-                        // target
                         isExit: false,
                         destinationStateMachine: null,
-                        destinationState: { } dest,
-                        // condition
-                        conditions: { Length: 1 } conditions
+                        destinationState: var dest,
+                        conditions: not null,
                     })
                     return null;
-                if (dest != anotherState) return null; // default state must have transition to the 'another state'
 
-                conditionParameter ??= conditions[0].parameter;
-                if (CheckIntOrBoolCondition(conditions[0]) is not { } value) return null;
-                anotherStateValues.Add(value);
+                if (dest != anotherState) return null; // default state must have transition to the 'another state'
             }
 
-            // this should means no transition from default state to another state
-            if (conditionParameter == null) return null;
-            if (!intOrBoolParameters.Contains(conditionParameter)) return null; // neither int nor bool parameter
-
-            IntOrBool? CheckIntOrBoolCondition(AnimatorCondition condition)
+            var anotherStateValues = default(TTrait).Empty;
+            foreach (var defaultStateTransition in defaultState.transitions)
             {
-                if (condition is not
-                    {
-                        mode: var mode,
-                        parameter: { } parameter,
-                        threshold: var threshold,
-                    }) return null;
-
-                if (parameter != conditionParameter) return null;
-
-                return mode switch
-                {
-                    // not finite makes casting to int undefined
-                    AnimatorConditionMode.Equals when float.IsFinite(threshold) => (int)threshold,
-                    AnimatorConditionMode.If => true,
-                    AnimatorConditionMode.IfNot => false,
-                    _ => null,
-                };
+                var conditions = defaultStateTransition.conditions!;
+                if (!conditions.Any(c => default(TTrait).IsValidCondition(c))) return null;
+                anotherStateValues = anotherStateValues.Union(default(TTrait).SetFromConditions(conditions));
             }
 
             // check another => exit transition
             {
-                var state = anotherState;
-                var transitions = state.transitions;
+                var transitions = anotherState.transitions;
                 // basic transition check: all transitions are exit transitions without blending
                 var allConditions = new AnimatorCondition[transitions.Length][];
                 for (var i = 0; i < transitions.Length; i++)
@@ -486,38 +487,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 }
 
                 // transition condition check.
-                {
-                    // for other states, it have to leave state if value is not any of current value
-                    // TODO: users can create condition like `< minValue` or `> maxValue` to leave state
-                    // TODO: users can exit state and immediately enter to same state infinitely
-                    // https://github.com/anatawa12/AvatarOptimizer/issues/862
-                    if (!PossibleValuesExitTransitionCheck(anotherStateValues)) return null;
-                }
+                if (allConditions.Any(conditions => conditions.Any(c => c.parameter != conditionParameter))) return null;
+                if (allConditions.Any(conditions => conditions.Any(c => !default(TTrait).IsValidCondition(c)))) return null; // invalid condition
 
-                bool PossibleValuesExitTransitionCheck(HashSet<IntOrBool> values)
-                {
-                    if (allConditions.Length != 1) return false;
-                    var conditions = allConditions[0];
-                    if (conditions.Length != values.Count) return false;
-
-                    values = new HashSet<IntOrBool>(values);
-                    foreach (var condition in conditions)
-                    {
-                        if (condition.mode != AnimatorConditionMode.NotEqual &&
-                            condition.mode != AnimatorConditionMode.IfNot &&
-                            condition.mode != AnimatorConditionMode.If) return false;
-                        if (condition.parameter != conditionParameter) return false;
-                        IntOrBool value =
-                            condition.mode == AnimatorConditionMode.NotEqual ? (int)condition.threshold :
-                            condition.mode == AnimatorConditionMode.IfNot ? true : false;
-                        if (!values.Remove(value)) return false;
-                    }
-
-                    return true;
-                }
+                var expectedToExitRange = anotherStateValues.Complement();
+                var exitingValues = default(TTrait).Union(allConditions.Select(default(TTrait).SetFromConditions));
+                if (!exitingValues.Equals(expectedToExitRange)) return null;
             }
 
-            return new ConvertibleLayerInfo(conditionParameter, defaultState, new Dictionary<AnimatorState, HashSet<IntOrBool>> {{anotherState, anotherStateValues}}, timeMotionParameter);
+            return new ConvertibleLayerInfo(conditionParameter, defaultState, new Dictionary<AnimatorState, FloatRangeSet> {{anotherState, default(TTrait).ConvertToFloatRangeSet(anotherStateValues)}}, timeMotionParameter);
         }
 
         private static bool CheckForBasicStateCondition(AOAnimatorControllerLayer layer, AnimatorOptimizerState optimizerState, out string? timeMotionParameter)
