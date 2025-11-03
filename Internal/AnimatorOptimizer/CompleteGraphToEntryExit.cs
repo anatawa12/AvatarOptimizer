@@ -325,9 +325,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         AnimatorConditionMode.Equals => current.Select(r => r.Intersect(IntClosedRange.Point(t))),
                         AnimatorConditionMode.NotEqual => current.SelectMany(r => r.ExcludeValue(t)),
                         // param > t => allowed ints >= t+1
-                        AnimatorConditionMode.Greater => current.Select(r => r.Intersect(IntClosedRange.FromMin(t + 1))),
+                        AnimatorConditionMode.Greater => current.Select(r => r.Intersect(IntClosedRange.FromMinInclusive(t + 1))),
                         // param < t => allowed ints <= t-1
-                        AnimatorConditionMode.Less => current.Select(r => r.Intersect(IntClosedRange.FromMax(t - 1))),
+                        AnimatorConditionMode.Less => current.Select(r => r.Intersect(IntClosedRange.FromMaxInclusive(t - 1))),
                         _ => throw new ArgumentOutOfRangeException()
                     }).Where(intersect => !intersect.IsEmpty()).ToList();
 

@@ -4,7 +4,7 @@ using System.Linq;
 using Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer;
 using NUnit.Framework;
 
-namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer.CompleteGraphToEntryExits
+namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
 {
     [TestFixture]
     public class IntClosedRangeTest
@@ -16,9 +16,9 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer.CompleteGraphToEntryE
             yield return new TestCaseData(new IntClosedRange(1, 2), new IntClosedRange(3, 4), IntClosedRange.Empty);
             yield return new TestCaseData(new IntClosedRange(1, 3), new IntClosedRange(3, 5), new IntClosedRange(3, 3));
             yield return new TestCaseData(IntClosedRange.Entire, new IntClosedRange(4, 10), new IntClosedRange(4, 10));
-            yield return new TestCaseData(IntClosedRange.FromMin(3), IntClosedRange.FromMax(5),
+            yield return new TestCaseData(IntClosedRange.FromMinInclusive(3), IntClosedRange.FromMaxInclusive(5),
                 new IntClosedRange(3, 5));
-            yield return new TestCaseData(IntClosedRange.Point(int.MinValue), IntClosedRange.FromMax(int.MinValue),
+            yield return new TestCaseData(IntClosedRange.Point(int.MinValue), IntClosedRange.FromMaxInclusive(int.MinValue),
                 IntClosedRange.Point(int.MinValue));
             // extremes non-overlapping
             yield return new TestCaseData(new IntClosedRange(int.MinValue, -1), new IntClosedRange(0, int.MaxValue),
@@ -49,9 +49,9 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer.CompleteGraphToEntryE
                 new TestCaseData(new IntClosedRange(1, 5), 7,
                     new[] { new IntClosedRange(1, 5) }); // outside value -> unchanged
             yield return
-                new TestCaseData(IntClosedRange.FromMin(0), 0, new[] { IntClosedRange.FromMin(1) }); // infinite top
+                new TestCaseData(IntClosedRange.FromMinInclusive(0), 0, new[] { IntClosedRange.FromMinInclusive(1) }); // infinite top
             yield return
-                new TestCaseData(IntClosedRange.FromMax(0), 0, new[] { IntClosedRange.FromMax(-1) }); // infinite bottom
+                new TestCaseData(IntClosedRange.FromMaxInclusive(0), 0, new[] { IntClosedRange.FromMaxInclusive(-1) }); // infinite bottom
             // exclude at extreme values
             yield return new TestCaseData(new IntClosedRange(int.MinValue, int.MaxValue), int.MinValue,
                 new[] { new IntClosedRange(int.MinValue + 1, int.MaxValue) });
@@ -100,8 +100,8 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer.CompleteGraphToEntryE
             yield return new TestCaseData(new IntClosedRange(1, 5), new IntClosedRange(1, 5), true);
             yield return new TestCaseData(new IntClosedRange(1, 5), new IntClosedRange(1, 4), false);
             yield return new TestCaseData(IntClosedRange.Empty, IntClosedRange.Empty, true);
-            yield return new TestCaseData(IntClosedRange.FromMin(0), IntClosedRange.FromMin(0), true);
-            yield return new TestCaseData(IntClosedRange.FromMax(0), IntClosedRange.FromMax(1), false);
+            yield return new TestCaseData(IntClosedRange.FromMinInclusive(0), IntClosedRange.FromMinInclusive(0), true);
+            yield return new TestCaseData(IntClosedRange.FromMaxInclusive(0), IntClosedRange.FromMaxInclusive(1), false);
             yield return
                 new TestCaseData(new IntClosedRange(int.MinValue, int.MaxValue), IntClosedRange.Entire,
                     true); // if Entire maps to full bounds
@@ -138,7 +138,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer.CompleteGraphToEntryE
             // existing canonical pairs
             yield return new TestCaseData(new IntClosedRange(1, 5), new IntClosedRange(1, 5));
             yield return new TestCaseData(IntClosedRange.Empty, IntClosedRange.Empty);
-            yield return new TestCaseData(IntClosedRange.FromMin(0), IntClosedRange.FromMin(0));
+            yield return new TestCaseData(IntClosedRange.FromMinInclusive(0), IntClosedRange.FromMinInclusive(0));
             yield return new TestCaseData(new IntClosedRange(int.MinValue, int.MaxValue), IntClosedRange.Entire);
 
             // multiple empty internal representations should hash-equal the canonical Empty

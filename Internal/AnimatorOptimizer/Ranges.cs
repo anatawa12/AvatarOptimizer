@@ -1,12 +1,154 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEditor.Animations;
 using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer;
 
+using IntRangeImpl = ClosedRange<int, RangeIntTrait>;
+
 // This file includes 'range' related utilities for animator optimization.
+
+public interface IRangeTrait<TValue> where TValue : struct
+{
+    public TValue MinValue { get; }
+    public TValue MaxValue { get; }
+
+    // sibling values
+    // returns null if no next/previous value exists (e.g., for max/min sentinel)
+    public TValue? Next(TValue element);
+    public TValue? Previous(TValue element);
+
+    // comparison
+    public int Compare(TValue a, TValue b);
+    public TValue Min(TValue a, TValue b);
+    public TValue Max(TValue a, TValue b);
+}
+
+public readonly struct ClosedRange<TValue, TTrait> : IEquatable<ClosedRange<TValue, TTrait>>
+    where TValue : struct, IEquatable<TValue>
+    where TTrait: struct, IRangeTrait<TValue> {
+
+    // inclusive bounds; use sentinels to represent unbounded
+    private static readonly TValue NEG_INF = default(TTrait).MinValue;
+    private static readonly TValue POS_INF = default(TTrait).MaxValue;
+
+    public readonly TValue Min; // inclusive
+    public readonly TValue Max; // inclusive
+
+    public ClosedRange(TValue min, TValue max)
+    {
+        Min = min;
+        Max = max;
+    }
+
+    public static ClosedRange<TValue, TTrait> Empty => new(POS_INF, NEG_INF); // Min > Max => empty
+    public static ClosedRange<TValue, TTrait> Entire => new(NEG_INF, POS_INF);
+    public static ClosedRange<TValue, TTrait> FromMinInclusive(TValue min) => new(min, POS_INF);
+    public static ClosedRange<TValue, TTrait> FromMaxInclusive(TValue max) => new(NEG_INF, max);
+    public static ClosedRange<TValue, TTrait> Point(TValue v) => new(v, v);
+
+    public bool IsEmpty() => default(TTrait).Compare(Min, Max) > 0;
+
+    public ClosedRange<TValue, TTrait> Intersect(ClosedRange<TValue, TTrait> other) => new(default(TTrait).Max(Min, other.Min), default(TTrait).Min(Max, other.Max));
+
+    // subtract single value v; may split range into up to two ranges
+    public IEnumerable<ClosedRange<TValue, TTrait>> ExcludeValue(TValue v)
+    {
+        var vPrevOpt = default(TTrait).Previous(v);
+        var vNextOpt = default(TTrait).Next(v);
+        switch (vPrevOpt, vNextOpt)
+        {
+            case (null, null):
+                // no previous or next: v is both min and max sentinel
+                return Array.Empty<ClosedRange<TValue, TTrait>>();
+            case (null, { } vNext):
+                // no previous: v is min sentinel
+                return new[] { new ClosedRange<TValue, TTrait>(default(TTrait).Max(vNext, Min), Max) }.Where(r => !r.IsEmpty());
+            case ({ } vPrev, null):
+                // no next: v is max sentinel
+                return new[] { new ClosedRange<TValue, TTrait>(Min, default(TTrait).Min(Max, vPrev)) }.Where(r => !r.IsEmpty());
+            case ({} vPrev, {} vNext):
+                // normal value
+                return new[]
+                {
+                    new ClosedRange<TValue, TTrait>(Min, default(TTrait).Min(Max, vPrev)),
+                    new ClosedRange<TValue, TTrait>(default(TTrait).Max(Min,  vNext), Max),
+                }.Where(r => !r.IsEmpty());
+        }
+    }
+
+    // try union: if adjacent or overlapping, return union; otherwise null
+    public ClosedRange<TValue, TTrait>? Union(ClosedRange<TValue, TTrait> other)
+    {
+        if (IsEmpty()) return other;
+        if (other.IsEmpty()) return this;
+
+        // return null if disjoint with gap > 0
+
+        // ranges are disjoint if one's max + 1 < other's min or vice versa
+        if (default(TTrait).Compare(Max, other.Min) < 0)
+        {
+            //          zero or more gap
+            //                |
+            //       this.Max | other.Min
+            //              V V V
+            // [ this range ]   [ other range ]
+            //-----------------------------------> x
+
+            // There must be next value for this.Max because this.Max < other.Min so at least other.Min is next.
+            var maxNext = default(TTrait).Next(Max)!.Value;
+            if (default(TTrait).Compare(maxNext, other.Min) < 0) return null;
+        }
+        else if (default(TTrait).Compare(other.Max, Min) < 0)
+        {
+            //           zero or more gap
+            //                 |
+            //       other.Max | this.Min
+            //               V V V
+            // [ other range ]   [ this range ]
+            //-----------------------------------> x
+
+            // There must be next value for other.Max because other.Max < this.Min so at least this.Min is next.
+            var otherMaxNext = default(TTrait).Next(other.Max)!.Value;
+            if (default(TTrait).Compare(otherMaxNext, Min) < 0) return null;
+        }
+
+        var min = default(TTrait).Min(Min, other.Min);
+        var max = default(TTrait).Max(Max, other.Max);
+        return new ClosedRange<TValue, TTrait>(min, max);
+    }
+
+    public bool Equals(ClosedRange<TValue, TTrait> other) =>
+        IsEmpty() && other.IsEmpty() || Min.Equals(other.Min) && Max.Equals(other.Max);
+
+    public override bool Equals(object? obj) => obj is ClosedRange<TValue, TTrait> other && Equals(other);
+    public override int GetHashCode() => IsEmpty() ? 0 : HashCode.Combine(Min, Max);
+    public static bool operator ==(ClosedRange<TValue, TTrait> left, ClosedRange<TValue, TTrait> right) => left.Equals(right);
+    public static bool operator !=(ClosedRange<TValue, TTrait> left, ClosedRange<TValue, TTrait> right) => !left.Equals(right);
+
+    public override string ToString() => IsEmpty() ? "Empty" : $"[{Min}, {Max}]";
+}
+
+public struct RangeIntTrait : IRangeTrait<int>
+{
+    public int MinValue => int.MinValue;
+    public int MaxValue => int.MaxValue;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int? Next(int element) => element == int.MaxValue ? null : element + 1;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int? Previous(int element) => element == int.MinValue ? null : element - 1;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int Compare(int a, int b) => a.CompareTo(b);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int Min(int a, int b) => Math.Min(a, b);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int Max(int a, int b) => Math.Max(a, b);
+}
 
 /// <summary>
 /// Represents an open range of float values: (Min, Max), where each bound is exclusive.
@@ -87,61 +229,36 @@ public struct IntClosedRange : IEquatable<IntClosedRange>
     private const int NEG_INF = int.MinValue;
     private const int POS_INF = int.MaxValue;
 
-    public int Min; // inclusive
-    public int Max; // inclusive
+    private readonly IntRangeImpl _innerRange;
+    public int Min => _innerRange.Min; // inclusive
+    public int Max => _innerRange.Max; // inclusive
 
-    public IntClosedRange(int min, int max)
-    {
-        Min = min;
-        Max = max;
-    }
+    public IntClosedRange(int min, int max) => _innerRange = new IntRangeImpl(min, max);
+    private IntClosedRange(IntRangeImpl innerRange) => _innerRange = innerRange;
 
-    public static IntClosedRange Empty => new(1, 0); // Min > Max => empty
-    public static IntClosedRange Entire => new(NEG_INF, POS_INF);
-    public static IntClosedRange FromMin(int min) => new(min, POS_INF);
-    public static IntClosedRange FromMax(int max) => new(NEG_INF, max);
-    public static IntClosedRange Point(int v) => new(v, v);
+    public static IntClosedRange Empty => new(IntRangeImpl.Empty);
+    public static IntClosedRange Entire => new(IntRangeImpl.Entire);
+    public static IntClosedRange FromMinInclusive(int min) => new(IntRangeImpl.FromMinInclusive(min));
+    public static IntClosedRange FromMaxInclusive(int max) => new(IntRangeImpl.FromMaxInclusive(max));
+    public static IntClosedRange Point(int v) => new(IntRangeImpl.Point(v));
 
-    public bool IsEmpty() => Min > Max;
+    public bool IsEmpty() => _innerRange.IsEmpty();
 
-    public IntClosedRange Intersect(IntClosedRange other) => new(Math.Max(Min, other.Min), Math.Min(Max, other.Max));
+    public IntClosedRange Intersect(IntClosedRange other) => new(_innerRange.Intersect(other._innerRange));
 
     // subtract single value v; may split range into up to two ranges
-    public IEnumerable<IntClosedRange> ExcludeValue(int v)
-    {
-        if (v == NEG_INF) return new[] { new IntClosedRange(Math.Max(Min, v + 1), Max) }.Where(r => !r.IsEmpty());
-        if (v == POS_INF) return new[] { new IntClosedRange(Min, Math.Min(Max, v - 1)) }.Where(r => !r.IsEmpty());
-        return new[]
-        {
-            new IntClosedRange(Min, Math.Min(Max, v - 1)),
-            new IntClosedRange(Math.Max(Min, v + 1), Max),
-        }.Where(r => !r.IsEmpty());
-    }
+    public IEnumerable<IntClosedRange> ExcludeValue(int v) => _innerRange.ExcludeValue(v).Select(r => new IntClosedRange(r));
 
     // try union: if adjacent or overlapping, return union; otherwise null
-    public IntClosedRange? Union(IntClosedRange other)
-    {
-        if (IsEmpty()) return other;
-        if (other.IsEmpty()) return this;
+    public IntClosedRange? Union(IntClosedRange other) => _innerRange.Union(other._innerRange) is {} range ? new IntClosedRange(range) : null;
 
-        // disjoint with gap > 0
-        if (Max != POS_INF && other.Min != NEG_INF && (long)Max + 1 < other.Min) return null;
-        if (other.Max != POS_INF && Min != NEG_INF && (long)other.Max + 1 < Min) return null;
-
-        var min = Math.Min(Min, other.Min);
-        var max = Math.Max(Max, other.Max);
-        return new IntClosedRange(min, max);
-    }
-
-    public bool Equals(IntClosedRange other) =>
-        IsEmpty() && other.IsEmpty() || Min == other.Min && Max == other.Max;
-
+    public bool Equals(IntClosedRange other) => _innerRange.Equals(other._innerRange);
     public override bool Equals(object? obj) => obj is IntClosedRange other && Equals(other);
     public override int GetHashCode() => IsEmpty() ? 0 : HashCode.Combine(Min, Max);
     public static bool operator ==(IntClosedRange left, IntClosedRange right) => left.Equals(right);
     public static bool operator !=(IntClosedRange left, IntClosedRange right) => !left.Equals(right);
 
-    public override string ToString() => IsEmpty() ? "Empty" : $"[{Min}, {Max}]";
+    public override string ToString() => _innerRange.ToString();
 
     // convert to animator conditions for a given parameter name
     public AnimatorCondition[] ToConditions(string parameter)
