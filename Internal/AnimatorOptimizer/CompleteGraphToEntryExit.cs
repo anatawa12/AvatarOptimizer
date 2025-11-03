@@ -236,10 +236,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     {
                         newConditions.AddRange((parameterType switch
                         {
-                            AnimatorControllerParameterType.Float => OptimizeFloatConditions(thisConditions),
-                            AnimatorControllerParameterType.Int => OptimizeIntConditions(thisConditions),
-                            AnimatorControllerParameterType.Bool => OptimizeBoolConditions(thisConditions),
-                            AnimatorControllerParameterType.Trigger => OptimizeTriggerConditions(thisConditions),
+                            AnimatorControllerParameterType.Float => OptimizeConditions<FloatRangeSet, FloatSetTrait>(thisConditions),
+                            AnimatorControllerParameterType.Int => OptimizeConditions<IntRangeSet, IntSetTrait>(thisConditions),
+                            AnimatorControllerParameterType.Bool => OptimizeConditions<BoolSet, BoolSetTrait>(thisConditions),
+                            AnimatorControllerParameterType.Trigger => OptimizeConditions<BoolSet, BoolSetTrait>(thisConditions),
                             _ => throw new ArgumentOutOfRangeException()
                         }).Select(x => x.Concat(otherConditions).ToArray()));
                     }
@@ -252,53 +252,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             return conditions;
         }
 
-        public static List<AnimatorCondition[]> OptimizeFloatConditions(List<AnimatorCondition[]> conditions)
+        public static List<AnimatorCondition[]> OptimizeConditions<TSet, TTraits>(List<AnimatorCondition[]> conditions)
+            where TSet : IRangeSet<TSet>
+            where TTraits : struct, ISetTrait<TSet>
         {
-            // We convert each conditions to set of ranges, then merge them.
-            var ranges = FloatRangeSet.Union(conditions.Select(RangesUtil.FloatRangeSetFromConditions));
-
-            if (ranges.IsEmpty()) return new List<AnimatorCondition[]>();
-
-            var parameter = conditions.SelectMany(x => x).FirstOrDefault().parameter;
-            // convert back to conditions
-            return ranges.ToConditions(parameter);
-        }
-
-        public static List<AnimatorCondition[]> OptimizeIntConditions(List<AnimatorCondition[]> conditions)
-        {
-            // convert each conjunction to a set of integer ranges (may be multiple ranges due to NotEqual)
-            var allRangesSet = IntRangeSet.Union(conditions.Select(RangesUtil.IntRangeSetFromConditions));
-
-            // flatten ranges from all conjunctions, then sort and merge adjacent/overlapping ranges
-            if (allRangesSet.IsEmpty()) return new List<AnimatorCondition[]>();
-
-            // convert merged ranges back to AnimatorCondition[] arrays; parameter name from input conditions
-            var parameter = conditions.SelectMany(x => x).FirstOrDefault().parameter;
-            return allRangesSet.ToConditions(parameter);
-        }
-
-        public static List<AnimatorCondition[]> OptimizeBoolConditions(List<AnimatorCondition[]> conditions)
-        {
-            // convert each conjunction to a set of integer ranges (may be multiple ranges due to NotEqual)
-            var allRangesSet = BoolSet.Union(conditions.Select(RangesUtil.BoolSetFromConditions));
-
-            // flatten ranges from all conjunctions, then sort and merge adjacent/overlapping ranges
-            if (allRangesSet.IsEmpty()) return new List<AnimatorCondition[]>();
-
-            // convert merged ranges back to AnimatorCondition[] arrays; parameter name from input conditions
-            var parameter = conditions.SelectMany(x => x).FirstOrDefault().parameter;
-            return allRangesSet.ToConditions(parameter);
-        }
-
-        public static List<AnimatorCondition[]> OptimizeTriggerConditions(List<AnimatorCondition[]> conditions)
-        {
-            // The only valid condition for trigger is If
-            if (!conditions.All(conds => conds.All(c => c.mode is AnimatorConditionMode.If)))
-                return conditions;
-            var parameter = conditions.SelectMany(x => x).First().parameter;
-            if (conditions.Any(x => x.Length == 0)) // always true
-                return new List<AnimatorCondition[]> { Array.Empty<AnimatorCondition>() };
-            return conditions.Count > 0 ? new List<AnimatorCondition[]> { new[] { IfCondition(parameter) } } : new List<AnimatorCondition[]>();
+            return default(TTraits).ToConditions(default(TTraits).Union(conditions.Select(default(TTraits).SetFromConditions)), conditions.SelectMany(x => x).FirstOrDefault().parameter);
         }
 
         // new helper for integer ranges and OptimizeIntConditions implementation

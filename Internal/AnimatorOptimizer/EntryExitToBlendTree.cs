@@ -247,11 +247,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             switch (paramType)
             {
                 case AnimatorControllerParameterType.Float:
-                    return ProcessLayerByType<FloatRangeSet, FloatConditionTrait>(conditionParameter, timeMotionParameter, defaultState, states, entryTransitions);
+                    return ProcessLayerByType<FloatRangeSet, FloatSetTrait>(conditionParameter, timeMotionParameter, defaultState, states, entryTransitions);
                 case AnimatorControllerParameterType.Int:
-                    return ProcessLayerByType<IntRangeSet, IntConditionTrait>(conditionParameter, timeMotionParameter, defaultState, states, entryTransitions);
+                    return ProcessLayerByType<IntRangeSet, IntSetTrait>(conditionParameter, timeMotionParameter, defaultState, states, entryTransitions);
                 case AnimatorControllerParameterType.Bool: 
-                    return ProcessLayerByType<BoolSet, BoolConditionTrait>(conditionParameter, timeMotionParameter, defaultState, states, entryTransitions);
+                    return ProcessLayerByType<BoolSet, BoolSetTrait>(conditionParameter, timeMotionParameter, defaultState, states, entryTransitions);
                 default: return null;
             }
             
@@ -264,7 +264,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             ChildAnimatorState[] states,
             AnimatorTransition[] entryTransitions)
             where TRangeSet : struct, IRangeSet<TRangeSet>
-            where TTrait : struct, IConditionTrait<TRangeSet>
+            where TTrait : struct, ISetTrait<TRangeSet>
         {
             {
                 {
@@ -409,11 +409,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             switch (paramType)
             {
                 case AnimatorControllerParameterType.Float:
-                    return TryParseLinearLayerByType<FloatRangeSet, FloatConditionTrait>(conditionParameter, timeMotionParameter, defaultState, anotherState);
+                    return TryParseLinearLayerByType<FloatRangeSet, FloatSetTrait>(conditionParameter, timeMotionParameter, defaultState, anotherState);
                 case AnimatorControllerParameterType.Int:
-                    return TryParseLinearLayerByType<IntRangeSet, IntConditionTrait>(conditionParameter, timeMotionParameter, defaultState, anotherState);
+                    return TryParseLinearLayerByType<IntRangeSet, IntSetTrait>(conditionParameter, timeMotionParameter, defaultState, anotherState);
                 case AnimatorControllerParameterType.Bool:
-                    return TryParseLinearLayerByType<BoolSet, BoolConditionTrait>(conditionParameter, timeMotionParameter, defaultState, anotherState);
+                    return TryParseLinearLayerByType<BoolSet, BoolSetTrait>(conditionParameter, timeMotionParameter, defaultState, anotherState);
                 default:
                     return null;
             }
@@ -425,7 +425,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             AnimatorState defaultState,
             AnimatorState anotherState)
             where TRangeSet : struct, IRangeSet<TRangeSet>
-            where TTrait : struct, IConditionTrait<TRangeSet>
+            where TTrait : struct, ISetTrait<TRangeSet>
         {
             // Check default => another state transition.
             foreach (var defaultStateTransition in defaultState.transitions)
@@ -581,37 +581,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             }
 
             return true;
-        }
-
-        interface IConditionTrait<TRangeSet> where TRangeSet : struct, IRangeSet<TRangeSet>
-        {
-            public TRangeSet Empty { get; }
-            public TRangeSet SetFromConditions(AnimatorCondition[] conditions);
-            public TRangeSet Union(IEnumerable<TRangeSet> ranges);
-            public FloatRangeSet ConvertToFloatRangeSet(TRangeSet rangeSet);
-        }
-
-        struct BoolConditionTrait : IConditionTrait<BoolSet>
-        {
-            public BoolSet Empty => BoolSet.Empty;
-            public BoolSet SetFromConditions(AnimatorCondition[] conditions) => RangesUtil.BoolSetFromConditions(conditions);
-            public BoolSet Union(IEnumerable<BoolSet> ranges) => BoolSet.Union(ranges);
-            public FloatRangeSet ConvertToFloatRangeSet(BoolSet rangeSet) => RangesUtil.BoolSetToFloatRangeSet(rangeSet);
-        }
-        struct IntConditionTrait : IConditionTrait<IntRangeSet>
-        {
-            public IntRangeSet Empty => IntRangeSet.Empty;
-            public IntRangeSet SetFromConditions(AnimatorCondition[] conditions) => RangesUtil.IntRangeSetFromConditions(conditions);
-            public IntRangeSet Union(IEnumerable<IntRangeSet> ranges) => IntRangeSet.Union(ranges);
-            public FloatRangeSet ConvertToFloatRangeSet(IntRangeSet rangeSet) => RangesUtil.IntRangeSetToFloatRangeSet(rangeSet);
-        }
-
-        struct FloatConditionTrait : IConditionTrait<FloatRangeSet>
-        {
-            public FloatRangeSet Empty => FloatRangeSet.Empty;
-            public FloatRangeSet SetFromConditions(AnimatorCondition[] conditions) => RangesUtil.FloatRangeSetFromConditions(conditions);
-            public FloatRangeSet Union(IEnumerable<FloatRangeSet> ranges) => FloatRangeSet.Union(ranges);
-            public FloatRangeSet ConvertToFloatRangeSet(FloatRangeSet rangeSet) => rangeSet;
         }
 
         class ConvertibleLayerInfo

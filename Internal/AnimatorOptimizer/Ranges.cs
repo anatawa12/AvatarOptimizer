@@ -397,6 +397,46 @@ public readonly struct BoolSet : IRangeSet<BoolSet>
     public override int GetHashCode() => _bits.GetHashCode();
 }
 
+#region SetTraits
+
+public interface ISetTrait<TRangeSet> where TRangeSet : IRangeSet<TRangeSet>
+{
+    public TRangeSet Empty { get; }
+    public TRangeSet SetFromConditions(AnimatorCondition[] conditions);
+    public List<AnimatorCondition[]> ToConditions(TRangeSet rangeSet, string parameter);
+    public TRangeSet Union(IEnumerable<TRangeSet> ranges);
+    public FloatRangeSet ConvertToFloatRangeSet(TRangeSet rangeSet);
+}
+
+public struct BoolSetTrait : ISetTrait<BoolSet>
+{
+    public BoolSet Empty => BoolSet.Empty;
+    public BoolSet SetFromConditions(AnimatorCondition[] conditions) => RangesUtil.BoolSetFromConditions(conditions);
+    public List<AnimatorCondition[]> ToConditions(BoolSet rangeSet, string parameter) => rangeSet.ToConditions(parameter);
+    public BoolSet Union(IEnumerable<BoolSet> ranges) => BoolSet.Union(ranges);
+    public FloatRangeSet ConvertToFloatRangeSet(BoolSet rangeSet) => RangesUtil.BoolSetToFloatRangeSet(rangeSet);
+}
+
+public struct IntSetTrait : ISetTrait<IntRangeSet>
+{
+    public IntRangeSet Empty => IntRangeSet.Empty;
+    public IntRangeSet SetFromConditions(AnimatorCondition[] conditions) => RangesUtil.IntRangeSetFromConditions(conditions);
+    public List<AnimatorCondition[]> ToConditions(IntRangeSet rangeSet, string parameter) => rangeSet.ToConditions(parameter);
+    public IntRangeSet Union(IEnumerable<IntRangeSet> ranges) => IntRangeSet.Union(ranges);
+    public FloatRangeSet ConvertToFloatRangeSet(IntRangeSet rangeSet) => RangesUtil.IntRangeSetToFloatRangeSet(rangeSet);
+}
+
+public struct FloatSetTrait : ISetTrait<FloatRangeSet>
+{
+    public FloatRangeSet Empty => FloatRangeSet.Empty;
+    public FloatRangeSet SetFromConditions(AnimatorCondition[] conditions) => RangesUtil.FloatRangeSetFromConditions(conditions);
+    public List<AnimatorCondition[]> ToConditions(FloatRangeSet rangeSet, string parameter) => rangeSet.ToConditions(parameter);
+    public FloatRangeSet Union(IEnumerable<FloatRangeSet> ranges) => FloatRangeSet.Union(ranges);
+    public FloatRangeSet ConvertToFloatRangeSet(FloatRangeSet rangeSet) => rangeSet;
+}
+
+#endregion
+
 public static class RangesUtil
 {
     // convert to animator conditions for a given parameter name
