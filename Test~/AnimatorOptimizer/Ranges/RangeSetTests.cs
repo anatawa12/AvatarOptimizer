@@ -680,7 +680,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
         [Test, TestCaseSource(nameof(RageIntToFloatConvertion))]
         public void RangeIntToFloatConvertion(IntRangeSet intSet, FloatRangeSet expectedFloatSet)
         {
-            Assert.That(RangesUtil.IntRangeSetToFloatRangeSet(intSet), Is.EqualTo(expectedFloatSet));
+            Assert.That(intSet.ToFloatRangeSet(), Is.EqualTo(expectedFloatSet));
         }
     }
 }

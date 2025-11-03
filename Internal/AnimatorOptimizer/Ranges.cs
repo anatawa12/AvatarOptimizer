@@ -414,7 +414,7 @@ public struct BoolSetTrait : ISetTrait<BoolSet>
     public BoolSet SetFromConditions(AnimatorCondition[] conditions) => RangesUtil.BoolSetFromConditions(conditions);
     public List<AnimatorCondition[]> ToConditions(BoolSet rangeSet, string parameter) => rangeSet.ToConditions(parameter);
     public BoolSet Union(IEnumerable<BoolSet> ranges) => BoolSet.Union(ranges);
-    public FloatRangeSet ConvertToFloatRangeSet(BoolSet rangeSet) => RangesUtil.BoolSetToFloatRangeSet(rangeSet);
+    public FloatRangeSet ConvertToFloatRangeSet(BoolSet rangeSet) => rangeSet.ToFloatRangeSet();
 }
 
 public struct IntSetTrait : ISetTrait<IntRangeSet>
@@ -423,7 +423,7 @@ public struct IntSetTrait : ISetTrait<IntRangeSet>
     public IntRangeSet SetFromConditions(AnimatorCondition[] conditions) => RangesUtil.IntRangeSetFromConditions(conditions);
     public List<AnimatorCondition[]> ToConditions(IntRangeSet rangeSet, string parameter) => rangeSet.ToConditions(parameter);
     public IntRangeSet Union(IEnumerable<IntRangeSet> ranges) => IntRangeSet.Union(ranges);
-    public FloatRangeSet ConvertToFloatRangeSet(IntRangeSet rangeSet) => RangesUtil.IntRangeSetToFloatRangeSet(rangeSet);
+    public FloatRangeSet ConvertToFloatRangeSet(IntRangeSet rangeSet) => rangeSet.ToFloatRangeSet();
 }
 
 public struct FloatSetTrait : ISetTrait<FloatRangeSet>
@@ -520,7 +520,7 @@ public static class RangesUtil
         (false, true) => new List<AnimatorCondition[]> { new[] { AnimatorCondition(parameter, AnimatorConditionMode.IfNot) } },
     };
 
-    public static FloatRangeSet IntRangeSetToFloatRangeSet(IntRangeSet intRangeSet)
+    public static FloatRangeSet ToFloatRangeSet(this IntRangeSet intRangeSet)
     {
         return FloatRangeSet.Union(intRangeSet.Ranges.Select(iRange =>
         {
@@ -558,7 +558,7 @@ public static class RangesUtil
         }));
     }
 
-    public static FloatRangeSet BoolSetToFloatRangeSet(BoolSet boolSet) => (boolSet.HasTrue, boolSet.HasFalse) switch
+    public static FloatRangeSet ToFloatRangeSet(this BoolSet boolSet) => (boolSet.HasTrue, boolSet.HasFalse) switch
     {
         (false, false) => FloatRangeSet.Empty,
         (true, true) => FloatRangeSet.Entire,

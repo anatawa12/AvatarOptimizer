@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 using nadena.dev.ndmf;
+using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -699,24 +700,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             };
         }
 
-        public static IEnumerable<AnimatorCondition[]> FlattenConditions(AnimatorCondition[][] conditions)
+        public static IEnumerable<AnimatorCondition[]> FlattenConditions(List<AnimatorCondition[]> conditions)
         {
-            var indices = new int[conditions.Length];
+            var indices = new int[conditions.Count];
 
             while (true)
             {
-                var result = new AnimatorCondition[conditions.Length];
-                for (var i = 0; i < conditions.Length; i++)
+                var result = new AnimatorCondition[conditions.Count];
+                for (var i = 0; i < conditions.Count; i++)
                     result[i] = conditions[i][indices[i]];
 
                 yield return result;
 
-                for (var i = 0; i < conditions.Length; i++)
+                for (var i = 0; i < conditions.Count; i++)
                 {
                     indices[i]++;
                     if (indices[i] < conditions[i].Length) break;
                     indices[i] = 0;
-                    if (i == conditions.Length - 1) yield break;
+                    if (i == conditions.Count - 1) yield break;
                 }
             }
         }
@@ -730,7 +731,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         }
 
         // AnimatorCondition[and][or]
-        public static AnimatorCondition[][] ConvertIntOrBoolConditionsToFloat(AnimatorCondition[] condition,
+        public static List<AnimatorCondition[]> ConvertIntOrBoolConditionsToFloat(AnimatorCondition[] condition,
             Predicate<string> shouldConvert)
         {
             var result = new List<AnimatorCondition[]>();
@@ -739,206 +740,83 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     result.AddRange(ConvertIntOrBoolConditionToFloat(cond));
                 else
                     result.Add(new[] { cond });
-            return result.ToArray();
+            return result;
         }
 
         // AnimatorCondition[and][or]
-        public static AnimatorCondition[][] ConvertIntOrBoolConditionToFloat(AnimatorCondition condition)
+        public static List<AnimatorCondition[]> ConvertIntOrBoolConditionToFloat(AnimatorCondition condition)
         {
-            switch (condition.mode)
+            var rangeSet = condition.mode switch
             {
-                // for int
-                case AnimatorConditionMode.Greater:
-                {
-                    var thresholdRound = Mathf.Round(condition.threshold);
-                    var threshold = thresholdRound - 0.5f;
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    if (Mathf.Round(threshold) == thresholdRound)
-                        threshold = Utils.PreviousFloat(threshold);
+                AnimatorConditionMode.If => BoolSet.FromValue(true).ToFloatRangeSet(),
+                AnimatorConditionMode.IfNot => BoolSet.FromValue(false).ToFloatRangeSet(),
+                AnimatorConditionMode.Greater or AnimatorConditionMode.Less or AnimatorConditionMode.Equals
+                    or AnimatorConditionMode.NotEqual => RangesUtil.IntRangeSetFromConditions(new[] { condition }).ToFloatRangeSet(),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            return RangesToFloatConditions(rangeSet, condition.parameter);
+        }
 
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Utils.Assert(Mathf.Round(threshold) == thresholdRound - 1);
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Utils.Assert(Mathf.Round(Utils.NextFloat(threshold)) == thresholdRound);
+        // AnimatorCondition[and][or]
+        private static List<AnimatorCondition[]> RangesToFloatConditions(FloatRangeSet rangeSet, string parameterName)
+        {
+            var ranges = rangeSet.Ranges.ToArray();
+            if (ranges.Length == 1)
+            {
+                var range = ranges[0];
 
-                    return new[]
+                var result = new List<AnimatorCondition[]>();
+                if (range.MinExclusive is { } minExclusive)
+                    result.Add(new[]
                     {
-                        new[]
+                        new AnimatorCondition
                         {
-                            new AnimatorCondition()
-                            {
-                                mode = AnimatorConditionMode.Greater,
-                                parameter = condition.parameter,
-                                threshold = threshold,
-                            },
-                        },
-                    };
-                }
-                case AnimatorConditionMode.Less:
-                {
-                    var thresholdRound = Mathf.Round(condition.threshold);
-                    var threshold = thresholdRound + 0.5f;
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    if (Mathf.Round(threshold) == thresholdRound)
-                        threshold = Utils.NextFloat(threshold);
-
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Utils.Assert(Mathf.Round(threshold) == thresholdRound + 1);
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Utils.Assert(Mathf.Round(Utils.PreviousFloat(threshold)) == thresholdRound);
-
-                    return new[]
+                            parameter = parameterName,
+                            mode = AnimatorConditionMode.Greater,
+                            threshold = minExclusive,
+                        }
+                    });
+                if (range.MaxExclusive is { } maxExclusive)
+                    result.Add(new[]
                     {
-                        new[]
+                        new AnimatorCondition
                         {
-                            new AnimatorCondition()
-                            {
-                                mode = AnimatorConditionMode.Less,
-                                parameter = condition.parameter,
-                                threshold = threshold,
-                            },
-                        },
-                    };
-                }
-                case AnimatorConditionMode.Equals:
+                            parameter = parameterName,
+                            mode = AnimatorConditionMode.Less,
+                            threshold = maxExclusive,
+                        }
+                    });
+                return result;
+            }
+
+            if (ranges.Length == 2)
+            {
+                var range0 = ranges[0];
+                var range1 = ranges[1];
+                Utils.Assert(range0.MinInclusive.Equals(float.NegativeInfinity));
+                Utils.Assert(range1.MaxInclusive.Equals(float.PositiveInfinity));
+                return new List<AnimatorCondition[]>()
                 {
-                    var thresholdRound = Mathf.Round(condition.threshold);
-                    var lowerThreshold = thresholdRound - 0.5f;
-                    var upperThreshold = thresholdRound + 0.5f;
-
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    if (Mathf.Round(lowerThreshold) == thresholdRound)
-                        lowerThreshold = Utils.PreviousFloat(lowerThreshold);
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    if (Mathf.Round(upperThreshold) == thresholdRound)
-                        upperThreshold = Utils.NextFloat(upperThreshold);
-
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Utils.Assert(Mathf.Round(lowerThreshold) == thresholdRound - 1);
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Utils.Assert(Mathf.Round(Utils.NextFloat(lowerThreshold)) == thresholdRound);
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Utils.Assert(Mathf.Round(Utils.PreviousFloat(upperThreshold)) == thresholdRound);
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Utils.Assert(Mathf.Round(upperThreshold) == thresholdRound + 1);
-
-                    // AND condition
-                    return new[]
+                    new []
                     {
-                        new[]
+                        new AnimatorCondition
                         {
-                            new AnimatorCondition()
-                            {
-                                mode = AnimatorConditionMode.Greater,
-                                parameter = condition.parameter,
-                                threshold = lowerThreshold,
-                            },
+                            parameter = parameterName,
+                            mode = AnimatorConditionMode.Less,
+                            threshold = range0.MaxExclusive!.Value,
                         },
-                        new[]
+                        new AnimatorCondition
                         {
-                            new AnimatorCondition()
-                            {
-                                mode = AnimatorConditionMode.Less,
-                                parameter = condition.parameter,
-                                threshold = upperThreshold,
-                            },
+                            parameter = parameterName,
+                            mode = AnimatorConditionMode.Greater,
+                            threshold = range1.MinExclusive!.Value,
                         },
-                    };
-                }
-                case AnimatorConditionMode.NotEqual:
-                {
-                    var thresholdRound = Mathf.Round(condition.threshold);
-                    var lowerThreshold = thresholdRound - 0.5f;
-                    var upperThreshold = thresholdRound + 0.5f;
-
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    if (Mathf.Round(lowerThreshold) != thresholdRound)
-                        lowerThreshold = Utils.NextFloat(lowerThreshold);
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    if (Mathf.Round(upperThreshold) != thresholdRound)
-                        upperThreshold = Utils.PreviousFloat(upperThreshold);
-
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Utils.Assert(Mathf.Round(Utils.PreviousFloat(lowerThreshold)) == thresholdRound - 1);
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Utils.Assert(Mathf.Round(lowerThreshold) == thresholdRound);
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Utils.Assert(Mathf.Round(upperThreshold) == thresholdRound);
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Utils.Assert(Mathf.Round(Utils.NextFloat(upperThreshold)) == thresholdRound + 1);
-
-                    // OR condition
-                    return new[]
-                    {
-                        new[]
-                        {
-                            new AnimatorCondition()
-                            {
-                                mode = AnimatorConditionMode.Less,
-                                parameter = condition.parameter,
-                                threshold = lowerThreshold,
-                            },
-                            new AnimatorCondition()
-                            {
-                                mode = AnimatorConditionMode.Greater,
-                                parameter = condition.parameter,
-                                threshold = upperThreshold,
-                            },
-                        },
-                    };
-                }
-
-                // for bool
-                case AnimatorConditionMode.If:
-                {
-                    // OR condition
-                    return new[]
-                    {
-                        new[]
-                        {
-                            new AnimatorCondition()
-                            {
-                                mode = AnimatorConditionMode.Less,
-                                parameter = condition.parameter,
-                                threshold = 0,
-                            },
-                            new AnimatorCondition()
-                            {
-                                mode = AnimatorConditionMode.Greater,
-                                parameter = condition.parameter,
-                                threshold = 0,
-                            },
-                        },
-                    };
-                }
-                case AnimatorConditionMode.IfNot:
-                {
-                    // AND condition
-                    return new[]
-                    {
-                        new[]
-                        {
-                            new AnimatorCondition()
-                            {
-                                mode = AnimatorConditionMode.Greater,
-                                parameter = condition.parameter,
-                                threshold = Utils.PreviousFloat(0),
-                            },
-                        },
-                        new[]
-                        {
-                            new AnimatorCondition()
-                            {
-                                mode = AnimatorConditionMode.Less,
-                                parameter = condition.parameter,
-                                threshold = Utils.NextFloat(0),
-                            },
-                        },
-                    };
-                }
-
-                default:
-                    throw new ArgumentOutOfRangeException();
+                    },
+                };
+            }
+            else
+            {
+                throw new InvalidOperationException("Cannot convert range set with more than two ranges to conditions");
             }
         }
 
