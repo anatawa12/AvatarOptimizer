@@ -251,38 +251,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             //            if they are 'equals', the threshold must be finite number and unique among states.
             var stateValues = new Dictionary<AnimatorState, HashSet<IntOrBool>>();
             var allValues = new HashSet<IntOrBool>();
-            for (var index = 0; index < entryTransitions.Length - 1; index++)
+            foreach (var entryTransition in entryTransitions)
             {
-                var entryTransition = entryTransitions[index];
                 var conditions = entryTransition.conditions!;
                 var dest = entryTransition.destinationState!;
 
-                if (entryTransition.conditions.Length != 1) return null;
+                if (conditions.Length != 1) return null;
                 if (CheckIntOrBoolCondition(conditions[0]) is not { } value) return null;
                 if (!AddToStateValues(dest, value)) return null; // duplicated value
-            }
-
-            // allow transition to default state without conditions for last entry transition
-            if (entryTransitions.Length >= 1) {
-                var entryTransition = entryTransitions[^1];
-
-                var conditions = entryTransition.conditions!;
-                var dest = entryTransition.destinationState;
-
-                switch (conditions.Length)
-                {
-                    case 1:
-                    {
-                        if (CheckIntOrBoolCondition(conditions[0]) is not { } value) return null;
-                        if (!AddToStateValues(dest, value)) return null; // duplicated value
-                        break;
-                    }
-                    case 0 when dest == defaultState:
-                        // no condition for default state is allowed
-                        break;
-                    default:
-                        return null;
-                }
             }
 
             IntOrBool? CheckIntOrBoolCondition(AnimatorCondition condition)
