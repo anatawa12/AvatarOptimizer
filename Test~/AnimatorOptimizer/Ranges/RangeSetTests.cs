@@ -7,6 +7,8 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
 {
     using IntRange = Range<int, RangeIntTrait>;
     using IntRangeSet = RangeSet<int, RangeIntTrait>;
+    using FloatRange = Range<float, RangeFloatTrait>;
+    using FloatRangeSet = RangeSet<float, RangeFloatTrait>;
 
     [TestFixture]
     public class RangeSetTests
@@ -631,6 +633,43 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             Assert.That(res.Ranges.ToList(), Is.EqualTo(expectedRanges));
             // double inversion should restore the original set
             Assert.That(res.Complement().Equals(set), Is.True);
+        }
+
+        // This test tests various important edge cases that do not fit elsewhere.
+        [Test]
+        public void ImportantEdgeCases()
+        {
+            Assert.That(FloatRangeSet.Entire.ExcludeValue(0), 
+                Is.EqualTo(FloatRangeSet.Union(FloatRange.LessThanInclusive(-float.Epsilon), FloatRange.GreaterThanInclusive(float.Epsilon))));
+        }
+
+        private static IEnumerable<TestCaseData> RageIntToFloatConvertion()
+        {
+            // 0.50000006 == float.BitIncrement(0.5f)
+            // 3.4999998f == float.BitDecrement(3.5f)
+            yield return new TestCaseData(
+                IntRangeSet.FromRange(IntRange.FromInclusiveBounds(1, 3)),
+                FloatRangeSet.FromRange(FloatRange.FromInclusiveBounds(0.50000006f, 3.4999998f)));
+
+            yield return new TestCaseData(
+                IntRangeSet.FromRange(IntRange.FromInclusiveBounds(0, 0)),
+                FloatRangeSet.FromRange(FloatRange.FromInclusiveBounds(-0.5f, 0.5f)));
+
+            // 1.4999999f == float.BitDecrement(1.5f)
+            yield return new TestCaseData(
+                IntRangeSet.FromRange(IntRange.FromInclusiveBounds(0, 1)),
+                FloatRangeSet.FromRange(FloatRange.FromInclusiveBounds(-0.5f, 1.4999999f)));
+            
+            // -1.4999999f == float.BitIncrement(-1.5f)
+            yield return new TestCaseData(
+                IntRangeSet.FromRange(IntRange.FromInclusiveBounds(-1, 0)),
+                FloatRangeSet.FromRange(FloatRange.FromInclusiveBounds(-1.4999999f, 0.5f)));
+        }
+
+        [Test, TestCaseSource(nameof(RageIntToFloatConvertion))]
+        public void RangeIntToFloatConvertion(IntRangeSet intSet, FloatRangeSet expectedFloatSet)
+        {
+            Assert.That(RangesUtil.IntRangeSetToFloatRangeSet(intSet), Is.EqualTo(expectedFloatSet));
         }
     }
 }

@@ -411,6 +411,27 @@ public static class RangesUtil
     public static List<AnimatorCondition[]> ToConditions(this FloatRangeSet rangeSet, string parameter) =>
         rangeSet.Ranges.Select(range => range.ToConditions(parameter)).ToList();
 
+    public static FloatRangeSet IntRangeSetToFloatRangeSet(IntRangeSet intRangeSet)
+    {
+        return FloatRangeSet.Union(intRangeSet.Ranges.Select(iRange =>
+        {
+            var lowerBound = iRange.MinInclusive - 0.5f;
+            var upperBound = iRange.MaxInclusive + 0.5f;
+            var lowerBoundRounded = Mathf.RoundToInt(lowerBound);
+            var upperBoundRounded = Mathf.RoundToInt(upperBound);
+
+            if (lowerBoundRounded != iRange.MinInclusive)
+                lowerBound = Utils.NextFloat(lowerBound);
+            if (upperBoundRounded != iRange.MaxInclusive)
+                upperBound = Utils.PreviousFloat(upperBound);
+
+            Utils.Assert(Mathf.RoundToInt(lowerBound) == iRange.MinInclusive, "lower bound conversion failed");
+            Utils.Assert(Mathf.RoundToInt(upperBound) == iRange.MaxInclusive, "upper bound conversion failed");
+
+            return FloatRange.FromInclusiveBounds(lowerBound, upperBound);
+        }));
+    }
+
     public static IntRangeSet IntRangeSetFromConditions(AnimatorCondition[] conditions) => conditions
         .Aggregate(IntRangeSet.Entire, (current, c) => c.mode switch
         {
