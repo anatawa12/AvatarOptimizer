@@ -15,7 +15,6 @@ using VRC.SDKBase;
 
 namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
-    using IntRange = Range<int, RangeIntTrait>;
     using IntRangeSet = RangeSet<int, RangeIntTrait>;
     using FloatRange = Range<float, RangeFloatTrait>;
     using FloatRangeSet = RangeSet<float, RangeFloatTrait>;
@@ -59,9 +58,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
         public static void Execute(AnimatorOptimizerState state, AOAnimatorController controller)
         {
-            var intOrBoolParameters = new HashSet<string>(controller.parameters
-                .Where(x => x.type is AnimatorControllerParameterType.Int or AnimatorControllerParameterType.Bool)
-                .Select(x => x.name));
             var parameterType = controller.parameters.ToDictionary(x => x.name, x => x.type);
 
             // first, collect transformable layers
@@ -631,61 +627,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             public FloatRangeSet ConvertToFloatRangeSet(FloatRangeSet rangeSet) => rangeSet;
         }
 
-        readonly struct IntOrBool : IEquatable<IntOrBool>
-        {
-            public readonly int? IntValue;
-            public readonly bool? BoolValue;
-
-            public IntOrBool(int value)
-            {
-                IntValue = value;
-                BoolValue = null;
-            }
-
-            public IntOrBool(bool value)
-            {
-                IntValue = null;
-                BoolValue = value;
-            }
-
-            public override int GetHashCode() => HashCode.Combine(IntValue, BoolValue);
-
-            public bool Equals(IntOrBool other) => IntValue == other.IntValue && BoolValue == other.BoolValue;
-            public override bool Equals(object? obj) => obj is IntOrBool other && Equals(other);
-            public static bool operator ==(IntOrBool left, IntOrBool right) => left.Equals(right);
-            public static bool operator !=(IntOrBool left, IntOrBool right) => !left.Equals(right);
-
-            public static implicit operator IntOrBool(int value) => new(value);
-            public static implicit operator IntOrBool(bool value) => new(value);
-        }
-
         class ConvertibleLayerInfo
         {
             public readonly string ParameterName;
             public readonly AnimatorState DefaultState;
             public readonly Dictionary<AnimatorState, FloatRangeSet> RangeForStates;
             public readonly string? TimeMotionParameter;
-
-            public ConvertibleLayerInfo(string parameterName, AnimatorState defaultState,
-                Dictionary<AnimatorState, HashSet<IntOrBool>> valueForStates,
-                string? timeMotionParameter)
-            {
-                ParameterName = parameterName;
-                DefaultState = defaultState;
-                RangeForStates = valueForStates.ToDictionary(p => p.Key, p =>
-                {
-                    if (p.Value.All(v => v.BoolValue.HasValue))
-                        return RangesUtil.BoolSetToFloatRangeSet(BoolSet.Union(
-                            p.Value.Select(v => BoolSet.FromValue(v.BoolValue!.Value))));
-
-                    if (p.Value.All(v => v.IntValue.HasValue))
-                        return RangesUtil.IntRangeSetToFloatRangeSet(IntRangeSet.Union(
-                            p.Value.Select(v => IntRangeSet.FromRange(IntRange.Point(v.IntValue!.Value)))));
-
-                    throw new InvalidOperationException("mixed condition types");
-                });
-                TimeMotionParameter = timeMotionParameter;
-            }
 
             public ConvertibleLayerInfo(string parameterName, AnimatorState defaultState,
                 Dictionary<AnimatorState, FloatRangeSet> rangeForStates,
