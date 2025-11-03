@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
 {
-    using IntClosedRange = ClosedRange<int, RangeIntTrait>;
+    using IntRange = Range<int, RangeIntTrait>;
 
     [TestFixture]
     public class IntClosedRangeTest
@@ -14,24 +14,24 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
         // Intersect tests
         private static IEnumerable<TestCaseData> IntersectCases()
         {
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(1, 5), IntClosedRange.FromInclusiveBounds(3, 7), IntClosedRange.FromInclusiveBounds(3, 5));
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(1, 2), IntClosedRange.FromInclusiveBounds(3, 4), IntClosedRange.Empty);
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(1, 3), IntClosedRange.FromInclusiveBounds(3, 5), IntClosedRange.FromInclusiveBounds(3, 3));
-            yield return new TestCaseData(IntClosedRange.Entire, IntClosedRange.FromInclusiveBounds(4, 10), IntClosedRange.FromInclusiveBounds(4, 10));
-            yield return new TestCaseData(IntClosedRange.GreaterThanInclusive(3), IntClosedRange.LessThanInclusive(5),
-                IntClosedRange.FromInclusiveBounds(3, 5));
-            yield return new TestCaseData(IntClosedRange.Point(int.MinValue), IntClosedRange.LessThanInclusive(int.MinValue),
-                IntClosedRange.Point(int.MinValue));
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(1, 5), IntRange.FromInclusiveBounds(3, 7), IntRange.FromInclusiveBounds(3, 5));
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(1, 2), IntRange.FromInclusiveBounds(3, 4), IntRange.Empty);
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(1, 3), IntRange.FromInclusiveBounds(3, 5), IntRange.FromInclusiveBounds(3, 3));
+            yield return new TestCaseData(IntRange.Entire, IntRange.FromInclusiveBounds(4, 10), IntRange.FromInclusiveBounds(4, 10));
+            yield return new TestCaseData(IntRange.GreaterThanInclusive(3), IntRange.LessThanInclusive(5),
+                IntRange.FromInclusiveBounds(3, 5));
+            yield return new TestCaseData(IntRange.Point(int.MinValue), IntRange.LessThanInclusive(int.MinValue),
+                IntRange.Point(int.MinValue));
             // extremes non-overlapping
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(int.MinValue, -1), IntClosedRange.FromInclusiveBounds(0, int.MaxValue),
-                IntClosedRange.Empty);
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(int.MinValue, -1), IntRange.FromInclusiveBounds(0, int.MaxValue),
+                IntRange.Empty);
             // full overlap
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(int.MinValue, int.MaxValue),
-                IntClosedRange.Point(int.MaxValue), IntClosedRange.Point(int.MaxValue));
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(int.MinValue, int.MaxValue),
+                IntRange.Point(int.MaxValue), IntRange.Point(int.MaxValue));
         }
 
         [TestCaseSource(nameof(IntersectCases))]
-        public void Intersect_ReturnsExpected(IntClosedRange a, IntClosedRange b, IntClosedRange expected)
+        public void Intersect_ReturnsExpected(IntRange a, IntRange b, IntRange expected)
         {
             var actual = a.Intersect(b);
             Assert.That(actual, Is.EqualTo(expected));
@@ -42,27 +42,27 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
         // ExcludeValue tests
         private static IEnumerable<TestCaseData> ExcludeValueCases()
         {
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(1, 5), 3,
-                new[] { IntClosedRange.FromInclusiveBounds(1, 2), IntClosedRange.FromInclusiveBounds(4, 5) });
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(1, 5), 1, new[] { IntClosedRange.FromInclusiveBounds(2, 5) });
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(1, 5), 5, new[] { IntClosedRange.FromInclusiveBounds(1, 4) });
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(3, 3), 3, new IntClosedRange[] { });
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(1, 5), 3,
+                new[] { IntRange.FromInclusiveBounds(1, 2), IntRange.FromInclusiveBounds(4, 5) });
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(1, 5), 1, new[] { IntRange.FromInclusiveBounds(2, 5) });
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(1, 5), 5, new[] { IntRange.FromInclusiveBounds(1, 4) });
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(3, 3), 3, new IntRange[] { });
             yield return
-                new TestCaseData(IntClosedRange.FromInclusiveBounds(1, 5), 7,
-                    new[] { IntClosedRange.FromInclusiveBounds(1, 5) }); // outside value -> unchanged
+                new TestCaseData(IntRange.FromInclusiveBounds(1, 5), 7,
+                    new[] { IntRange.FromInclusiveBounds(1, 5) }); // outside value -> unchanged
             yield return
-                new TestCaseData(IntClosedRange.GreaterThanInclusive(0), 0, new[] { IntClosedRange.GreaterThanInclusive(1) }); // infinite top
+                new TestCaseData(IntRange.GreaterThanInclusive(0), 0, new[] { IntRange.GreaterThanInclusive(1) }); // infinite top
             yield return
-                new TestCaseData(IntClosedRange.LessThanInclusive(0), 0, new[] { IntClosedRange.LessThanInclusive(-1) }); // infinite bottom
+                new TestCaseData(IntRange.LessThanInclusive(0), 0, new[] { IntRange.LessThanInclusive(-1) }); // infinite bottom
             // exclude at extreme values
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(int.MinValue, int.MaxValue), int.MinValue,
-                new[] { IntClosedRange.FromInclusiveBounds(int.MinValue + 1, int.MaxValue) });
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(int.MinValue, int.MaxValue), int.MaxValue,
-                new[] { IntClosedRange.FromInclusiveBounds(int.MinValue, int.MaxValue - 1) });
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(int.MinValue, int.MaxValue), int.MinValue,
+                new[] { IntRange.FromInclusiveBounds(int.MinValue + 1, int.MaxValue) });
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(int.MinValue, int.MaxValue), int.MaxValue,
+                new[] { IntRange.FromInclusiveBounds(int.MinValue, int.MaxValue - 1) });
         }
 
         [TestCaseSource(nameof(ExcludeValueCases))]
-        public void ExcludeValue_ReturnsExpected(IntClosedRange range, int value, IntClosedRange[] expected)
+        public void ExcludeValue_ReturnsExpected(IntRange range, int value, IntRange[] expected)
         {
             var actual = range.ExcludeValue(value).ToArray();
             Assert.That(actual, Is.EqualTo(expected));
@@ -71,22 +71,22 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
         // Union tests: returns union when overlapping or adjacent, otherwise null
         private static IEnumerable<TestCaseData> UnionCases()
         {
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(1, 4), IntClosedRange.FromInclusiveBounds(3, 6),
-                (IntClosedRange?)IntClosedRange.FromInclusiveBounds(1, 6));
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(1, 2), IntClosedRange.FromInclusiveBounds(3, 5),
-                (IntClosedRange?)IntClosedRange.FromInclusiveBounds(1, 5)); // adjacent
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(3, 5), IntClosedRange.FromInclusiveBounds(1, 2),
-                (IntClosedRange?)IntClosedRange.FromInclusiveBounds(1, 5)); // reversed adjacent
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(1, 2), IntClosedRange.FromInclusiveBounds(4, 5),
-                (IntClosedRange?)null); // disjoint
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(int.MinValue, -1), IntClosedRange.FromInclusiveBounds(0, int.MaxValue),
-                (IntClosedRange?)IntClosedRange.FromInclusiveBounds(int.MinValue, int.MaxValue)); // adjacent to form entire
-            yield return new TestCaseData(IntClosedRange.Entire, IntClosedRange.FromInclusiveBounds(10, 20),
-                (IntClosedRange?)IntClosedRange.Entire); // entire absorbs
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(1, 4), IntRange.FromInclusiveBounds(3, 6),
+                (IntRange?)IntRange.FromInclusiveBounds(1, 6));
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(1, 2), IntRange.FromInclusiveBounds(3, 5),
+                (IntRange?)IntRange.FromInclusiveBounds(1, 5)); // adjacent
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(3, 5), IntRange.FromInclusiveBounds(1, 2),
+                (IntRange?)IntRange.FromInclusiveBounds(1, 5)); // reversed adjacent
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(1, 2), IntRange.FromInclusiveBounds(4, 5),
+                (IntRange?)null); // disjoint
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(int.MinValue, -1), IntRange.FromInclusiveBounds(0, int.MaxValue),
+                (IntRange?)IntRange.FromInclusiveBounds(int.MinValue, int.MaxValue)); // adjacent to form entire
+            yield return new TestCaseData(IntRange.Entire, IntRange.FromInclusiveBounds(10, 20),
+                (IntRange?)IntRange.Entire); // entire absorbs
         }
 
         [TestCaseSource(nameof(UnionCases))]
-        public void Union_MaybeReturnsUnionOrNull(IntClosedRange a, IntClosedRange b, IntClosedRange? expected)
+        public void Union_MaybeReturnsUnionOrNull(IntRange a, IntRange b, IntRange? expected)
         {
             var actual = a.Union(b);
             Assert.That(actual, Is.EqualTo(expected));
@@ -99,37 +99,37 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
         private static IEnumerable<TestCaseData> EqualsCases()
         {
             // existing canonical cases
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(1, 5), IntClosedRange.FromInclusiveBounds(1, 5), true);
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(1, 5), IntClosedRange.FromInclusiveBounds(1, 4), false);
-            yield return new TestCaseData(IntClosedRange.Empty, IntClosedRange.Empty, true);
-            yield return new TestCaseData(IntClosedRange.GreaterThanInclusive(0), IntClosedRange.GreaterThanInclusive(0), true);
-            yield return new TestCaseData(IntClosedRange.LessThanInclusive(0), IntClosedRange.LessThanInclusive(1), false);
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(1, 5), IntRange.FromInclusiveBounds(1, 5), true);
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(1, 5), IntRange.FromInclusiveBounds(1, 4), false);
+            yield return new TestCaseData(IntRange.Empty, IntRange.Empty, true);
+            yield return new TestCaseData(IntRange.GreaterThanInclusive(0), IntRange.GreaterThanInclusive(0), true);
+            yield return new TestCaseData(IntRange.LessThanInclusive(0), IntRange.LessThanInclusive(1), false);
             yield return
-                new TestCaseData(IntClosedRange.FromInclusiveBounds(int.MinValue, int.MaxValue), IntClosedRange.Entire,
+                new TestCaseData(IntRange.FromInclusiveBounds(int.MinValue, int.MaxValue), IntRange.Entire,
                     true); // if Entire maps to full bounds
 
             // many different internal empty representations should be equal to Empty and to each other
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(1, 0), IntClosedRange.Empty, true);
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(5, 4), IntClosedRange.Empty, true);
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(0, -1), IntClosedRange.Empty, true);
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(int.MaxValue, int.MinValue), IntClosedRange.Empty, true);
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(int.MinValue + 1, int.MinValue), IntClosedRange.Empty,
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(1, 0), IntRange.Empty, true);
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(5, 4), IntRange.Empty, true);
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(0, -1), IntRange.Empty, true);
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(int.MaxValue, int.MinValue), IntRange.Empty, true);
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(int.MinValue + 1, int.MinValue), IntRange.Empty,
                 true);
 
             // empties compared against other empty representations
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(1, 0), IntClosedRange.FromInclusiveBounds(5, 4), true);
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(0, -1), IntClosedRange.FromInclusiveBounds(int.MaxValue, int.MinValue),
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(1, 0), IntRange.FromInclusiveBounds(5, 4), true);
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(0, -1), IntRange.FromInclusiveBounds(int.MaxValue, int.MinValue),
                 true);
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(int.MinValue + 1, int.MinValue), IntClosedRange.FromInclusiveBounds(1, 0),
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(int.MinValue + 1, int.MinValue), IntRange.FromInclusiveBounds(1, 0),
                 true);
 
             // ensure empty != non-empty
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(1, 0), IntClosedRange.FromInclusiveBounds(0, 0), false);
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(5, 4), IntClosedRange.FromInclusiveBounds(4, 5), false);
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(1, 0), IntRange.FromInclusiveBounds(0, 0), false);
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(5, 4), IntRange.FromInclusiveBounds(4, 5), false);
         }
 
         [TestCaseSource(nameof(EqualsCases))]
-        public void Equals_IntClosedRange_Works(IntClosedRange a, IntClosedRange b, bool expected)
+        public void Equals_IntClosedRange_Works(IntRange a, IntRange b, bool expected)
         {
             Assert.That(a.Equals(b), Is.EqualTo(expected));
         }
@@ -138,21 +138,21 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
         private static IEnumerable<TestCaseData> HashCodeCases()
         {
             // existing canonical pairs
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(1, 5), IntClosedRange.FromInclusiveBounds(1, 5));
-            yield return new TestCaseData(IntClosedRange.Empty, IntClosedRange.Empty);
-            yield return new TestCaseData(IntClosedRange.GreaterThanInclusive(0), IntClosedRange.GreaterThanInclusive(0));
-            yield return new TestCaseData(IntClosedRange.FromInclusiveBounds(int.MinValue, int.MaxValue), IntClosedRange.Entire);
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(1, 5), IntRange.FromInclusiveBounds(1, 5));
+            yield return new TestCaseData(IntRange.Empty, IntRange.Empty);
+            yield return new TestCaseData(IntRange.GreaterThanInclusive(0), IntRange.GreaterThanInclusive(0));
+            yield return new TestCaseData(IntRange.FromInclusiveBounds(int.MinValue, int.MaxValue), IntRange.Entire);
 
             // multiple empty internal representations should hash-equal the canonical Empty
-            yield return new TestCaseData(IntClosedRange.Empty, IntClosedRange.FromInclusiveBounds(1, 0));
-            yield return new TestCaseData(IntClosedRange.Empty, IntClosedRange.FromInclusiveBounds(5, 4));
-            yield return new TestCaseData(IntClosedRange.Empty, IntClosedRange.FromInclusiveBounds(0, -1));
-            yield return new TestCaseData(IntClosedRange.Empty, IntClosedRange.FromInclusiveBounds(int.MaxValue, int.MinValue));
-            yield return new TestCaseData(IntClosedRange.Empty, IntClosedRange.FromInclusiveBounds(int.MinValue + 1, int.MinValue));
+            yield return new TestCaseData(IntRange.Empty, IntRange.FromInclusiveBounds(1, 0));
+            yield return new TestCaseData(IntRange.Empty, IntRange.FromInclusiveBounds(5, 4));
+            yield return new TestCaseData(IntRange.Empty, IntRange.FromInclusiveBounds(0, -1));
+            yield return new TestCaseData(IntRange.Empty, IntRange.FromInclusiveBounds(int.MaxValue, int.MinValue));
+            yield return new TestCaseData(IntRange.Empty, IntRange.FromInclusiveBounds(int.MinValue + 1, int.MinValue));
         }
 
         [TestCaseSource(nameof(HashCodeCases))]
-        public void GetHashCode_EqualRanges_HaveSameHashCode(IntClosedRange a, IntClosedRange b)
+        public void GetHashCode_EqualRanges_HaveSameHashCode(IntRange a, IntRange b)
         {
             Assert.That(a.Equals(b), Is.True);
             Assert.That(a.GetHashCode(), Is.EqualTo(b.GetHashCode()));

@@ -10,8 +10,8 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
-    using IntClosedRange = ClosedRange<int, RangeIntTrait>;
-    using FloatOpenRange = ClosedRange<float, RangeFloatTrait>;
+    using IntRange = Range<int, RangeIntTrait>;
+    using FloatRange = Range<float, RangeFloatTrait>;
 
     /// <summary>
     /// Converts Complete Graph state machine to Entry-Exit state machine
@@ -258,13 +258,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             // We convert each conditions to set of ranges, then merge them.
             var ranges = conditions.Select(conds =>
             {
-                var range = FloatOpenRange.Entire;
+                var range = FloatRange.Entire;
                 foreach (var cond in conds)
                 {
                     range = cond.mode switch
                     {
-                        AnimatorConditionMode.Less => range.Intersect(FloatOpenRange.LessThanExclusive(cond.threshold)),
-                        AnimatorConditionMode.Greater => range.Intersect(FloatOpenRange.GreaterThanExclusive(cond.threshold)),
+                        AnimatorConditionMode.Less => range.Intersect(FloatRange.LessThanExclusive(cond.threshold)),
+                        AnimatorConditionMode.Greater => range.Intersect(FloatRange.GreaterThanExclusive(cond.threshold)),
                         _ => throw new ArgumentOutOfRangeException()
                     };
                 }
@@ -282,7 +282,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             });
 
             // merge ranges as possible
-            var mergedRanges = new List<FloatOpenRange>();
+            var mergedRanges = new List<FloatRange>();
             mergedRanges.Add(ranges[0]);
             for (int i = 1; i < ranges.Count; i++)
             {
@@ -314,23 +314,23 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 return thisConditions;
 
             // convert each conjunction to a set of integer ranges (may be multiple ranges due to NotEqual)
-            var allRanges = new List<IntClosedRange>();
+            var allRanges = new List<IntRange>();
             foreach (var conds in thisConditions)
             {
                 // start with entire integer domain
-                var current = new List<IntClosedRange> { IntClosedRange.Entire };
+                var current = new List<IntRange> { IntRange.Entire };
 
                 foreach (var c in conds)
                 {
                     int t = (int)c.threshold;
                     current = (c.mode switch
                     {
-                        AnimatorConditionMode.Equals => current.Select(r => r.Intersect(IntClosedRange.Point(t))),
+                        AnimatorConditionMode.Equals => current.Select(r => r.Intersect(IntRange.Point(t))),
                         AnimatorConditionMode.NotEqual => current.SelectMany(r => r.ExcludeValue(t)),
                         // param > t => allowed ints >= t+1
-                        AnimatorConditionMode.Greater => current.Select(r => r.Intersect(IntClosedRange.GreaterThanInclusive(t + 1))),
+                        AnimatorConditionMode.Greater => current.Select(r => r.Intersect(IntRange.GreaterThanInclusive(t + 1))),
                         // param < t => allowed ints <= t-1
-                        AnimatorConditionMode.Less => current.Select(r => r.Intersect(IntClosedRange.LessThanInclusive(t - 1))),
+                        AnimatorConditionMode.Less => current.Select(r => r.Intersect(IntRange.LessThanInclusive(t - 1))),
                         _ => throw new ArgumentOutOfRangeException()
                     }).Where(intersect => !intersect.IsEmpty()).ToList();
 
@@ -346,7 +346,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
             allRanges.Sort((a, b) => a.MinInclusive.CompareTo(b.MinInclusive));
 
-            var merged = new List<IntClosedRange> { allRanges[0] };
+            var merged = new List<IntRange> { allRanges[0] };
             for (var i = 1; i < allRanges.Count; i++)
             {
                 var cur = allRanges[i];
@@ -366,7 +366,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             // We allow up to two connected values as a holes
             // In other words, a < x < b || b + 2 < x < c will be a < x < c with hole b and b + 1, but
             // a < x < b || b + 3 < x < c will remain as is.
-            var finalRanges = new List<(IntClosedRange, List<int> holes)>();
+            var finalRanges = new List<(IntRange, List<int> holes)>();
             foreach (var range in merged)
             {
                 if (finalRanges.Count == 0)
@@ -386,7 +386,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         holes.Add(v);
                     }
                     // update last range to cover current range
-                    finalRanges[^1] = (IntClosedRange.FromInclusiveBounds(lastRange.MinInclusive, range.MaxInclusive), holes);
+                    finalRanges[^1] = (IntRange.FromInclusiveBounds(lastRange.MinInclusive, range.MaxInclusive), holes);
                 }
                 else
                 {

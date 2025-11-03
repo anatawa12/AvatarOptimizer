@@ -7,8 +7,8 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer;
 
-using IntRangeImpl = ClosedRange<int, RangeIntTrait>;
-using FloatOpenRange = ClosedRange<float, RangeFloatTrait>;
+using IntRange = Range<int, RangeIntTrait>;
+using FloatRange = Range<float, RangeFloatTrait>;
 
 // This file includes 'range' related utilities for animator optimization.
 
@@ -28,7 +28,7 @@ public interface IRangeTrait<TValue> where TValue : struct
     public TValue Max(TValue a, TValue b);
 }
 
-public readonly struct ClosedRange<TValue, TTrait> : IEquatable<ClosedRange<TValue, TTrait>>
+public readonly struct Range<TValue, TTrait> : IEquatable<Range<TValue, TTrait>>
     where TValue : struct, IEquatable<TValue>
     where TTrait: struct, IRangeTrait<TValue> {
 
@@ -43,16 +43,16 @@ public readonly struct ClosedRange<TValue, TTrait> : IEquatable<ClosedRange<TVal
     public TValue? MinExclusive => IsEmpty() ? MinInclusive : default(TTrait).Previous(MinInclusive);
     public TValue? MaxExclusive => IsEmpty() ? MaxInclusive : default(TTrait).Next(MaxInclusive);
 
-    private ClosedRange(TValue minInclusive, TValue maxInclusive)
+    private Range(TValue minInclusive, TValue maxInclusive)
     {
         MinInclusive = minInclusive;
         MaxInclusive = maxInclusive;
     }
 
-    public static ClosedRange<TValue, TTrait> Empty => new(POS_INF, NEG_INF); // Min > Max => empty
-    public static ClosedRange<TValue, TTrait> Entire => new(NEG_INF, POS_INF);
-    public static ClosedRange<TValue, TTrait> FromInclusiveBounds(TValue minInclusive, TValue maxInclusive) => new(minInclusive, maxInclusive);
-    public static ClosedRange<TValue, TTrait> FromExclusiveBounds(TValue? minExclusive, TValue? maxExclusive)
+    public static Range<TValue, TTrait> Empty => new(POS_INF, NEG_INF); // Min > Max => empty
+    public static Range<TValue, TTrait> Entire => new(NEG_INF, POS_INF);
+    public static Range<TValue, TTrait> FromInclusiveBounds(TValue minInclusive, TValue maxInclusive) => new(minInclusive, maxInclusive);
+    public static Range<TValue, TTrait> FromExclusiveBounds(TValue? minExclusive, TValue? maxExclusive)
     {
         var minInclusiveOpt = minExclusive is {} minEx ? default(TTrait).Next(minEx) : NEG_INF;
         var maxInclusiveOpt = maxExclusive is {} maxEx ? default(TTrait).Previous(maxEx) : POS_INF;
@@ -60,22 +60,22 @@ public readonly struct ClosedRange<TValue, TTrait> : IEquatable<ClosedRange<TVal
         {
             (null, _) => Empty, // no next value for minExclusive => empty
             (_, null) => Empty, // no previous value for maxExclusive => empty
-            ({} minInclusive, {} maxInclusive) => new ClosedRange<TValue, TTrait>(minInclusive, maxInclusive),
+            ({} minInclusive, {} maxInclusive) => new Range<TValue, TTrait>(minInclusive, maxInclusive),
         };
     }
 
-    public static ClosedRange<TValue, TTrait> GreaterThanInclusive(TValue min) => new(min, POS_INF);
-    public static ClosedRange<TValue, TTrait> LessThanInclusive(TValue max) => new(NEG_INF, max);
-    public static ClosedRange<TValue, TTrait> GreaterThanExclusive(TValue min) => default(TTrait).Next(min) is {} minInclusive ? GreaterThanInclusive(minInclusive) : Empty;
-    public static ClosedRange<TValue, TTrait> LessThanExclusive(TValue max) => default(TTrait).Previous(max) is {} maxInclusive ? LessThanInclusive(maxInclusive) : Empty;
-    public static ClosedRange<TValue, TTrait> Point(TValue v) => new(v, v);
+    public static Range<TValue, TTrait> GreaterThanInclusive(TValue min) => new(min, POS_INF);
+    public static Range<TValue, TTrait> LessThanInclusive(TValue max) => new(NEG_INF, max);
+    public static Range<TValue, TTrait> GreaterThanExclusive(TValue min) => default(TTrait).Next(min) is {} minInclusive ? GreaterThanInclusive(minInclusive) : Empty;
+    public static Range<TValue, TTrait> LessThanExclusive(TValue max) => default(TTrait).Previous(max) is {} maxInclusive ? LessThanInclusive(maxInclusive) : Empty;
+    public static Range<TValue, TTrait> Point(TValue v) => new(v, v);
 
     public bool IsEmpty() => default(TTrait).Compare(MinInclusive, MaxInclusive) > 0;
 
-    public ClosedRange<TValue, TTrait> Intersect(ClosedRange<TValue, TTrait> other) => new(default(TTrait).Max(MinInclusive, other.MinInclusive), default(TTrait).Min(MaxInclusive, other.MaxInclusive));
+    public Range<TValue, TTrait> Intersect(Range<TValue, TTrait> other) => new(default(TTrait).Max(MinInclusive, other.MinInclusive), default(TTrait).Min(MaxInclusive, other.MaxInclusive));
 
     // subtract single value v; may split range into up to two ranges
-    public IEnumerable<ClosedRange<TValue, TTrait>> ExcludeValue(TValue v)
+    public IEnumerable<Range<TValue, TTrait>> ExcludeValue(TValue v)
     {
         var vPrevOpt = default(TTrait).Previous(v);
         var vNextOpt = default(TTrait).Next(v);
@@ -83,25 +83,25 @@ public readonly struct ClosedRange<TValue, TTrait> : IEquatable<ClosedRange<TVal
         {
             case (null, null):
                 // no previous or next: v is both min and max sentinel
-                return Array.Empty<ClosedRange<TValue, TTrait>>();
+                return Array.Empty<Range<TValue, TTrait>>();
             case (null, { } vNext):
                 // no previous: v is min sentinel
-                return new[] { new ClosedRange<TValue, TTrait>(default(TTrait).Max(vNext, MinInclusive), MaxInclusive) }.Where(r => !r.IsEmpty());
+                return new[] { new Range<TValue, TTrait>(default(TTrait).Max(vNext, MinInclusive), MaxInclusive) }.Where(r => !r.IsEmpty());
             case ({ } vPrev, null):
                 // no next: v is max sentinel
-                return new[] { new ClosedRange<TValue, TTrait>(MinInclusive, default(TTrait).Min(MaxInclusive, vPrev)) }.Where(r => !r.IsEmpty());
+                return new[] { new Range<TValue, TTrait>(MinInclusive, default(TTrait).Min(MaxInclusive, vPrev)) }.Where(r => !r.IsEmpty());
             case ({} vPrev, {} vNext):
                 // normal value
                 return new[]
                 {
-                    new ClosedRange<TValue, TTrait>(MinInclusive, default(TTrait).Min(MaxInclusive, vPrev)),
-                    new ClosedRange<TValue, TTrait>(default(TTrait).Max(MinInclusive,  vNext), MaxInclusive),
+                    new Range<TValue, TTrait>(MinInclusive, default(TTrait).Min(MaxInclusive, vPrev)),
+                    new Range<TValue, TTrait>(default(TTrait).Max(MinInclusive,  vNext), MaxInclusive),
                 }.Where(r => !r.IsEmpty());
         }
     }
 
     // try union: if adjacent or overlapping, return union; otherwise null
-    public ClosedRange<TValue, TTrait>? Union(ClosedRange<TValue, TTrait> other)
+    public Range<TValue, TTrait>? Union(Range<TValue, TTrait> other)
     {
         if (IsEmpty()) return other;
         if (other.IsEmpty()) return this;
@@ -138,16 +138,16 @@ public readonly struct ClosedRange<TValue, TTrait> : IEquatable<ClosedRange<TVal
 
         var min = default(TTrait).Min(MinInclusive, other.MinInclusive);
         var max = default(TTrait).Max(MaxInclusive, other.MaxInclusive);
-        return new ClosedRange<TValue, TTrait>(min, max);
+        return new Range<TValue, TTrait>(min, max);
     }
 
-    public bool Equals(ClosedRange<TValue, TTrait> other) =>
+    public bool Equals(Range<TValue, TTrait> other) =>
         IsEmpty() && other.IsEmpty() || MinInclusive.Equals(other.MinInclusive) && MaxInclusive.Equals(other.MaxInclusive);
 
-    public override bool Equals(object? obj) => obj is ClosedRange<TValue, TTrait> other && Equals(other);
+    public override bool Equals(object? obj) => obj is Range<TValue, TTrait> other && Equals(other);
     public override int GetHashCode() => IsEmpty() ? 0 : HashCode.Combine(MinInclusive, MaxInclusive);
-    public static bool operator ==(ClosedRange<TValue, TTrait> left, ClosedRange<TValue, TTrait> right) => left.Equals(right);
-    public static bool operator !=(ClosedRange<TValue, TTrait> left, ClosedRange<TValue, TTrait> right) => !left.Equals(right);
+    public static bool operator ==(Range<TValue, TTrait> left, Range<TValue, TTrait> right) => left.Equals(right);
+    public static bool operator !=(Range<TValue, TTrait> left, Range<TValue, TTrait> right) => !left.Equals(right);
 
     public override string ToString() => IsEmpty() ? "Empty" : $"[{MinInclusive}, {MaxInclusive}]";
 }
@@ -191,7 +191,7 @@ public struct RangeFloatTrait : IRangeTrait<float>
 public static class RangesUtil
 {
     // convert to animator conditions for a given parameter name
-    public static AnimatorCondition[] ToConditions(this IntRangeImpl range, string parameter)
+    public static AnimatorCondition[] ToConditions(this IntRange range, string parameter)
     {
         return (range.MinExclusive, range.MaxExclusive) switch
         {
@@ -206,7 +206,7 @@ public static class RangesUtil
         };
     }
 
-    public static AnimatorCondition[] ToConditions(this FloatOpenRange range, string parameter) => (Min: range.MinExclusive, Max: range.MaxExclusive) switch
+    public static AnimatorCondition[] ToConditions(this FloatRange range, string parameter) => (Min: range.MinExclusive, Max: range.MaxExclusive) switch
     {
         (null, null) => Array.Empty<AnimatorCondition>(),
         ({ } min, null) => new[] { GreaterCondition(parameter, min) },
