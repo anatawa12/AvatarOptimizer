@@ -259,390 +259,117 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             switch (paramType)
             {
                 case AnimatorControllerParameterType.Float:
-                {
-                    var allRanges = FloatRangeSet.Empty;
-                    var stateRanges = new Dictionary<AnimatorState, FloatRangeSet>();
-                    foreach (var entryTransition in entryTransitions)
-                    {
-                        if (entryTransition.conditions.Any(cond => !cond.IsValidForFloat())) return null;
-                        var range = RangesUtil.FloatRangeSetFromConditions(entryTransition.conditions!);
-                        var state = entryTransition.destinationState!;
-
-                        if (!allRanges.Intersect(range).IsEmpty()) return null; // duplicated range
-
-                        stateRanges.TryGetValue(state, out var values);
-                        stateRanges[state] = values.Union(range);
-                        allRanges = allRanges.Union(values);
-                    }
-
-                    // check there are no states without entry transition (including default transition).
-                    stateRanges.TryAdd(defaultState, FloatRangeSet.Empty);
-                    if (stateRanges.Count != states.Length) return null;
-
-                    // check for transitions
-                    foreach (var childStateInfo in states)
-                    {
-                        var state = childStateInfo.state;
-                        var transitions = state.transitions;
-                        // basic transition check: all transitions are exit transitions without blending
-                        var allConditions = new AnimatorCondition[transitions.Length][];
-                        for (var i = 0; i < transitions.Length; i++)
-                        {
-                            var transition = transitions[i];
-                            if (transition is not
-                                {
-                                    isExit: true,
-                                    solo: false,
-                                    mute: false,
-                                    destinationState: null,
-                                    destinationStateMachine: null,
-                                    conditions: { } conditions,
-
-                                    hasExitTime: false,
-                                    duration: 0,
-                                    offset: 0,
-                                    // since duration is zero, interruption should not be happened
-                                }) return null;
-                            allConditions[i] = conditions;
-                        }
-
-                        // transition condition check.
-                        if (defaultState == state)
-                        {
-                            // for default state, we check if we exit the default state if the value is any other states value.
-                            // We allow too relaxed condition for exiting default state since it will re-enter the default state.
-                            var exitValues = allRanges;
-                            exitValues = exitValues.Exclude(stateRanges[state]);
-
-                            foreach (var conditions in allConditions)
-                            {
-                                // conditions with parameters other than conditionParameter can be false
-                                if (conditions.Any(c => c.parameter != conditionParameter)) continue;
-                                if (conditions.Any(c => !c.IsValidForFloat())) return null; // invalid condition
-
-                                exitValues = exitValues.Exclude(RangesUtil.FloatRangeSetFromConditions(conditions));
-                            }
-
-                            if (!exitValues.IsEmpty()) return null;
-                        }
-                        else
-                        {
-                            // for other states, it have to leave state iff value is not any of current value
-
-                            // conditions with parameters other than conditionParameter can be false
-                            if (allConditions.Any(conditions => conditions.Any(c => c.parameter != conditionParameter)))
-                                return null; // non-conditionParameter condition found
-                            if (allConditions.Any(conditions => conditions.Any(c => !c.IsValidForFloat())))
-                                return null; // invalid condition
-
-                            var exitingValues = FloatRangeSet.Union(allConditions.Select(RangesUtil.FloatRangeSetFromConditions));
-                            var expectedToExitRange = stateRanges[state].Complement();
-                            if (!exitingValues.Equals(expectedToExitRange)) return null;
-                        }
-                    }
-
-                    return new ConvertibleLayerInfo(conditionParameter, defaultState, stateRanges, timeMotionParameter);
-                }
-                    break;
+                    return ProcessLayerByType<FloatRangeSet, FloatConditionTrait>(conditionParameter, timeMotionParameter, defaultState, states, entryTransitions);
                 case AnimatorControllerParameterType.Int:
-                {
-                    var allRanges = IntRangeSet.Empty;
-                    var stateRanges = new Dictionary<AnimatorState, IntRangeSet>();
-                    foreach (var entryTransition in entryTransitions)
-                    {
-                        if (entryTransition.conditions.Any(cond => !cond.IsValidForInt())) return null;
-                        var range = RangesUtil.IntRangeSetFromConditions(entryTransition.conditions!);
-                        var state = entryTransition.destinationState!;
-
-                        if (!allRanges.Intersect(range).IsEmpty()) return null; // duplicated range
-
-                        stateRanges.TryGetValue(state, out var values);
-                        stateRanges[state] = values.Union(range);
-                        allRanges = allRanges.Union(values);
-                    }
-
-                    // check there are no states without entry transition (including default transition).
-                    stateRanges.TryAdd(defaultState, IntRangeSet.Empty);
-                    if (stateRanges.Count != states.Length) return null;
-
-                    // check for transitions
-                    foreach (var childStateInfo in states)
-                    {
-                        var state = childStateInfo.state;
-                        var transitions = state.transitions;
-                        // basic transition check: all transitions are exit transitions without blending
-                        var allConditions = new AnimatorCondition[transitions.Length][];
-                        for (var i = 0; i < transitions.Length; i++)
-                        {
-                            var transition = transitions[i];
-                            if (transition is not
-                                {
-                                    isExit: true,
-                                    solo: false,
-                                    mute: false,
-                                    destinationState: null,
-                                    destinationStateMachine: null,
-                                    conditions: { } conditions,
-
-                                    hasExitTime: false,
-                                    duration: 0,
-                                    offset: 0,
-                                    // since duration is zero, interruption should not be happened
-                                }) return null;
-                            allConditions[i] = conditions;
-                        }
-
-                        // transition condition check.
-                        if (defaultState == state)
-                        {
-                            // for default state, we check if we exit the default state if the value is any other states value.
-                            // We allow too relaxed condition for exiting default state since it will re-enter the default state.
-                            var exitValues = allRanges;
-                            exitValues = exitValues.Exclude(stateRanges[state]);
-
-                            foreach (var conditions in allConditions)
-                            {
-                                // conditions with parameters other than conditionParameter can be false
-                                if (conditions.Any(c => c.parameter != conditionParameter)) continue;
-                                if (conditions.Any(c => !c.IsValidForInt())) return null; // invalid condition
-
-                                exitValues = exitValues.Exclude(RangesUtil.IntRangeSetFromConditions(conditions));
-                            }
-
-                            if (!exitValues.IsEmpty()) return null;
-                        }
-                        else
-                        {
-                            // for other states, it have to leave state iff value is not any of current value
-
-                            // conditions with parameters other than conditionParameter can be false
-                            if (allConditions.Any(conditions => conditions.Any(c => c.parameter != conditionParameter)))
-                                return null; // non-conditionParameter condition found
-                            if (allConditions.Any(conditions => conditions.Any(c => !c.IsValidForInt())))
-                                return null; // invalid condition
-
-                            var exitingValues = IntRangeSet.Union(allConditions.Select(RangesUtil.IntRangeSetFromConditions));
-                            var expectedToExitRange = stateRanges[state].Complement();
-                            if (!exitingValues.Equals(expectedToExitRange)) return null;
-                        }
-                    }
-
-                    return new ConvertibleLayerInfo(conditionParameter, defaultState, stateRanges.ToDictionary(p => p.Key, p => RangesUtil.IntRangeSetToFloatRangeSet(p.Value)), timeMotionParameter);
-                }
-                    break;
-                case AnimatorControllerParameterType.Bool:
-                {
-                    var allRanges = BoolSet.Empty;
-                    var stateRanges = new Dictionary<AnimatorState, BoolSet>();
-                    foreach (var entryTransition in entryTransitions)
-                    {
-                        if (entryTransition.conditions.Any(cond => !cond.IsValidForBool())) return null;
-                        var range = RangesUtil.BoolSetFromConditions(entryTransition.conditions!);
-                        var state = entryTransition.destinationState!;
-
-                        if (!allRanges.Intersect(range).IsEmpty()) return null; // duplicated range
-
-                        stateRanges.TryGetValue(state, out var values);
-                        stateRanges[state] = values.Union(range);
-                        allRanges = allRanges.Union(values);
-                    }
-
-                    // check there are no states without entry transition (including default transition).
-                    stateRanges.TryAdd(defaultState, BoolSet.Empty);
-                    if (stateRanges.Count != states.Length) return null;
-
-                    // check for transitions
-                    foreach (var childStateInfo in states)
-                    {
-                        var state = childStateInfo.state;
-                        var transitions = state.transitions;
-                        // basic transition check: all transitions are exit transitions without blending
-                        var allConditions = new AnimatorCondition[transitions.Length][];
-                        for (var i = 0; i < transitions.Length; i++)
-                        {
-                            var transition = transitions[i];
-                            if (transition is not
-                                {
-                                    isExit: true,
-                                    solo: false,
-                                    mute: false,
-                                    destinationState: null,
-                                    destinationStateMachine: null,
-                                    conditions: { } conditions,
-
-                                    hasExitTime: false,
-                                    duration: 0,
-                                    offset: 0,
-                                    // since duration is zero, interruption should not be happened
-                                }) return null;
-                            allConditions[i] = conditions;
-                        }
-
-                        // transition condition check.
-                        if (defaultState == state)
-                        {
-                            // for default state, we check if we exit the default state if the value is any other states value.
-                            // We allow too relaxed condition for exiting default state since it will re-enter the default state.
-                            var exitValues = allRanges;
-                            exitValues = exitValues.Exclude(stateRanges[state]);
-
-                            foreach (var conditions in allConditions)
-                            {
-                                // conditions with parameters other than conditionParameter can be false
-                                if (conditions.Any(c => c.parameter != conditionParameter)) continue;
-                                if (conditions.Any(c => !c.IsValidForBool())) return null; // invalid condition
-
-                                exitValues = exitValues.Exclude(RangesUtil.BoolSetFromConditions(conditions));
-                            }
-
-                            if (!exitValues.IsEmpty()) return null;
-                        }
-                        else
-                        {
-                            // for other states, it have to leave state iff value is not any of current value
-
-                            // conditions with parameters other than conditionParameter can be false
-                            if (allConditions.Any(conditions => conditions.Any(c => c.parameter != conditionParameter)))
-                                return null; // non-conditionParameter condition found
-                            if (allConditions.Any(conditions => conditions.Any(c => !c.IsValidForBool())))
-                                return null; // invalid condition
-
-                            var exitingValues = BoolSet.Union(allConditions.Select(RangesUtil.BoolSetFromConditions));
-                            var expectedToExitRange = stateRanges[state].Complement();
-                            if (!exitingValues.Equals(expectedToExitRange)) return null;
-                        }
-                    }
-                    
-                    return new ConvertibleLayerInfo(conditionParameter, defaultState, stateRanges.ToDictionary(p => p.Key, p => RangesUtil.BoolSetToFloatRangeSet(p.Value)), timeMotionParameter);
-                }
-                    break;
+                    return ProcessLayerByType<IntRangeSet, IntConditionTrait>(conditionParameter, timeMotionParameter, defaultState, states, entryTransitions);
+                case AnimatorControllerParameterType.Bool: 
+                    return ProcessLayerByType<BoolSet, BoolConditionTrait>(conditionParameter, timeMotionParameter, defaultState, states, entryTransitions);
                 default: return null;
             }
- 
-            // 4th check: each entry transition has single condition with 'if', 'if not', or 'equals' mode.
-            //            if they are 'equals', the threshold must be finite number and unique among states.
-            var stateValues = new Dictionary<AnimatorState, HashSet<IntOrBool>>();
-            var allValues = new HashSet<IntOrBool>();
-            foreach (var entryTransition in entryTransitions)
+            
+        }
+
+        static ConvertibleLayerInfo? ProcessLayerByType<TRangeSet, TTrait>(
+            string conditionParameter,
+            string? timeMotionParameter,
+            AnimatorState defaultState,
+            ChildAnimatorState[] states,
+            AnimatorTransition[] entryTransitions)
+            where TRangeSet : struct, IRangeSet<TRangeSet>
+            where TTrait : struct, IConditionTrait<TRangeSet>
+        {
             {
-                var conditions = entryTransition.conditions!;
-                var dest = entryTransition.destinationState!;
-
-                if (conditions.Length != 1) return null;
-                if (CheckIntOrBoolCondition(conditions[0]) is not { } value) return null;
-                if (!AddToStateValues(dest, value)) return null; // duplicated value
-            }
-
-            IntOrBool? CheckIntOrBoolCondition(AnimatorCondition condition)
-            {
-                var mode = condition.mode;
-                var threshold = condition.threshold;
-
-                return mode switch
                 {
-                    // not finite makes casting to int undefined
-                    AnimatorConditionMode.Equals when float.IsFinite(threshold) => (int)threshold,
-                    AnimatorConditionMode.If => true,
-                    AnimatorConditionMode.IfNot => false,
-                    _ => null,
-                };
-            }
+                    var allRanges = default(TTrait).Empty;
+                    var stateRanges = new Dictionary<AnimatorState, TRangeSet>();
+                    foreach (var entryTransition in entryTransitions)
+                    {
+                        if (entryTransition.conditions.Any(cond => !default(TTrait).IsValidCondition(cond)))
+                            return null;
+                        var range = default(TTrait).SetFromConditions(entryTransition.conditions!);
+                        var state = entryTransition.destinationState!;
 
-            bool AddToStateValues(AnimatorState state, IntOrBool value)
-            {
-                if (!stateValues.TryGetValue(state, out var values))
-                    stateValues.Add(state, values = new HashSet<IntOrBool>());
-                if (allValues.Contains(value)) return false; // duplicated value
-                values.Add(value);
-                allValues.Add(value);
-                return true;
-            }
+                        if (!allRanges.Intersect(range).IsEmpty()) return null; // duplicated range
 
-            // check there are no states without entry transition.
-            stateValues.TryAdd(defaultState, new HashSet<IntOrBool>());
-            if (stateValues.Count != states.Length) return null;
+                        stateRanges.TryGetValue(state, out var values);
+                        stateRanges[state] = values.Union(range);
+                        allRanges = allRanges.Union(values);
+                    }
 
-            // check for transitions
-            foreach (var childStateInfo in states)
-            {
-                var state = childStateInfo.state;
-                var transitions = state.transitions;
-                // basic transition check: all transitions are exit transitions without blending
-                var allConditions = new AnimatorCondition[transitions.Length][];
-                for (var i = 0; i < transitions.Length; i++)
-                {
-                    var transition = transitions[i];
-                    if (transition is not
+                    // check there are no states without entry transition (including default transition).
+                    stateRanges.TryAdd(defaultState, default(TTrait).Empty);
+                    if (stateRanges.Count != states.Length) return null;
+
+                    // check for transitions
+                    foreach (var childStateInfo in states)
+                    {
+                        var state = childStateInfo.state;
+                        var transitions = state.transitions;
+                        // basic transition check: all transitions are exit transitions without blending
+                        var allConditions = new AnimatorCondition[transitions.Length][];
+                        for (var i = 0; i < transitions.Length; i++)
                         {
-                            isExit: true,
-                            solo: false,
-                            mute: false,
-                            destinationState: null,
-                            destinationStateMachine: null,
-                            conditions: { } conditions,
+                            var transition = transitions[i];
+                            if (transition is not
+                                {
+                                    isExit: true,
+                                    solo: false,
+                                    mute: false,
+                                    destinationState: null,
+                                    destinationStateMachine: null,
+                                    conditions: { } conditions,
 
-                            hasExitTime: false,
-                            duration: 0,
-                            offset: 0,
-                            // since duration is zero, interruption should not be happened
-                        }) return null;
-                    allConditions[i] = conditions;
-                }
+                                    hasExitTime: false,
+                                    duration: 0,
+                                    offset: 0,
+                                    // since duration is zero, interruption should not be happened
+                                }) return null;
+                            allConditions[i] = conditions;
+                        }
 
-                // transition condition check.
-                if (defaultState == state)
-                {
-                    // for default state, we check if we exit the default state if the value is any other states value.
-                    // We allow too relaxed condition for exiting default state since it will re-enter the default state.
-                    var exitValues = new HashSet<IntOrBool>(allValues);
-                    exitValues.ExceptWith(stateValues[state]);
+                        // transition condition check.
+                        if (defaultState == state)
+                        {
+                            // for default state, we check if we exit the default state if the value is any other states value.
+                            // We allow too relaxed condition for exiting default state since it will re-enter the default state.
+                            var exitValues = allRanges;
+                            exitValues = exitValues.Exclude(stateRanges[state]);
 
-                    foreach (var conditions in allConditions)
-                    {
-                        // conditions with parameters other than conditionParameter can be false
-                        if (conditions.Any(c => c.parameter != conditionParameter)) continue;
+                            foreach (var conditions in allConditions)
+                            {
+                                // conditions with parameters other than conditionParameter can be false
+                                if (conditions.Any(c => c.parameter != conditionParameter)) continue;
+                                if (conditions.Any(c => !default(TTrait).IsValidCondition(c)))
+                                    return null; // invalid condition
 
-                        exitValues.RemoveWhere(value => value.IntValue.HasValue ?
-                            conditions.All(c => c.SatisfiesInt(value.IntValue.Value) == true) :
-                            conditions.All(c => c.SatisfiesBool(value.BoolValue!.Value) == true));
+                                exitValues = exitValues.Exclude(default(TTrait).SetFromConditions(conditions));
+                            }
+
+                            if (!exitValues.IsEmpty()) return null;
+                        }
+                        else
+                        {
+                            // for other states, it have to leave state iff value is not any of current value
+
+                            // conditions with parameters other than conditionParameter can be false
+                            if (allConditions.Any(conditions => conditions.Any(c => c.parameter != conditionParameter)))
+                                return null; // non-conditionParameter condition found
+                            if (allConditions.Any(conditions =>
+                                    conditions.Any(c => !default(TTrait).IsValidCondition(c))))
+                                return null; // invalid condition
+
+                            var exitingValues =
+                                default(TTrait).Union(allConditions.Select(default(TTrait).SetFromConditions));
+                            var expectedToExitRange = stateRanges[state].Complement();
+                            if (!exitingValues.Equals(expectedToExitRange)) return null;
+                        }
                     }
 
-                    if (exitValues.Count != 0) return null;
-                }
-                else
-                {
-                    // for other states, it have to leave state if value is not any of current value
-                    // TODO: users can create condition like `< minValue` or `> maxValue` to leave state
-                    // TODO: users can exit state and immediately enter to same state infinitely
-                    // https://github.com/anatawa12/AvatarOptimizer/issues/862
-                    var values = stateValues[state];
-                    if (!PossibleValuesExitTransitionCheck(values)) return null;
-                }
-
-                bool PossibleValuesExitTransitionCheck(HashSet<IntOrBool> values)
-                {
-                    if (allConditions.Length != 1) return false;
-                    var conditions = allConditions[0];
-                    if (conditions.Length != values.Count) return false;
-
-                    values = new HashSet<IntOrBool>(values);
-                    foreach (var condition in conditions)
-                    {
-                        if (condition.mode != AnimatorConditionMode.NotEqual &&
-                            condition.mode != AnimatorConditionMode.IfNot &&
-                            condition.mode != AnimatorConditionMode.If) return false;
-                        if (condition.parameter != conditionParameter) return false;
-                        IntOrBool value =
-                            condition.mode == AnimatorConditionMode.NotEqual ? (int)condition.threshold :
-                            condition.mode == AnimatorConditionMode.IfNot ? true : false;
-                        if (!values.Remove(value)) return false;
-                    }
-
-                    return true;
+                    return new ConvertibleLayerInfo(conditionParameter, defaultState,
+                        stateRanges.ToDictionary(p => p.Key, p => default(TTrait).ConvertToFloatRangeSet(p.Value)),
+                        timeMotionParameter);
                 }
             }
-
-            return new ConvertibleLayerInfo(conditionParameter, defaultState, stateValues, timeMotionParameter);
         }
 
         /// <summary>
@@ -897,6 +624,41 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             }
 
             return true;
+        }
+
+        interface IConditionTrait<TRangeSet> where TRangeSet : struct, IRangeSet<TRangeSet>
+        {
+            public TRangeSet Empty { get; }
+            public bool IsValidCondition(AnimatorCondition condition);
+            public TRangeSet SetFromConditions(AnimatorCondition[] conditions);
+            public TRangeSet Union(IEnumerable<TRangeSet> ranges);
+            public FloatRangeSet ConvertToFloatRangeSet(TRangeSet rangeSet);
+        }
+
+        struct BoolConditionTrait : IConditionTrait<BoolSet>
+        {
+            public BoolSet Empty => BoolSet.Empty;
+            public bool IsValidCondition(AnimatorCondition condition) => condition.IsValidForBool();
+            public BoolSet SetFromConditions(AnimatorCondition[] conditions) => RangesUtil.BoolSetFromConditions(conditions);
+            public BoolSet Union(IEnumerable<BoolSet> ranges) => BoolSet.Union(ranges);
+            public FloatRangeSet ConvertToFloatRangeSet(BoolSet rangeSet) => RangesUtil.BoolSetToFloatRangeSet(rangeSet);
+        }
+        struct IntConditionTrait : IConditionTrait<IntRangeSet>
+        {
+            public IntRangeSet Empty => IntRangeSet.Empty;
+            public bool IsValidCondition(AnimatorCondition condition) => condition.IsValidForInt();
+            public IntRangeSet SetFromConditions(AnimatorCondition[] conditions) => RangesUtil.IntRangeSetFromConditions(conditions);
+            public IntRangeSet Union(IEnumerable<IntRangeSet> ranges) => IntRangeSet.Union(ranges);
+            public FloatRangeSet ConvertToFloatRangeSet(IntRangeSet rangeSet) => RangesUtil.IntRangeSetToFloatRangeSet(rangeSet);
+        }
+
+        struct FloatConditionTrait : IConditionTrait<FloatRangeSet>
+        {
+            public FloatRangeSet Empty => FloatRangeSet.Empty;
+            public bool IsValidCondition(AnimatorCondition condition) => condition.IsValidForFloat();
+            public FloatRangeSet SetFromConditions(AnimatorCondition[] conditions) => RangesUtil.FloatRangeSetFromConditions(conditions);
+            public FloatRangeSet Union(IEnumerable<FloatRangeSet> ranges) => FloatRangeSet.Union(ranges);
+            public FloatRangeSet ConvertToFloatRangeSet(FloatRangeSet rangeSet) => rangeSet;
         }
 
         readonly struct IntOrBool : IEquatable<IntOrBool>

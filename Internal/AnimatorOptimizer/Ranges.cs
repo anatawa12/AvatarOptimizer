@@ -155,7 +155,18 @@ public readonly struct Range<TValue, TTrait> : IEquatable<Range<TValue, TTrait>>
     public override string ToString() => IsEmpty() ? "Empty" : $"[{MinInclusive}, {MaxInclusive}]";
 }
 
-public readonly struct RangeSet<TValue, TTrait> : IEquatable<RangeSet<TValue, TTrait>>
+public interface IRangeSet<TSelf> : IEquatable<TSelf>
+    where TSelf : IRangeSet<TSelf>
+{
+    public TSelf Union(TSelf other);
+    public TSelf Intersect(TSelf other);
+    public TSelf Exclude(TSelf other);
+    public TSelf Complement();
+
+    public bool IsEmpty();
+}
+
+public readonly struct RangeSet<TValue, TTrait> : IRangeSet<RangeSet<TValue, TTrait>>
     where TValue : struct, IEquatable<TValue>
     where TTrait : struct, IRangeTrait<TValue>
 {
@@ -337,7 +348,7 @@ public struct RangeFloatTrait : IRangeTrait<float>
 }
 
 // BoolSet is not a range or range set, but it's similar conceptually so we put it here.
-public readonly struct BoolSet : IEquatable<BoolSet>
+public readonly struct BoolSet : IRangeSet<BoolSet>
 {
     private readonly byte _bits;
     public bool HasFalse => (_bits & 1) != 0;
