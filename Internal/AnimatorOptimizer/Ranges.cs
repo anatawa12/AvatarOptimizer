@@ -260,6 +260,32 @@ public readonly struct RangeSet<TValue, TTrait> : IEquatable<RangeSet<TValue, TT
         return new RangeSet<TValue, TTrait>(ranges.ToImmutable());
     }
 
+    public RangeSet<TValue, TTrait> Exclude(RangeSet<TValue, TTrait> other) => Intersect(other.Complement());
+
+    public RangeSet<TValue, TTrait> Complement()
+    {
+        if (IsEmpty()) return Entire;
+        var inversedRanges = ImmutableArray.CreateBuilder<Range<TValue, TTrait>>(_ranges.Length + 1);
+        // add range before first range
+        var prevRange = _ranges[0];
+        if (prevRange.MinExclusive is {} firstMinEx)
+            inversedRanges.Add(Range<TValue, TTrait>.LessThanInclusive(firstMinEx));
+        // add ranges between ranges
+        for (int i = 1; i < _ranges.Length; i++)
+        {
+            var currentRange = _ranges[i];
+            // since both bounds have at least one next / previous range, we can safely use ! operator
+            var prevMaxEx = default(TTrait).Next(prevRange.MaxInclusive)!.Value;
+            var currentMinEx = default(TTrait).Previous(currentRange.MinInclusive)!.Value;
+            inversedRanges.Add(Range<TValue, TTrait>.FromInclusiveBounds(prevMaxEx, currentMinEx));
+            prevRange = currentRange;
+        }
+        // add range after last range
+        if (prevRange.MaxExclusive is {} lastMaxEx)
+            inversedRanges.Add(Range<TValue, TTrait>.GreaterThanInclusive(lastMaxEx));
+        return new RangeSet<TValue, TTrait>(inversedRanges.ToImmutable());
+    }
+
     public IEnumerable<Range<TValue, TTrait>> Ranges => _ranges == null ? Enumerable.Empty<Range<TValue, TTrait>>() : _ranges;
 
     public override string ToString() => $"{{{string.Join(", ", Ranges)}}}";

@@ -553,5 +553,84 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
         {
             Assert.That(left.Union(right).Ranges.ToList(), Is.EqualTo(expectedRanges));
         }
+
+        // ---------------- Complement ----------------
+        // Tests for the new RangeSet<TValue, TTrait>.Complement() overload.
+        private static IEnumerable<TestCaseData> ComplementSource()
+        {
+            // Empty -> Entire
+            yield return new TestCaseData(
+                IntRangeSet.Empty,
+                new[]
+                {
+                    IntRange.Entire
+                }
+            ).SetName("Complement_Empty_IsEntire");
+
+            // Entire -> Empty
+            yield return new TestCaseData(
+                IntRangeSet.Entire,
+                new IntRange[0]
+            ).SetName("Complement_Entire_IsEmpty");
+
+            // Single middle range -> two ranges: min..(a-1), (b+1)..max
+            yield return new TestCaseData(
+                IntRangeSet.FromRange(IntRange.FromInclusiveBounds(1, 3)),
+                new[]
+                {
+                    IntRange.FromInclusiveBounds(default(RangeIntTrait).MinValue, 0),
+                    IntRange.FromInclusiveBounds(4, default(RangeIntTrait).MaxValue),
+                }
+            ).SetName("Complement_SingleMiddleRange");
+
+            // Range touching Min -> only upper part remains
+            yield return new TestCaseData(
+                IntRangeSet.FromRange(IntRange.FromInclusiveBounds(default(RangeIntTrait).MinValue, 3)),
+                new[]
+                {
+                    IntRange.FromInclusiveBounds(4, default(RangeIntTrait).MaxValue),
+                }
+            ).SetName("Complement_TouchesMin");
+
+            // Range touching Max -> only lower part remains
+            yield return new TestCaseData(
+                IntRangeSet.FromRange(IntRange.FromInclusiveBounds(5, default(RangeIntTrait).MaxValue)),
+                new[]
+                {
+                    IntRange.FromInclusiveBounds(default(RangeIntTrait).MinValue, 4),
+                }
+            ).SetName("Complement_TouchesMax");
+
+            // Multiple disjoint ranges -> gaps become ranges in result
+            yield return new TestCaseData(
+                IntRangeSet.Union(IntRange.FromInclusiveBounds(1, 2), IntRange.FromInclusiveBounds(4, 5)),
+                new[]
+                {
+                    IntRange.FromInclusiveBounds(default(RangeIntTrait).MinValue, 0),
+                    IntRange.FromInclusiveBounds(3, 3),
+                    IntRange.FromInclusiveBounds(6, default(RangeIntTrait).MaxValue),
+                }
+            ).SetName("Complement_MultipleRanges");
+
+            // Single-point gap: left covers min..4 and 6..max -> inversion is the single point 5
+            yield return new TestCaseData(
+                IntRangeSet.Empty
+                    .Union(IntRange.FromInclusiveBounds(default(RangeIntTrait).MinValue, 4))
+                    .Union(IntRange.FromInclusiveBounds(6, default(RangeIntTrait).MaxValue)),
+                new[]
+                {
+                    IntRange.FromInclusiveBounds(5, 5),
+                }
+            ).SetName("Complement_SinglePointGap");
+        }
+
+        [Test, TestCaseSource(nameof(ComplementSource))]
+        public void Complement_Tests(IntRangeSet set, IntRange[] expectedRanges)
+        {
+            var res = set.Complement();
+            Assert.That(res.Ranges.ToList(), Is.EqualTo(expectedRanges));
+            // double inversion should restore the original set
+            Assert.That(res.Complement().Equals(set), Is.True);
+        }
     }
 }
