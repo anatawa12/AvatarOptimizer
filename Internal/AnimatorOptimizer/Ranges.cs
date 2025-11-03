@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEditor.Animations;
@@ -158,9 +159,13 @@ public readonly struct Range<TValue, TTrait> : IEquatable<Range<TValue, TTrait>>
 public interface IRangeSet<TSelf> : IEquatable<TSelf>
     where TSelf : IRangeSet<TSelf>
 {
+    [Pure]
     public TSelf Union(TSelf other);
+    [Pure]
     public TSelf Intersect(TSelf other);
+    [Pure]
     public TSelf Exclude(TSelf other);
+    [Pure]
     public TSelf Complement();
 
     public bool IsEmpty();
