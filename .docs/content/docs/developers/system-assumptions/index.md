@@ -21,8 +21,8 @@ Vertex indices are not used in shaders or other plugins that run after Avatar Op
 
 Avatar Optimizer may merge meshes and change vertex indices during optimization. If your shader or tool uses vertex indices, you must register this usage via ShaderInformation API to prevent incorrect optimization.
 
-## External Parameter Modifications {#external-parameter-modifications}
+## External Parameter Usage {#external-parameter-usage}
 
-We assume parameters are not modified externally unless explicitly stated to be modified by external tools (like OSC) with AssetDescription.
+We assume parameters are not modified or read by external tools unless explicitly declared in AssetDescription.
 
-Avatar Optimizer optimizes based on the assumption that parameter values remain unchanged unless marked otherwise. If your tool modifies parameters at runtime, ensure they are properly registered as external parameters via AssetDescription.
+Avatar Optimizer optimizes based on the assumption that parameter values are not modified or read externally unless marked otherwise. If your tool modifies or reads parameters at runtime (like OSC), ensure they are properly registered as external parameters via AssetDescription.
