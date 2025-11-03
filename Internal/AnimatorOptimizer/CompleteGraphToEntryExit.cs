@@ -11,7 +11,9 @@ using Object = UnityEngine.Object;
 namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
     using IntRange = Range<int, RangeIntTrait>;
+    using IntRangeSet = RangeSet<int, RangeIntTrait>;
     using FloatRange = Range<float, RangeFloatTrait>;
+    using FloatRangeSet = RangeSet<float, RangeFloatTrait>;
 
     /// <summary>
     /// Converts Complete Graph state machine to Entry-Exit state machine
@@ -253,156 +255,50 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         public static List<AnimatorCondition[]> OptimizeFloatConditions(List<AnimatorCondition[]> conditions)
         {
             // ensure the all conditions are valid. Float conditions only has Less and Greater modes.
-            if (!conditions.All(conds => conds.All(c => c.mode is AnimatorConditionMode.Less or AnimatorConditionMode.Greater)))
+            if (!conditions.All(conds =>
+                    conds.All(c => c.mode is AnimatorConditionMode.Less or AnimatorConditionMode.Greater)))
                 return conditions;
             // We convert each conditions to set of ranges, then merge them.
-            var ranges = conditions.Select(conds =>
-            {
-                var range = FloatRange.Entire;
-                foreach (var cond in conds)
+            var ranges = FloatRangeSet.Union(conditions.Select(conds => conds
+                .Aggregate(FloatRange.Entire, (current, cond) => cond.mode switch
                 {
-                    range = cond.mode switch
-                    {
-                        AnimatorConditionMode.Less => range.Intersect(FloatRange.LessThanExclusive(cond.threshold)),
-                        AnimatorConditionMode.Greater => range.Intersect(FloatRange.GreaterThanExclusive(cond.threshold)),
-                        _ => throw new ArgumentOutOfRangeException()
-                    };
-                }
-                return range;
-            }).Where(r => !r.IsEmpty()).ToList();
+                    AnimatorConditionMode.Less => current.Intersect(FloatRange.LessThanExclusive(cond.threshold)),
+                    AnimatorConditionMode.Greater => current.Intersect(FloatRange.GreaterThanExclusive(cond.threshold)),
+                    _ => throw new ArgumentOutOfRangeException(),
+                })));
 
-            if (ranges.Count == 0) return new List<AnimatorCondition[]>();
-
-            ranges.Sort((a, b) => (a.MinExclusive, b.MinExclusive) switch
-            {
-                (null, null) => 0,
-                (null, _) => -1,
-                (_, null) => 1,
-                ({} minA, {} minB) => minA.CompareTo(minB)
-            });
-
-            // merge ranges as possible
-            var mergedRanges = new List<FloatRange>();
-            mergedRanges.Add(ranges[0]);
-            for (int i = 1; i < ranges.Count; i++)
-            {
-                var current = ranges[i];
-                var lastMerged = mergedRanges[^1];
-                if (lastMerged.Union(current) is { } union)
-                {
-                    // two ranges are adjacent or overlapping, can be merged
-                    mergedRanges[^1] = union;
-                }
-                else
-                {
-                    // two ranges are disjoint, cannot be merged
-                    mergedRanges.Add(current);
-                }
-            }
+            if (ranges.IsEmpty()) return new List<AnimatorCondition[]>();
 
             var parameter = conditions.SelectMany(x => x).FirstOrDefault().parameter;
             // convert back to conditions
-            return mergedRanges.Where(range => !range.IsEmpty()).Select(range => range.ToConditions(parameter)).ToList();
+            return ranges.ToConditions(parameter);
         }
 
-        public static List<AnimatorCondition[]> OptimizeIntConditions(List<AnimatorCondition[]> thisConditions)
+        public static List<AnimatorCondition[]> OptimizeIntConditions(List<AnimatorCondition[]> conditions)
         {
             // accepted modes for int optimization: Equals, NotEqual, Greater, Less
-            if (!thisConditions.All(conds => conds.All(c =>
-                c.mode is AnimatorConditionMode.Equals or AnimatorConditionMode.NotEqual or
-                          AnimatorConditionMode.Greater or AnimatorConditionMode.Less)))
-                return thisConditions;
+            if (!conditions.All(conds => conds.All(c =>
+                    c.mode is AnimatorConditionMode.Equals or AnimatorConditionMode.NotEqual or
+                        AnimatorConditionMode.Greater or AnimatorConditionMode.Less)))
+                return conditions;
 
             // convert each conjunction to a set of integer ranges (may be multiple ranges due to NotEqual)
-            var allRanges = new List<IntRange>();
-            foreach (var conds in thisConditions)
-            {
-                // start with entire integer domain
-                var current = new List<IntRange> { IntRange.Entire };
-
-                foreach (var c in conds)
+            var allRangesSet = IntRangeSet.Union(conditions.Select(conds => conds
+                .Aggregate(IntRangeSet.Entire, (current, c) => c.mode switch
                 {
-                    int t = (int)c.threshold;
-                    current = (c.mode switch
-                    {
-                        AnimatorConditionMode.Equals => current.Select(r => r.Intersect(IntRange.Point(t))),
-                        AnimatorConditionMode.NotEqual => current.SelectMany(r => r.ExcludeValue(t)),
-                        // param > t => allowed ints >= t+1
-                        AnimatorConditionMode.Greater => current.Select(r => r.Intersect(IntRange.GreaterThanInclusive(t + 1))),
-                        // param < t => allowed ints <= t-1
-                        AnimatorConditionMode.Less => current.Select(r => r.Intersect(IntRange.LessThanInclusive(t - 1))),
-                        _ => throw new ArgumentOutOfRangeException()
-                    }).Where(intersect => !intersect.IsEmpty()).ToList();
-
-                    // No ranges left, the whole conjunction is unsatisfiable
-                    if (current.Count == 0) break;
-                }
-
-                allRanges.AddRange(current);
-            }
+                    AnimatorConditionMode.Equals => current.Intersect(IntRange.Point(Mathf.FloorToInt(c.threshold))),
+                    AnimatorConditionMode.NotEqual => current.ExcludeValue(Mathf.FloorToInt(c.threshold)),
+                    AnimatorConditionMode.Greater => current.Intersect(IntRange.GreaterThanExclusive(Mathf.FloorToInt(c.threshold))),
+                    AnimatorConditionMode.Less => current.Intersect(IntRange.LessThanExclusive(Mathf.FloorToInt(c.threshold))),
+                    _ => throw new ArgumentOutOfRangeException(),
+                })));
 
             // flatten ranges from all conjunctions, then sort and merge adjacent/overlapping ranges
-            if (allRanges.Count == 0) return new List<AnimatorCondition[]>();
-
-            allRanges.Sort((a, b) => a.MinInclusive.CompareTo(b.MinInclusive));
-
-            var merged = new List<IntRange> { allRanges[0] };
-            for (var i = 1; i < allRanges.Count; i++)
-            {
-                var cur = allRanges[i];
-                var last = merged[^1];
-                if (last.Union(cur) is { } union)
-                {
-                    merged[^1] = union;
-                }
-                else
-                {
-                    merged.Add(cur);
-                }
-            }
-
-            // We need to convert list of range to list of range with list of holes.
-            // a < x < b || b + 1 < x < c  => a < x < c with hole b since it's likely smaller number of conditions.
-            // We allow up to two connected values as a holes
-            // In other words, a < x < b || b + 2 < x < c will be a < x < c with hole b and b + 1, but
-            // a < x < b || b + 3 < x < c will remain as is.
-            var finalRanges = new List<(IntRange, List<int> holes)>();
-            foreach (var range in merged)
-            {
-                if (finalRanges.Count == 0)
-                {
-                    finalRanges.Add((range, new List<int>()));
-                    continue;
-                }
-
-                var (lastRange, holes) = finalRanges[^1];
-                // check if we can merge current range into lastRange with holes
-                if (range.MinInclusive - lastRange.MaxInclusive > 0 && range.MinInclusive - lastRange.MaxInclusive <= 3)
-                {
-                    // can merge
-                    // add holes for the gap
-                    for (int v = lastRange.MaxInclusive + 1; v < range.MinInclusive; v++)
-                    {
-                        holes.Add(v);
-                    }
-                    // update last range to cover current range
-                    finalRanges[^1] = (IntRange.FromInclusiveBounds(lastRange.MinInclusive, range.MaxInclusive), holes);
-                }
-                else
-                {
-                    // cannot merge, just add
-                    finalRanges.Add((range, new List<int>()));
-                }
-            }
+            if (allRangesSet.IsEmpty()) return new List<AnimatorCondition[]>();
 
             // convert merged ranges back to AnimatorCondition[] arrays; parameter name from input conditions
-            var parameter = thisConditions.SelectMany(x => x).FirstOrDefault().parameter;
-            return finalRanges.Select(tuple =>
-            {
-                var (range, holes) = tuple;
-                // create range and add NotEquals for holes
-                return range.ToConditions(parameter).Concat(holes.Select(h => NotEqualsCondition(parameter, h))).ToArray();
-            }).ToList();
+            var parameter = conditions.SelectMany(x => x).FirstOrDefault().parameter;
+            return allRangesSet.ToConditions(parameter);
         }
 
         public static List<AnimatorCondition[]> OptimizeBoolConditions(List<AnimatorCondition[]> conditions)

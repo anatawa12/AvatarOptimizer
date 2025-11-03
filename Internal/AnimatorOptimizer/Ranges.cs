@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEditor.Animations;
@@ -8,7 +9,9 @@ using UnityEngine;
 namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer;
 
 using IntRange = Range<int, RangeIntTrait>;
+using IntRangeSet = RangeSet<int, RangeIntTrait>;
 using FloatRange = Range<float, RangeFloatTrait>;
+using FloatRangeSet = RangeSet<float, RangeFloatTrait>;
 
 // This file includes 'range' related utilities for animator optimization.
 
@@ -152,6 +155,96 @@ public readonly struct Range<TValue, TTrait> : IEquatable<Range<TValue, TTrait>>
     public override string ToString() => IsEmpty() ? "Empty" : $"[{MinInclusive}, {MaxInclusive}]";
 }
 
+public readonly struct RangeSet<TValue, TTrait> : IEquatable<RangeSet<TValue, TTrait>>
+    where TValue : struct, IEquatable<TValue>
+    where TTrait : struct, IRangeTrait<TValue>
+{
+    // This list must not include empty ranges and must be sorted and non-overlapping.
+    // In most case this Rages is small so we use ImmutableArray instead of ImmutableList which uses b-tree internally.
+    private readonly ImmutableArray<Range<TValue, TTrait>> _ranges;
+
+    private RangeSet(ImmutableArray<Range<TValue, TTrait>> ranges)
+    {
+        _ranges = ranges;
+    }
+
+    public static RangeSet<TValue, TTrait> Empty => default;
+    public static RangeSet<TValue, TTrait> Entire => new(ImmutableArray.Create(Range<TValue, TTrait>.Entire));
+    public static RangeSet<TValue, TTrait> FromRange(Range<TValue, TTrait> range) => range.IsEmpty() ? Empty : new(ImmutableArray.Create(range));
+
+    public bool IsEmpty() => _ranges == null || _ranges.Length == 0;
+
+    public RangeSet<TValue, TTrait> Intersect(Range<TValue, TTrait> other) => _ranges == null ? Empty 
+        : new(_ranges.Select(r => r.Intersect(other)).Where(r => !r.IsEmpty()).ToImmutableArray());
+
+    public RangeSet<TValue, TTrait> ExcludeValue(TValue v) => _ranges == null ? this 
+        : new(_ranges.SelectMany(r => r.ExcludeValue(v)).ToImmutableArray());
+
+    public RangeSet<TValue, TTrait> Union(Range<TValue, TTrait> other) => Union(FromRange(other));
+    public RangeSet<TValue, TTrait> Union(RangeSet<TValue, TTrait> other) => Union(this, other);
+
+    public static RangeSet<TValue, TTrait> Union(params Range<TValue, TTrait>[] other) => Union((IEnumerable<Range<TValue, TTrait>>)other);
+    public static RangeSet<TValue, TTrait> Union(params RangeSet<TValue, TTrait>[] other) => Union((IEnumerable<RangeSet<TValue, TTrait>>)other);
+
+
+    // TODO? we may optimize selectmany by creating custom selectmany that merges two sorted lists to sorted list directly
+    public static RangeSet<TValue, TTrait> Union(IEnumerable<RangeSet<TValue, TTrait>> others) => Union(others.SelectMany(r => r.Ranges));
+
+    public static RangeSet<TValue, TTrait> Union(IEnumerable<Range<TValue, TTrait>> others)
+    {
+        ImmutableArray<Range<TValue, TTrait>>.Builder ranges = ImmutableArray.CreateBuilder<Range<TValue, TTrait>>();
+
+        ranges.AddRange(others);
+        ranges.Sort((r1, r2) => default(TTrait).Compare(r1.MinInclusive, r2.MinInclusive));
+
+        // merge sibling / overlapping ranges
+        Range<TValue, TTrait>? currentRange = null;
+        int currentIndex = 0;
+        for (var i = 0; i < ranges.Count; i++)
+        {
+            var nextRange = ranges[i];
+            if (nextRange.IsEmpty()) continue;
+
+            if (currentRange == null)
+            {
+                currentRange = nextRange;
+            }
+            else
+            {
+                var unioned = currentRange.Value.Union(nextRange);
+                if (unioned != null)
+                {
+                    currentRange = unioned;
+                }
+                else
+                {
+                    ranges[currentIndex++] = currentRange.Value;
+                    currentRange = nextRange;
+                }
+            }
+        }
+        if (currentRange != null)
+            ranges[currentIndex++] = currentRange.Value;
+
+        ranges.RemoveRange(currentIndex, ranges.Count - currentIndex);
+
+        return new RangeSet<TValue, TTrait>(ranges.ToImmutable());
+    }
+
+    public IEnumerable<Range<TValue, TTrait>> Ranges => _ranges == null ? Enumerable.Empty<Range<TValue, TTrait>>() : _ranges;
+
+    public override string ToString() => $"{{{string.Join(", ", Ranges)}}}";
+
+    public bool Equals(RangeSet<TValue, TTrait> other)
+    {
+        if (IsEmpty() && other.IsEmpty()) return true;
+        if (_ranges == null || other._ranges == null) return false;
+        return _ranges.SequenceEqual(other._ranges);
+    }
+    public override bool Equals(object? obj) => obj is RangeSet<TValue, TTrait> other && Equals(other);
+    public override int GetHashCode() => IsEmpty() ? 0 : _ranges!.Aggregate(0, (hash, range) => HashCode.Combine(hash, range.GetHashCode()));
+}
+
 public struct RangeIntTrait : IRangeTrait<int>
 {
     public int MinValue => int.MinValue;
@@ -206,6 +299,52 @@ public static class RangesUtil
         };
     }
 
+    public static List<AnimatorCondition[]> ToConditions(this IntRangeSet rangeSet, string parameter)
+    {
+        // We simply can convert each range to conditions, but that may produce many conditions.
+        // To get better result, we try to merge ranges with holes.
+        // a < x < b || b + 1 < x < c => a < x < c with hole b since it's likely smaller number of conditions.
+        // We allow up to two connected values as a holes
+        // In other words, a < x < b || b + 2 < x < c will be a < x < c with hole b and b + 1, but
+        // a < x < b || b + 3 < x < c will remain as is.
+        var finalRanges = new List<(IntRange, List<int> holes)>();
+        foreach (var range in rangeSet.Ranges)
+        {
+            if (finalRanges.Count == 0)
+            {
+                finalRanges.Add((range, new List<int>()));
+                continue;
+            }
+
+            var (lastRange, holes) = finalRanges[^1];
+            // check if we can merge current range into lastRange with holes
+            if (range.MinInclusive - lastRange.MaxInclusive > 0 && range.MinInclusive - lastRange.MaxInclusive <= 3)
+            {
+                // can merge
+                // add holes for the gap
+                for (int v = lastRange.MaxInclusive + 1; v < range.MinInclusive; v++)
+                {
+                    holes.Add(v);
+                }
+
+                // update last range to cover current range
+                finalRanges[^1] = (IntRange.FromInclusiveBounds(lastRange.MinInclusive, range.MaxInclusive), holes);
+            }
+            else
+            {
+                // cannot merge, just add
+                finalRanges.Add((range, new List<int>()));
+            }
+        }
+
+        return finalRanges.Select(tuple =>
+        {
+            var (range, holes) = tuple;
+            // create range and add NotEquals for holes
+            return range.ToConditions(parameter).Concat(holes.Select(h => NotEqualsCondition(parameter, h))).ToArray();
+        }).ToList();
+    }
+
     public static AnimatorCondition[] ToConditions(this FloatRange range, string parameter) => (Min: range.MinExclusive, Max: range.MaxExclusive) switch
     {
         (null, null) => Array.Empty<AnimatorCondition>(),
@@ -213,6 +352,9 @@ public static class RangesUtil
         (null, { } max) => new[] { LessCondition(parameter, max) },
         ({ } min, { } max) => new[] { GreaterCondition(parameter, min), LessCondition(parameter, max) },
     };
+    
+    public static List<AnimatorCondition[]> ToConditions(this FloatRangeSet rangeSet, string parameter) =>
+        rangeSet.Ranges.Select(range => range.ToConditions(parameter)).ToList();
 
     // utilities
     static AnimatorCondition AnimatorCondition(string parameter, AnimatorConditionMode mode, float threshold = 0) =>
