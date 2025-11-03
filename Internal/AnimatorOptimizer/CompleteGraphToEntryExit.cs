@@ -259,13 +259,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     conds.All(c => c.mode is AnimatorConditionMode.Less or AnimatorConditionMode.Greater)))
                 return conditions;
             // We convert each conditions to set of ranges, then merge them.
-            var ranges = FloatRangeSet.Union(conditions.Select(conds => conds
-                .Aggregate(FloatRange.Entire, (current, cond) => cond.mode switch
-                {
-                    AnimatorConditionMode.Less => current.Intersect(FloatRange.LessThanExclusive(cond.threshold)),
-                    AnimatorConditionMode.Greater => current.Intersect(FloatRange.GreaterThanExclusive(cond.threshold)),
-                    _ => throw new ArgumentOutOfRangeException(),
-                })));
+            var ranges = FloatRangeSet.Union(conditions.Select(RangesUtil.FloatRangeSetFromConditions));
 
             if (ranges.IsEmpty()) return new List<AnimatorCondition[]>();
 
@@ -283,15 +277,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 return conditions;
 
             // convert each conjunction to a set of integer ranges (may be multiple ranges due to NotEqual)
-            var allRangesSet = IntRangeSet.Union(conditions.Select(conds => conds
-                .Aggregate(IntRangeSet.Entire, (current, c) => c.mode switch
-                {
-                    AnimatorConditionMode.Equals => current.Intersect(IntRange.Point(Mathf.FloorToInt(c.threshold))),
-                    AnimatorConditionMode.NotEqual => current.ExcludeValue(Mathf.FloorToInt(c.threshold)),
-                    AnimatorConditionMode.Greater => current.Intersect(IntRange.GreaterThanExclusive(Mathf.FloorToInt(c.threshold))),
-                    AnimatorConditionMode.Less => current.Intersect(IntRange.LessThanExclusive(Mathf.FloorToInt(c.threshold))),
-                    _ => throw new ArgumentOutOfRangeException(),
-                })));
+            var allRangesSet = IntRangeSet.Union(conditions.Select(RangesUtil.IntRangeSetFromConditions));
 
             // flatten ranges from all conjunctions, then sort and merge adjacent/overlapping ranges
             if (allRangesSet.IsEmpty()) return new List<AnimatorCondition[]>();

@@ -356,6 +356,24 @@ public static class RangesUtil
     public static List<AnimatorCondition[]> ToConditions(this FloatRangeSet rangeSet, string parameter) =>
         rangeSet.Ranges.Select(range => range.ToConditions(parameter)).ToList();
 
+    public static IntRangeSet IntRangeSetFromConditions(AnimatorCondition[] conditions) => conditions
+        .Aggregate(IntRangeSet.Entire, (current, c) => c.mode switch
+        {
+            AnimatorConditionMode.Equals => current.Intersect(IntRange.Point(Mathf.FloorToInt(c.threshold))),
+            AnimatorConditionMode.NotEqual => current.ExcludeValue(Mathf.FloorToInt(c.threshold)),
+            AnimatorConditionMode.Greater => current.Intersect(IntRange.GreaterThanExclusive(Mathf.FloorToInt(c.threshold))),
+            AnimatorConditionMode.Less => current.Intersect(IntRange.LessThanExclusive(Mathf.FloorToInt(c.threshold))),
+            _ => throw new ArgumentOutOfRangeException(),
+        });
+
+    public static FloatRangeSet FloatRangeSetFromConditions(AnimatorCondition[] conditions) => conditions
+        .Aggregate(FloatRangeSet.Entire, (current, c) => c.mode switch
+        {
+            AnimatorConditionMode.Greater => current.Intersect(FloatRange.GreaterThanExclusive(c.threshold)),
+            AnimatorConditionMode.Less => current.Intersect(FloatRange.LessThanExclusive(c.threshold)),
+            _ => throw new ArgumentOutOfRangeException(),
+        });
+
     // utilities
     static AnimatorCondition AnimatorCondition(string parameter, AnimatorConditionMode mode, float threshold = 0) =>
         new()
@@ -365,15 +383,15 @@ public static class RangesUtil
             threshold = threshold,
         };
 
-    public static AnimatorCondition GreaterCondition(string parameter, float threshold) =>
+    private static AnimatorCondition GreaterCondition(string parameter, float threshold) =>
         AnimatorCondition(parameter, AnimatorConditionMode.Greater, threshold);
 
-    public static AnimatorCondition LessCondition(string parameter, float threshold) =>
+    private static AnimatorCondition LessCondition(string parameter, float threshold) =>
         AnimatorCondition(parameter, AnimatorConditionMode.Less, threshold);
 
-    public static AnimatorCondition EqualsCondition(string parameter, float threshold) =>
+    private static AnimatorCondition EqualsCondition(string parameter, float threshold) =>
         AnimatorCondition(parameter, AnimatorConditionMode.Equals, threshold);
 
-    public static AnimatorCondition NotEqualsCondition(string parameter, float threshold) =>
+    private static AnimatorCondition NotEqualsCondition(string parameter, float threshold) =>
         AnimatorCondition(parameter, AnimatorConditionMode.NotEqual, threshold);
 }
