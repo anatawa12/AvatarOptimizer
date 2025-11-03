@@ -38,6 +38,10 @@ public readonly struct ClosedRange<TValue, TTrait> : IEquatable<ClosedRange<TVal
     public readonly TValue MinInclusive; // inclusive
     public readonly TValue MaxInclusive; // inclusive
 
+    // exclusive view
+    public TValue? MinExclusive => IsEmpty() ? MinInclusive : default(TTrait).Previous(MinInclusive);
+    public TValue? MaxExclusive => IsEmpty() ? MaxInclusive : default(TTrait).Next(MaxInclusive);
+
     public ClosedRange(TValue minInclusive, TValue maxInclusive)
     {
         MinInclusive = minInclusive;
@@ -48,6 +52,8 @@ public readonly struct ClosedRange<TValue, TTrait> : IEquatable<ClosedRange<TVal
     public static ClosedRange<TValue, TTrait> Entire => new(NEG_INF, POS_INF);
     public static ClosedRange<TValue, TTrait> GreaterThanInclusive(TValue min) => new(min, POS_INF);
     public static ClosedRange<TValue, TTrait> LessThanInclusive(TValue max) => new(NEG_INF, max);
+    public static ClosedRange<TValue, TTrait> GreaterThanExclusive(TValue min) => default(TTrait).Next(min) is {} minInclusive ? GreaterThanInclusive(minInclusive) : Empty;
+    public static ClosedRange<TValue, TTrait> LessThanExclusive(TValue max) => default(TTrait).Previous(max) is {} maxInclusive ? LessThanInclusive(maxInclusive) : Empty;
     public static ClosedRange<TValue, TTrait> Point(TValue v) => new(v, v);
 
     public bool IsEmpty() => default(TTrait).Compare(MinInclusive, MaxInclusive) > 0;
@@ -225,20 +231,16 @@ public static class RangesUtil
     // convert to animator conditions for a given parameter name
     public static AnimatorCondition[] ToConditions(this IntRangeImpl range, string parameter)
     {
-        var hasMin = range.MinInclusive != int.MinValue;
-        var hasMax = range.MaxInclusive != int.MaxValue;
-
-        return (hasMin, hasMax) switch
+        return (range.MinExclusive, range.MaxExclusive) switch
         {
-            (false, false) => Array.Empty<AnimatorCondition>(),
-            (true, false) => new[] { GreaterCondition(parameter, range.MinInclusive - 1) },
-            (false, true) => new[] { LessCondition(parameter, range.MaxInclusive + 1f) },
-            (true, true) => range.MinInclusive == range.MaxInclusive
-                ? new[] { EqualsCondition(parameter, range.MinInclusive) }
-                : new[]
-                {
-                    GreaterCondition(parameter, range.MinInclusive - 1f), LessCondition(parameter, range.MaxInclusive + 1f)
-                }
+            // if both bounds are same, use Equals condition
+            (_, _) when range.MinInclusive == range.MaxInclusive => new[] { EqualsCondition(parameter, range.MinInclusive) },
+
+            // otherwise, use Greater/Less conditions
+            (null, null) => Array.Empty<AnimatorCondition>(),
+            ({ } min, null) => new[] { GreaterCondition(parameter, min) },
+            (null, { } max) => new[] { LessCondition(parameter, max) },
+            ({ } min, { } max) => new[] { GreaterCondition(parameter, min), LessCondition(parameter, max), }
         };
     }
 
