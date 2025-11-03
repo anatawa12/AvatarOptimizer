@@ -228,56 +228,46 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
             // check for conditions of entry transitions
 
-            string conditionParameter;
-            var stateValues = new Dictionary<AnimatorState, HashSet<IntOrBool>>();
-            var allValues = new HashSet<IntOrBool>();
+            // 1st check: all transitions are about the same single parameter
+            var conditionParameter = entryTransitions.SelectMany(x => x.conditions).Select(x => x.parameter).DistinctSingleOrDefaultIfNoneOrMultiple();
+            if (conditionParameter == null) return null; // no entry transitions or multiple parameters used in entry transitions
 
+            // 2nd check: transitions are focusing on state
+            foreach (var entryTransition in entryTransitions)
             {
-                var entryTransition = entryTransitions[0];
-
                 if (entryTransition is not
                     {
                         isExit: false,
                         destinationStateMachine: null,
-                        destinationState: { } dest,
-                        conditions: { Length: 1 } conditions
-                    })
-                    return null;
-
-                conditionParameter = conditions[0].parameter;
-
-                if (!intOrBoolParameters.Contains(conditionParameter)) return null; // neither int nor bool parameter
-
-                if (CheckIntOrBoolCondition(conditions[0]) is not { } value) return null;
-                if (!AddToStateValues(dest, value)) return null; // duplicated value
+                        destinationState: not null,
+                        conditions: not null,
+                    }) return null;
             }
 
-            for (var index = 1; index < entryTransitions.Length - 1; index++)
+            // 3rd check: parameter is int or bool
+            if (!intOrBoolParameters.Contains(conditionParameter)) return null; // neither int nor bool parameter
+
+            // 4th check: each entry transition has single condition with 'if', 'if not', or 'equals' mode.
+            //            if they are 'equals', the threshold must be finite number and unique among states.
+            var stateValues = new Dictionary<AnimatorState, HashSet<IntOrBool>>();
+            var allValues = new HashSet<IntOrBool>();
+            for (var index = 0; index < entryTransitions.Length - 1; index++)
             {
                 var entryTransition = entryTransitions[index];
-                if (entryTransition is not
-                    {
-                        isExit: false,
-                        destinationStateMachine: null,
-                        destinationState: { } dest,
-                        conditions: { Length: 1 } conditions
-                    }) return null;
+                var conditions = entryTransition.conditions!;
+                var dest = entryTransition.destinationState!;
 
+                if (entryTransition.conditions.Length != 1) return null;
                 if (CheckIntOrBoolCondition(conditions[0]) is not { } value) return null;
                 if (!AddToStateValues(dest, value)) return null; // duplicated value
             }
 
             // allow transition to default state without conditions for last entry transition
-            if (entryTransitions.Length >= 2) {
+            if (entryTransitions.Length >= 1) {
                 var entryTransition = entryTransitions[^1];
 
-                if (entryTransition is not
-                    {
-                        isExit: false,
-                        destinationStateMachine: null,
-                        destinationState: { } dest,
-                        conditions: { } conditions,
-                    }) return null;
+                var conditions = entryTransition.conditions!;
+                var dest = entryTransition.destinationState;
 
                 switch (conditions.Length)
                 {
@@ -297,14 +287,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
             IntOrBool? CheckIntOrBoolCondition(AnimatorCondition condition)
             {
-                if (condition is not
-                    {
-                        mode: var mode,
-                        parameter: { } parameter,
-                        threshold: var threshold,
-                    }) return null;
-
-                if (parameter != conditionParameter) return null;
+                var mode = condition.mode;
+                var threshold = condition.threshold;
 
                 return mode switch
                 {
