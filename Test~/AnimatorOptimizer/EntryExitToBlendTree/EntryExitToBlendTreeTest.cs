@@ -510,6 +510,295 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             Object.DestroyImmediate(controller);
         }
 
+        // https://github.com/anatawa12/AvatarOptimizer/issues/862
+        // Test Greater/Less conditions with Float parameter in diamond pattern
+        [Test]
+        public void FloatGreaterLessConvertibleDiamond()
+        {
+            var controller = new AnimatorController();
+            controller.name = "FloatGreaterLessConvertibleDiamond";
+            
+            // Add Float parameter
+            controller.AddParameter("FloatParam", AnimatorControllerParameterType.Float);
+            
+            // Create animation clips
+            var clip0 = new AnimationClip { name = "Clip0" };
+            var clip1 = new AnimationClip { name = "Clip1" };
+            var clip2 = new AnimationClip { name = "Clip2" };
+            
+            // Create a diamond pattern layer with Float parameter using Greater/Less conditions
+            var layer = new AnimatorControllerLayer
+            {
+                name = "TestLayer",
+                defaultWeight = 1.0f,
+                stateMachine = new AnimatorStateMachine
+                {
+                    name = "TestLayer",
+                    hideFlags = HideFlags.HideInHierarchy
+                }
+            };
+            
+            // Create states for different float ranges
+            // Default state for FloatParam < 0.5
+            var defaultState = layer.stateMachine.AddState("Low");
+            defaultState.motion = clip0;
+            defaultState.writeDefaultValues = true;
+            
+            // State for 0.5 <= FloatParam < 1.5
+            var midState = layer.stateMachine.AddState("Mid");
+            midState.motion = clip1;
+            midState.writeDefaultValues = true;
+            
+            // State for FloatParam >= 1.5
+            var highState = layer.stateMachine.AddState("High");
+            highState.motion = clip2;
+            highState.writeDefaultValues = true;
+            
+            layer.stateMachine.defaultState = defaultState;
+            
+            // Entry transitions with Greater/Less conditions
+            // 0.5 <= FloatParam < 1.5
+            var entryToMid = layer.stateMachine.AddEntryTransition(midState);
+            entryToMid.AddCondition(AnimatorConditionMode.Greater, 0.5f, "FloatParam");
+            entryToMid.AddCondition(AnimatorConditionMode.Less, 1.5f, "FloatParam");
+            
+            // FloatParam >= 1.5
+            var entryToHigh = layer.stateMachine.AddEntryTransition(highState);
+            entryToHigh.AddCondition(AnimatorConditionMode.Greater, 1.5f, "FloatParam");
+            
+            // Exit transitions - complement of entry conditions
+            // Default state exits when FloatParam >= 0.5
+            var exitFromDefault = defaultState.AddExitTransition(defaultExitTime: false);
+            exitFromDefault.duration = 0.0f;
+            exitFromDefault.AddCondition(AnimatorConditionMode.Greater, 0.5f, "FloatParam");
+            
+            // Mid state exits when FloatParam < 0.5 OR FloatParam >= 1.5
+            var exitFromMid1 = midState.AddExitTransition(defaultExitTime: false);
+            exitFromMid1.duration = 0.0f;
+            exitFromMid1.AddCondition(AnimatorConditionMode.Less, 0.5f, "FloatParam");
+            
+            var exitFromMid2 = midState.AddExitTransition(defaultExitTime: false);
+            exitFromMid2.duration = 0.0f;
+            exitFromMid2.AddCondition(AnimatorConditionMode.Greater, 1.5f, "FloatParam");
+            
+            // High state exits when FloatParam < 1.5
+            var exitFromHigh = highState.AddExitTransition(defaultExitTime: false);
+            exitFromHigh.duration = 0.0f;
+            exitFromHigh.AddCondition(AnimatorConditionMode.Less, 1.5f, "FloatParam");
+            
+            controller.AddLayer(layer);
+            
+            // Execute optimization
+            var aoController = new AOAnimatorController(controller);
+            EntryExitToBlendTree.Execute(_state, aoController);
+            
+            // Verify conversion happened (layer should now have a blend tree)
+            var convertedLayer = controller.layers[0];
+            Assert.AreEqual(1, convertedLayer.stateMachine.states.Length, 
+                "Should have one state after conversion");
+            
+            var blendTreeState = convertedLayer.stateMachine.states[0].state;
+            Assert.IsInstanceOf<BlendTree>(blendTreeState.motion,
+                "State motion should be a BlendTree");
+            
+            var blendTree = (BlendTree)blendTreeState.motion;
+            Assert.AreEqual("FloatParam", blendTree.blendParameter,
+                "BlendTree should use FloatParam as blend parameter");
+            Assert.AreEqual(3, blendTree.children.Length,
+                "BlendTree should have 3 children (one for each state)");
+            
+            // Cleanup
+            Object.DestroyImmediate(clip0);
+            Object.DestroyImmediate(clip1);
+            Object.DestroyImmediate(clip2);
+            Object.DestroyImmediate(controller);
+        }
+
+        // https://github.com/anatawa12/AvatarOptimizer/issues/862
+        // Test Greater/Less conditions with Float parameter in linear pattern
+        [Test]
+        public void FloatGreaterLessConvertibleLinear()
+        {
+            var controller = new AnimatorController();
+            controller.name = "FloatGreaterLessConvertibleLinear";
+            
+            // Add Float parameter
+            controller.AddParameter("FloatParam", AnimatorControllerParameterType.Float);
+            
+            // Create animation clips
+            var clip0 = new AnimationClip { name = "Clip0" };
+            var clip1 = new AnimationClip { name = "Clip1" };
+            
+            // Create a linear pattern layer with Float parameter using Greater condition
+            var layer = new AnimatorControllerLayer
+            {
+                name = "TestLayer",
+                defaultWeight = 1.0f,
+                stateMachine = new AnimatorStateMachine
+                {
+                    name = "TestLayer",
+                    hideFlags = HideFlags.HideInHierarchy
+                }
+            };
+            
+            // Create states for different float ranges
+            var lowState = layer.stateMachine.AddState("Low");
+            lowState.motion = clip0;
+            lowState.writeDefaultValues = true;
+            
+            var highState = layer.stateMachine.AddState("High");
+            highState.motion = clip1;
+            highState.writeDefaultValues = true;
+            
+            layer.stateMachine.defaultState = lowState;
+            
+            // Linear transition from low to high when FloatParam > 0.5
+            var toHighTransition = lowState.AddTransition(highState);
+            toHighTransition.hasExitTime = false;
+            toHighTransition.duration = 0.0f;
+            toHighTransition.AddCondition(AnimatorConditionMode.Greater, 0.5f, "FloatParam");
+            
+            // Exit transition from high when FloatParam <= 0.5
+            var exitFromHigh = highState.AddExitTransition(defaultExitTime: false);
+            exitFromHigh.duration = 0.0f;
+            exitFromHigh.AddCondition(AnimatorConditionMode.Less, 0.5f, "FloatParam");
+            
+            controller.AddLayer(layer);
+            
+            // Execute optimization
+            var aoController = new AOAnimatorController(controller);
+            EntryExitToBlendTree.Execute(_state, aoController);
+            
+            // Verify conversion happened
+            var convertedLayer = controller.layers[0];
+            Assert.AreEqual(1, convertedLayer.stateMachine.states.Length,
+                "Should have one state after conversion");
+            
+            var blendTreeState = convertedLayer.stateMachine.states[0].state;
+            Assert.IsInstanceOf<BlendTree>(blendTreeState.motion,
+                "State motion should be a BlendTree");
+            
+            var blendTree = (BlendTree)blendTreeState.motion;
+            Assert.AreEqual("FloatParam", blendTree.blendParameter,
+                "BlendTree should use FloatParam as blend parameter");
+            Assert.AreEqual(2, blendTree.children.Length,
+                "BlendTree should have 2 children");
+            
+            // Cleanup
+            Object.DestroyImmediate(clip0);
+            Object.DestroyImmediate(clip1);
+            Object.DestroyImmediate(controller);
+        }
+
+        // https://github.com/anatawa12/AvatarOptimizer/issues/862
+        // Test Int parameter with Greater/Less conditions (converted to Float)
+        [Test]
+        public void IntGreaterLessConvertibleDiamond()
+        {
+            var controller = new AnimatorController();
+            controller.name = "IntGreaterLessConvertibleDiamond";
+            
+            // Add Int parameter
+            controller.AddParameter("IntParam", AnimatorControllerParameterType.Int);
+            
+            // Create animation clips
+            var clip0 = new AnimationClip { name = "Clip0" };
+            var clip1 = new AnimationClip { name = "Clip1" };
+            var clip2 = new AnimationClip { name = "Clip2" };
+            
+            // Create a diamond pattern layer with Int parameter using Greater/Less conditions
+            var layer = new AnimatorControllerLayer
+            {
+                name = "TestLayer",
+                defaultWeight = 1.0f,
+                stateMachine = new AnimatorStateMachine
+                {
+                    name = "TestLayer",
+                    hideFlags = HideFlags.HideInHierarchy
+                }
+            };
+            
+            // Create states for different int ranges
+            // Default state for IntParam <= 1
+            var defaultState = layer.stateMachine.AddState("Low");
+            defaultState.motion = clip0;
+            defaultState.writeDefaultValues = true;
+            
+            // State for 2 <= IntParam <= 4
+            var midState = layer.stateMachine.AddState("Mid");
+            midState.motion = clip1;
+            midState.writeDefaultValues = true;
+            
+            // State for IntParam >= 5
+            var highState = layer.stateMachine.AddState("High");
+            highState.motion = clip2;
+            highState.writeDefaultValues = true;
+            
+            layer.stateMachine.defaultState = defaultState;
+            
+            // Entry transitions with Greater/Less conditions
+            // 2 <= IntParam <= 4 (using Greater 1 and Less 5)
+            var entryToMid = layer.stateMachine.AddEntryTransition(midState);
+            entryToMid.AddCondition(AnimatorConditionMode.Greater, 1, "IntParam");
+            entryToMid.AddCondition(AnimatorConditionMode.Less, 5, "IntParam");
+            
+            // IntParam >= 5 (using Greater 4)
+            var entryToHigh = layer.stateMachine.AddEntryTransition(highState);
+            entryToHigh.AddCondition(AnimatorConditionMode.Greater, 4, "IntParam");
+            
+            // Exit transitions - complement of entry conditions
+            // Default state exits when IntParam > 1
+            var exitFromDefault = defaultState.AddExitTransition(defaultExitTime: false);
+            exitFromDefault.duration = 0.0f;
+            exitFromDefault.AddCondition(AnimatorConditionMode.Greater, 1, "IntParam");
+            
+            // Mid state exits when IntParam <= 1 OR IntParam >= 5
+            var exitFromMid1 = midState.AddExitTransition(defaultExitTime: false);
+            exitFromMid1.duration = 0.0f;
+            exitFromMid1.AddCondition(AnimatorConditionMode.Less, 2, "IntParam");
+            
+            var exitFromMid2 = midState.AddExitTransition(defaultExitTime: false);
+            exitFromMid2.duration = 0.0f;
+            exitFromMid2.AddCondition(AnimatorConditionMode.Greater, 4, "IntParam");
+            
+            // High state exits when IntParam < 5
+            var exitFromHigh = highState.AddExitTransition(defaultExitTime: false);
+            exitFromHigh.duration = 0.0f;
+            exitFromHigh.AddCondition(AnimatorConditionMode.Less, 5, "IntParam");
+            
+            controller.AddLayer(layer);
+            
+            // Execute optimization
+            var aoController = new AOAnimatorController(controller);
+            EntryExitToBlendTree.Execute(_state, aoController);
+            
+            // Verify conversion happened
+            var convertedLayer = controller.layers[0];
+            Assert.AreEqual(1, convertedLayer.stateMachine.states.Length, 
+                "Should have one state after conversion");
+            
+            var blendTreeState = convertedLayer.stateMachine.states[0].state;
+            Assert.IsInstanceOf<BlendTree>(blendTreeState.motion,
+                "State motion should be a BlendTree");
+            
+            var blendTree = (BlendTree)blendTreeState.motion;
+            Assert.AreEqual("IntParam", blendTree.blendParameter,
+                "BlendTree should use IntParam as blend parameter");
+            
+            // Verify the parameter was converted to Float
+            var parameters = controller.parameters;
+            var intParam = System.Array.Find(parameters, p => p.name == "IntParam");
+            Assert.IsNotNull(intParam, "IntParam should still exist");
+            Assert.AreEqual(AnimatorControllerParameterType.Float, intParam.type,
+                "IntParam should be converted to Float");
+            
+            // Cleanup
+            Object.DestroyImmediate(clip0);
+            Object.DestroyImmediate(clip1);
+            Object.DestroyImmediate(clip2);
+            Object.DestroyImmediate(controller);
+        }
+
         // Helper method to create a time-dependent animation clip
         private AnimationClip CreateTimeDependentClip(string name)
         {
