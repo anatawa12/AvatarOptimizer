@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 using nadena.dev.ndmf;
+using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -15,6 +16,10 @@ using VRC.SDKBase;
 
 namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
+    using IntRangeSet = RangeSet<int, RangeIntTrait>;
+    using FloatRange = Range<float, RangeFloatTrait>;
+    using FloatRangeSet = RangeSet<float, RangeFloatTrait>;
+
     /// <summary>
     /// converts entry-exit state machine to 1d blend tree
     ///
@@ -54,9 +59,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
         public static void Execute(AnimatorOptimizerState state, AOAnimatorController controller)
         {
-            var intOrBoolParameters = new HashSet<string>(controller.parameters
-                .Where(x => x.type is AnimatorControllerParameterType.Int or AnimatorControllerParameterType.Bool)
-                .Select(x => x.name));
+            var parameterType = controller.parameters.ToDictionary(x => x.name, x => x.type);
 
             // first, collect transformable layers
             var layers = controller.layers;
@@ -64,8 +67,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             var layerByParameter = new Dictionary<string, List<int>>();
             for (var i = 0; i < layers.Length; i++)
             {
-                var info = TryParseDiamondLayer(layers[i], state, intOrBoolParameters);
-                info ??= TryParseLinearLayer(layers[i], state, intOrBoolParameters);
+                var info = TryParseDiamondLayer(layers[i], state, parameterType);
+                info ??= TryParseLinearLayer(layers[i], state, parameterType);
                 convertInfos[i] = info;
                 if (info != null)
                 {
@@ -87,18 +90,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 DoConvert(info, layer);
             }
 
+            Predicate<string> needsConvert = parameter => layerByParameter.ContainsKey(parameter) && parameterType[parameter] != AnimatorControllerParameterType.Float;
+
             var parameters = controller.parameters;
             
             // Track parameter type changes for driver correction
             var parameterTypeChanges = new Dictionary<string, AnimatorControllerParameterType>();
             foreach (var parameter in parameters)
-            {
-                if (layerByParameter.ContainsKey(parameter.name) && 
-                    parameter.type != AnimatorControllerParameterType.Float)
-                {
+                if (needsConvert(parameter.name))
                     parameterTypeChanges[parameter.name] = parameter.type;
-                }
-            }
             
             // Change parameter types to float
             foreach (ref var parameter in parameters.AsSpan())
@@ -109,8 +109,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             // Correct parameter drivers to preserve behavior after type change
             CorrectParameterDrivers(controller, parameterTypeChanges, ref parameters);
 #endif
-
-            Predicate<string> needsConvert = parameter => layerByParameter.ContainsKey(parameter);
 
             T[] ConvertTransitions<T>(T[] transitions, Func<T, AnimatorCondition[], T> clone)
                 where T : AnimatorTransitionBase
@@ -209,7 +207,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         /// </code>
         /// </summary>
         private static ConvertibleLayerInfo? TryParseDiamondLayer(AOAnimatorControllerLayer layer,
-            AnimatorOptimizerState optimizerState, HashSet<string> intOrBoolParameters)
+            AnimatorOptimizerState optimizerState, Dictionary<string, AnimatorControllerParameterType> parameterType)
         {
             if (!CheckForBasicStateCondition(layer, optimizerState, out var timeMotionParameter)) return null;
 
@@ -228,203 +226,132 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
             // check for conditions of entry transitions
 
-            string conditionParameter;
-            var stateValues = new Dictionary<AnimatorState, HashSet<IntOrBool>>();
-            var allValues = new HashSet<IntOrBool>();
+            // 1st check: all transitions are about the same single parameter
+            var conditionParameter = entryTransitions.SelectMany(x => x.conditions).Select(x => x.parameter).DistinctSingleOrDefaultIfNoneOrMultiple();
+            if (conditionParameter == null) return null; // no entry transitions or multiple parameters used in entry transitions
 
+            // 2nd check: transitions are focusing on state
+            foreach (var entryTransition in entryTransitions)
             {
-                var entryTransition = entryTransitions[0];
-
                 if (entryTransition is not
                     {
                         isExit: false,
                         destinationStateMachine: null,
-                        destinationState: { } dest,
-                        conditions: { Length: 1 } conditions
-                    })
-                    return null;
-
-                conditionParameter = conditions[0].parameter;
-
-                if (!intOrBoolParameters.Contains(conditionParameter)) return null; // neither int nor bool parameter
-
-                if (CheckIntOrBoolCondition(conditions[0]) is not { } value) return null;
-                if (!AddToStateValues(dest, value)) return null; // duplicated value
+                        destinationState: not null,
+                        conditions: not null,
+                    }) return null;
             }
 
-            for (var index = 1; index < entryTransitions.Length - 1; index++)
+            // 3rd check: parameter is int or bool
+            if (!parameterType.TryGetValue(conditionParameter, out var paramType)) return null; // parameter type is not int nor bool
+
+            switch (paramType)
             {
-                var entryTransition = entryTransitions[index];
-                if (entryTransition is not
-                    {
-                        isExit: false,
-                        destinationStateMachine: null,
-                        destinationState: { } dest,
-                        conditions: { Length: 1 } conditions
-                    }) return null;
-
-                if (CheckIntOrBoolCondition(conditions[0]) is not { } value) return null;
-                if (!AddToStateValues(dest, value)) return null; // duplicated value
+                case AnimatorControllerParameterType.Float:
+                    return ProcessLayerByType<FloatRangeSet, FloatSetTrait>(conditionParameter, timeMotionParameter, defaultState, states, entryTransitions);
+                case AnimatorControllerParameterType.Int:
+                    return ProcessLayerByType<IntRangeSet, IntSetTrait>(conditionParameter, timeMotionParameter, defaultState, states, entryTransitions);
+                case AnimatorControllerParameterType.Bool: 
+                    return ProcessLayerByType<BoolSet, BoolSetTrait>(conditionParameter, timeMotionParameter, defaultState, states, entryTransitions);
+                default: return null;
             }
+            
+        }
 
-            // allow transition to default state without conditions for last entry transition
-            if (entryTransitions.Length >= 2) {
-                var entryTransition = entryTransitions[^1];
-
-                if (entryTransition is not
-                    {
-                        isExit: false,
-                        destinationStateMachine: null,
-                        destinationState: { } dest,
-                        conditions: { } conditions,
-                    }) return null;
-
-                switch (conditions.Length)
+        static ConvertibleLayerInfo? ProcessLayerByType<TRangeSet, TTrait>(
+            string conditionParameter,
+            string? timeMotionParameter,
+            AnimatorState defaultState,
+            ChildAnimatorState[] states,
+            AnimatorTransition[] entryTransitions)
+            where TRangeSet : struct, IRangeSet<TRangeSet>
+            where TTrait : struct, ISetTrait<TRangeSet>
+        {
+            {
                 {
-                    case 1:
+                    var allRanges = default(TTrait).Empty;
+                    var stateRanges = new Dictionary<AnimatorState, TRangeSet>();
+                    foreach (var entryTransition in entryTransitions)
                     {
-                        if (CheckIntOrBoolCondition(conditions[0]) is not { } value) return null;
-                        if (!AddToStateValues(dest, value)) return null; // duplicated value
-                        break;
+                        var range = default(TTrait).SetFromConditions(entryTransition.conditions!);
+                        var state = entryTransition.destinationState!;
+
+                        if (!allRanges.Intersect(range).IsEmpty()) return null; // duplicated range
+
+                        stateRanges.TryGetValue(state, out var values);
+                        stateRanges[state] = values.Union(range);
+                        allRanges = allRanges.Union(values);
                     }
-                    case 0 when dest == defaultState:
-                        // no condition for default state is allowed
-                        break;
-                    default:
-                        return null;
-                }
-            }
 
-            IntOrBool? CheckIntOrBoolCondition(AnimatorCondition condition)
-            {
-                if (condition is not
+                    // check there are no states without entry transition (including default transition).
+                    stateRanges.TryAdd(defaultState, default(TTrait).Empty);
+                    if (stateRanges.Count != states.Length) return null;
+
+                    // check for transitions
+                    foreach (var childStateInfo in states)
                     {
-                        mode: var mode,
-                        parameter: { } parameter,
-                        threshold: var threshold,
-                    }) return null;
-
-                if (parameter != conditionParameter) return null;
-
-                return mode switch
-                {
-                    // not finite makes casting to int undefined
-                    AnimatorConditionMode.Equals when float.IsFinite(threshold) => (int)threshold,
-                    AnimatorConditionMode.If => true,
-                    AnimatorConditionMode.IfNot => false,
-                    _ => null,
-                };
-            }
-
-            bool AddToStateValues(AnimatorState state, IntOrBool value)
-            {
-                if (!stateValues.TryGetValue(state, out var values))
-                    stateValues.Add(state, values = new HashSet<IntOrBool>());
-                if (allValues.Contains(value)) return false; // duplicated value
-                values.Add(value);
-                allValues.Add(value);
-                return true;
-            }
-
-            // check there are no states without entry transition.
-            if (stateValues.ContainsKey(defaultState))
-            {
-                if (stateValues.Count != states.Length) return null;
-            }
-            else
-            {
-                if (stateValues.Count != states.Length - 1) return null;
-            }
-
-            // check for transitions
-            foreach (var childStateInfo in states)
-            {
-                var state = childStateInfo.state;
-                var transitions = state.transitions;
-                // basic transition check: all transitions are exit transitions without blending
-                var allConditions = new AnimatorCondition[transitions.Length][];
-                for (var i = 0; i < transitions.Length; i++)
-                {
-                    var transition = transitions[i];
-                    if (transition is not
+                        var state = childStateInfo.state;
+                        var transitions = state.transitions;
+                        // basic transition check: all transitions are exit transitions without blending
+                        var allConditions = new AnimatorCondition[transitions.Length][];
+                        for (var i = 0; i < transitions.Length; i++)
                         {
-                            isExit: true,
-                            solo: false,
-                            mute: false,
-                            destinationState: null,
-                            destinationStateMachine: null,
-                            conditions: { } conditions,
+                            var transition = transitions[i];
+                            if (transition is not
+                                {
+                                    isExit: true,
+                                    solo: false,
+                                    mute: false,
+                                    destinationState: null,
+                                    destinationStateMachine: null,
+                                    conditions: { } conditions,
 
-                            hasExitTime: false,
-                            duration: 0,
-                            offset: 0,
-                            // since duration is zero, interruption should not be happened
-                        }) return null;
-                    allConditions[i] = conditions;
-                }
+                                    hasExitTime: false,
+                                    duration: 0,
+                                    offset: 0,
+                                    // since duration is zero, interruption should not be happened
+                                }) return null;
+                            allConditions[i] = conditions;
+                        }
 
-                // transition condition check.
-                if (defaultState == state)
-                {
-                    // for default state, we check if we exit the default state if the value is any other states value.
-                    // We allow too relaxed condition for exiting default state since it will re-enter the default state.
-                    HashSet<IntOrBool> exitValues;
-                    if (stateValues.TryGetValue(state, out var values))
-                    {
-                        exitValues = new HashSet<IntOrBool>(allValues);
-                        exitValues.ExceptWith(values);
-                    }
-                    else
-                    {
-                        exitValues = new HashSet<IntOrBool>(allValues);
-                    }
+                        // transition condition check.
+                        if (defaultState == state)
+                        {
+                            // for default state, we check if we exit the default state if the value is any other states value.
+                            // We allow too relaxed condition for exiting default state since it will re-enter the default state.
+                            var exitValues = allRanges;
+                            exitValues = exitValues.Exclude(stateRanges[state]);
 
-                    foreach (var conditions in allConditions)
-                    {
-                        // conditions with parameters other than conditionParameter can be false
-                        if (conditions.Any(c => c.parameter != conditionParameter)) continue;
+                            foreach (var conditions in allConditions)
+                            {
+                                // conditions with parameters other than conditionParameter can be false
+                                if (conditions.Any(c => c.parameter != conditionParameter)) continue;
 
-                        exitValues.RemoveWhere(value => value.IntValue.HasValue ?
-                            conditions.All(c => c.SatisfiesInt(value.IntValue.Value) == true) :
-                            conditions.All(c => c.SatisfiesBool(value.BoolValue!.Value) == true));
-                    }
+                                exitValues = exitValues.Exclude(default(TTrait).SetFromConditions(conditions));
+                            }
 
-                    if (exitValues.Count != 0) return null;
-                }
-                else
-                {
-                    // for other states, it have to leave state if value is not any of current value
-                    // TODO: users can create condition like `< minValue` or `> maxValue` to leave state
-                    // TODO: users can exit state and immediately enter to same state infinitely
-                    // https://github.com/anatawa12/AvatarOptimizer/issues/862
-                    var values = stateValues[state];
-                    if (!PossibleValuesExitTransitionCheck(values)) return null;
-                }
+                            if (!exitValues.IsEmpty()) return null;
+                        }
+                        else
+                        {
+                            // for other states, it have to leave state iff value is not any of current value
 
-                bool PossibleValuesExitTransitionCheck(HashSet<IntOrBool> values)
-                {
-                    if (allConditions.Length != 1) return false;
-                    var conditions = allConditions[0];
-                    if (conditions.Length != values.Count) return false;
+                            // conditions with parameters other than conditionParameter can be false
+                            if (allConditions.Any(conditions => conditions.Any(c => c.parameter != conditionParameter)))
+                                return null; // non-conditionParameter condition found
 
-                    values = new HashSet<IntOrBool>(values);
-                    foreach (var condition in conditions)
-                    {
-                        if (condition.mode != AnimatorConditionMode.NotEqual &&
-                            condition.mode != AnimatorConditionMode.IfNot &&
-                            condition.mode != AnimatorConditionMode.If) return false;
-                        if (condition.parameter != conditionParameter) return false;
-                        IntOrBool value =
-                            condition.mode == AnimatorConditionMode.NotEqual ? (int)condition.threshold :
-                            condition.mode == AnimatorConditionMode.IfNot ? true : false;
-                        if (!values.Remove(value)) return false;
+                            var exitingValues =
+                                default(TTrait).Union(allConditions.Select(default(TTrait).SetFromConditions));
+                            var expectedToExitRange = stateRanges[state].Complement();
+                            if (!exitingValues.Equals(expectedToExitRange)) return null;
+                        }
                     }
 
-                    return true;
+                    return new ConvertibleLayerInfo(conditionParameter, defaultState,
+                        stateRanges.ToDictionary(p => p.Key, p => default(TTrait).ConvertToFloatRangeSet(p.Value)),
+                        timeMotionParameter);
                 }
             }
-
-            return new ConvertibleLayerInfo(conditionParameter, defaultState, stateValues, timeMotionParameter);
         }
 
         /// <summary>
@@ -438,7 +365,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         /// </code>
         /// </summary>
         private static ConvertibleLayerInfo? TryParseLinearLayer(AOAnimatorControllerLayer layer,
-            AnimatorOptimizerState optimizerState, HashSet<string> intOrBoolParameters)
+            AnimatorOptimizerState optimizerState,
+            Dictionary<string, AnimatorControllerParameterType> parameterType)
         {
             if (!CheckForBasicStateCondition(layer, optimizerState, out var timeMotionParameter)) return null;
 
@@ -474,58 +402,57 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 return null;
             }
 
-            string? conditionParameter = null;
-            var anotherStateValues = new HashSet<IntOrBool>();
+            var conditionParameter = defaultState.transitions.Concat(anotherState.transitions).SelectMany(x => x.conditions).Select(x => x.parameter).DistinctSingleOrDefaultIfNoneOrMultiple();
+            if (conditionParameter == null) return null; // no entry transitions or multiple parameters used in entry transitions
 
+            if (!parameterType.TryGetValue(conditionParameter, out var paramType)) return null; // parameter type is not int nor bool
+
+            switch (paramType)
+            {
+                case AnimatorControllerParameterType.Float:
+                    return TryParseLinearLayerByType<FloatRangeSet, FloatSetTrait>(conditionParameter, timeMotionParameter, defaultState, anotherState);
+                case AnimatorControllerParameterType.Int:
+                    return TryParseLinearLayerByType<IntRangeSet, IntSetTrait>(conditionParameter, timeMotionParameter, defaultState, anotherState);
+                case AnimatorControllerParameterType.Bool:
+                    return TryParseLinearLayerByType<BoolSet, BoolSetTrait>(conditionParameter, timeMotionParameter, defaultState, anotherState);
+                default:
+                    return null;
+            }
+        }
+
+        private static ConvertibleLayerInfo? TryParseLinearLayerByType<TRangeSet, TTrait>(
+            string conditionParameter,
+            string? timeMotionParameter,
+            AnimatorState defaultState,
+            AnimatorState anotherState)
+            where TRangeSet : struct, IRangeSet<TRangeSet>
+            where TTrait : struct, ISetTrait<TRangeSet>
+        {
             // Check default => another state transition.
             foreach (var defaultStateTransition in defaultState.transitions)
             {
                 if (defaultStateTransition is not
                     {
-                        // target
                         isExit: false,
                         destinationStateMachine: null,
-                        destinationState: { } dest,
-                        // condition
-                        conditions: { Length: 1 } conditions
+                        destinationState: var dest,
+                        conditions: not null,
                     })
                     return null;
-                if (dest != anotherState) return null; // default state must have transition to the 'another state'
 
-                conditionParameter ??= conditions[0].parameter;
-                if (CheckIntOrBoolCondition(conditions[0]) is not { } value) return null;
-                anotherStateValues.Add(value);
+                if (dest != anotherState) return null; // default state must have transition to the 'another state'
             }
 
-            // this should means no transition from default state to another state
-            if (conditionParameter == null) return null;
-            if (!intOrBoolParameters.Contains(conditionParameter)) return null; // neither int nor bool parameter
-
-            IntOrBool? CheckIntOrBoolCondition(AnimatorCondition condition)
+            var anotherStateValues = default(TTrait).Empty;
+            foreach (var defaultStateTransition in defaultState.transitions)
             {
-                if (condition is not
-                    {
-                        mode: var mode,
-                        parameter: { } parameter,
-                        threshold: var threshold,
-                    }) return null;
-
-                if (parameter != conditionParameter) return null;
-
-                return mode switch
-                {
-                    // not finite makes casting to int undefined
-                    AnimatorConditionMode.Equals when float.IsFinite(threshold) => (int)threshold,
-                    AnimatorConditionMode.If => true,
-                    AnimatorConditionMode.IfNot => false,
-                    _ => null,
-                };
+                var conditions = defaultStateTransition.conditions!;
+                anotherStateValues = anotherStateValues.Union(default(TTrait).SetFromConditions(conditions));
             }
 
             // check another => exit transition
             {
-                var state = anotherState;
-                var transitions = state.transitions;
+                var transitions = anotherState.transitions;
                 // basic transition check: all transitions are exit transitions without blending
                 var allConditions = new AnimatorCondition[transitions.Length][];
                 for (var i = 0; i < transitions.Length; i++)
@@ -544,38 +471,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 }
 
                 // transition condition check.
-                {
-                    // for other states, it have to leave state if value is not any of current value
-                    // TODO: users can create condition like `< minValue` or `> maxValue` to leave state
-                    // TODO: users can exit state and immediately enter to same state infinitely
-                    // https://github.com/anatawa12/AvatarOptimizer/issues/862
-                    if (!PossibleValuesExitTransitionCheck(anotherStateValues)) return null;
-                }
+                if (allConditions.Any(conditions => conditions.Any(c => c.parameter != conditionParameter))) return null;
 
-                bool PossibleValuesExitTransitionCheck(HashSet<IntOrBool> values)
-                {
-                    if (allConditions.Length != 1) return false;
-                    var conditions = allConditions[0];
-                    if (conditions.Length != values.Count) return false;
-
-                    values = new HashSet<IntOrBool>(values);
-                    foreach (var condition in conditions)
-                    {
-                        if (condition.mode != AnimatorConditionMode.NotEqual &&
-                            condition.mode != AnimatorConditionMode.IfNot &&
-                            condition.mode != AnimatorConditionMode.If) return false;
-                        if (condition.parameter != conditionParameter) return false;
-                        IntOrBool value =
-                            condition.mode == AnimatorConditionMode.NotEqual ? (int)condition.threshold :
-                            condition.mode == AnimatorConditionMode.IfNot ? true : false;
-                        if (!values.Remove(value)) return false;
-                    }
-
-                    return true;
-                }
+                var expectedToExitRange = anotherStateValues.Complement();
+                var exitingValues = default(TTrait).Union(allConditions.Select(default(TTrait).SetFromConditions));
+                if (!exitingValues.Equals(expectedToExitRange)) return null;
             }
 
-            return new ConvertibleLayerInfo(conditionParameter, defaultState, new Dictionary<AnimatorState, HashSet<IntOrBool>> {{anotherState, anotherStateValues}}, timeMotionParameter);
+            return new ConvertibleLayerInfo(conditionParameter, defaultState, new Dictionary<AnimatorState, FloatRangeSet> {{anotherState, default(TTrait).ConvertToFloatRangeSet(anotherStateValues)}}, timeMotionParameter);
         }
 
         private static bool CheckForBasicStateCondition(AOAnimatorControllerLayer layer, AnimatorOptimizerState optimizerState, out string? timeMotionParameter)
@@ -681,48 +584,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             return true;
         }
 
-        readonly struct IntOrBool : IEquatable<IntOrBool>
-        {
-            public readonly int? IntValue;
-            public readonly bool? BoolValue;
-
-            public IntOrBool(int value)
-            {
-                IntValue = value;
-                BoolValue = null;
-            }
-
-            public IntOrBool(bool value)
-            {
-                IntValue = null;
-                BoolValue = value;
-            }
-
-            public override int GetHashCode() => HashCode.Combine(IntValue, BoolValue);
-
-            public bool Equals(IntOrBool other) => IntValue == other.IntValue && BoolValue == other.BoolValue;
-            public override bool Equals(object? obj) => obj is IntOrBool other && Equals(other);
-            public static bool operator ==(IntOrBool left, IntOrBool right) => left.Equals(right);
-            public static bool operator !=(IntOrBool left, IntOrBool right) => !left.Equals(right);
-
-            public static implicit operator IntOrBool(int value) => new(value);
-            public static implicit operator IntOrBool(bool value) => new(value);
-        }
-
         class ConvertibleLayerInfo
         {
             public readonly string ParameterName;
             public readonly AnimatorState DefaultState;
-            public readonly Dictionary<AnimatorState, HashSet<IntOrBool>> ValueForStates;
+            public readonly Dictionary<AnimatorState, FloatRangeSet> RangeForStates;
             public readonly string? TimeMotionParameter;
 
             public ConvertibleLayerInfo(string parameterName, AnimatorState defaultState,
-                Dictionary<AnimatorState, HashSet<IntOrBool>> valueForStates,
+                Dictionary<AnimatorState, FloatRangeSet> rangeForStates,
                 string? timeMotionParameter)
             {
                 ParameterName = parameterName;
                 DefaultState = defaultState;
-                ValueForStates = valueForStates;
+                RangeForStates = rangeForStates; 
                 TimeMotionParameter = timeMotionParameter;
             }
 
@@ -757,102 +632,29 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
         private static void DoConvert(ConvertibleLayerInfo info, AOAnimatorControllerLayer layer)
         {
-            var valueForStates = info.ValueForStates;
+            var valueForStates = info.RangeForStates;
             valueForStates.Remove(info.DefaultState); // default states are proceed always so remove from this list
             var defaultMotion = info.DefaultState.motion ? info.DefaultState.motion : _emptyClip.Value;
 
-            var states = new List<(IntOrBool value, Motion motion)>();
+            var usedRanges = FloatRangeSet.Union(valueForStates.Values);
+            var rangeForDefault = usedRanges.Complement();
 
-            foreach (var (state, values) in valueForStates)
-            foreach (var value in values)
-                states.Add((value, state.motion ? state.motion : _emptyClip.Value));
+            var statesWithRange = new List<(FloatRange range, Motion motion)>();
+            foreach (var (state, rangeSet) in valueForStates)
+            foreach (var range in rangeSet.Ranges)
+                statesWithRange.Add((range, state.motion ? state.motion : _emptyClip.Value));
+            foreach (var range in rangeForDefault.Ranges)
+                statesWithRange.Add((range, defaultMotion));
+
+            statesWithRange.Sort((a, b) => a.range.MinInclusive.CompareTo(b.range.MinInclusive));
 
             var children = new List<ChildMotion>();
 
-            void AddFrames(int before, Motion beforeMotion, int after, Motion afterMotion)
+            foreach (var ((prevRange, prevMotion), (nextRange, nextMoton)) in statesWithRange.ZipWithNext())
             {
-                var threshold = before + 0.5f;
-                var rounded = Mathf.Round(threshold);
-                // ReSharper disable once CompareOfFloatsByEqualityOperator
-                if (rounded == after)
-                {
-                    Utils.Assert((int)Mathf.Round(Utils.PreviousFloat(threshold)) == before);
-                    // in this case, .5 will go the motion so default is one before .5
-                    children.Add(CreateChild(Utils.PreviousFloat(threshold), beforeMotion));
-                    children.Add(CreateChild(threshold, afterMotion));
-                }
-                // ReSharper disable once CompareOfFloatsByEqualityOperator
-                else if (rounded == before)
-                {
-                    Utils.Assert((int)Mathf.Round(Utils.NextFloat(threshold)) == after);
-                    // in this case, .5 will go to default motion so default is .5
-                    children.Add(CreateChild(threshold, beforeMotion));
-                    children.Add(CreateChild(Utils.NextFloat(threshold), afterMotion));
-                }
-                else
-                {
-                    throw new InvalidOperationException("unexpected: rounding x - 0.5 is not x - 1 or x");
-                }
-            }
-
-            if (states.All(x => x.value.IntValue.HasValue))
-            {
-                // sort increasing order
-                states.Sort((x, y) => x.value.IntValue!.Value.CompareTo(y.value.IntValue!.Value));
-
-                {
-                    // first frame: add defaultMotion before first state
-                    var (value, motion) = states[0];
-                    AddFrames(value.IntValue!.Value - 1, defaultMotion,
-                        value.IntValue.Value, motion);
-                }
-
-                for (var i = 1; i < states.Count; i++)
-                {
-                    // other frames: add motions if needed
-                    var (prevValue, prevMotion) = states[i - 1];
-                    var (currentValue, currentMotion) = states[i];
-
-                    if (currentValue.IntValue!.Value - prevValue.IntValue!.Value > 1)
-                    {
-                        AddFrames(prevValue.IntValue.Value, prevMotion,
-                            prevValue.IntValue.Value + 1, defaultMotion);
-                        AddFrames(currentValue.IntValue.Value - 1, defaultMotion,
-                            currentValue.IntValue.Value, currentMotion);
-                    }
-                    else if (prevMotion != currentMotion)
-                    {
-                        AddFrames(prevValue.IntValue.Value, prevMotion,
-                            currentValue.IntValue.Value, currentMotion);
-                    }
-                }
-
-                {
-                    // last frame: add last state to defaultMotion
-                    var (value, motion) = states[^1];
-                    AddFrames(value.IntValue!.Value, motion,
-                        value.IntValue.Value + 1, defaultMotion);
-                }
-            }
-            else if (states.All(x => x.value.BoolValue.HasValue))
-            {
-                var (_, trueMotion) = states.SingleOrDefault(x => x.value.BoolValue is true);
-                if (trueMotion == null) trueMotion = defaultMotion;
-                var (_, falseMotion) = states.SingleOrDefault(x => x.value.BoolValue is false);
-                if (falseMotion == null) falseMotion = defaultMotion;
-
-                // add true motion for negative
-                children.Add(CreateChild(Utils.PreviousFloat(0), trueMotion));
-
-                // add false motion for zero
-                children.Add(CreateChild(0, falseMotion));
-
-                // add true motion for positive
-                children.Add(CreateChild(Utils.NextFloat(0), trueMotion));
-            }
-            else
-            {
-                throw new InvalidOperationException("unexpected: mixed condition types");
+                if (!prevRange.MinInclusive.Equals(prevRange.MaxInclusive))
+                    children.Add(CreateChild(prevRange.MaxInclusive, prevMotion));
+                children.Add(CreateChild(nextRange.MinInclusive, nextMoton));
             }
 
             var blendTree = new BlendTree
@@ -898,24 +700,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             };
         }
 
-        public static IEnumerable<AnimatorCondition[]> FlattenConditions(AnimatorCondition[][] conditions)
+        public static IEnumerable<AnimatorCondition[]> FlattenConditions(List<AnimatorCondition[]> conditions)
         {
-            var indices = new int[conditions.Length];
+            var indices = new int[conditions.Count];
 
             while (true)
             {
-                var result = new AnimatorCondition[conditions.Length];
-                for (var i = 0; i < conditions.Length; i++)
+                var result = new AnimatorCondition[conditions.Count];
+                for (var i = 0; i < conditions.Count; i++)
                     result[i] = conditions[i][indices[i]];
 
                 yield return result;
 
-                for (var i = 0; i < conditions.Length; i++)
+                for (var i = 0; i < conditions.Count; i++)
                 {
                     indices[i]++;
                     if (indices[i] < conditions[i].Length) break;
                     indices[i] = 0;
-                    if (i == conditions.Length - 1) yield break;
+                    if (i == conditions.Count - 1) yield break;
                 }
             }
         }
@@ -929,7 +731,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         }
 
         // AnimatorCondition[and][or]
-        public static AnimatorCondition[][] ConvertIntOrBoolConditionsToFloat(AnimatorCondition[] condition,
+        public static List<AnimatorCondition[]> ConvertIntOrBoolConditionsToFloat(AnimatorCondition[] condition,
             Predicate<string> shouldConvert)
         {
             var result = new List<AnimatorCondition[]>();
@@ -938,206 +740,83 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     result.AddRange(ConvertIntOrBoolConditionToFloat(cond));
                 else
                     result.Add(new[] { cond });
-            return result.ToArray();
+            return result;
         }
 
         // AnimatorCondition[and][or]
-        public static AnimatorCondition[][] ConvertIntOrBoolConditionToFloat(AnimatorCondition condition)
+        public static List<AnimatorCondition[]> ConvertIntOrBoolConditionToFloat(AnimatorCondition condition)
         {
-            switch (condition.mode)
+            var rangeSet = condition.mode switch
             {
-                // for int
-                case AnimatorConditionMode.Greater:
-                {
-                    var thresholdRound = Mathf.Round(condition.threshold);
-                    var threshold = thresholdRound - 0.5f;
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    if (Mathf.Round(threshold) == thresholdRound)
-                        threshold = Utils.PreviousFloat(threshold);
+                AnimatorConditionMode.If => BoolSet.FromValue(true).ToFloatRangeSet(),
+                AnimatorConditionMode.IfNot => BoolSet.FromValue(false).ToFloatRangeSet(),
+                AnimatorConditionMode.Greater or AnimatorConditionMode.Less or AnimatorConditionMode.Equals
+                    or AnimatorConditionMode.NotEqual => RangesUtil.IntRangeSetFromConditions(new[] { condition }).ToFloatRangeSet(),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            return RangesToFloatConditions(rangeSet, condition.parameter);
+        }
 
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Utils.Assert(Mathf.Round(threshold) == thresholdRound - 1);
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Utils.Assert(Mathf.Round(Utils.NextFloat(threshold)) == thresholdRound);
+        // AnimatorCondition[and][or]
+        private static List<AnimatorCondition[]> RangesToFloatConditions(FloatRangeSet rangeSet, string parameterName)
+        {
+            var ranges = rangeSet.Ranges.ToArray();
+            if (ranges.Length == 1)
+            {
+                var range = ranges[0];
 
-                    return new[]
+                var result = new List<AnimatorCondition[]>();
+                if (range.MinExclusive is { } minExclusive)
+                    result.Add(new[]
                     {
-                        new[]
+                        new AnimatorCondition
                         {
-                            new AnimatorCondition()
-                            {
-                                mode = AnimatorConditionMode.Greater,
-                                parameter = condition.parameter,
-                                threshold = threshold,
-                            },
-                        },
-                    };
-                }
-                case AnimatorConditionMode.Less:
-                {
-                    var thresholdRound = Mathf.Round(condition.threshold);
-                    var threshold = thresholdRound + 0.5f;
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    if (Mathf.Round(threshold) == thresholdRound)
-                        threshold = Utils.NextFloat(threshold);
-
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Utils.Assert(Mathf.Round(threshold) == thresholdRound + 1);
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Utils.Assert(Mathf.Round(Utils.PreviousFloat(threshold)) == thresholdRound);
-
-                    return new[]
+                            parameter = parameterName,
+                            mode = AnimatorConditionMode.Greater,
+                            threshold = minExclusive,
+                        }
+                    });
+                if (range.MaxExclusive is { } maxExclusive)
+                    result.Add(new[]
                     {
-                        new[]
+                        new AnimatorCondition
                         {
-                            new AnimatorCondition()
-                            {
-                                mode = AnimatorConditionMode.Less,
-                                parameter = condition.parameter,
-                                threshold = threshold,
-                            },
-                        },
-                    };
-                }
-                case AnimatorConditionMode.Equals:
+                            parameter = parameterName,
+                            mode = AnimatorConditionMode.Less,
+                            threshold = maxExclusive,
+                        }
+                    });
+                return result;
+            }
+
+            if (ranges.Length == 2)
+            {
+                var range0 = ranges[0];
+                var range1 = ranges[1];
+                Utils.Assert(range0.MinInclusive.Equals(float.NegativeInfinity));
+                Utils.Assert(range1.MaxInclusive.Equals(float.PositiveInfinity));
+                return new List<AnimatorCondition[]>()
                 {
-                    var thresholdRound = Mathf.Round(condition.threshold);
-                    var lowerThreshold = thresholdRound - 0.5f;
-                    var upperThreshold = thresholdRound + 0.5f;
-
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    if (Mathf.Round(lowerThreshold) == thresholdRound)
-                        lowerThreshold = Utils.PreviousFloat(lowerThreshold);
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    if (Mathf.Round(upperThreshold) == thresholdRound)
-                        upperThreshold = Utils.NextFloat(upperThreshold);
-
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Utils.Assert(Mathf.Round(lowerThreshold) == thresholdRound - 1);
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Utils.Assert(Mathf.Round(Utils.NextFloat(lowerThreshold)) == thresholdRound);
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Utils.Assert(Mathf.Round(Utils.PreviousFloat(upperThreshold)) == thresholdRound);
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Utils.Assert(Mathf.Round(upperThreshold) == thresholdRound + 1);
-
-                    // AND condition
-                    return new[]
+                    new []
                     {
-                        new[]
+                        new AnimatorCondition
                         {
-                            new AnimatorCondition()
-                            {
-                                mode = AnimatorConditionMode.Greater,
-                                parameter = condition.parameter,
-                                threshold = lowerThreshold,
-                            },
+                            parameter = parameterName,
+                            mode = AnimatorConditionMode.Less,
+                            threshold = range0.MaxExclusive!.Value,
                         },
-                        new[]
+                        new AnimatorCondition
                         {
-                            new AnimatorCondition()
-                            {
-                                mode = AnimatorConditionMode.Less,
-                                parameter = condition.parameter,
-                                threshold = upperThreshold,
-                            },
+                            parameter = parameterName,
+                            mode = AnimatorConditionMode.Greater,
+                            threshold = range1.MinExclusive!.Value,
                         },
-                    };
-                }
-                case AnimatorConditionMode.NotEqual:
-                {
-                    var thresholdRound = Mathf.Round(condition.threshold);
-                    var lowerThreshold = thresholdRound - 0.5f;
-                    var upperThreshold = thresholdRound + 0.5f;
-
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    if (Mathf.Round(lowerThreshold) != thresholdRound)
-                        lowerThreshold = Utils.NextFloat(lowerThreshold);
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    if (Mathf.Round(upperThreshold) != thresholdRound)
-                        upperThreshold = Utils.PreviousFloat(upperThreshold);
-
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Utils.Assert(Mathf.Round(Utils.PreviousFloat(lowerThreshold)) == thresholdRound - 1);
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Utils.Assert(Mathf.Round(lowerThreshold) == thresholdRound);
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Utils.Assert(Mathf.Round(upperThreshold) == thresholdRound);
-                    // ReSharper disable once CompareOfFloatsByEqualityOperator
-                    Utils.Assert(Mathf.Round(Utils.NextFloat(upperThreshold)) == thresholdRound + 1);
-
-                    // OR condition
-                    return new[]
-                    {
-                        new[]
-                        {
-                            new AnimatorCondition()
-                            {
-                                mode = AnimatorConditionMode.Less,
-                                parameter = condition.parameter,
-                                threshold = lowerThreshold,
-                            },
-                            new AnimatorCondition()
-                            {
-                                mode = AnimatorConditionMode.Greater,
-                                parameter = condition.parameter,
-                                threshold = upperThreshold,
-                            },
-                        },
-                    };
-                }
-
-                // for bool
-                case AnimatorConditionMode.If:
-                {
-                    // OR condition
-                    return new[]
-                    {
-                        new[]
-                        {
-                            new AnimatorCondition()
-                            {
-                                mode = AnimatorConditionMode.Less,
-                                parameter = condition.parameter,
-                                threshold = 0,
-                            },
-                            new AnimatorCondition()
-                            {
-                                mode = AnimatorConditionMode.Greater,
-                                parameter = condition.parameter,
-                                threshold = 0,
-                            },
-                        },
-                    };
-                }
-                case AnimatorConditionMode.IfNot:
-                {
-                    // AND condition
-                    return new[]
-                    {
-                        new[]
-                        {
-                            new AnimatorCondition()
-                            {
-                                mode = AnimatorConditionMode.Greater,
-                                parameter = condition.parameter,
-                                threshold = Utils.PreviousFloat(0),
-                            },
-                        },
-                        new[]
-                        {
-                            new AnimatorCondition()
-                            {
-                                mode = AnimatorConditionMode.Less,
-                                parameter = condition.parameter,
-                                threshold = Utils.NextFloat(0),
-                            },
-                        },
-                    };
-                }
-
-                default:
-                    throw new ArgumentOutOfRangeException();
+                    },
+                };
+            }
+            else
+            {
+                throw new InvalidOperationException("Cannot convert range set with more than two ranges to conditions");
             }
         }
 
