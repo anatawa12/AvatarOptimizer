@@ -22,26 +22,48 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
     internal class RemoveMeshInBoxRendererNode : AAORenderFilterNodeBase<RemoveMeshInBox>
     {
-        public static NativeArray<bool> ComputeShouldRemoveVertex(
-            SkinnedMeshRenderer renderer,
+        public static bool ComputeShouldRemoveVertex(
+            Renderer renderer,
             RemoveMeshInBox[] components,
-            ComputeContext context
+            ComputeContext context,
+            out NativeArray<bool> removeVertex
         )
         {
-            UnityEngine.Profiling.Profiler.BeginSample("BakeMesh");
-            var tempMesh = new Mesh();
-            renderer.BakeMesh(tempMesh);
-            UnityEngine.Profiling.Profiler.EndSample();
+            Mesh mesh;
+            Mesh bakedMesh;
+            if (renderer is SkinnedMeshRenderer skinned)
+            {
+                mesh = skinned.sharedMesh;
+                UnityEngine.Profiling.Profiler.BeginSample("BakeMesh");
+                bakedMesh = new Mesh();
+                skinned.BakeMesh(bakedMesh);
+                UnityEngine.Profiling.Profiler.EndSample();
+            }
+            else if (renderer is MeshRenderer meshRenderer)
+            {
+                if (!meshRenderer.TryGetComponent<MeshFilter>(out var meshFilter))
+                {
+                    removeVertex = default;
+                    return false;
+                }
+
+                mesh = meshFilter.sharedMesh;
+                bakedMesh = mesh; // static mesh, no need to bake
+            }
+            else
+            {
+                removeVertex = default;
+                return false;
+            }
 
             var localToWorldMatrix = Matrix4x4.TRS(renderer.transform.position, renderer.transform.rotation, Vector3.one);
 
-            var mesh = renderer.sharedMesh;
 
-            var removeVertex = new NativeArray<bool>(mesh.vertexCount, Allocator.TempJob);
+            removeVertex = new NativeArray<bool>(mesh.vertexCount, Allocator.TempJob);
 
             try
             {
-                using var realPosition = new NativeArray<Vector3>(tempMesh.vertices, Allocator.TempJob);
+                using var realPosition = new NativeArray<Vector3>(bakedMesh.vertices, Allocator.TempJob);
 
                 UnityEngine.Profiling.Profiler.BeginSample("CollectVertexData");
                 foreach (var component in components)
@@ -69,22 +91,18 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 throw;
             }
 
-            return removeVertex;
+            return true;
         }
 
-        protected override ValueTask Process(SkinnedMeshRenderer original, SkinnedMeshRenderer proxy,
+        protected override ValueTask<bool> Process(Renderer original, Renderer proxy,
             RemoveMeshInBox[] components,
             Mesh duplicated, ComputeContext context)
         {
             // Observe transform since the BakeMesh depends on the transform
             context.Observe(proxy.transform, t => t.localToWorldMatrix);
 
-            UnityEngine.Profiling.Profiler.BeginSample("BakeMesh");
-            var tempMesh = new Mesh();
-            proxy.BakeMesh(tempMesh);
-            UnityEngine.Profiling.Profiler.EndSample();
-
-            using var vertexIsInBox = ComputeShouldRemoveVertex(proxy, components, context);
+            if (!ComputeShouldRemoveVertex(proxy, components, context, out var vertexIsInBox)) return new ValueTask<bool>(false);
+            using var _ = vertexIsInBox;
 
             var uv = duplicated.uv;
             using var uvJob = new NativeArray<Vector2>(uv, Allocator.TempJob);
@@ -141,7 +159,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 duplicated.SetTriangles(modifiedTriangles, subMeshI);
             }
 
-            return default;
+            return new ValueTask<bool>(true);
         }
 
         [BurstCompile]

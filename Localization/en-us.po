@@ -58,6 +58,19 @@ msgstr "(Removed but not found)"
 
 # endregion
 
+# region ObjectMapping
+
+msgid "ObjectMapping:DummyAnimationObject:1"
+msgstr "Keys removed by AAO becuase Target object is absent. (This message is only available in play mode)"
+
+msgid "ObjectMapping:DummyAnimationObject:2"
+msgstr "AAO may have deleted the target object if target object is 'unused'."
+
+msgid "ObjectMapping:DummyAnimationObject:3"
+msgstr "Report to AAO if this breaks your animation."
+
+# endregion
+
 # start Avatar Optimizer core modules
 
 # region ClearEndpointPosition
@@ -289,6 +302,14 @@ msgstr "This is not supported with Limit Rotation mode Fix for now."
 
 # endregion
 
+#region EditSkinnedMeshComponents
+
+msgid "EditSkinnedMeshComponents:invalid-renderer-type"
+msgstr "This component is expected to be used with SkinnedMeshRenderer or MeshRenderer, but the target GameObject has different Renderer.\n"
+"This is not supported, and this component will be ignored."
+
+#endregion
+
 # region MergeSkinnedMesh
 
 msgid "MergeSkinnedMesh:warning:blendShapeWeightMismatch"
@@ -331,7 +352,7 @@ msgid "MergeSkinnedMesh:prop:renderers"
 msgstr "Skinned Renderers"
 
 msgid "MergeSkinnedMesh:prop:staticRenderers"
-msgstr "Static Renderers"
+msgstr "Basic Renderers"
 
 msgid "MergeSkinnedMesh:prop:removeEmptyRendererObject"
 msgstr "Remove Empty Renderer Object"
@@ -707,7 +728,15 @@ msgstr "Migrating to Trace and Optimize is finished!"
 # region TraceAndOptimize
 
 msgid "TraceAndOptimize:description"
-msgstr "When you added this component to your avatar, AvatarOptimizer will trace your avatar and optimize automatically."
+msgstr "When you added this component to your avatar, Avatar Optimizer will trace your avatar and optimize automatically.\n"
+"Trace and Optimize is designed to be zero-config for most users, so you don't need to change settings in general.\n"
+"If not, you may be encountering some bugs of Avatar Optimizer."
+
+msgid "TraceAndOptimize:warn:changeFeaturesNotNecessary"
+msgstr "In general, disabling features is not necessary.\n"
+"For VRChat avatars, default settings are best. If you need to change them, it's likely that you are encountering some Avatar Optimizer's bugs.\n"
+"Please report us instead of disabling some optimizations.\n"
+"https://an12.net/aao/en/tao-bug for how to report issues."
 
 msgid "TraceAndOptimize:prop:optimizeBlendShape"
 msgstr "Optimize BlendShape"
@@ -749,6 +778,19 @@ msgstr ""
 
 msgid "TraceAndOptimize:prop:debugOptions"
 msgstr "Debug Options"
+
+msgid "TraceAndOptimize:dialog:debugOptions:description"
+msgstr ""
+"Debug Options are settings to workaround bugs in Avatar Optimizer.\n"
+"Changing Debug Options may cause your avatar to be not properly optimized or optimization process to fail.\n"
+"In addition, some Debug Options may not work properly or their behavior may be changed.\n"
+"Do you understand this and want to change these settings?"
+
+msgid "TraceAndOptimize:dialog:debugOptions:proceed"
+msgstr "Proceed"
+
+msgid "TraceAndOptimize:dialog:debugOptions:cancel"
+msgstr "Cancel"
 
 msgid "TraceAndOptimize:warn:debugOptions"
 msgstr "Debug Options is for workaround bugs in Avatar Optimizer.\n"
@@ -835,6 +877,16 @@ msgstr "Unknown Playable Layer '{0}' is specified for Animator Layer Control."
 
 msgid "AnimatorParser:AnimatorNotFoundOnAvatarRoot"
 msgstr "Animator component not found on Avatar Root"
+
+#endregion
+
+#region OptimizationWarnings
+
+msgid "OptimizationWarnings:multi-pass-rendering-with-same-material"
+msgstr ""
+"Multi pass rendering with the same material is used in the mesh.\n"
+"In general, multi pass rendering with the exactly same material is unnecessary and only increases draw calls.\n"
+"If you are intentionally using this type of multi pass rendering, to avoid causing problems, please contact the author of Avatar Optimizer along with how you are using it."
 
 #endregion
 

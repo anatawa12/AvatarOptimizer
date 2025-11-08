@@ -6,12 +6,14 @@ namespace Anatawa12.AvatarOptimizer;
 
 [AddComponentMenu("")]
 [DisallowMultipleComponent]
+[RequireComponent(typeof(SkinnedMeshRenderer))]
 internal class InternalAutoFreezeMeaninglessBlendShape : EditSkinnedMeshComponent
 {
 }
 
 [AddComponentMenu("")]
 [DisallowMultipleComponent]
+[RequireComponent(typeof(SkinnedMeshRenderer))]
 internal class InternalAutoFreezeNonAnimatedBlendShapes : EditSkinnedMeshComponent
 {
 }

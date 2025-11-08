@@ -14,6 +14,7 @@ Here is the list of components that are supported by Component API.
 
 - `RemoveMeshInBox` - Adding component and configuring for that is supported
 - `RemoveMeshByBlendShape` - Adding component and configuring for that is supported
+- `RemoveMeshByMask` - Adding component and configuring for that is supported
 - `TraceAndOptimize` - Adding with default configuration is supported but configuring is not supported
 
 For components that supports configuring, to keep compatibility with future features that enabled by default,

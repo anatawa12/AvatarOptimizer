@@ -21,7 +21,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             // Vertex.AdditionalTemporal: 0 if in box, 1 if out of box
             foreach (var vertex in target.Vertices)
             {
-                var actualPosition = vertex.ComputeActualPosition(target, originalState.GetOriginalLocalToWorld, Target.transform.worldToLocalMatrix);
+                var actualPosition = vertex.ComputeActualPosition(target, originalState.GetOriginalLocalToWorld, TargetGeneric.transform.worldToLocalMatrix);
                 if (Component.boxes.Any(x => x.ContainsVertex(actualPosition)))
                     inBoxVertices.Add(vertex);
             }

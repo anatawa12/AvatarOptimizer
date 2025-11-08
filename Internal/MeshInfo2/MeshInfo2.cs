@@ -93,7 +93,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 var meshFilter = renderer.GetComponent<MeshFilter>();
                 var mesh = _originalMesh = meshFilter != null ? meshFilter.sharedMesh : null;
                 if (mesh != null)
-                    ReadStaticMesh(mesh);
+                    ReadBasicMesh(mesh);
 
                 if (mesh != null)
                     Bounds = mesh.bounds;
@@ -160,9 +160,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         /// <summary>
         /// Makes all vertices in this MeshInfo2 boned.
         /// </summary>
-        public void MakeBoned()
+        public void MakeBoned(bool evenIfBasicMesh = false)
         {
             if (Bones.Count != 0) return;
+            if (!evenIfBasicMesh && SourceRenderer is MeshRenderer) throw new Exception("Cannot make boned for MeshRenderer because MeshRenderer does not support bones");
 
             Bones.Add(new Bone(Matrix4x4.identity, RootBone));
 
@@ -173,7 +174,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public void ReadSkinnedMesh(Mesh mesh)
         {
             Profiler.BeginSample("Read Skinned Mesh");
-            ReadStaticMesh(mesh);
+            ReadBasicMesh(mesh);
 
             Profiler.BeginSample("Read Skinned Mesh Part");
             Profiler.BeginSample("Read Bones");
@@ -218,9 +219,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.EndSample();
         }
 
-        public void ReadStaticMesh(Mesh mesh)
+        public void ReadBasicMesh(Mesh mesh)
         {
-            Profiler.BeginSample($"Read Static Mesh Part");
+            Profiler.BeginSample($"Read Basic Mesh Part");
             VerticesMutable.Capacity = Math.Max(VerticesMutable.Capacity, mesh.vertexCount);
             Utils.DisposeAll(VerticesMutable);
             VerticesMutable.Clear();

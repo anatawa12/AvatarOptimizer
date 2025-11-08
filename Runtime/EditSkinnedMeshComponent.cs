@@ -6,8 +6,11 @@ namespace Anatawa12.AvatarOptimizer
     /// <summary>
     /// The base class for Edit Skinned Mesh Components.
     /// It's not expected to be used directly.
+    ///
+    /// Since Avatar Optimizer 1.9.0, besides the name, some of EditSkinnedMeshComponents may support MeshRenderer as well as SkinnedMeshRenderer.
+    /// However, due to historical reasons, the name is not changed.
     /// </summary>
-    [RequireComponent(typeof(SkinnedMeshRenderer))]
+    [RequireComponent(typeof(Renderer))]
     [PublicAPI]
     public abstract class EditSkinnedMeshComponent : AvatarTagComponent
     {

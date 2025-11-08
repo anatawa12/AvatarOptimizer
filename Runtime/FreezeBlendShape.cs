@@ -7,6 +7,7 @@ namespace Anatawa12.AvatarOptimizer
     [AddComponentMenu("Avatar Optimizer/AAO Freeze BlendShapes")]
     [DisallowMultipleComponent]
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/freeze-blendshape/")]
+    [RequireComponent(typeof(SkinnedMeshRenderer))]
     internal class FreezeBlendShape : EditSkinnedMeshComponent, ISerializationCallbackReceiver
     {
         public PrefabSafeSet.PrefabSafeSet<string> shapeKeysSet;

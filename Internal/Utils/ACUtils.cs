@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 
@@ -85,6 +86,23 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
+        public static IEnumerable<BlendTree> AllBlendTrees(Motion? motion)
+        {
+            switch (motion)
+            {
+                case null:
+                    yield break;
+                case AnimationClip _:
+                    break;
+                case BlendTree blendTree:
+                    yield return blendTree;
+                    foreach (var child in blendTree.children)
+                    foreach (var tree in AllBlendTrees(child.motion))
+                        yield return tree;
+                    break;
+            }
+        }
+
         public static IEnumerable<StateMachineBehaviour> StateMachineBehaviours(
             RuntimeAnimatorController runtimeController)
         {
@@ -151,5 +169,45 @@ namespace Anatawa12.AvatarOptimizer
                 AnimatorConditionMode.IfNot => !value,
                 _ => null
             };
+
+        public static bool IsValidForBool(this AnimatorCondition condition) => condition.mode.IsValidModeForBool();
+        public static bool IsValidForTrigger(this AnimatorCondition condition) => condition.mode.IsValidModeForTrigger();
+        public static bool IsValidForInt(this AnimatorCondition condition) => condition.mode.IsValidModeForInt();
+        public static bool IsValidForFloat(this AnimatorCondition condition) => condition.mode.IsValidModeForFloat();
+
+        public static bool IsValidModeForBool(this AnimatorConditionMode mode) =>
+            mode is AnimatorConditionMode.If or AnimatorConditionMode.IfNot;
+
+        public static bool IsValidModeForTrigger(this AnimatorConditionMode mode) =>
+            mode is AnimatorConditionMode.If;
+
+        public static bool IsValidModeForInt(this AnimatorConditionMode mode) =>
+            mode is AnimatorConditionMode.Equals or AnimatorConditionMode.NotEqual or 
+                AnimatorConditionMode.Greater or AnimatorConditionMode.Less;
+
+        public static bool IsValidModeForFloat(this AnimatorConditionMode mode) =>
+            mode is AnimatorConditionMode.Greater or AnimatorConditionMode.Less;
+
+        public static HashSet<EditorCurveBinding> GetBindings(this AnimationClip clip)
+        {
+            var bindings = new HashSet<EditorCurveBinding>();
+            foreach (var binding in AnimationUtility.GetCurveBindings(clip))
+                bindings.Add(binding);
+            foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
+                bindings.Add(binding);
+            return bindings;
+        }
+
+        public static HashSet<EditorCurveBinding> GetAllBindings(this IEnumerable<AnimationClip?> clips)
+        {
+            var bindings = new HashSet<EditorCurveBinding>();
+            foreach (var clip in clips)
+                if (clip != null)
+                    bindings.UnionWith(clip.GetBindings());
+            return bindings;
+        }
+
+        public static HashSet<EditorCurveBinding> GetAllBindings(this Motion? blendTree) =>
+            AllClips(blendTree).GetAllBindings();
     }
 }

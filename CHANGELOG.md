@@ -15,6 +15,20 @@ The format is based on [Keep a Changelog].
   - AAO can now freeze BlendShapes that are animated in animator layers with weights between 0 and 1.
 - Remove unused textures in Remove Unused Objects `1502`
 - Invert option of Remove Mesh by BlendShape `#1535`
+- Automatically merge PhysBone when no grabbing PhysBone is detected `#1539`
+- Automatic Merge BlendTree support for WriteDefaults off BlendTree `#1283`
+- Component API for Remove Mesh By Mask `#XXXX`
+  - External tools can now programmatically add and configure RemoveMeshByMask components.
+- Complete Graph to Entry Exit optimization `#1544`
+  - New optimization in the Animator Optimizer, which is part of Trace and Optimize.
+  - It's expected that this optimization will reduce the number of transitions computed every frame. 
+  - After this optimization, Entry Exit to BlendTree optimization may be applied.
+- Minimum linting for some mistakes that reduces the avatar performance `#1549`
+  - AAO now performs basic linting to identify common mistakes that can negatively impact avatar performance.
+  - Currently, multi-pass rendering with exactly the same material is detected since it's likely a mistake that clicks '+' button on the inspector by mistake.
+- Basic mesh support for remove mesh components `#1530`
+  - You now can remove some portion of basic meshes with Remove Mesh components!
+  - This does not includes remove mesh by blendshape because basic mesh does not support blendshape.
 - Max Texture Size component to limit texture sizes `#1536`
 
 ### Changed
@@ -31,6 +45,17 @@ The format is based on [Keep a Changelog].
   - Vertices that are not part of any triangle will be kept.
   - Orphan vertices are likely to be used to control the bounds of the mesh so they will be kept.
 - Allow Shuffle Material Slots is now enabled by default `#1533`
+- Descriptive localized messages are shown in Play Mode when animation keys are removed `#1461`
+  - When AAO removes animation keys because target objects are absent, descriptive messages in the user's language are now shown in Play Mode to help understand what happened.
+  - These messages explain that the target object is absent, keys were removed by AAO, and suggest reporting if this is incorrect.
+  - In Edit Mode (upload builds), the behavior remains unchanged with a terse internal identifier to minimize avatar size.
+- Motion time state is now supported in EntryExit to BlendTree optimization `#1552`
+  - Motion time state is safe to convert to BlendTree since it does not affect parameter evaluation.
+  - This change may increase the number of states converted to BlendTree.
+- Greater / Less and Float conditions support for Entry-Exit to BlendTree optimization `#1554`
+  - Equals / NotEquals conditions for Ints or Bool operators are only supported in previous versions of Animator Optimizer.
+  - Please note that creating animator controllers that can optimized with this optimization is difficult with Float operators because we need to use BitIncrement/Decrement-ed condition threshold for exiting parameters.
+  - For example, when we use `> 0` condition for entry transition, we need to use `< 1e-45 (BitIncrement(0))`, which is equivalent to `<= 0`, for exit transition.
 
 [`AfterPlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_AfterPlugin_System_String_System_String_System_Int32_
 [`BeforePlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_BeforePlugin_System_String_System_String_System_Int32_
@@ -54,6 +79,10 @@ The format is based on [Keep a Changelog].
 - Missing `Ignore Other Phys Bone` support for Merge Phys Bone `#1532`
   - Ignore Other Phys Bone property is not supported by Merge Phys Bone. This was a bug.
   - This version fixes this bug.
+- Fixed Optimize Texture may throw error in rare cases `#1538`
+- VRChat parameter drivers now work correctly when parameters are converted from bool/int to float during Entry-Exit to BlendTree optimization `#1547`
+  - Based on fix from NDMF (bdunderscore/ndmf#693)
+  - Parameter drivers now use intermediate parameters to preserve original type semantics
 
 ### Security
 

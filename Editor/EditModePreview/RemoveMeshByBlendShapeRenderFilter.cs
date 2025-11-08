@@ -150,7 +150,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             return toleranceSqrByShape;
         }
 
-        protected override ValueTask Process(SkinnedMeshRenderer original, SkinnedMeshRenderer proxy,
+        protected override ValueTask<bool> Process(Renderer original, Renderer proxy,
             RemoveMeshByBlendShape[] components,
             Mesh duplicated, ComputeContext context)
         {
@@ -208,7 +208,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 duplicated.SetTriangles(modifiedTriangles, subMeshI);
             }
 
-            return default;
+            return new ValueTask<bool>(true);
         }
 
         [BurstCompile]
