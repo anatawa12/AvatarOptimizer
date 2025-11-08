@@ -41,3 +41,4 @@ Avatar Optimizer 1.9.0以降では、以下のEdit Skinned Mesh Componentがメ�
 - [Remove Mesh By Box](../../reference/remove-mesh-by-box)
 - [Remove Mesh By Mask](../../reference/remove-mesh-by-mask)
 - [Remove Mesh By UV Tile](../../reference/remove-mesh-by-uv-tile/
+- [Merge Material](../../reference/merge-material)

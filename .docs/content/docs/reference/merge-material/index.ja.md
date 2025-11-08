@@ -7,7 +7,7 @@ weight: 25
 
 手動でテクスチャを並べることにより、同じシェーダーを使用するマテリアルを1つのマテリアルに統合します。
 
-このコンポーネントは、SkinnedMeshRendererコンポーネントのあるGameObjectに追加してください。(分類: [Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component))
+このコンポーネントは、SkinnedMeshRendererコンポーネントかMeshRendererコンポーネントのあるGameObjectに追加してください。(種類: [MeshRenderer対応Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component))
 
 このコンポーネントは、ShaderInformationが提供されているシェーダーをサポートしています。\
 AvatarOptimizerは、Standard Shader、VRChat SDKのToonLitとToonStandard、lilToonなどの著名なシェーダーのShaderInformationを組み込んで提供していますが、シェーダーの作者はShaderInformationを提供することにより、このコンポーネントでの動作サポートを追加できます。

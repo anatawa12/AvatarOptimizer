@@ -4,6 +4,7 @@ using UnityEngine;
 namespace Anatawa12.AvatarOptimizer
 {
     [AddComponentMenu("Avatar Optimizer/AAO Merge Material")]
+    // [RequireComponent(typeof(SkinnedMeshRenderer) or typeof(MeshRenderer))] // handled in editor
     [DisallowMultipleComponent]
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/merge-material/")]
     internal class MergeMaterial : EditSkinnedMeshComponent

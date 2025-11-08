@@ -34,6 +34,7 @@ The format is based on [Keep a Changelog].
   - This component supports many shader includes lilToon, ToonStandard and others.
   - Merge ToonLit Material is now deprecated. Please use this new component instead.
   - Merge ToonLit Material will be removed in next major version.
+  - This component will support both Skinned Mesh Renderer and Mesh Renderer.
 
 ### Changed
 - Avatar Optimizer will run as late as possible in NDMF Pipeline by default `#1493`

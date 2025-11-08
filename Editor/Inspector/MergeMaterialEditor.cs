@@ -132,6 +132,8 @@ namespace Anatawa12.AvatarOptimizer
 
         protected override void OnInspectorGUIInner()
         {
+            GenericEditSkinnedMeshComponentsEditor.DrawUnexpectedRendererError(targets);
+
             Undo.RecordObject(target, "Inspector");
             EditorGUI.BeginChangeCheck();
 
