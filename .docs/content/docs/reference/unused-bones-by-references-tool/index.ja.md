@@ -12,6 +12,9 @@ EditorOnlyなメッシュからしか参照がないボーンをEditorOnlyにし
 {{< hint warning >}}
 
 このコンポーネントは非推奨です。代わりに[Trace and Optimize](../trace-and-optimize)の`使われていないObjectを自動的に削除する`を使用してください。
+このコンポーネントは非推奨です。
+
+代わりに[Trace and Optimize](../trace-and-optimize)の`使われていないObjectを自動的に削除する`を使用してください。\
 このコンポーネントの動作が改善されることはありません。
 
 {{< /hint >}}

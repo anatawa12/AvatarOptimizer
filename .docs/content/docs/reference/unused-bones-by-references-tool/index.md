@@ -12,6 +12,9 @@ This component should be added to an avatar root. (Kind: [Avatar Global Componen
 {{< hint warning >}}
 
 This component is obsolete. You should use `Remove unused Objects` of [Trace and Optimize](../trace-and-optimize) instead.
+This component is obsolete.
+
+You should use `Remove unused Objects` of [Trace and Optimize](../trace-and-optimize) instead.\
 This component will never get algorithm improvements.
 
 {{< /hint >}}
