@@ -29,6 +29,7 @@ The format is based on [Keep a Changelog].
 - Basic mesh support for remove mesh components `#1530`
   - You now can remove some portion of basic meshes with Remove Mesh components!
   - This does not includes remove mesh by blendshape because basic mesh does not support blendshape.
+- Max Texture Size component to limit texture sizes `#1536`
 - Merge Material component which is successor of Merge ToonLit Material `#1516`
   - This component merges multiple materials into one material.
   - This component supports many shader includes lilToon, ToonStandard and others.

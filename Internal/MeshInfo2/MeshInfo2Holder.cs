@@ -82,6 +82,15 @@ namespace Anatawa12.AvatarOptimizer.Processors
             throw new ArgumentException("Renderer must be SkinnedMeshRenderer or MeshRenderer", nameof(renderer));
         }
 
+        public MeshInfo2? TryGetMeshInfoFor(Renderer renderer)
+        {
+            if (renderer is SkinnedMeshRenderer skinned && _skinnedCache.TryGetValue(skinned, out var cached))
+                return cached;
+            if (renderer is MeshRenderer basic && _basicCache.TryGetValue(basic, out cached))
+                return cached;
+            return null;
+        }
+
         public MeshInfo2 GetMeshInfoFor(SkinnedMeshRenderer renderer) =>
             _skinnedCache.TryGetValue(renderer, out var cached)
                 ? cached

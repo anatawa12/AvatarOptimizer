@@ -958,6 +958,22 @@ msgstr "Trace and Optimize can only be added to the root of the avatar."
 
 # endregion
 
+# region MaxTextureSize
+
+msgid "MaxTextureSize:description"
+msgstr "Limits the maximum size of textures on this GameObject and its children using mipmaps to avoid heavy recompression."
+
+msgid "MaxTextureSize:prop:maxTextureSize"
+msgstr "Max Texture Size"
+
+msgid "MaxTextureSize:warning:crunchedNotSupported"
+msgstr "Crunched texture format is not supported for resizing."
+
+msgid "MaxTextureSize:warning:insufficientMipmaps"
+msgstr "Texture does not have enough mipmaps for the specified max size."
+
+# endregion
+
 # region MergeMaterial
 
 msgid "MergeMaterial:button:Add Merged Material"
