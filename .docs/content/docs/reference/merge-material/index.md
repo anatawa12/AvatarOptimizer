@@ -24,9 +24,9 @@ For each merge group, there is `Add Source` button. Clicking this button would a
 For each source material, you must set where to the texture will place to.
 Please change X, Y, W, H to fit to where you want.
 
-For properties other than UV-based textures (includes screen-space textures like MatCaps, Dithers, Noise), the value from the `Reference Material` will be used if set, otherwise the value from the first source material will be used.
+For all properties other than UV-based textures (including screen-space textures like MatCaps, Dithers, Noise), the value from the `Reference Material` will be used if set, otherwise the value from the first source material will be used.
 
-For each merge group, There is Texture Config settings.
+For each merge group, there is Texture Config settings.
 You can set the size and format of the generated textures for all textures, and override them for each texture property name.
 
 ![component.png](component.png)
@@ -35,4 +35,4 @@ You can set the size and format of the generated textures for all textures, and 
 
 - This component does not support animations replacing the materials.
 
-- This component requires textures used in the materials to have some fixed-transform so features like Parallax, UV-Scroll are not supported.
+- This component requires textures used in the materials to have some fixed-transform, so features like Parallax, UV-Scroll are not supported.
