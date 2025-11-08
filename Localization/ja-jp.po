@@ -363,8 +363,9 @@ msgstr "テクスチャのサイズ"
 
 msgid "MergeToonLitMaterial:suggestMigrate"
 msgstr ""
-"MergeToonLitMaterialは非推奨です！ 多くのシェーダをサポートするMerge Materialコンポーネントに置き換えられました。\n"
-"下のボタンを押し、Merge Materialに移行することを推奨します！ (設定は引き継がれます)"
+"MergeToonLitMaterialは非推奨であり、廃止予定です！\n"
+"より多くのシェーダーをサポートし、保存形式も改善されたMerge Materialに置き換えられました。\n"
+"下のボタンを押し、Merge Materialに移行することを強くお勧めします！ (設定は引き継がれます)"
 
 msgid "MergeToonLitMaterial:button:Migrate to MergeMaterial"
 msgstr "Merge Materialに移行する"
@@ -848,7 +849,7 @@ msgid "MergeMaterial:label:Reference Material"
 msgstr "設定参照用マテリアル"
 
 msgid "MergeMaterial:Reference Material:tooltip"
-msgstr "統合先のマテリアルとして使用されるマテリアルです。このマテリアルのシェーダーの設定が統合後のマテリアルに使用されます。"
+msgstr "統合後のマテリアルの、UVベースのテクスチャ以外のすべての設定が、このマテリアルと同じ内容になります。"
 
 msgid "MergeMaterial:label:Texture Config Overrides"
 msgstr "テクスチャ設定のオーバーライド"
@@ -872,37 +873,40 @@ msgid "MergeMaterial:error:DuplicateMaterialInMergeSetting"
 msgstr "複数の統合設定で同じマテリアルが統合対象として指定されています。これはサポートされていません。"
 
 msgid "MergeMaterial:error:MaterialNotFoundInMesh"
-msgstr "MergeMaterialの設定で指定されたマテリアルがSkinned Mesh Renderer上に存在しません。"
+msgstr "統合対象のマテリアルがSkinned Mesh Renderer上に存在しません。"
 
 msgid "MergeMaterial:error:MaterialUsedInMultipleSubMeshes"
-msgstr "SkinnedMeshRendererの複数のマテリアルで設定されたマテリアルが使用されています。サブメッシュを統合してから処理を行う必要があります。"
+msgstr "統合対象のマテリアルがSkinned Mesh Renderer上の複数のマテリアルスロットで使用されています。Merge Skinned Meshなどによりサブメッシュが統合されている必要があります。"
 
 msgid "MergeMaterial:error:MultiMaterialSubMesh"
-msgstr "設定されたマテリアルを使用しているサブメッシュが、複数のマテリアルを持っています。MergeMaterialコンポーネントでは、マルチマテリアルマルチパスレンダリングはサポートされていません。"
+msgstr "統合対象のマテリアルを使用しているサブメッシュが複数のマテリアルを持っています。\n"
+"複数マテリアルを用いたマルチパスレンダリングはサポートされていません。"
 
 msgid "MergeMaterial:error:UnsupportedShaderInMergeSetting"
-msgstr "設定されたマテリアルで使用されているシェーダーは、Merge Materialでサポートされていません。"
+msgstr "Merge Materialの設定で指定されたマテリアルで使用されているシェーダーは、Merge Materialでサポートされていません。"
 
 msgid "MergeMaterial:error:UnsupportedShaderInMergeSetting:description"
-msgstr "そのシェーダーはAvatar Optimizer向けのShader Informationを提供していないか、Shader Informationが'TextureAndUVUsage'情報を提供していません。これらの情報がないと、Avatar Optimizerはマテリアルを正常に統合することができません。"
+msgstr "当該シェーダーは、Avatar Optimizer向けのShader Informationを提供していないか、Shader Informationにおいて'TextureAndUVUsage'情報を提供していません。\n"
+"これらの情報がない場合、Avatar Optimizerはマテリアルを正常に統合することができません。"
 
 msgid "MergeMaterial:error:UnsupportedUVTransformInReferenceMaterial"
-msgstr "代表マテリアル(または設定内の最初のマテリアル)に、サポートされていないUV変換が適用されたテクスチャがあります: {0}"
+msgstr "設定参照用マテリアル(または統合対象の最初のマテリアル)に、サポートされていないUV変換が適用されたテクスチャがあります: {0}"
 
 msgid "MergeMaterial:error:UnsupportedUVTransformInReferenceMaterial:description"
-msgstr "代表マテリアルには_STやパララックスのようなUV変換を持っていてはいけません。"
+msgstr "設定参照用マテリアルは_STやParallaxのようなUV変換を使用してはいけません。"
 
 msgid "MergeMaterial:error:UnknownUVTransform"
-msgstr "マテリアルに、サポートされていないまたは未知のUV変換が適用されたテクスチャがあります: {0}"
+msgstr "サポートされていないか、または未知のUV変換が適用されるテクスチャを含むマテリアルがあります: {0}"
 
 msgid "MergeMaterial:error:UnknownUVTransform:description"
-msgstr "マテリアルを統合するためには、テクスチャがどのように使用されているかを知る必要がありますが、これらのテクスチャには未知のテクスチャ変換や、パララックスやスクロールのような動的変換があります。Merge Materialはそのような機能とは互換性がありません。"
+msgstr "マテリアルを統合するには、テクスチャがどのように使用されているかをAvatar Optimizerが知る必要がありますが、これらのテクスチャには、未知の参照位置、またはParallaxやUVスクロールのような参照位置の動的変化があります。\n"
+"Merge Materialはそのような機能とは互換性がありません。"
 
 msgid "MergeMaterial:error:DifferentShaderInMergeSetting"
-msgstr "統合対象のマテリアルで使用されているシェーダーが、設定間で異なるか、代表マテリアルと異なっています。"
+msgstr "統合対象のマテリアルで使用されているシェーダーが、指定しているマテリアル間で異なるか、設定参照用マテリアルと異なっています。"
 
 msgid "MergeMaterial:error:ReferenceMaterial:NotAllTexturesUsed"
-msgstr "統合対象のマテリアルで使用されている一部のテクスチャが、代表マテリアルで使用されていません。これは現在サポートされていません: {0}"
+msgstr "統合対象のマテリアルで使用されている一部のテクスチャプロパティが、設定参照用マテリアルでは使用されていません。現時点では、これはサポートされていません: {0}"
 
 # endregion
 
