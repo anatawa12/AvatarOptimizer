@@ -71,14 +71,12 @@ namespace Anatawa12.AvatarOptimizer
         [SerializeField]
         internal bool mergeSkinnedMesh = true;
 
-        // TODO: make true by default if it's safe
-        // see https://github.com/anatawa12/AvatarOptimizer/issues/954
         [NotKeyable]
         [AAOLocalized("TraceAndOptimize:prop:allowShuffleMaterialSlots",
             "TraceAndOptimize:tooltip:allowShuffleMaterialSlots")]
         [ToggleLeft]
         [SerializeField]
-        internal bool allowShuffleMaterialSlots;
+        internal bool allowShuffleMaterialSlots = true;
 
         [NotKeyable]
         [AAOLocalized("TraceAndOptimize:prop:optimizeTexture")]
@@ -149,6 +147,12 @@ namespace Anatawa12.AvatarOptimizer
             public bool skipAutoMergeBlendShape;
             [ToggleLeft]
             public bool skipRemoveUnusedSubMesh;
+            [ToggleLeft]
+            public bool skipMergePhysBones;
+            [ToggleLeft]
+            public bool skipCompleteGraphToEntryExit;
+            [ToggleLeft]
+            public bool skipOptimizationWarnings;
         }
     }
     

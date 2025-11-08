@@ -129,7 +129,7 @@ class VRCSDKToonStandardShaderInformation : ShaderInformation
             Register("_MatcapMask", UsingUVChannels.UV0);
         }
 
-        if (matInfo.IsShaderKeywordEnabled("USE_EMISSION_MAP") != false)
+        //if (matInfo.IsShaderKeywordEnabled("USE_EMISSION_MAP") != false) // Emission Map is always enabled since it's cheap
         {
             var uv = matInfo.GetFloat("_EmissionUV") switch
             {

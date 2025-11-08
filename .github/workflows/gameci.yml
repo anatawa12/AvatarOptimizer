@@ -47,7 +47,6 @@ jobs:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE_V3 }}
         with:
           testMode: EditMode
-          githubToken: ${{ github.token }}
           coverageOptions: generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+com.anatawa12.avatar-optimizer.*,-*.test.*
           customParameters: 
           checkName: Test results ${{ matrix.unity }}
@@ -55,6 +54,14 @@ jobs:
       - name: "Show files at root folder to find crash log"
         if: always()
         run: ls -la
+
+      - uses: dorny/test-reporter@v2
+        if: always()
+        with:
+          reporter: dotnet-nunit
+          name: EditMode Tests
+          fail-on-empty: false
+          path: ${{ steps.gameci.outputs.artifactsPath }}/editmode-results.xml
 
       - uses: actions/upload-artifact@v4
         if: always()

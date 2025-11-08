@@ -18,12 +18,12 @@ Avatar Optimizerは[GitHub]上で開発され、[MIT License]で公開されて�
 Avatar Optimizerは[VPM][vpm]リポジトリを使用して公開されているため、任意のVPMクライアントを使用してインストールできます。
 
 {{< beta-only color="success" >}}
-{{< hint info >}}
+<blockquote class="book-hint info">
 
 プレリリース版のAvatar Optimizerでは、anatawa12のVPMリポジトリで提供されていないNDMFのプレリリース版が使用されている場合があります。
 その場合、ALCOMにbd_ prereleasesリポジトリ(<https://vpm.nadena.dev/vpm-prerelease.json>)を追加する必要があります。
 
-{{< /hint >}}
+</blockquote>
 {{< /beta-only >}}
 
 <div id="installation-vcc"></div> <!-- compatibility with older docs -->

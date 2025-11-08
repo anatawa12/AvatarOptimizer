@@ -460,6 +460,7 @@ internal struct OptimizeTextureImpl {
 
         {
             var usageInformations = info.Textures.SelectMany(x => x.Users).SelectMany(x => x.Value);
+            if (!usageInformations.Any()) return EmptyAtlasConnectedResult;
             var wrapModeU = usageInformations.Select(x => x.WrapModeU).Aggregate((a, b) => a == b ? a : null);
             var wrapModeV = usageInformations.Select(x => x.WrapModeV).Aggregate((a, b) => a == b ? a : null);
 
@@ -921,9 +922,7 @@ internal struct OptimizeTextureImpl {
             }
             else
             {
-                var format = SystemInfo.GetCompatibleFormat(
-                    GraphicsFormatUtility.GetGraphicsFormat(texture2D.format, isSRGB: texture2D.isDataSRGB),
-                    FormatUsage.Render);
+                var format = Utils.GetRenderingFormatForTexture(texture2D.format, isSRGB: texture2D.isDataSRGB);
                 TraceLog($"Using format {format} ({texture2D.format})");
                 using var tempTexture = Utils.TemporaryRenderTexture(newWidth, newHeight, depthBuffer: 0, format: format);
                 HelperMaterial.SetTexture(MainTexProp, texture2D);
@@ -1049,8 +1048,7 @@ internal struct OptimizeTextureImpl {
     private static Texture2D CopyFromRenderTarget(RenderTexture source, Texture2D original)
     {
         var prev = RenderTexture.active;
-        var format = SystemInfo.GetCompatibleFormat(original.graphicsFormat, FormatUsage.ReadPixels);
-        var textureFormat = GraphicsFormatUtility.GetTextureFormat(format);
+        var textureFormat = Utils.GetTextureFormatForReading(original.graphicsFormat);
         var texture = new Texture2D(source.width, source.height, textureFormat, true, linear: !source.isDataSRGB);
 
         try

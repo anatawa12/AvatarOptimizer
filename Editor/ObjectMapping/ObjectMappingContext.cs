@@ -341,6 +341,12 @@ namespace Anatawa12.AvatarOptimizer
                 {
                     foreach (var tuple in newBindings)
                     {
+                        // We cannot generate animations targeting non-first component of the type on the GameObject
+                        if (tuple.index != 0)
+                        {
+                            Debug.LogWarning($"Mapping AnimationClip {clip.name}: Animation targeting non-first component of the type {tuple.type} on GameObject {tuple.path} is not supported. Skipping this binding.");
+                            continue;
+                        }
                         var newBinding = binding;
                         newBinding.path = tuple.path;
                         newBinding.type = tuple.type;
@@ -364,6 +370,12 @@ namespace Anatawa12.AvatarOptimizer
                 {
                     foreach (var tuple in newBindings)
                     {
+                        // We cannot generate animations targeting non-first component of the type on the GameObject
+                        if (tuple.index != 0)
+                        {
+                            Debug.LogWarning($"Mapping AnimationClip {clip.name}: Animation targeting non-first component of the type {tuple.type} on GameObject {tuple.path} is not supported. Skipping this binding.");
+                            continue;
+                        }
                         var newBinding = binding;
                         newBinding.path = tuple.path;
                         newBinding.type = tuple.type;
@@ -375,26 +387,72 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             // ReSharper disable once CompareOfFloatsByEqualityOperator
-            if (newClip.length != clip.length)
+            var hasLengthMismatch = newClip.length != clip.length;
+            var hasKeysRemoved = (floatBindings.Length > 0 || objectBindings.Length > 0) && 
+                                 AnimationUtility.GetCurveBindings(newClip).Length == 0 && 
+                                 AnimationUtility.GetObjectReferenceCurveBindings(newClip).Length == 0;
+            
+            // In Play Mode, add descriptive messages for both length mismatch and keys removed.
+            // In Edit Mode (upload builds), only add dummy curve for length mismatch to preserve clip length.
+            var shouldAddDummyCurves = false;
+            
+            if (hasLengthMismatch)
             {
-                // if newClip has less properties than original clip (especially for no properties), 
-                // length of newClip can be changed which is bad.
                 Tracing.Trace(TracingArea.ApplyObjectMapping, $"Animation Clip Length Mismatch; {clip.length} -> {newClip.length}");
-                AnimationUtility.SetEditorCurve(newClip,
-                    EditorCurveBinding.FloatCurve("$AvatarOptimizerClipLengthDummy$", typeof(GameObject), Props.IsActive), 
-                    AnimationCurve.Constant(clip.length, clip.length, 1f));
+                shouldAddDummyCurves = true;
+            }
+            
+            if (hasKeysRemoved)
+            {
+                Tracing.Trace(TracingArea.ApplyObjectMapping, $"All animation keys removed from clip {clip.name}");
+                // Only add dummy curves for keys removed in Play Mode, not in Edit Mode
+                if (EditorApplication.isPlayingOrWillChangePlaymode)
+                {
+                    shouldAddDummyCurves = true;
+                }
+            }
+            
+            if (shouldAddDummyCurves)
+            {
+                // In Play Mode, use descriptive localized messages to help users understand what happened.
+                // We check isPlayingOrWillChangePlaymode (not just isPlaying) because NDMF builds happen
+                // during the transition to Play Mode (when willChangePlaymode is true), before isPlaying becomes true.
+                // This ensures upload builds (which happen in Edit Mode) use the terse internal identifier,
+                // while Play Mode testing uses the descriptive messages.
+                // Split messages into multiple curves to avoid multi-line object names.
+                if (EditorApplication.isPlayingOrWillChangePlaymode)
+                {
+                    // Add multiple short messages as separate curves
+                    AnimationUtility.SetEditorCurve(newClip,
+                        EditorCurveBinding.FloatCurve(AAOL10N.Tr("ObjectMapping:DummyAnimationObject:1"), typeof(GameObject), Props.IsActive), 
+                        AnimationCurve.Constant(clip.length, clip.length, 1f));
+                    AnimationUtility.SetEditorCurve(newClip,
+                        EditorCurveBinding.FloatCurve(AAOL10N.Tr("ObjectMapping:DummyAnimationObject:2"), typeof(GameObject), Props.IsActive), 
+                        AnimationCurve.Constant(clip.length, clip.length, 1f));
+                    AnimationUtility.SetEditorCurve(newClip,
+                        EditorCurveBinding.FloatCurve(AAOL10N.Tr("ObjectMapping:DummyAnimationObject:3"), typeof(GameObject), Props.IsActive), 
+                        AnimationCurve.Constant(clip.length, clip.length, 1f));
+                }
+                else
+                {
+                    // For upload builds, use terse internal identifier to minimize size
+                    AnimationUtility.SetEditorCurve(newClip,
+                        EditorCurveBinding.FloatCurve("$AvatarOptimizerClipLengthDummy$", typeof(GameObject), Props.IsActive), 
+                        AnimationCurve.Constant(clip.length, clip.length, 1f));
+                }
             }
 
             newClip.wrapMode = clip.wrapMode;
             newClip.legacy = clip.legacy;
             newClip.frameRate = clip.frameRate;
             newClip.localBounds = clip.localBounds;
+            // We have to add the clip to _clipMapping before processing additiveReferencePoseClip to avoid infinite recursion
+            _clipMapping[clip] = newClip;
             var settings = AnimationUtility.GetAnimationClipSettings(clip);
             settings.additiveReferencePoseClip = MapClip(settings.additiveReferencePoseClip);
             AnimationUtility.SetAnimationClipSettings(newClip, settings);
 
             Profiler.EndSample();
-            _clipMapping[clip] = newClip;
             return newClip;
         }
 

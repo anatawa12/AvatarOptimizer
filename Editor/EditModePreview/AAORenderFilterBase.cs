@@ -37,9 +37,14 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     continue;
                 }
 
-                if (!component.TryGetComponent<SkinnedMeshRenderer>(out var renderer)) continue;
-                if (renderer.sharedMesh == null) continue;
-
+                Renderer renderer;
+                if (component.TryGetComponent<SkinnedMeshRenderer>(out var skinned) && skinned.sharedMesh != null)
+                    renderer = skinned;
+                else if (component.TryGetComponent<MeshRenderer>(out var basic) &&
+                         component.TryGetComponent<MeshFilter>(out var meshFilter) && meshFilter.sharedMesh != null)
+                    renderer = basic;
+                else
+                    continue;
                 if (!componentsByRenderer.TryGetValue(renderer, out var list))
                     componentsByRenderer.Add(renderer, list = new List<T>());
 
@@ -56,8 +61,6 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             IEnumerable<(Renderer, Renderer)> proxyPairs, ComputeContext context)
         {
             var pair = proxyPairs.Single();
-            if (!(pair.Item1 is SkinnedMeshRenderer original)) return null;
-            if (!(pair.Item2 is SkinnedMeshRenderer proxy)) return null;
 
             // we modify the mesh so we need to clone the mesh
 
@@ -65,7 +68,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
             var node = CreateNode();
 
-            await node.Process(original, proxy, components, context);
+            await node.Process(pair.Item1, pair.Item2, components, context);
 
             return node;
         }
@@ -81,28 +84,49 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
         RenderAspects IRenderFilterNode.WhatChanged => RenderAspects.Mesh | RenderAspects.Shapes;
 
-        protected abstract ValueTask Process(
-            SkinnedMeshRenderer original,
-            SkinnedMeshRenderer proxy,
+        protected abstract ValueTask<bool> Process(
+            Renderer original,
+            Renderer proxy,
             [NotNull] T[] components,
             Mesh duplicated,
             ComputeContext context);
 
         internal async ValueTask Process(
-            SkinnedMeshRenderer original,
-            SkinnedMeshRenderer proxy,
+            Renderer original,
+            Renderer proxy,
             [NotNull] T[] components,
             ComputeContext context)
         {
             UnityEngine.Profiling.Profiler.BeginSample($"RemoveMeshByBlendShapeRendererNode.Process({original.name})");
 
-            var duplicated = Object.Instantiate(proxy.sharedMesh);
-            duplicated.name = proxy.sharedMesh.name + " (AAO Generated)";
+            Mesh duplicated;
+            {
+                if (proxy is SkinnedMeshRenderer skinned)
+                {
+                    duplicated = Object.Instantiate(skinned.sharedMesh);
+                    duplicated.name = skinned.sharedMesh.name + " (AAO Generated)";
+                }
+                else if (proxy is MeshRenderer && proxy.TryGetComponent<MeshFilter>(out var meshFilter))
+                {
+                    duplicated = Object.Instantiate(meshFilter.sharedMesh);
+                    duplicated.name = meshFilter.sharedMesh.name + " (AAO Generated)";
+                }
+                else
+                {
+                    UnityEngine.Profiling.Profiler.EndSample();
+                    return;
+                }
+            }
 
-            await Process(original, proxy, components, duplicated, context);
+            if (await Process(original, proxy, components, duplicated, context))
+            {
+                if (proxy is SkinnedMeshRenderer skinned)
+                    skinned.sharedMesh = duplicated;
+                else if (proxy is MeshRenderer && proxy.TryGetComponent<MeshFilter>(out var meshFilter))
+                    meshFilter.sharedMesh = duplicated;
 
-            proxy.sharedMesh = duplicated;
-            _duplicated = duplicated;
+                _duplicated = duplicated;
+            }
 
             UnityEngine.Profiling.Profiler.EndSample();
         }
@@ -112,6 +136,8 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             if (_duplicated == null) return;
             if (proxy is SkinnedMeshRenderer skinnedMeshProxy)
                 skinnedMeshProxy.sharedMesh = _duplicated;
+            else if (proxy is MeshRenderer && proxy.TryGetComponent<MeshFilter>(out var meshFilter))
+                meshFilter.sharedMesh = _duplicated;
         }
 
         void IDisposable.Dispose()

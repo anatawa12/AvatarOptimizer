@@ -59,13 +59,12 @@ internal class MeshRemovalProviderImpl : MeshRemovalProvider
     {
         if (removeMeshByBlendShape.Length != 0)
         {
-            var toleranceSqrByShape = EditModePreview.RemoveMeshByBlendShapeRendererNode.CalculateToleranceSqrByShape(removeMeshByBlendShape);
-            _removedByBlendShape = EditModePreview.RemoveMeshByBlendShapeRendererNode.ComputeShouldRemoveVertex(renderer.sharedMesh, toleranceSqrByShape);
+            _removedByBlendShape = EditModePreview.RemoveMeshByBlendShapeRendererNode.ComputeShouldRemoveVertex(renderer.sharedMesh, removeMeshByBlendShape);
         }
 
         if (removeMeshInBox.Length != 0)
         {
-            _removedByBox = EditModePreview.RemoveMeshInBoxRendererNode.ComputeShouldRemoveVertex(renderer, removeMeshInBox, ComputeContext.NullContext);
+            EditModePreview.RemoveMeshInBoxRendererNode.ComputeShouldRemoveVertex(renderer, removeMeshInBox, ComputeContext.NullContext, out _removedByBox);
         }
 
         if (removeMeshByMask != null)

@@ -9,13 +9,13 @@ weight: 100
 
 このコンポーネントは、SkinnedMeshRendererコンポーネントのあるGameObjectに追加してください。
 
-{{< hint warning >}}
+<blockquote class="book-hint warning">
 
 このコンポーネントはビルドの最後の方で実行されるため、[Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component) では**ありません**。
 
 このコンポーネントを[Merge Skinned Mesh](../merge-skinned-mesh)の統合対象となるSkinnedMeshRendererに追加しても効果がありません。
 
-{{< /hint >}}
+</blockquote>
 
 ## 利点 {#benefits}
 

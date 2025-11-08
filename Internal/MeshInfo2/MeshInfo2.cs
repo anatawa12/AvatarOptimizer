@@ -93,7 +93,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 var meshFilter = renderer.GetComponent<MeshFilter>();
                 var mesh = _originalMesh = meshFilter != null ? meshFilter.sharedMesh : null;
                 if (mesh != null)
-                    ReadStaticMesh(mesh);
+                    ReadBasicMesh(mesh);
 
                 if (mesh != null)
                     Bounds = mesh.bounds;
@@ -160,9 +160,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         /// <summary>
         /// Makes all vertices in this MeshInfo2 boned.
         /// </summary>
-        public void MakeBoned()
+        public void MakeBoned(bool evenIfBasicMesh = false)
         {
             if (Bones.Count != 0) return;
+            if (!evenIfBasicMesh && SourceRenderer is MeshRenderer) throw new Exception("Cannot make boned for MeshRenderer because MeshRenderer does not support bones");
 
             Bones.Add(new Bone(Matrix4x4.identity, RootBone));
 
@@ -173,7 +174,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public void ReadSkinnedMesh(Mesh mesh)
         {
             Profiler.BeginSample("Read Skinned Mesh");
-            ReadStaticMesh(mesh);
+            ReadBasicMesh(mesh);
 
             Profiler.BeginSample("Read Skinned Mesh Part");
             Profiler.BeginSample("Read Bones");
@@ -218,9 +219,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.EndSample();
         }
 
-        public void ReadStaticMesh(Mesh mesh)
+        public void ReadBasicMesh(Mesh mesh)
         {
-            Profiler.BeginSample($"Read Static Mesh Part");
+            Profiler.BeginSample($"Read Basic Mesh Part");
             VerticesMutable.Capacity = Math.Max(VerticesMutable.Capacity, mesh.vertexCount);
             Utils.DisposeAll(VerticesMutable);
             VerticesMutable.Clear();
@@ -863,6 +864,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                             }
                         }
 
+                        // Future (as of 2025-08-08) NDMF toolchain planned to use technique called infinimation
+                        // that apply blendShapes with infinity value to hide some portion of mesh.
+                        // The infinity value on blendshape delta itself does not cause any problem, but as a part
+                        // of AAO process, blendshape delta can be multiplied with matrix with zero-value in element.
+                        // When infinity is multiplied with zero, it becomes NaN.
+                        // However, Unity does not handle NaN in blendshape delta (possibly by bug) and replaces with zero.
+                        // So, we have to replace NaNs with infinity to work around this bug.
+                        foreach (ref var position in positions.AsSpan())
+                            if (float.IsNaN(position.magnitude))
+                                position = Vector3.positiveInfinity;
+
                         destMesh.AddBlendShapeFrame(shapeName, weight, positions, normals, tangents);
                     }
                     Profiler.EndSample();
@@ -913,6 +925,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     var name = $"AAOGeneratedMesh{targetRenderer.name}";
                     var mesh = new Mesh { name = name };
 
+                    if (_originalMesh) MeshUtility.SetMeshCompression(mesh, MeshUtility.GetMeshCompression(_originalMesh));
+
                     WriteToMesh(mesh, isSkinnedMesh: true);
                     // I don't know why but Instantiating mesh will fix broken BlendShapes with
                     // https://github.com/anatawa12/AvatarOptimizer/issues/753
@@ -942,6 +956,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             using (ErrorReport.WithContextObject(targetRenderer))
             {
                 var mesh = new Mesh { name = $"AAOGeneratedMesh{targetRenderer.name}" };
+                if (_originalMesh) MeshUtility.SetMeshCompression(mesh, MeshUtility.GetMeshCompression(_originalMesh));
                 var meshFilter = targetRenderer.GetComponent<MeshFilter>();
                 WriteToMesh(mesh, isSkinnedMesh: false);
                 if (_originalMesh) ObjectRegistry.RegisterReplacedObject(_originalMesh, mesh);

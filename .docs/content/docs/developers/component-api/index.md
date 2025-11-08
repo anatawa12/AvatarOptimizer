@@ -14,6 +14,7 @@ Here is the list of components that are supported by Component API.
 
 - `RemoveMeshInBox` - Adding component and configuring for that is supported
 - `RemoveMeshByBlendShape` - Adding component and configuring for that is supported
+- `RemoveMeshByMask` - Adding component and configuring for that is supported
 - `TraceAndOptimize` - Adding with default configuration is supported but configuring is not supported
 
 For components that supports configuring, to keep compatibility with future features that enabled by default,
@@ -32,17 +33,17 @@ The default setting of Components will be affected to the components added with 
 Therefore, to keep behavior compability with future versions, you have to call `Initialize` method with the version of default configuration you want to use.
 The default configuration version should be described in the document of the `Initialize` method.
 
-{{< hint warning >}}
+<blockquote class="book-hint warning">
 
 Without calling `Initialize` method, component will behave unexpectedly, or you may get error with future versions.
 
-{{< /hint >}}
+</blockquote>
 
-{{< hint info >}}
+<blockquote class="book-hint info">
 
 Configuring component is only supported just after adding component, and configuring already existing component on the GameObject is unsupported.
 This is because some future functionality might be incompatible with the existing component configuration.
 
 For example, enabling the inversion option of `AAO Remove Mesh By Box` component, added in v1.8.0, changes the meaning of box, which makes it incompatible with tools intended only for v1.7 and earlier.
 
-{{< /hint >}}
+</blockquote>

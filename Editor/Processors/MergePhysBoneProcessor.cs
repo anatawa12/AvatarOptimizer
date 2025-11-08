@@ -477,6 +477,14 @@ namespace Anatawa12.AvatarOptimizer.Processors
             {
                 // differ error reported by validator
                 // merge of endpointPosition proceed later
+
+                if (IgnoreOtherPhysBones.IsOverride)
+                    _mergedPhysBone.FindProperty(IgnoreOtherPhysBones.PhysBoneValueName).boolValue
+                        = IgnoreOtherPhysBones.OverrideValue.boolValue;
+                else
+                    _mergedPhysBone.FindProperty(IgnoreOtherPhysBones.PhysBoneValueName).boolValue
+                        = !IgnoreOtherPhysBones.SourceValue!.hasMultipleDifferentValues &&
+                          IgnoreOtherPhysBones.SourceValue!.boolValue;
             }
 
             protected override void OptionParameter()

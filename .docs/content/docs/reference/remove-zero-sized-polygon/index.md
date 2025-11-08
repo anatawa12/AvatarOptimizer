@@ -9,13 +9,13 @@ Remove polygons whose area are zero.
 
 This component should be added to a GameObject which has a SkinnedMeshRenderer component.
 
-{{< hint warning >}}
+<blockquote class="book-hint warning">
 
 Since this component works very late in the build process, this component is **NOT** [Modifying Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component).
 
 Adding this component to the SkinnedMeshRenderers to be merged by [Merge Skinned Mesh](../merge-skinned-mesh) component has no effect.
 
-{{< /hint >}}
+</blockquote>
 
 ## Benefits
 

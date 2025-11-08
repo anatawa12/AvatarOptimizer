@@ -11,7 +11,6 @@ namespace Anatawa12.AvatarOptimizer
         public EqualsHashSet(HashSet<T> backedSet)
         {
             if (backedSet == null) throw new ArgumentNullException(nameof(backedSet));
-            Utils.Assert(Equals(backedSet.Comparer, EqualityComparer<T>.Default));
             this.backedSet = backedSet;
         }
 
@@ -24,7 +23,7 @@ namespace Anatawa12.AvatarOptimizer
         public override int GetHashCode() => backedSet.GetSetHashCode();
 
         public bool Equals(EqualsHashSet<T> other) =>
-            !ReferenceEquals(null, other) && (ReferenceEquals(this, other) || backedSet.SetEquals(other.backedSet));
+            !ReferenceEquals(null, other) && (ReferenceEquals(this, other) || backedSet.SetEquals(other.backedSet) && backedSet.Comparer.Equals(other.backedSet.Comparer));
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();

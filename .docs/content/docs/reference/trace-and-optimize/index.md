@@ -14,14 +14,14 @@ You can enable/disable some automatic optimization features with checkboxes.
 
 This component should be added to an avatar root. (Kind: [Avatar Global Component](../../component-kind/avatar-global-components))
 
-{{< hint info >}}
+<blockquote class="book-hint info">
 
 Trace and Optimize is quite carefully designed under the premise that "**never let it affect the appearance**."\
 So, if any problems occur, such as appearance is affected or some gimmick stops working, they are all caused by bugs in AAO, without exception.\
 Therefore, if you encounter any problems with this component, please report it.\
 We will fix it as much as we can.
 
-{{< /hint >}}
+</blockquote>
 
 Currently the following optimizations are applied automatically.
 - `Optimize BlendShape`\
@@ -90,6 +90,33 @@ This feature currently applies the following optimizations.
   classDef node stroke-width:0px,color:#ffffff
   classDef state fill:#878787
   style AnyState fill:#29a0cc
+  style Entry fill:#15910f
+  class Entry,State1,State2,Exit node
+  class State1 default
+  class State2,State3 state
+  ```
+
+- Convert Complete Graph to Entry-Exit\
+  This tries to convert Animator Controller layers with complete graph structure to Diamond-style Entry-Exit type as possible.
+  With other optimizations, such layers may be converted to BlendTree.
+
+  ```mermaid
+  ---
+  title: Complete Graph layer
+  ---
+  graph LR;
+        Entry(Entry) --> State1;
+        State1(State1) --> State2(State2);
+        State1 --> State3(State3);
+        State2 --> State1;
+        State2 --> State3;
+        State3 --> State1;
+        State3 --> State2;
+  
+  classDef default fill:#ab8211
+  classDef node stroke-width:0px,color:#ffffff
+  classDef state fill:#878787
+  %%style AnyState fill:#29a0cc
   style Entry fill:#15910f
   class Entry,State1,State2,Exit node
   class State1 default
