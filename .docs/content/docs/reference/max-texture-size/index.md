@@ -9,7 +9,7 @@ Reduce texture size by extracting specific mipmap levels, preserving the origina
 
 This component can be added to any GameObject and applies to that GameObject and all its children.
 
-When multiple Max Texture Size components are present, the closest parent's setting is used, and if a texture is affected by multiple settings, the minimum size is applied.
+When multiple Max Texture Size components are present, the closest parent's setting is used, and if a texture is affected by multiple settings, the maximum size is applied.
 
 ## Limitations
 

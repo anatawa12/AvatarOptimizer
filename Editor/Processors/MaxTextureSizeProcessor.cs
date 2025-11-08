@@ -81,8 +81,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                             }
                             else
                             {
-                                // Use minimum size if texture is used by multiple materials with different limits
-                                textureToMaxSize[texture2D] = Math.Min(textureToMaxSize[texture2D], maxSize);
+                                // Use maximum size if texture is used by multiple materials with different limits
+                                textureToMaxSize[texture2D] = Math.Max(textureToMaxSize[texture2D], maxSize);
                             }
                         }
                     }
