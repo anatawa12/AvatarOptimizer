@@ -460,7 +460,7 @@ msgstr "Generate Preview"
 
 msgid "MergeToonLitMaterial:suggestMigrate"
 msgstr ""
-"MergeToonLitMaterial is obsoleted by MergeMaterial wich supports more shaders!\n"
+"MergeToonLitMaterial is obsoleted by MergeMaterial which supports more shaders and has better save format!\n"
 "We recommend migrating to MergeMaterial by clicking the button below."
 
 msgid "MergeToonLitMaterial:button:Migrate to MergeMaterial"
@@ -921,7 +921,7 @@ msgid "MergeMaterial:label:Reference Material"
 msgstr "Reference Material"
 
 msgid "MergeMaterial:Reference Material:tooltip"
-msgstr "The reference material is used as the base material for the merged material."
+msgstr "All properties in the reference material other than UV-based textures are used for the merged material."
 
 msgid "MergeMaterial:label:Texture Config Overrides"
 msgstr "Texture Config Overrides"
@@ -939,43 +939,45 @@ msgid "MergeMaterial:label:Texture Format Override"
 msgstr "Override Format"
 
 
-# region MergeMaterial
+# region errors
 
 msgid "MergeMaterial:error:DuplicateMaterialInMergeSetting"
 msgstr "Multiple merge settings uses same material as a source material. This is not supported behavior."
 
 msgid "MergeMaterial:error:MaterialNotFoundInMesh"
-msgstr "The material configured in the MergeMaterial is not exists in the Skinned Mesh Renderer."
+msgstr "The material configured in the merge group is not exists in the Skinned Mesh Renderer."
 
 msgid "MergeMaterial:error:MaterialUsedInMultipleSubMeshes"
-msgstr "The material configured is used by multiple materials in the Skinned Mesh Renderer. You have to merge submeshes before processing."
+msgstr "The material configured is used in multiple material slots in the Skinned Mesh Renderer. You have to merge submeshes before processing."
 
 msgid "MergeMaterial:error:MultiMaterialSubMesh"
-msgstr "The material configured is used by submeshes with multiple materials attached for multi-material multi-pass rendering. This situation is not supported by MergeMaterial component."
+msgstr "The material configured is used by submeshes with multiple materials attached for multi-material multi-pass rendering. This is not supported."
 
 msgid "MergeMaterial:error:UnsupportedShaderInMergeSetting"
-msgstr "The shader used in the material is not supported by Merge Material."
+msgstr "The shader of the material configured in the Merge Material is not supported by Merge Material."
 
 msgid "MergeMaterial:error:UnsupportedShaderInMergeSetting:description"
-msgstr "The shader does not provide the ShaderInformation for Avatar Optimizer or the ShaderInformation does not provide 'TextureAndUVUsage' information. Without those information, Avatar Optimizer cannot merge materials successfully."
+msgstr "The shader does not provide the ShaderInformation for Avatar Optimizer or the ShaderInformation does not provide 'TextureAndUVUsage' information.\n"
+"Without those information, Avatar Optimizer cannot merge materials correctly."
 
 msgid "MergeMaterial:error:UnsupportedUVTransformInReferenceMaterial"
-msgstr "The reference material (or the fist material on the setting) have some textures with unsupported UV Transform applied to the texture: {0}"
+msgstr "The reference material (or the first source material) has some textures with unsupported UV Transform applied to the texture: {0}"
 
 msgid "MergeMaterial:error:UnsupportedUVTransformInReferenceMaterial:description"
 msgstr "The reference material must not have UV transform like _ST or parallax."
 
 msgid "MergeMaterial:error:UnknownUVTransform"
-msgstr "The material have some textures with unsupported / unknown UV Transform applied to the texture: {0}"
+msgstr "The material has some textures with unsupported / unknown UV Transform applied to the texture: {0}"
 
 msgid "MergeMaterial:error:UnknownUVTransform:description"
-msgstr "To merge material, we need know how the texture is used, but those textures have unknown texture transform or dynamic transform like parallax or scroll. Merge material is incompatible with such a features."
+msgstr "To merge material, Avatar Optimizer needs to know how the texture is used, but those textures have unknown texture transform or dynamic transform like parallax or scroll.\n"
+"Merge material is incompatible with such features."
 
 msgid "MergeMaterial:error:DifferentShaderInMergeSetting"
-msgstr "Shaders used in source material is different between settings or different from the reference material."
+msgstr "Shaders used in source materials of Merge Material are different among configured materials or different from the reference material."
 
 msgid "MergeMaterial:error:ReferenceMaterial:NotAllTexturesUsed"
-msgstr "Some textures used in source texture is not used by the reference material. This is currently unsupported: {0}"
+msgstr "Some texture properties used in source materials are not used by the reference material. This is currently unsupported: {0}"
 
 # endregion
 
