@@ -94,7 +94,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     .ToArray();
 
                 foreach (var meshInfo2 in meshInfos) meshInfo2.FlattenMultiPassRendering("Merge Skinned Mesh");
-                foreach (var meshInfo2 in meshInfos) meshInfo2.MakeBoned();
+                foreach (var meshInfo2 in meshInfos) meshInfo2.MakeBoned(evenIfBasicMesh: true);
                 Profiler.EndSample();
 
                 return (basicRendererMeshInfos, meshInfos);

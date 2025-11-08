@@ -77,6 +77,9 @@ The format is based on [Keep a Changelog].
   - Ignore Other Phys Bone property is not supported by Merge Phys Bone. This was a bug.
   - This version fixes this bug.
 - Fixed Optimize Texture may throw error in rare cases `#1538`
+- Basic mesh support for remove mesh components `#1530`
+  - You now can remove some portion of basic meshes with Remove Mesh components!
+  - This does not includes remove mesh by blendshape because basic mesh does not support blendshape.
 
 ### Security
 

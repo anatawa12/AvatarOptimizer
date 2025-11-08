@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Anatawa12.AvatarOptimizer
 {
     [AddComponentMenu("Avatar Optimizer/AAO Remove Mesh By Mask")]
-    [RequireComponent(typeof(SkinnedMeshRenderer))]
+    // [RequireComponent(typeof(SkinnedMeshRenderer) or typeof(MeshRenderer))] // handled in editor
     [DisallowMultipleComponent]
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/remove-mesh-by-mask/")]
     [PublicAPI]

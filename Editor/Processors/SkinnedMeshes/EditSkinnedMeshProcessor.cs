@@ -6,20 +6,25 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
+    /// <summary>
+    /// Apart from the name, this processor class may work for both SkinnedMeshRenderer and MeshRenderer depending on <typeparamref name="TComponent"/>.
+    /// </summary>
+    /// <typeparam name="TComponent"></typeparam>
     internal abstract class EditSkinnedMeshProcessor<TComponent> : IEditSkinnedMeshProcessor
         where TComponent : EditSkinnedMeshComponent
     {
         public abstract EditSkinnedMeshProcessorOrder ProcessOrder { get; }
         public virtual IEnumerable<SkinnedMeshRenderer> Dependencies => Array.Empty<SkinnedMeshRenderer>();
         protected TComponent Component { get; }
-        public SkinnedMeshRenderer Target { get; }
+        public Renderer TargetGeneric { get; }
+        public SkinnedMeshRenderer Target => (SkinnedMeshRenderer)TargetGeneric;
 
         EditSkinnedMeshComponent IEditSkinnedMeshProcessor.Component => Component;
 
         protected EditSkinnedMeshProcessor(TComponent component)
         {
             Component = component;
-            Target = component.GetComponent<SkinnedMeshRenderer>();
+            TargetGeneric = component.GetComponent<Renderer>();
         }
 
         public abstract void Process(BuildContext context, MeshInfo2 target);
@@ -40,7 +45,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
     {
         EditSkinnedMeshProcessorOrder ProcessOrder { get; }
         IEnumerable<SkinnedMeshRenderer> Dependencies { get; }
-        SkinnedMeshRenderer Target { get; }
+        Renderer TargetGeneric { get; }
         EditSkinnedMeshComponent Component { get; }
         void Process(BuildContext context, MeshInfo2 target);
 
@@ -82,22 +87,26 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
     internal class SourceMeshInfoComputer : IMeshInfoComputer
     {
-        private readonly SkinnedMeshRenderer _target;
+        private readonly Renderer _target;
 
-        public SourceMeshInfoComputer(SkinnedMeshRenderer target) => _target = target;
-
-
-        public static (string, float)[] BlendShapes(SkinnedMeshRenderer renderer)
+        public SourceMeshInfoComputer(Renderer target)
         {
-            var mesh = renderer.sharedMesh;
+            _target = target;
+        }
+
+
+        public static (string, float)[] BlendShapes(Renderer renderer)
+        {
+            if (renderer is not SkinnedMeshRenderer skinned) return Array.Empty<(string, float)>();
+            var mesh = skinned.sharedMesh;
             if (mesh == null) return Array.Empty<(string, float)>();
             var array = new (string, float)[mesh.blendShapeCount];
             for (var i = 0; i < mesh.blendShapeCount; i++)
-                array[i] = (mesh.GetBlendShapeName(i), renderer.GetBlendShapeWeight(i));
+                array[i] = (mesh.GetBlendShapeName(i), skinned.GetBlendShapeWeight(i));
             return array;
         }
 
-        public static Material[] Materials(SkinnedMeshRenderer renderer) => renderer.sharedMaterials;
+        public static Material[] Materials(Renderer renderer) => renderer.sharedMaterials;
 
         public (string, float)[] BlendShapes() => BlendShapes(_target);
         public Material[] Materials(bool fast = true) => Materials(_target);

@@ -29,6 +29,8 @@ namespace Anatawa12.AvatarOptimizer
 
         protected override void OnInspectorGUIInner()
         {
+            GenericEditSkinnedMeshComponentsEditor.DrawUnexpectedRendererError(targets);
+
             // remove in box
             {
                 var labelContent = new GUIContent(AAOL10N.Tr("RemoveMeshInBox:prop:removePolygonsInOrOut"));

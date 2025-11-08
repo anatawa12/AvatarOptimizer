@@ -12,6 +12,7 @@ namespace Anatawa12.AvatarOptimizer
     [RequireComponent(typeof(SkinnedMeshRenderer))]
     [DisallowMultipleComponent]
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/merge-skinned-mesh/")]
+    [RequireComponent(typeof(SkinnedMeshRenderer))]
     [PublicAPI]
     public sealed class MergeSkinnedMesh : EditSkinnedMeshComponent, ISourceSkinnedMeshComponent, ISerializationCallbackReceiver
     {

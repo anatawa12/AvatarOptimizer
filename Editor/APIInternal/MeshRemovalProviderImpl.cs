@@ -64,7 +64,7 @@ internal class MeshRemovalProviderImpl : MeshRemovalProvider
 
         if (removeMeshInBox.Length != 0)
         {
-            _removedByBox = EditModePreview.RemoveMeshInBoxRendererNode.ComputeShouldRemoveVertex(renderer, removeMeshInBox, ComputeContext.NullContext);
+            EditModePreview.RemoveMeshInBoxRendererNode.ComputeShouldRemoveVertex(renderer, removeMeshInBox, ComputeContext.NullContext, out _removedByBox);
         }
 
         if (removeMeshByMask != null)
