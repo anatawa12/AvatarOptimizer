@@ -861,3 +861,20 @@ msgid "ContextMenus:AddTraceAndOptimize:FailedToAddTraceAndOptimize:Message"
 msgstr "Trace and Optimizeはアバターのルートにのみ追加することができます。アバターのルートを選択してもう一度お試しください。"
 
 # endregion
+
+# region MaxTextureSize
+
+msgid "MaxTextureSize:description"
+msgstr "Mipmapを利用して、このGameObjectやその子孫で使用されているテクスチャの最大サイズを制限します。\n"
+"これにより、重い再圧縮処理を避けることができます。"
+
+msgid "MaxTextureSize:prop:maxTextureSize"
+msgstr "最大テクスチャサイズ"
+
+msgid "MaxTextureSize:warning:crunchedNotSupported"
+msgstr "Crunch圧縮されたテクスチャフォーマットはリサイズに対応していません。"
+
+msgid "MaxTextureSize:warning:insufficientMipmaps"
+msgstr "テクスチャに十分なMipmapレベルがないため、リサイズできません。"
+
+# endregion
