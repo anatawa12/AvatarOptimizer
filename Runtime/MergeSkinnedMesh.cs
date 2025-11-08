@@ -189,6 +189,7 @@ namespace Anatawa12.AvatarOptimizer
         /// <summary>
         /// Gets the set of source MeshRenderers.
         /// </summary>
+        /// <remarks>Due to historical reasons, this named "static mesh renderers", but called "basic mesh renderers"</remarks>
         [PublicAPI]
         public API.PrefabSafeSetAccessor<MeshRenderer> SourceStaticMeshRenderers =>
             _checker.OnAPIUsage(this, new API.PrefabSafeSetAccessor<MeshRenderer>(staticRenderersSet));

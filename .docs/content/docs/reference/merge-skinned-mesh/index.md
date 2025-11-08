@@ -9,11 +9,11 @@ Merges one or more SkinnedMeshRenderers and MeshRenderers into one SkinnedMeshRe
 
 This component should be added to a new GameObject which has a SkinnedMeshRenderer component without Mesh specified. (Kind: [Source Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#source-component))
 
-{{< hint info >}}
+<blockquote class="book-hint info">
 
 [Trace And Optimize](../trace-and-optimize) will automatically do the same process, so in most cases you do not need to use this component.
 
-{{< /hint >}}
+</blockquote>
 
 ## Benefits
 
@@ -27,11 +27,11 @@ This component makes it impossible to turn meshes on and off individually on ani
 This component will configure Meshes, Materials, BlendShapes, and Bounds but other settings will not be modified.
 Please edit SkinnedMeshRenderer component attached to same GameObject as MergeSkinnedMesh to set Anchor Override or else.
 
-{{< hint info >}}
+<blockquote class="book-hint info">
 
 If you are using [Modular Avatar], you can add [`MA Mesh Settings`] component to the root of the avatar to set the Anchor Override or else for the whole avatar.
 
-{{< /hint >}}
+</blockquote>
 
 It's better to freeze & remove unchanging BlendShapes for body / cloth meshes to reduce BlendShape load.\
 You can freeze & remove BlendShape using [Freeze BlendShape](../freeze-blendshape) component.
@@ -51,7 +51,9 @@ The list of SkinnedMeshRenderers to be merged.
 
 Drop to None element at the bottom to add renderer and reset to None to remove from the list.
 
-### Static Renderers
+<div id="static-renderers"></div>
+
+### Basic Renderers
 
 The list of MeshRenderers (without mesh transform).
 

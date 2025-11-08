@@ -76,6 +76,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                             })
                         .Then.Run("Validation", (ctx) => ComponentValidation.ValidateAll(ctx.AvatarRootObject))
                         .Then.Run(Processors.TraceAndOptimizes.LoadTraceAndOptimizeConfiguration.Instance)
+                        .Then.Run(Processors.TraceAndOptimizes.OptimizationWarnings.Instance)
                         .Then.Run(Processors.DupliacteAssets.Instance)
                         .Then.Run(Processors.ParseAnimator.Instance)
                         .Then.Run(Processors.GatherShaderMaterialInformation.Instance)
@@ -85,6 +86,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                             .Then.Run(Processors.TraceAndOptimizes.AddRemoveEmptySubMesh.Instance)
                             .Then.Run(Processors.TraceAndOptimizes.AutoFreezeBlendShape.Instance)
 #if AAO_VRCSDK3_AVATARS
+                            .Then.Run(Processors.TraceAndOptimizes.AutoMergeCompatiblePhysBone.Instance)
                             .Then.Run(Processors.ClearEndpointPositionProcessor.Instance)
                             .Then.Run(Processors.MergePhysBoneProcessor.Instance)
                             .Then.Run(new Processors.GCDebugPass(InternalGcDebugPosition.AfterPhysBone))
@@ -120,6 +122,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
             // animator optimizer is written in newer C# so requires 2021.3 or newer 
             mainSequence.Run(Processors.AnimatorOptimizer.InitializeAnimatorOptimizer.Instance)
                 .Then.Run(Processors.AnimatorOptimizer.AnyStateToEntryExit.Instance)
+                .Then.Run(Processors.AnimatorOptimizer.CompleteGraphToEntryExit.Instance)
 #if AAO_VRCSDK3_AVATARS
                 // EntryExit to BlendTree optimization heavily depends on VRChat's behavior
                 .Then.Run(Processors.AnimatorOptimizer.EntryExitToBlendTree.Instance)

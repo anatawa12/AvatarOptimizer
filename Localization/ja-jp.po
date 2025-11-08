@@ -58,6 +58,19 @@ msgstr "(見つからないが削除済)"
 
 # endregion
 
+# region ObjectMapping
+
+msgid "ObjectMapping:DummyAnimationObject:1"
+msgstr "対象のオブジェクトが不在なため、キーはAAOにより削除されました。(このメッセージはPlayモードでのみ表示されます)"
+
+msgid "ObjectMapping:DummyAnimationObject:2"
+msgstr "AAOが対象オブジェクトを削除した結果対象のオブジェクトが存在しなくなった可能性もあります。"
+
+msgid "ObjectMapping:DummyAnimationObject:3"
+msgstr "誤った判断により削除された場合にはAAOに報告してください。"
+
+# endregion
+
 # start Avatar Optimizer core modules
 
 # region ClearEndpointPosition
@@ -264,7 +277,7 @@ msgid "MergeSkinnedMesh:prop:renderers"
 msgstr "スキンメッシュレンダラー"
 
 msgid "MergeSkinnedMesh:prop:staticRenderers"
-msgstr "静的レンダラー"
+msgstr "メッシュレンダラー"
 
 msgid "MergeSkinnedMesh:prop:removeEmptyRendererObject"
 msgstr "空のレンダラーオブジェクトを削除する"
@@ -614,7 +627,16 @@ msgstr "Trace and Optimizeへの移行が完了しました！"
 # region TraceAndOptimize
 
 msgid "TraceAndOptimize:description"
-msgstr "このコンポーネントをアバターにつけると、アバターを走査して自動的にできる限りの最適化を行います。"
+msgstr "このコンポーネントをアバターにつけると、アバターを走査して自動的にできる限りの最適化を行います。\n"
+"Trace and Optimizeはほとんどのユーザーにとって設定変更が不要なように設計されています。\n"
+"設定を変更する必要がある場合、Avatar Optimizerのバグに遭遇している可能性があります。"
+
+msgid "TraceAndOptimize:warn:changeFeaturesNotNecessary"
+msgstr ""
+"通常、これらの機能を無効化する必要はありません。\n"
+"VRChatアバターに対してはデフォルトの設定が最適となるように設計されているため、設定を変更する必要がある場合はAvatar Optimizerのバグに遭遇している可能性があります。\n"
+"その場合、Avatar Optimizerの作者に報告してください。\n"
+"問題の報告方法については、 https://an12.net/aao/ja/tao-bug をご覧ください。"
 
 msgid "TraceAndOptimize:prop:optimizeBlendShape"
 msgstr "BlendShapeを最適化する"
@@ -657,8 +679,21 @@ msgstr ""
 msgid "TraceAndOptimize:prop:debugOptions"
 msgstr "デバッグ用オプション"
 
+msgid "TraceAndOptimize:dialog:debugOptions:description"
+msgstr ""
+"デバッグ用オプションはAvatar Optimizerのバグを回避するための設定です。\n"
+"これらの設定を変更すると、アバターが適切に最適化されなくなったり、最適化処理が失敗したりする可能性があります。\n"
+"また、一部のデバッグ用オプションが正しく機能しなかったり、その動作が変更されたりする可能性があります。\n"
+"これらのことを理解した上で、設定を変更しますか？"
+
+msgid "TraceAndOptimize:dialog:debugOptions:proceed"
+msgstr "設定を変更する"
+
+msgid "TraceAndOptimize:dialog:debugOptions:cancel"
+msgstr "キャンセル"
+
 msgid "TraceAndOptimize:warn:debugOptions"
-msgstr "デバッグ用オプションはAvatarOptimizerのバグを回避するための設定です。\n"
+msgstr "デバッグ用オプションはAvatar Optimizerのバグを回避するための設定です。\n"
 "これらの設定を変更すると、アバターが適切に最適化されなくなる可能性があります。\n"
 "また、一部のデバッグ用オプションが正しく機能しなかったり、その動作が変更されたりする可能性があります。ご注意ください！"
 
@@ -769,6 +804,16 @@ msgstr "Animator Layer Controlに未知のレイヤー'{0}'が指定されてい
 
 msgid "AnimatorParser:AnimatorNotFoundOnAvatarRoot"
 msgstr "アバターのルートにAnimatorコンポーネントがありません。"
+
+#endregion
+
+#region OptimizationWarnings
+
+msgid "OptimizationWarnings:multi-pass-rendering-with-same-material"
+msgstr ""
+"同一マテリアルによるマルチパスレンダリングが使用されているメッシュが存在します。\n"
+"通常、同一マテリアルでのマルチパスレンダリングは描画負荷が増えるのみであり、効果がないはずです。\n"
+"このマルチパスレンダリングを意図的に行っている場合は、不具合の発生を防ぐために、どのような目的で設定しているかとともにAvatar Optimizerの作者に連絡してください。"
 
 #endregion
 

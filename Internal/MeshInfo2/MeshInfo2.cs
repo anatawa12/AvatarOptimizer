@@ -93,7 +93,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 var meshFilter = renderer.GetComponent<MeshFilter>();
                 var mesh = _originalMesh = meshFilter != null ? meshFilter.sharedMesh : null;
                 if (mesh != null)
-                    ReadStaticMesh(mesh);
+                    ReadBasicMesh(mesh);
 
                 if (mesh != null)
                     Bounds = mesh.bounds;
@@ -174,7 +174,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public void ReadSkinnedMesh(Mesh mesh)
         {
             Profiler.BeginSample("Read Skinned Mesh");
-            ReadStaticMesh(mesh);
+            ReadBasicMesh(mesh);
 
             Profiler.BeginSample("Read Skinned Mesh Part");
             Profiler.BeginSample("Read Bones");
@@ -219,9 +219,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             Profiler.EndSample();
         }
 
-        public void ReadStaticMesh(Mesh mesh)
+        public void ReadBasicMesh(Mesh mesh)
         {
-            Profiler.BeginSample($"Read Static Mesh Part");
+            Profiler.BeginSample($"Read Basic Mesh Part");
             VerticesMutable.Capacity = Math.Max(VerticesMutable.Capacity, mesh.vertexCount);
             Utils.DisposeAll(VerticesMutable);
             VerticesMutable.Clear();
@@ -863,6 +863,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                                 Profiler.EndSample();
                             }
                         }
+
+                        // Future (as of 2025-08-08) NDMF toolchain planned to use technique called infinimation
+                        // that apply blendShapes with infinity value to hide some portion of mesh.
+                        // The infinity value on blendshape delta itself does not cause any problem, but as a part
+                        // of AAO process, blendshape delta can be multiplied with matrix with zero-value in element.
+                        // When infinity is multiplied with zero, it becomes NaN.
+                        // However, Unity does not handle NaN in blendshape delta (possibly by bug) and replaces with zero.
+                        // So, we have to replace NaNs with infinity to work around this bug.
+                        foreach (ref var position in positions.AsSpan())
+                            if (float.IsNaN(position.magnitude))
+                                position = Vector3.positiveInfinity;
 
                         destMesh.AddBlendShapeFrame(shapeName, weight, positions, normals, tangents);
                     }

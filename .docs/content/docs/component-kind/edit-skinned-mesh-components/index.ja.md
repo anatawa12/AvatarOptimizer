@@ -26,6 +26,7 @@ Avatar Optimizer 1.9.0以降では、一部のコンポーネントがメッシ�
 以下のコンポーネントがModifying Edit Skinned Mesh Componentです。
 
 - [Remove Mesh By BlendShape](../../reference/remove-mesh-by-blendshape)
+- [Remove Mesh By Mask](../../reference/remove-mesh-by-mask)
 - [Remove Mesh By Box](../../reference/remove-mesh-by-box)
 - [Remove Mesh By UV Tile](../../remove-mesh-by-uv-tile/)
 - [Freeze BlendShape](../../reference/freeze-blendshape)

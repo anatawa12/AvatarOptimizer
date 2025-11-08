@@ -67,7 +67,7 @@ public class MergeSkinnedMeshTest
         var animatorMapper = mapping.CreateAnimationMapper(avatar);
         var mapped = animatorMapper.MapBinding("Renderer0", typeof(GameObject), "m_IsActive");
 
-        Assert.That(mapped, Is.Not.Null.And.Contains((merged.name, typeof(SkinnedMeshRenderer), "m_Enabled")));
+        Assert.That(mapped, Is.Not.Null.And.Contains((merged.name, typeof(SkinnedMeshRenderer), "m_Enabled", 0)));
     }
 
     [Test]

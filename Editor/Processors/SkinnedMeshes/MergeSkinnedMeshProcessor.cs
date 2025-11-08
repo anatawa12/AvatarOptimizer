@@ -22,7 +22,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         private IEnumerable<SkinnedMeshRenderer> SkinnedMeshRenderers =>
             Component.renderersSet.GetAsList().Except(new[] { Target });
         
-        private IEnumerable<MeshRenderer> StaticMeshRenderers =>
+        private IEnumerable<MeshRenderer> BasicMeshRenderers =>
             Component.staticRenderersSet.GetAsList();
 
         public override EditSkinnedMeshProcessorOrder ProcessOrder => EditSkinnedMeshProcessorOrder.Generation;
@@ -60,7 +60,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public (DisposableList<MeshInfo2>, MeshInfo2[] meshInfos) CollectMeshInfos(BuildContext context)
         {
             List<SkinnedMeshRenderer> skinnedMeshRenderers;
-            List<MeshRenderer> staticMeshRenderers;
+            List<MeshRenderer> basicMeshRenderers;
             if (Component.skipEnablementMismatchedRenderers)
             {
                 bool RendererEnabled(Renderer x)
@@ -76,32 +76,32 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 var enabledSelf = RendererEnabled(Target);
                 skinnedMeshRenderers = SkinnedMeshRenderers.Where(x => RendererEnabled(x) == enabledSelf).ToList();
-                staticMeshRenderers = StaticMeshRenderers.Where(x => RendererEnabled(x) == enabledSelf).ToList();
+                basicMeshRenderers = BasicMeshRenderers.Where(x => RendererEnabled(x) == enabledSelf).ToList();
             }
             else
             {
                 skinnedMeshRenderers = SkinnedMeshRenderers.ToList();
-                staticMeshRenderers = StaticMeshRenderers.ToList();
+                basicMeshRenderers = BasicMeshRenderers.ToList();
             }
 
             Profiler.BeginSample("Collect MeshInfos");
             // Owns staticRendererMeshInfos
-            var staticRendererMeshInfos = staticMeshRenderers.Select(renderer => new MeshInfo2(renderer)).ToDisposableList();
+            var basicRendererMeshInfos = basicMeshRenderers.Select(renderer => new MeshInfo2(renderer)).ToDisposableList();
             try
             {
                 var meshInfos = skinnedMeshRenderers.Select(context.GetMeshInfoFor)
-                    .Concat(staticRendererMeshInfos)
+                    .Concat(basicRendererMeshInfos)
                     .ToArray();
 
                 foreach (var meshInfo2 in meshInfos) meshInfo2.FlattenMultiPassRendering("Merge Skinned Mesh");
                 foreach (var meshInfo2 in meshInfos) meshInfo2.MakeBoned(evenIfBasicMesh: true);
                 Profiler.EndSample();
 
-                return (staticRendererMeshInfos, meshInfos);
+                return (basicRendererMeshInfos, meshInfos);
             }
             catch
             {
-                staticRendererMeshInfos.Dispose();
+                basicRendererMeshInfos.Dispose();
                 throw;
             }
         }
@@ -770,7 +770,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             public Material?[] Materials(bool fast = true)
             {
                 var sourceMaterials = _processor.SkinnedMeshRenderers.Select(EditSkinnedMeshComponentUtil.GetMaterials)
-                    .Concat(_processor.StaticMeshRenderers.Select(x => x.sharedMaterials))
+                    .Concat(_processor.BasicMeshRenderers.Select(x => x.sharedMaterials))
                     .Select(a => a.Select(b => (MeshTopology.Triangles, b)).ToArray())
                     .ToArray();
 
