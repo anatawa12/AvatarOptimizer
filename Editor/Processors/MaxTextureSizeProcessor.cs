@@ -218,6 +218,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             newTexture.filterMode = original.filterMode;
             newTexture.anisoLevel = original.anisoLevel;
             newTexture.mipMapBias = original.mipMapBias;
+            newTexture.SetStreamingMipMapSettings(original.GetStreamingMipMapSettings());
             newTexture.name = original.name + " (MaxTextureSize)";
             
             return newTexture;
