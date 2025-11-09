@@ -10,7 +10,7 @@ weight: 25
 このコンポーネントは、SkinnedMeshRendererコンポーネントかMeshRendererコンポーネントのあるGameObjectに追加してください。(種類: [MeshRenderer対応Edit Skinned Mesh Component](../../component-kind/edit-skinned-mesh-components#modifying-component))
 
 このコンポーネントは、ShaderInformationが提供されているシェーダーをサポートしています。\
-AvatarOptimizerは、Standard Shader、VRChat SDKのToonLitとToonStandard、lilToonなどの著名なシェーダーのShaderInformationを組み込んで提供していますが、シェーダーの作者はShaderInformationを提供することにより、このコンポーネントでの動作サポートを追加できます。
+Avatar Optimizerは、Standard Shader、VRChat SDKのToonLitとToonStandard、lilToonなどの著名なシェーダーのShaderInformationを組み込んで提供していますが、シェーダーの作者はShaderInformationを提供することにより、このコンポーネントでの動作サポートを追加できます。
 
 このコンポーネントは新しいマテリアルを作成するため、このコンポーネントで統合されたマテリアルを使用しているマテリアルスロットは`AAO Merge Skinned Mesh`コンポーネントで統合されません。\
 別々のメッシュで使用されているマテリアルを纏めて統合したい場合は、`AAO Merge Skinned Mesh`コンポーネントのあるGameObjectと同じGameObjectに`Merge Material`コンポーネントを追加する必要があります。

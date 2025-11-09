@@ -10,7 +10,7 @@ Merge multiple materials with same shaders to one material by packing texture ma
 This component should be added to a GameObject which has a Skinned Mesh Renderer or Mesh Renderer component. (Kind: [Modifying Edit Skinned Mesh Component with basic mesh support](../../component-kind/edit-skinned-mesh-components#modifying-component))
 
 This component supports shaders with ShaderInformation provided.\
-Currently, AvatarOptimizer provides ShaderInformation for some popular shaders like Standard, ToonLit and ToonStandard by VRChat SDK, and lilToon but shader authors can add support for this component by providing ShaderInformation.
+Currently, Avatar Optimizer provides ShaderInformation for some popular shaders like Standard, ToonLit and ToonStandard by VRChat SDK, and lilToon but shader authors can add support for this component by providing ShaderInformation.
 
 This component will create new materials thus material slots which have the materials created by this component will not be merged by `AAO Merge Skinned Mesh` component.\
 You should add `Merge Material` to the GameObject which has `AAO Merge Skinned Mesh` component if you want to merge materials from multiple renderers.

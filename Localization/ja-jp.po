@@ -384,7 +384,7 @@ msgstr "テクスチャのサイズ"
 
 msgid "MergeToonLitMaterial:suggestMigrate"
 msgstr ""
-"MergeToonLitMaterialは非推奨であり、廃止予定です！\n"
+"Merge ToonLit Materialは非推奨であり、廃止予定です！\n"
 "より多くのシェーダーをサポートし、保存形式も改善されたMerge Materialに置き換えられました。\n"
 "下のボタンを押し、Merge Materialに移行することを強くお勧めします！ (設定は引き継がれます)"
 
@@ -396,8 +396,8 @@ msgstr "Merge Materialに移行"
 
 msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:message"
 msgstr ""
-"MergeToonLitMaterialコンポーネントからMergeMaterialコンポーネントに移行しようとしています。\n"
-"これにより、すべての設定が新しいMergeMaterialコンポーネントにコピーされ、このコンポーネントは削除されます。\n"
+"Merge ToonLit MaterialコンポーネントからMerge Materialコンポーネントに移行しようとしています。\n"
+"これにより、すべての設定が新しいMerge Materialコンポーネントにコピーされ、このコンポーネントは削除されます。\n"
 "ただし、移行後に完全に同じ結果になることを保証することができません。移行後に結果を確認してください。\n"
 "また、この移行はPrefabに対応していません。Prefab上で使用している場合は手動で移行する必要があります。"
 
