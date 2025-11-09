@@ -62,6 +62,7 @@ The format is based on [Keep a Changelog].
   - Equals / NotEquals conditions for Ints or Bool operators are only supported in previous versions of Animator Optimizer.
   - Please note that creating animator controllers that can optimized with this optimization is difficult with Float operators because we need to use BitIncrement/Decrement-ed condition threshold for exiting parameters.
   - For example, when we use `> 0` condition for entry transition, we need to use `< 1e-45 (BitIncrement(0))`, which is equivalent to `<= 0`, for exit transition.
+- Streaming mipmap settings are copied when processing textures `#1558`
 
 [`AfterPlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_AfterPlugin_System_String_System_String_System_Int32_
 [`BeforePlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_BeforePlugin_System_String_System_String_System_Int32_
