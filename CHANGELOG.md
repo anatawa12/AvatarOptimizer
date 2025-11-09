@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Streaming mipmap settings are copied when processing textures `#1558`
 
 ### Deprecated
 
