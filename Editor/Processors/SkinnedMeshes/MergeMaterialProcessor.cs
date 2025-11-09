@@ -706,6 +706,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
 
             var texture = CopyFromRenderTarget(target, finalFormat);
+            
+            texture.SetStreamingMipMapSettings(StreamingMipMapSettings.MergeSettings(mergePlan.Sources.Select(x => x.Item1).OfType<Texture2D>().Select(x => x.GetStreamingMipMapSettings())));
 
             if (RenderTexture.active == target) RenderTexture.active = null;
 

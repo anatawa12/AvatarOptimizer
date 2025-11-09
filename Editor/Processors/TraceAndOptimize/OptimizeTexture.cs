@@ -918,6 +918,7 @@ internal struct OptimizeTextureImpl {
                 newTexture.anisoLevel = texture2D.anisoLevel;
                 newTexture.mipMapBias = texture2D.mipMapBias;
                 newTexture.SetPixelData(destTextureData, 0);
+                newTexture.SetStreamingMipMapSettings(texture2D.GetStreamingMipMapSettings());
                 newTexture.Apply(true, !texture2D.isReadable);
             }
             else
@@ -972,6 +973,7 @@ internal struct OptimizeTextureImpl {
                     newTexture.filterMode = texture2D.filterMode;
                     newTexture.anisoLevel = texture2D.anisoLevel;
                     newTexture.mipMapBias = texture2D.mipMapBias;
+                    newTexture.SetStreamingMipMapSettings(texture2D.GetStreamingMipMapSettings());
                     newTexture.Apply(true, !texture2D.isReadable);
                 }
             }
