@@ -376,7 +376,7 @@ namespace Anatawa12.AvatarOptimizer
             if (!condition) throw new InvalidOperationException("assertion failed");
         }
         
-        public static void Assert(bool condition, string message)
+        public static void Assert([DoesNotReturnIf(false)] bool condition, string message)
         {
             if (!condition) throw new InvalidOperationException(message);
         }

@@ -479,6 +479,29 @@ msgstr "Add Source"
 msgid "MergeToonLitMaterial:button:Generate Preview"
 msgstr "Generate Preview"
 
+msgid "MergeToonLitMaterial:suggestMigrate"
+msgstr ""
+"Merge ToonLit Material is obsoleted by Merge Material which supports more shaders and has better save format!\n"
+"We recommend migrating to Merge Material by clicking the button below."
+
+msgid "MergeToonLitMaterial:button:Migrate to MergeMaterial"
+msgstr "Migrate to Merge Material"
+
+msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:title"
+msgstr "Migrate to Merge Material"
+
+msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:message"
+msgstr "You're migrating to Merge Material component from Merge ToonLit Material component.\n"
+"This will copy all settings to new Merge Material component and remove this component.\n"
+"However, this migration does not guarantee perfect migration. Please check the result after migration.\n"
+"In addition, this migration does not support prefabs. Migrate manually if you're using prefabs."
+
+msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:ok"
+msgstr "Migrate"
+
+msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:cancel"
+msgstr "Cancel"
+
 msgid "MergeToonLitMaterial:label:Texture Size"
 msgstr "Texture Size"
 
@@ -948,5 +971,82 @@ msgstr "Crunched texture format is not supported for resizing."
 
 msgid "MaxTextureSize:warning:insufficientMipmaps"
 msgstr "Texture does not have enough mipmaps for the specified max size."
+
+# endregion
+
+# region MergeMaterial
+
+msgid "MergeMaterial:button:Add Merged Material"
+msgstr "Add Merged Material"
+
+msgid "MergeMaterial:button:Add Source"
+msgstr "Add Source Material"
+
+msgid "MergeMaterial:label:Texture Size"
+msgstr "Texture Size"
+
+msgid "MergeMaterial:label:Reference Material"
+msgstr "Reference Material"
+
+msgid "MergeMaterial:Reference Material:tooltip"
+msgstr "All properties in the reference material other than UV-based textures are used for the merged material."
+
+msgid "MergeMaterial:label:Texture Config Overrides"
+msgstr "Texture Config Overrides"
+
+msgid "MergeMaterial:button:Add Texture Config Override"
+msgstr "Add Config Override"
+
+msgid "MergeMaterial:label:Texture Name"
+msgstr "Override Texture Name"
+
+msgid "MergeMaterial:label:Texture Size Override"
+msgstr "Override Size"
+
+msgid "MergeMaterial:label:Texture Format Override"
+msgstr "Override Format"
+
+
+# region errors
+
+msgid "MergeMaterial:error:DuplicateMaterialInMergeSetting"
+msgstr "Some source materials are used in multiple merge settings. This is not supported."
+
+msgid "MergeMaterial:error:MaterialNotFoundInMesh"
+msgstr "Some source materials are not in the Skinned Mesh Renderer."
+
+msgid "MergeMaterial:error:MaterialUsedInMultipleSubMeshes"
+msgstr "Some source materials are used in multiple material slots in the Skinned Mesh Renderer. You have to merge submeshes before processing."
+
+msgid "MergeMaterial:error:MultiMaterialSubMesh"
+msgstr "Some source materials are used by submeshes with multiple materials attached for multi-material multi-pass rendering. This is not supported."
+
+msgid "MergeMaterial:error:UnsupportedShaderInMergeSetting"
+msgstr "The shader of the material configured in the Merge Material is not supported by Merge Material."
+
+msgid "MergeMaterial:error:UnsupportedShaderInMergeSetting:description"
+msgstr "The shader does not provide the ShaderInformation for Avatar Optimizer or the ShaderInformation does not provide 'TextureAndUVUsage' information.\n"
+"Without those information, Avatar Optimizer cannot merge materials correctly."
+
+msgid "MergeMaterial:error:UnsupportedUVTransformInReferenceMaterial"
+msgstr "The reference material (or the first source material) has some textures with unsupported UV Transform applied to the texture: {0}"
+
+msgid "MergeMaterial:error:UnsupportedUVTransformInReferenceMaterial:description"
+msgstr "The reference material must not have UV transform like _ST or parallax."
+
+msgid "MergeMaterial:error:UnknownUVTransform"
+msgstr "The material has some textures with unsupported / unknown UV Transform applied to the texture: {0}"
+
+msgid "MergeMaterial:error:UnknownUVTransform:description"
+msgstr "To merge material, Avatar Optimizer needs to know how the texture is used, but those textures have unknown texture transform or dynamic transform like parallax or scroll.\n"
+"Merge material is incompatible with such features."
+
+msgid "MergeMaterial:error:DifferentShaderInMergeSetting"
+msgstr "Shaders used in source materials of Merge Material are different among configured materials or different from the reference material."
+
+msgid "MergeMaterial:error:ReferenceMaterial:NotAllTexturesUsed"
+msgstr "Some texture properties used in source materials are not used by the reference material. This is currently unsupported: {0}"
+
+# endregion
 
 # endregion

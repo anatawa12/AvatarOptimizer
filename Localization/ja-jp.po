@@ -382,6 +382,31 @@ msgstr "プレビューを生成"
 msgid "MergeToonLitMaterial:label:Texture Size"
 msgstr "テクスチャのサイズ"
 
+msgid "MergeToonLitMaterial:suggestMigrate"
+msgstr ""
+"Merge ToonLit Materialは非推奨であり、廃止予定です！\n"
+"より多くのシェーダーをサポートし、保存形式も改善されたMerge Materialに置き換えられました。\n"
+"下のボタンを押し、Merge Materialに移行することを強くお勧めします！ (設定は引き継がれます)"
+
+msgid "MergeToonLitMaterial:button:Migrate to MergeMaterial"
+msgstr "Merge Materialに移行する"
+
+msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:title"
+msgstr "Merge Materialに移行"
+
+msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:message"
+msgstr ""
+"Merge ToonLit MaterialコンポーネントからMerge Materialコンポーネントに移行しようとしています。\n"
+"これにより、すべての設定が新しいMerge Materialコンポーネントにコピーされ、このコンポーネントは削除されます。\n"
+"ただし、移行後に完全に同じ結果になることを保証することができません。移行後に結果を確認してください。\n"
+"また、この移行はPrefabに対応していません。Prefab上で使用している場合は手動で移行する必要があります。"
+
+msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:ok"
+msgstr "移行する"
+
+msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:cancel"
+msgstr "キャンセル"
+
 # endregion
 
 # region RemoveMeshInBox
@@ -876,5 +901,83 @@ msgstr "Crunch圧縮されたテクスチャフォーマットはリサイズに
 
 msgid "MaxTextureSize:warning:insufficientMipmaps"
 msgstr "テクスチャに十分なMipmapレベルがないため、リサイズできません。"
+
+# endregion
+
+# region MergeMaterial
+
+msgid "MergeMaterial:button:Add Merged Material"
+msgstr "統合したマテリアルを追加"
+
+msgid "MergeMaterial:button:Add Source"
+msgstr "統合対象を追加"
+
+msgid "MergeMaterial:label:Texture Size"
+msgstr "テクスチャのサイズ"
+
+msgid "MergeMaterial:label:Reference Material"
+msgstr "設定参照用マテリアル"
+
+msgid "MergeMaterial:Reference Material:tooltip"
+msgstr "統合後のマテリアルの、UVベースのテクスチャ以外のすべての設定が、このマテリアルと同じ内容になります。"
+
+msgid "MergeMaterial:label:Texture Config Overrides"
+msgstr "テクスチャ設定のオーバーライド"
+
+msgid "MergeMaterial:button:Add Texture Config Override"
+msgstr "テクスチャ設定のオーバーライドを追加"
+
+msgid "MergeMaterial:label:Texture Name"
+msgstr "テクスチャ名"
+
+msgid "MergeMaterial:label:Texture Size Override"
+msgstr "サイズのオーバーライド"
+
+msgid "MergeMaterial:label:Texture Format Override"
+msgstr "フォーマットのオーバーライド"
+
+
+# region errors
+
+msgid "MergeMaterial:error:DuplicateMaterialInMergeSetting"
+msgstr "複数の統合設定で同じマテリアルが統合対象として指定されています。これはサポートされていません。"
+
+msgid "MergeMaterial:error:MaterialNotFoundInMesh"
+msgstr "統合対象のマテリアルがSkinned Mesh Renderer上に存在しません。"
+
+msgid "MergeMaterial:error:MaterialUsedInMultipleSubMeshes"
+msgstr "統合対象のマテリアルがSkinned Mesh Renderer上の複数のマテリアルスロットで使用されています。Merge Skinned Meshなどによりサブメッシュが統合されている必要があります。"
+
+msgid "MergeMaterial:error:MultiMaterialSubMesh"
+msgstr "統合対象のマテリアルを使用しているサブメッシュが複数のマテリアルを持っています。\n"
+"複数マテリアルを用いたマルチパスレンダリングはサポートされていません。"
+
+msgid "MergeMaterial:error:UnsupportedShaderInMergeSetting"
+msgstr "Merge Materialの設定で指定されたマテリアルで使用されているシェーダーは、Merge Materialでサポートされていません。"
+
+msgid "MergeMaterial:error:UnsupportedShaderInMergeSetting:description"
+msgstr "当該シェーダーは、Avatar Optimizer向けのShader Informationを提供していないか、Shader Informationにおいて'TextureAndUVUsage'情報を提供していません。\n"
+"これらの情報がない場合、Avatar Optimizerはマテリアルを正常に統合することができません。"
+
+msgid "MergeMaterial:error:UnsupportedUVTransformInReferenceMaterial"
+msgstr "設定参照用マテリアル(または統合対象の最初のマテリアル)に、サポートされていないUV変換が適用されたテクスチャがあります: {0}"
+
+msgid "MergeMaterial:error:UnsupportedUVTransformInReferenceMaterial:description"
+msgstr "設定参照用マテリアルは_STやParallaxのようなUV変換を使用してはいけません。"
+
+msgid "MergeMaterial:error:UnknownUVTransform"
+msgstr "サポートされていないか、または未知のUV変換が適用されるテクスチャを含むマテリアルがあります: {0}"
+
+msgid "MergeMaterial:error:UnknownUVTransform:description"
+msgstr "マテリアルを統合するには、テクスチャがどのように使用されているかをAvatar Optimizerが知る必要がありますが、これらのテクスチャには、未知の参照位置、またはParallaxやUVスクロールのような参照位置の動的変化があります。\n"
+"Merge Materialはそのような機能とは互換性がありません。"
+
+msgid "MergeMaterial:error:DifferentShaderInMergeSetting"
+msgstr "統合対象のマテリアルで使用されているシェーダーが、指定しているマテリアル間で異なるか、設定参照用マテリアルと異なっています。"
+
+msgid "MergeMaterial:error:ReferenceMaterial:NotAllTexturesUsed"
+msgstr "統合対象のマテリアルで使用されている一部のテクスチャプロパティが、設定参照用マテリアルでは使用されていません。現時点では、これはサポートされていません: {0}"
+
+# endregion
 
 # endregion

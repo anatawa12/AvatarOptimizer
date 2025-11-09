@@ -30,8 +30,9 @@ Avatar Optimizer 1.9.0以降では、一部のコンポーネントがメッシ�
 - [Remove Mesh By Box](../../reference/remove-mesh-by-box)
 - [Remove Mesh By UV Tile](../../remove-mesh-by-uv-tile/)
 - [Freeze BlendShape](../../reference/freeze-blendshape)
-- [Merge ToonLit Material](../../reference/merge-toonlit-material)
+- [Merge Material](../../reference/merge-material)
 - [Rename BlendsShape](../../reference/rename-blendshape)
+- [Merge ToonLit Material](../../reference/merge-toonlit-material)
 
 # MeshRenderer対応コンポーネント {#components-with-basic-mesh-support}
 
@@ -40,3 +41,4 @@ Avatar Optimizer 1.9.0以降では、以下のEdit Skinned Mesh Componentがメ�
 - [Remove Mesh By Box](../../reference/remove-mesh-by-box)
 - [Remove Mesh By Mask](../../reference/remove-mesh-by-mask)
 - [Remove Mesh By UV Tile](../../reference/remove-mesh-by-uv-tile/
+- [Merge Material](../../reference/merge-material)

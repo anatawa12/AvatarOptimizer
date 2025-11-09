@@ -1,9 +1,18 @@
 ---
 title: Merge ToonLit Material
-weight: 25
+weight: 200
 ---
 
 # Merge ToonLit Material
+
+<blockquote class="book-hint warning">
+
+このコンポーネントは非推奨です。
+
+代わりに、多くのシェーダーをサポートし、保存形式も改善された[Merge Material](../merge-material/)コンポーネントを使用してください。\
+このコンポーネントの動作が改善されることはありません。
+
+</blockquote>
 
 手動でテクスチャを並び替えることにより、`VRChat/Mobile/Toon Lit`のマテリアルを1つのマテリアルに統合します。
 

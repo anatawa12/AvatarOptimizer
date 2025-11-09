@@ -25,7 +25,13 @@ The format is based on [Keep a Changelog].
 - Minimum linting for some mistakes that reduces the avatar performance `#1549`
   - AAO now performs basic linting to identify common mistakes that can negatively impact avatar performance.
   - Currently, multi-pass rendering with exactly the same material is detected since it's likely a mistake that clicks '+' button on the inspector by mistake.
-- Max Texture Size component to limit texture 
+- Max Texture Size component to limit texture `#1516`
+- Merge Material component which is successor of Merge ToonLit Material `#1516`
+  - This component merges multiple materials into one material.
+  - This component supports many shader includes lilToon, ToonStandard and others.
+  - Merge ToonLit Material is now deprecated. Please use this new component instead.
+  - Merge ToonLit Material will be removed in next major version.
+  - This component will support both Skinned Mesh Renderer and Mesh Renderer.
 
 ### Changed
 - Avatar Optimizer will run as late as possible in NDMF Pipeline by default `#1493`
