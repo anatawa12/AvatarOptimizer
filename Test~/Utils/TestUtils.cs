@@ -144,6 +144,24 @@ namespace Anatawa12.AvatarOptimizer.Test
             mesh.SetSubMesh(0, new SubMeshDescriptor(0, 12 * 3));
             return mesh;
         }
+
+        public static Mesh NewCubeMeshWithBone()
+        {
+            var mesh = NewCubeMesh();
+            mesh.bindposes = new UnityEngine.Matrix4x4[1] { Matrix4x4.identity };
+            mesh.boneWeights = new BoneWeight[8]
+            {
+                new BoneWeight { boneIndex0 = 0, weight0 = 1 },
+                new BoneWeight { boneIndex0 = 0, weight0 = 1 },
+                new BoneWeight { boneIndex0 = 0, weight0 = 1 },
+                new BoneWeight { boneIndex0 = 0, weight0 = 1 },
+                new BoneWeight { boneIndex0 = 0, weight0 = 1 },
+                new BoneWeight { boneIndex0 = 0, weight0 = 1 },
+                new BoneWeight { boneIndex0 = 0, weight0 = 1 },
+                new BoneWeight { boneIndex0 = 0, weight0 = 1 },
+            };
+            return mesh;
+        }
         
         public static Vector3[] NewCubeBlendShapeFrame(params (int index, Vector3 delta)[] deltas)
         {

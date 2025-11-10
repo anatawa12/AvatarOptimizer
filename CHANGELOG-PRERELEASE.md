@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- KeyNotFoundException in some cases `#1560`
 
 ### Security
 

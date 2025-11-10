@@ -27,8 +27,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(Transform component, ComponentDependencyCollector collector)
         {
+            // parent dependency is automatically collected on creating GCComponentInfo for Transform
             var casted = (ComponentDependencyRetriever.Collector)collector;
-            casted.AddParentDependency(component);
             // For compatibility with UnusedBonesByReferenceTool
             // https://github.com/anatawa12/AvatarOptimizer/issues/429
             if (casted.PreserveEndBone &&

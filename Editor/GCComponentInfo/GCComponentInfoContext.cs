@@ -141,6 +141,7 @@ namespace Anatawa12.AvatarOptimizer
             Component = component;
             Activeness = activeness;
             AddDependency(component.gameObject.transform, DependencyType.ComponentToTransform);
+            if (component is Transform t) AddDependency(t.parent, DependencyType.Parent);
         }
 
 
@@ -170,6 +171,8 @@ namespace Anatawa12.AvatarOptimizer
             ComponentToTransform = 1 << 2,
             Bone = 1 << 3,
         }
+
+        public override string ToString() => "GCComponentInfo(" + Component.GetType().Name + " on " + Component.gameObject.name + ")";
     }
 
     internal readonly partial struct GCComponentInfoHolder
