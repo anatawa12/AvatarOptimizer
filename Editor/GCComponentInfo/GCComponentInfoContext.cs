@@ -171,6 +171,8 @@ namespace Anatawa12.AvatarOptimizer
             ComponentToTransform = 1 << 2,
             Bone = 1 << 3,
         }
+
+        public override string ToString() => "GCComponentInfo(" + Component.GetType().Name + " on " + Component.gameObject.name + ")";
     }
 
     internal readonly partial struct GCComponentInfoHolder
