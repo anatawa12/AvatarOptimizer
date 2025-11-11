@@ -36,6 +36,8 @@ The format is based on [Keep a Changelog].
   - Merge ToonLit Material is now deprecated. Please use this new component instead.
   - Merge ToonLit Material will be removed in next major version.
   - This component will support both Skinned Mesh Renderer and Mesh Renderer.
+- Replace EndBone With Endpoint Position component which replaces the end bone in the vrc physbone with the Endpoint Position [`#1423`](https://github.com/anatawa12/AvatarOptimizer/pull/1423)
+- Automatic Replace EndBone With Endpoint Position [`#1423`](https://github.com/anatawa12/AvatarOptimizer/pull/1423)
 
 ### Changed
 - Avatar Optimizer will run as late as possible in NDMF Pipeline by default `#1493`
