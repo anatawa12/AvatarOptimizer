@@ -596,6 +596,25 @@ msgstr "BlendShape名 '{0}' は重複しています。Rename BlendShapeコン�
 
 # endregion
 
+# region ReplaceEndBoneWithEndpointPosition
+
+msgid "ReplaceEndBoneWithEndpointPosition:prop:kind"
+msgstr "Endpoint Positionの設定方法"
+
+msgid "ReplaceEndBoneWithEndpointPosition:prop:manualReplacementPosition"
+msgstr "Endpoint Positionの設定する値"
+
+msgid "ReplaceEndBoneWithEndpointPosition:validation:endpointPositionAlreadySet"
+msgstr "Endpoint Positionがすでに設定されているため、置き換えることができません。"
+
+msgid "ReplaceEndBoneWithEndpointPosition:validation:inequivalentPositions"
+msgstr "異なる座標のendボーンへと置き換えています。PhysBoneの動作が変わる可能性があります。"
+
+msgid "ReplaceEndBoneWithEndpointPosition:validation:endBoneHasComponents"
+msgstr "endボーンにコンポーネントが付いています。"
+
+# endregion
+
 # region AvatarGlobalComponent
 
 msgid "AvatarGlobalComponent:NotOnAvatarRoot"

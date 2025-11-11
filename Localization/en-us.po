@@ -694,6 +694,25 @@ msgstr "There are multiple BlendShapes with the same name '{0}' after renaming. 
 
 # endregion
 
+# region ReplaceEndBoneWithEndpointPosition
+
+msgid "ReplaceEndBoneWithEndpointPosition:prop:kind"
+msgstr "Endpoint Position mode"
+
+msgid "ReplaceEndBoneWithEndpointPosition:prop:manualReplacementPosition"
+msgstr "Value for Endpoint Position"
+
+msgid "ReplaceEndBoneWithEndpointPosition:validation:endpointPositionAlreadySet"
+msgstr "Endpoint Position is already set, so it cannot be replaced."
+
+msgid "ReplaceEndBoneWithEndpointPosition:validation:inequivalentPositions"
+msgstr "You are replacing with an end bone at a different position. This may change the behavior of the PhysBone."
+
+msgid "ReplaceEndBoneWithEndpointPosition:validation:endBoneHasComponents"
+msgstr "The end bone has attached components."
+
+# endregion
+
 # region AvatarGlobalComponent
 
 msgid "AvatarGlobalComponent:NotOnAvatarRoot"

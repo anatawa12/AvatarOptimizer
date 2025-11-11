@@ -22,6 +22,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             
             if (!state.SkipMergePhysBoneCollider)
                 MergePhysBoneColliders(context);
+            
+            if (!state.SkipReplaceEndBoneWithEndpointPosition)
+                ConfigureReplaceEndBoneWithEndpointPosition(context, state);
         }
 
         private void MergePhysBoneColliders(BuildContext context)
@@ -236,6 +239,65 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             "rotation",
             "bonesAsSpheres",
         };
+
+        private void ConfigureReplaceEndBoneWithEndpointPosition(BuildContext context, TraceAndOptimizeState state)
+        {
+            var physbonesByGameObjects = context.GetComponents<VRCPhysBoneBase>()
+                .GroupBy(physbone => physbone.gameObject)
+                .ToArray();
+            if (physbonesByGameObjects.Length == 0) return;
+
+            var componentInfos = context.Extension<GCComponentInfoContext>();
+
+            foreach (var physbonesByGameObject in physbonesByGameObjects)
+            {
+                var gameObject = physbonesByGameObject.Key;
+                var physbones = physbonesByGameObject;
+
+                if (physbones.All(ShouldReplace))
+                {
+                    var component = gameObject.AddComponent<ReplaceEndBoneWithEndpointPosition>();
+                    component.kind = ReplaceEndBoneWithEndpointPositionKind.Average;
+                }
+            }
+
+            bool ShouldReplace(VRCPhysBoneBase physbone)
+            {
+                if (!ValidatePhysBone(physbone)) return false;
+
+                var endBones = physbone.GetEndBones();
+
+                if (!HasApproximatelyEqualLocalPosition(endBones, out var localPosition))
+                    return false;
+
+                return endBones.All(ValidateEndBone);
+            }
+
+            bool ValidatePhysBone(VRCPhysBoneBase physbone)
+            {
+                if (state.Exclusions.Contains(physbone.gameObject)) return false;
+                if (physbone.gameObject.TryGetComponent<ReplaceEndBoneWithEndpointPosition>(out _)) return false;
+                if (physbone.endpointPosition != Vector3.zero) return false; // alreday used
+                return true;
+            }
+
+            bool ValidateEndBone(Transform endBone)
+            {
+                if (state.Exclusions.Contains(endBone.gameObject)) return false;
+                if (endBone.GetComponents<Component>().Length != 1) return false; // except transform
+                if (componentInfos.GetInfo(endBone).EntrypointComponent) return false;
+
+                // no need to check animations if it has no usage.
+                return true;
+            }
+        }
+
+        private static bool HasApproximatelyEqualLocalPosition(IEnumerable<Transform> transforms, out Vector3 localPosition)
+        {
+            var localPositions = transforms.Select(x => x.localPosition);
+            localPosition = ReplaceEndBoneWithEndpointPositionProcessor.GetAvaragePosition(localPositions);
+            return ReplaceEndBoneWithEndpointPositionProcessor.AreApproximatelyEqualPosition(localPositions, localPosition);
+        }
     }
 }
 #endif
