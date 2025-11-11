@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- KeyNotFoundException in some cases `#1560`
 
 ### Security
+
+## [1.9.0-beta.4] - 2025-11-11
+### Fixed
+- KeyNotFoundException in some cases [`#1560`](https://github.com/anatawa12/AvatarOptimizer/pull/1560)
 
 ## [1.9.0-beta.3] - 2025-11-09
 ### Added
@@ -2029,7 +2032,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.4...HEAD
+[1.9.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.3...v1.9.0-beta.4
 [1.9.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.14...v1.9.0-beta.3
 [1.8.14]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.14-beta.2...v1.8.14
 [1.8.14-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.14-beta.1...v1.8.14-beta.2
