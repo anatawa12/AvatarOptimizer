@@ -34,9 +34,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             foreach (var physbone in physbones)
             {
-                if (!ValidatePhysBone(physbone)) continue;
-
                 var endBones = physbone.GetAffectedLeafBones();
+
+                if (!ValidatePhysBone(physbone, endBones)) continue;
+
                 var localPositions = endBones.Select(x => x.localPosition);
 
                 var replacementPosition = replacer.kind switch
@@ -60,12 +61,17 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 physbone.endpointPosition = replacementPosition;
             }
             
-            bool ValidatePhysBone(VRCPhysBoneBase physbone)
+            bool ValidatePhysBone(VRCPhysBoneBase physbone, IEnumerable<Transform> endBones)
             {
                 if (physbone.endpointPosition != Vector3.zero)
                 {
                     BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:endpointPositionAlreadySet", physbone);
                     return false;
+                }
+                if (!IsSafeMultiChild(physbone, endBones))
+                {
+                    BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:unsafeMultiChild", physbone);
+                    return true; // just warning
                 }
                 return true;
             }
@@ -96,6 +102,78 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 }
             }
             return true;
+        }
+
+        public static bool IsSafeMultiChild(VRCPhysBoneBase physBoneBase, IEnumerable<Transform> leafBones)
+        {
+            var rootBone = physBoneBase.GetTarget();
+            var multiChildType = physBoneBase.multiChildType;
+
+            var ignores = new HashSet<Transform>(physBoneBase.ignoreTransforms);
+            var leafBoneSet = new HashSet<Transform>(leafBones);
+
+            var queue = new Queue<Transform>();
+            queue.Enqueue(rootBone);
+
+            while (queue.Count > 0)
+            {
+                var current = queue.Dequeue();
+                
+                var children = current.DirectChildrenEnumerable()
+                                    .Where(t => !ignores.Contains(t))
+                                    .ToList();
+
+                if (children.Count > 1) // fork bone
+                {
+                    if (!IsSafeMultiChild(current, children, multiChildType, leafBoneSet))
+                    {
+                        return false;
+                    }
+                }
+
+                foreach (var child in children)
+                {
+                    queue.Enqueue(child);
+                }
+            }
+
+            return true;
+
+            static bool IsSafeMultiChild(
+                Transform forkBone,
+                List<Transform> children,
+                VRCPhysBoneBase.MultiChildType multiChildType,
+                HashSet<Transform> leafBoneSet)
+            {
+                switch (multiChildType)
+                {
+                    case VRCPhysBoneBase.MultiChildType.Ignore:
+                        // If after this transformation, it is no longer a Multi Child, that's not allowed.
+                        var afterRemoval = children.Where(t => !leafBoneSet.Contains(t));
+                        if (afterRemoval.Count() < 2)
+                        {
+                            return false;
+                        }
+                        break;
+                    case VRCPhysBoneBase.MultiChildType.First:
+                        // If the first child in multi child is being removed, that's not allowed.
+                        if (leafBoneSet.Contains(children[0]))
+                        {
+                            return false;
+                        }
+                        break;
+                    case VRCPhysBoneBase.MultiChildType.Average:
+                        // If any children being averaged are to be removed, the average position will change.
+                        if (children.Any(leafBoneSet.Contains))
+                        {
+                            return false;
+                        }
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Invalid multiChildType: {multiChildType}");
+                }
+                return true;
+            }
         }
     }
 }
