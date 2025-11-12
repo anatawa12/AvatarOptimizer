@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Compilation error with VRCSDK 3.7.x or older `#1561`
 
 ### Security
 
