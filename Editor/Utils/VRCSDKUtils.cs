@@ -32,7 +32,7 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        public static IEnumerable<Transform> GetEndBones(this VRCPhysBoneBase physBoneBase)
+        public static IEnumerable<Transform> GetAffectedLeafBones(this VRCPhysBoneBase physBoneBase)
         {
             if (physBoneBase.endpointPosition != Vector3.zero)
                 yield break;

@@ -36,7 +36,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             {
                 if (!ValidatePhysBone(physbone)) continue;
 
-                var endBones = physbone.GetEndBones();
+                var endBones = physbone.GetAffectedLeafBones();
                 var localPositions = endBones.Select(x => x.localPosition);
 
                 var replacementPosition = replacer.kind switch

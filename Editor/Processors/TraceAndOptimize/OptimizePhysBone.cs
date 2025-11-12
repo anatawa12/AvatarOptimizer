@@ -265,7 +265,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             {
                 if (!ValidatePhysBone(physbone)) return false;
 
-                var endBones = physbone.GetEndBones();
+                var endBones = physbone.GetAffectedLeafBones();
 
                 if (!HasApproximatelyEqualLocalPosition(endBones, out var localPosition))
                     return false;
