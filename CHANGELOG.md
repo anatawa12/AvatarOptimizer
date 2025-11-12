@@ -83,7 +83,7 @@ The format is based on [Keep a Changelog].
 - VRM: A NullReferenceException or MissingReferenceException may occur when parsing incomplete VRM components `#1524`
 - MeshCompression settings is not preserved after AvatarOptimizer process `#1529`
   - This bug increases size of some avatars unexpectedly. This is fixed now.
-- Missing `Ignore Other Phys Bone` support for Merge Phys Bone `#1532`
+- Missing `Ignore Other Phys Bone` support for Merge Phys Bone `#1532` `#1561`
   - Ignore Other Phys Bone property is not supported by Merge Phys Bone. This was a bug.
   - This version fixes this bug.
 - Fixed Optimize Texture may throw error in rare cases `#1538`
