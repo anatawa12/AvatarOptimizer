@@ -23,7 +23,9 @@ namespace Anatawa12.AvatarOptimizer
         // rootTransform
         // ignoreTransforms
         protected readonly EndpointPositionConfigProp EndpointPosition;
+#if AAO_VRCSDK3_AVATARS_IGNORE_OTHER_PHYSBONE
         protected readonly ValueConfigProp IgnoreOtherPhysBones;
+#endif
         // multiChildType
         #endregion
 
@@ -77,7 +79,9 @@ namespace Anatawa12.AvatarOptimizer
             Version = ValueProp(nameof(MergePhysBone.versionConfig), nameof(VRCPhysBoneBase.version));
             // == Transform ==
             EndpointPosition = EndpointPositionProp(nameof(MergePhysBone.endpointPositionConfig), nameof(VRCPhysBoneBase.endpointPosition));
+#if AAO_VRCSDK3_AVATARS_IGNORE_OTHER_PHYSBONE
             IgnoreOtherPhysBones = ValueProp(nameof(MergePhysBone.ignoreOtherPhysBones), nameof(VRCPhysBoneBase.ignoreOtherPhysBones));
+#endif
             //  == Forces ==
             IntegrationType = ValueProp(nameof(MergePhysBone.integrationTypeConfig), nameof(VRCPhysBoneBase.integrationType));
             Pull = CurveProp(nameof(MergePhysBone.pullConfig), nameof(VRCPhysBoneBase.pull), nameof(VRCPhysBoneBase.pullCurve));

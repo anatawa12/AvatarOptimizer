@@ -478,6 +478,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 // differ error reported by validator
                 // merge of endpointPosition proceed later
 
+#if AAO_VRCSDK3_AVATARS_IGNORE_OTHER_PHYSBONE
                 if (IgnoreOtherPhysBones.IsOverride)
                     _mergedPhysBone.FindProperty(IgnoreOtherPhysBones.PhysBoneValueName).boolValue
                         = IgnoreOtherPhysBones.OverrideValue.boolValue;
@@ -485,6 +486,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     _mergedPhysBone.FindProperty(IgnoreOtherPhysBones.PhysBoneValueName).boolValue
                         = !IgnoreOtherPhysBones.SourceValue!.hasMultipleDifferentValues &&
                           IgnoreOtherPhysBones.SourceValue!.boolValue;
+#endif
             }
 
             protected override void OptionParameter()

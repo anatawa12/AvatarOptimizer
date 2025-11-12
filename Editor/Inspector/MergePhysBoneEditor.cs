@@ -97,7 +97,9 @@ namespace Anatawa12.AvatarOptimizer
             }
             EditorGUILayout.LabelField("Ignore Transforms", "Automatically Merged");
             EndpointPositionProp("Endpoint Position", EndpointPosition);
+#if AAO_VRCSDK3_AVATARS_IGNORE_OTHER_PHYSBONE
             PbProp("Ignore Other Phys Bones", IgnoreOtherPhysBones);
+#endif
             EditorGUILayout.LabelField("Multi Child Type", "Must be Ignore");
             var multiChildType = GetSourceProperty("multiChildType");
             if (multiChildType.enumValueIndex != 0 || multiChildType.hasMultipleDifferentValues)

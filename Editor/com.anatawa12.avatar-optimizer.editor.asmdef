@@ -58,6 +58,11 @@
             "define": "AAO_VRCSDK3_AVATARS"
         },
         {
+            "name": "com.vrchat.avatars",
+            "expression": "3.8.0",
+            "define": "AAO_VRCSDK3_AVATARS_IGNORE_OTHER_PHYSBONE"
+        },
+        {
             "name": "com.vrmc.univrm",
             "expression": "",
             "define": "AAO_VRM0"

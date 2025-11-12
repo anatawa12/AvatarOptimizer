@@ -153,7 +153,11 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
             var rootTransform = physBone.rootTransform;
             if (rootTransform == null) rootTransform = physBone.transform;
             RootTransformParent = rootTransform.parent;
+#if AAO_VRCSDK3_AVATARS_IGNORE_OTHER_PHYSBONE
             IgnoreOtherPhysBones = physBone.ignoreOtherPhysBones;
+#else
+            IgnoreOtherPhysBones = false;
+#endif
             EndpointPosition = physBone.endpointPosition;
             MultiChildType = physBone.multiChildType;
             // force
