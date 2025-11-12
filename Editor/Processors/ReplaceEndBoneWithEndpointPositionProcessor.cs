@@ -54,7 +54,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 {
                     if (!ValidateEndBone(endbone)) continue;
 
-                    if (!endbone.gameObject.GetComponent<MergeBone>())
+                    if (!endbone.gameObject.TryGetComponent<MergeBone>(out _))
                         endbone.gameObject.AddComponent<MergeBone>().avoidNameConflict = true;
                 }
                 physbone.endpointPosition = replacementPosition;
