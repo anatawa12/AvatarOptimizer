@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Compilation error with VRCSDK 3.7.x or older `#1561`
 
 ### Security
+
+## [1.9.0-beta.5] - 2025-11-12
+### Fixed
+- Compilation error with VRCSDK 3.7.x or older [`#1561`](https://github.com/anatawa12/AvatarOptimizer/pull/1561)
 
 ## [1.9.0-beta.4] - 2025-11-11
 ### Fixed
@@ -2033,7 +2036,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.5...HEAD
+[1.9.0-beta.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.4...v1.9.0-beta.5
 [1.9.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.3...v1.9.0-beta.4
 [1.9.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.14...v1.9.0-beta.3
 [1.8.14]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.14-beta.2...v1.8.14
