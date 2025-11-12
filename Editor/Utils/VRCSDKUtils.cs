@@ -34,9 +34,6 @@ namespace Anatawa12.AvatarOptimizer
 
         public static IEnumerable<Transform> GetAffectedLeafBones(this VRCPhysBoneBase physBoneBase)
         {
-            if (physBoneBase.endpointPosition != Vector3.zero)
-                yield break;
-
             var ignores = new HashSet<Transform>(physBoneBase.ignoreTransforms);
             var queue = new Queue<Transform>();
             queue.Enqueue(physBoneBase.GetTarget());
