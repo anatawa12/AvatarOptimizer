@@ -347,6 +347,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         {
             if (!IsOperatingPhysBone(component))
                 return;
+            
+            var info = ((ComponentDependencyRetriever.Collector)collector)._info!;
 
             // first, Transform <=> PhysBone
             // Transform is used even if the bone is inactive so Transform => PB is always dependency
@@ -357,7 +359,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             void CollectTransforms(Transform bone)
             {
                 collector.AddDependency(bone, component).EvenIfDependantDisabled().OnlyIfTargetCanBeEnable();
-                collector.AddDependency(bone);
+                info.AddDependency(bone, GCComponentInfo.DependencyType.PhysBone);
                 foreach (var child in bone.DirectChildrenEnumerable())
                 {
                     if (!ignoreTransforms.Contains(child))
@@ -404,7 +406,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             void CollectTransforms(Transform bone)
             {
                 gcContext.GetInfo(bone).AddDependency(component);
-                gcInfo.AddDependency(bone);
+                gcInfo.AddDependency(bone, GCComponentInfo.DependencyType.PhysBone);
                 foreach (var child in bone.DirectChildrenEnumerable())
                 {
                     if (!ignoreTransforms.Contains(child))

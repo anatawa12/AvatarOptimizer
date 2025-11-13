@@ -170,6 +170,7 @@ namespace Anatawa12.AvatarOptimizer
             Parent = 1 << 1,
             ComponentToTransform = 1 << 2,
             Bone = 1 << 3,
+            PhysBone = 1 << 4,
         }
 
         public override string ToString() => "GCComponentInfo(" + Component.GetType().Name + " on " + Component.gameObject.name + ")";

@@ -248,6 +248,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             if (physbonesByGameObjects.Length == 0) return;
 
             var componentInfos = context.Extension<GCComponentInfoContext>();
+            var entrypointMap = DependantMap.CreateEntrypointsMap(context);
 
             foreach (var physbonesByGameObject in physbonesByGameObjects)
             {
@@ -283,13 +284,17 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 return true;
             }
 
+            const GCComponentInfo.DependencyType AllowedUsages =
+                GCComponentInfo.DependencyType.ComponentToTransform
+                | GCComponentInfo.DependencyType.PhysBone;
+
             bool ValidateEndBone(Transform endBone)
             {
                 if (state.Exclusions.Contains(endBone.gameObject)) return false;
                 if (endBone.GetComponents<Component>().Length != 1) return false; // except transform
-                if (componentInfos.GetInfo(endBone).EntrypointComponent) return false;
+                if ((entrypointMap.MergedUsages(componentInfos.GetInfo(endBone)) & ~AllowedUsages) != 0) return false;
 
-                // no need to check animations if it has no usage.
+                // No need to check animations if it's just a leaf bone.
                 return true;
             }
         }
