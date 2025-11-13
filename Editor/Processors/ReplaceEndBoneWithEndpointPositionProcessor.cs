@@ -68,6 +68,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:endpointPositionAlreadySet", physbone);
                     return false;
                 }
+                if (physbone.GetRootTransform().GetComponentsInParent<VRCPhysBoneBase>(true).Length > 1)
+                {
+                    BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:nestedPhysBone", physbone);
+                    return false;
+                }
                 if (!IsSafeMultiChild(physbone, endBones))
                 {
                     BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:unsafeMultiChild", physbone);

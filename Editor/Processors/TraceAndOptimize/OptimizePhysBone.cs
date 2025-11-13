@@ -278,6 +278,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (state.Exclusions.Contains(physbone.gameObject)) return false;
                 if (physbone.gameObject.TryGetComponent<ReplaceEndBoneWithEndpointPosition>(out _)) return false;
                 if (physbone.endpointPosition != Vector3.zero) return false; // alreday used
+                if (physbone.GetRootTransform().GetComponentsInParent<VRCPhysBoneBase>(true).Length > 1) return false;
                 if (!ReplaceEndBoneWithEndpointPositionProcessor.IsSafeMultiChild(physbone, endBones)) return false;
                 return true;
             }

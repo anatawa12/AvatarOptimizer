@@ -607,6 +607,9 @@ msgstr "Endpoint Positionの設定する値"
 msgid "ReplaceEndBoneWithEndpointPosition:validation:endpointPositionAlreadySet"
 msgstr "Endpoint Positionがすでに設定されているため、置き換えることができません。"
 
+msgid "ReplaceEndBoneWithEndpointPosition:validation:nestedPhysBone"
+msgstr "PhysBoneが他のPhysBoneの子になっているため、置き換えることができません。"
+
 msgid "ReplaceEndBoneWithEndpointPosition:validation:inequivalentPositions"
 msgstr "異なる座標のendボーンへと置き換えています。PhysBoneの動作が変わる可能性があります。"
 
