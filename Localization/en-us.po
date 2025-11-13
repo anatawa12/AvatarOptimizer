@@ -711,7 +711,7 @@ msgstr "PhysBone is nested in another PhysBone, so it cannot be replaced."
 msgid "ReplaceEndBoneWithEndpointPosition:validation:inequivalentPositions"
 msgstr "You are replacing with an end bone at a different position. This may change the behavior of the PhysBone."
 
-msgid "ReplaceEndBoneWithEndpointPosition:validation:endBoneHasComponents"
+msgid "ReplaceEndBoneWithEndpointPosition:validation:leafBoneHasComponents"
 msgstr "The end bone has attached components."
 
 msgid "ReplaceEndBoneWithEndpointPosition:validation:unsafeMultiChild"

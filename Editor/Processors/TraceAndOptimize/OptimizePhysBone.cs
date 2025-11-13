@@ -264,23 +264,23 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             bool ShouldReplace(VRCPhysBoneBase physbone)
             {
-                var endBones = physbone.GetAffectedLeafBones().ToHashSet();
+                var leafBones = physbone.GetAffectedLeafBones().ToHashSet();
 
-                if (!ValidatePhysBone(physbone, endBones)) return false;
+                if (!ValidatePhysBone(physbone, leafBones)) return false;
 
-                if (!HasApproximatelyEqualLocalPosition(endBones, out var localPosition))
+                if (!HasApproximatelyEqualLocalPosition(leafBones, out var localPosition))
                     return false;
 
-                return endBones.All(ValidateEndBone);
+                return leafBones.All(ValidateLeafBone);
             }
 
-            bool ValidatePhysBone(VRCPhysBoneBase physbone, HashSet<Transform> endBones)
+            bool ValidatePhysBone(VRCPhysBoneBase physbone, HashSet<Transform> leafBones)
             {
                 if (state.Exclusions.Contains(physbone.gameObject)) return false;
                 if (physbone.gameObject.TryGetComponent<ReplaceEndBoneWithEndpointPosition>(out _)) return false;
                 if (physbone.endpointPosition != Vector3.zero) return false; // alreday used
                 if (physbone.GetRootTransform().GetComponentsInParent<VRCPhysBoneBase>(true).Length > 1) return false;
-                if (!ReplaceEndBoneWithEndpointPositionProcessor.IsSafeMultiChild(physbone, endBones)) return false;
+                if (!ReplaceEndBoneWithEndpointPositionProcessor.IsSafeMultiChild(physbone, leafBones)) return false;
                 return true;
             }
 
@@ -288,11 +288,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 GCComponentInfo.DependencyType.ComponentToTransform
                 | GCComponentInfo.DependencyType.PhysBone;
 
-            bool ValidateEndBone(Transform endBone)
+            bool ValidateLeafBone(Transform leafBone)
             {
-                if (state.Exclusions.Contains(endBone.gameObject)) return false;
-                if (endBone.GetComponents<Component>().Length != 1) return false; // except transform
-                if ((entrypointMap.MergedUsages(componentInfos.GetInfo(endBone)) & ~AllowedUsages) != 0) return false;
+                if (state.Exclusions.Contains(leafBone.gameObject)) return false;
+                if (leafBone.GetComponents<Component>().Length != 1) return false; // except transform
+                if ((entrypointMap.MergedUsages(componentInfos.GetInfo(leafBone)) & ~AllowedUsages) != 0) return false;
 
                 // No need to check animations if it's just a leaf bone.
                 return true;

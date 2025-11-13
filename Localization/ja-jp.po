@@ -613,7 +613,7 @@ msgstr "PhysBoneが他のPhysBoneの子になっているため、置き換え�
 msgid "ReplaceEndBoneWithEndpointPosition:validation:inequivalentPositions"
 msgstr "異なる座標のendボーンへと置き換えています。PhysBoneの動作が変わる可能性があります。"
 
-msgid "ReplaceEndBoneWithEndpointPosition:validation:endBoneHasComponents"
+msgid "ReplaceEndBoneWithEndpointPosition:validation:leafBoneHasComponents"
 msgstr "endボーンにコンポーネントが付いています。"
 
 msgid "ReplaceEndBoneWithEndpointPosition:validation:unsafeMultiChild"

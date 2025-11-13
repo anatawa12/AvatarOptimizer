@@ -34,11 +34,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             foreach (var physbone in physbones)
             {
-                var endBones = physbone.GetAffectedLeafBones().ToHashSet();
+                var leafBones = physbone.GetAffectedLeafBones().ToHashSet();
 
-                if (!ValidatePhysBone(physbone, endBones)) continue;
+                if (!ValidatePhysBone(physbone, leafBones)) continue;
 
-                var localPositions = endBones.Select(x => x.localPosition);
+                var localPositions = leafBones.Select(x => x.localPosition);
 
                 var replacementPosition = replacer.kind switch
                 {
@@ -51,17 +51,17 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:inequivalentPositions", physbone);
                 }
 
-                foreach (var endbone in endBones)
+                foreach (var leafBone in leafBones)
                 {
-                    if (!ValidateEndBone(endbone)) continue;
+                    if (!ValidateLeafBone(leafBone)) continue;
 
-                    if (!endbone.gameObject.TryGetComponent<MergeBone>(out _))
-                        endbone.gameObject.AddComponent<MergeBone>().avoidNameConflict = true;
+                    if (!leafBone.gameObject.TryGetComponent<MergeBone>(out _))
+                        leafBone.gameObject.AddComponent<MergeBone>().avoidNameConflict = true;
                 }
                 physbone.endpointPosition = replacementPosition;
             }
             
-            bool ValidatePhysBone(VRCPhysBoneBase physbone, HashSet<Transform> endBones)
+            bool ValidatePhysBone(VRCPhysBoneBase physbone, HashSet<Transform> leafBones)
             {
                 if (physbone.endpointPosition != Vector3.zero)
                 {
@@ -73,7 +73,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:nestedPhysBone", physbone);
                     return false;
                 }
-                if (!IsSafeMultiChild(physbone, endBones))
+                if (!IsSafeMultiChild(physbone, leafBones))
                 {
                     BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:unsafeMultiChild", physbone);
                     return true; // just warning
@@ -81,11 +81,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 return true;
             }
 
-            bool ValidateEndBone(Transform endBone)
+            bool ValidateLeafBone(Transform leafBone)
             {
-                if (endBone.GetComponents<Component>().Length != 1) // except transform
+                if (leafBone.GetComponents<Component>().Length != 1) // except transform
                 {
-                    BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:endBoneHasComponents", endBone);
+                    BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:leafBoneHasComponents", leafBone);
                     return true; // just warning
                 }
                 return true;
