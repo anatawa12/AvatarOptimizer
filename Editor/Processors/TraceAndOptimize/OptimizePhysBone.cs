@@ -263,7 +263,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             bool ShouldReplace(VRCPhysBoneBase physbone)
             {
-                var endBones = physbone.GetAffectedLeafBones();
+                var endBones = physbone.GetAffectedLeafBones().ToHashSet();
 
                 if (!ValidatePhysBone(physbone, endBones)) return false;
 
@@ -273,7 +273,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 return endBones.All(ValidateEndBone);
             }
 
-            bool ValidatePhysBone(VRCPhysBoneBase physbone, IEnumerable<Transform> endBones)
+            bool ValidatePhysBone(VRCPhysBoneBase physbone, HashSet<Transform> endBones)
             {
                 if (state.Exclusions.Contains(physbone.gameObject)) return false;
                 if (physbone.gameObject.TryGetComponent<ReplaceEndBoneWithEndpointPosition>(out _)) return false;

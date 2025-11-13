@@ -34,7 +34,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             foreach (var physbone in physbones)
             {
-                var endBones = physbone.GetAffectedLeafBones();
+                var endBones = physbone.GetAffectedLeafBones().ToHashSet();
 
                 if (!ValidatePhysBone(physbone, endBones)) continue;
 
@@ -61,7 +61,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 physbone.endpointPosition = replacementPosition;
             }
             
-            bool ValidatePhysBone(VRCPhysBoneBase physbone, IEnumerable<Transform> endBones)
+            bool ValidatePhysBone(VRCPhysBoneBase physbone, HashSet<Transform> endBones)
             {
                 if (physbone.endpointPosition != Vector3.zero)
                 {
@@ -104,13 +104,12 @@ namespace Anatawa12.AvatarOptimizer.Processors
             return true;
         }
 
-        public static bool IsSafeMultiChild(VRCPhysBoneBase physBoneBase, IEnumerable<Transform> leafBones)
+        public static bool IsSafeMultiChild(VRCPhysBoneBase physBoneBase, HashSet<Transform> leafBones)
         {
             var rootBone = physBoneBase.GetTarget();
             var multiChildType = physBoneBase.multiChildType;
 
             var ignores = new HashSet<Transform>(physBoneBase.ignoreTransforms);
-            var leafBoneSet = new HashSet<Transform>(leafBones);
 
             var queue = new Queue<Transform>();
             queue.Enqueue(rootBone);
@@ -125,7 +124,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
                 if (children.Count > 1) // fork bone
                 {
-                    if (!IsSafeMultiChild(current, children, multiChildType, leafBoneSet))
+                    if (!IsSafeMultiChild(current, children, multiChildType, leafBones))
                     {
                         return false;
                     }
@@ -143,13 +142,13 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 Transform forkBone,
                 List<Transform> children,
                 VRCPhysBoneBase.MultiChildType multiChildType,
-                HashSet<Transform> leafBoneSet)
+                HashSet<Transform> leafBones)
             {
                 switch (multiChildType)
                 {
                     case VRCPhysBoneBase.MultiChildType.Ignore:
                         // If after this transformation, it is no longer a Multi Child, that's not allowed.
-                        var afterRemoval = children.Where(t => !leafBoneSet.Contains(t));
+                        var afterRemoval = children.Where(t => !leafBones.Contains(t));
                         if (afterRemoval.Count() < 2)
                         {
                             return false;
@@ -157,14 +156,14 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         break;
                     case VRCPhysBoneBase.MultiChildType.First:
                         // If the first child in multi child is being removed, that's not allowed.
-                        if (leafBoneSet.Contains(children[0]))
+                        if (leafBones.Contains(children[0]))
                         {
                             return false;
                         }
                         break;
                     case VRCPhysBoneBase.MultiChildType.Average:
                         // If any children being averaged are to be removed, the average position will change.
-                        if (children.Any(leafBoneSet.Contains))
+                        if (children.Any(leafBones.Contains))
                         {
                             return false;
                         }
