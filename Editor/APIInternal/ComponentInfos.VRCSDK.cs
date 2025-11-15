@@ -343,6 +343,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
     [ComponentInformation(typeof(VRCPhysBone))]
     internal class VRCPhysBoneInformation : ComponentInformation<VRCPhysBoneBase>
     {
+        private static readonly Type? ParentChangeDetectorType = Type.GetType("VRC.Dynamics.ParentChangeDetector, VRC.Dynamics");
+
         protected override void CollectDependency(VRCPhysBoneBase component, ComponentDependencyCollector collector)
         {
             if (!IsOperatingPhysBone(component))
@@ -362,6 +364,15 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                 {
                     if (!ignoreTransforms.Contains(child))
                         CollectTransforms(child);
+                }
+            }
+
+            if (ParentChangeDetectorType != null)
+            {
+                var target = component.GetTarget();
+                if (target.TryGetComponent(ParentChangeDetectorType, out var parentChangeDetector))
+                {
+                    collector.AddDependency(parentChangeDetector);
                 }
             }
 
@@ -569,6 +580,15 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
         {
             // this component is used only for storing platform overrides
+        }
+    }
+
+    // ParentChangeDetector
+    [ComponentInformationWithGUID("cdfe97a8253414b4bb5dd295880489bd", 1906240614)]
+    internal class ParentChangeDetectorInformation : ComponentInformation<Component>
+    {
+        protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
+        {
         }
     }
 }
