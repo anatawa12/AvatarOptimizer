@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog].
   - New internal component ParentChangeDetector is added
 
 ### Changed
+- Useful error message will be shown when known unity bug that prevents you from building your avatar `#1563`
+  - Actually I cannot reproduce the bug so I hope this works but nothing certify this works.
 
 ### Deprecated
 
