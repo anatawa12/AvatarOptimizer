@@ -130,6 +130,16 @@ namespace Anatawa12.AvatarOptimizer.Processors
             return true;
         }
 
+        public static bool IsStretchMotionEnabled(VRCPhysBoneBase physBone)
+        {
+            return physBone.version switch
+            {
+                VRCPhysBoneBase.Version.Version_1_0 => physBone.maxStretch != 0f,
+                VRCPhysBoneBase.Version.Version_1_1 => physBone.stretchMotion != 0f && (physBone.maxStretch != 0f || physBone.maxSquish != 0f),
+                _ => throw new InvalidOperationException($"Invalid version: {physBone.version}"),
+            };
+        }
+
         public static bool IsSafeMultiChild(VRCPhysBoneBase physBoneBase, HashSet<Transform> leafBones)
         {
             var rootBone = physBoneBase.GetTarget();

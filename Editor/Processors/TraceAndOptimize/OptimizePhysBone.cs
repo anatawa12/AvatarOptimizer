@@ -271,6 +271,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private static bool ShouldReplace(VRCPhysBoneBase physbone, TraceAndOptimizeState state, DependantMap entrypointMap, GCComponentInfoContext componentInfos)
         {
             var leafBones = physbone.GetAffectedLeafBones().ToHashSet();
+            var stretchMotionEnabled = ReplaceEndBoneWithEndpointPositionProcessor.IsStretchMotionEnabled(physbone);
 
             if (!ValidatePhysBone(physbone, leafBones)) return false;
 
@@ -292,7 +293,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (state.Exclusions.Contains(leafBone.gameObject)) return false;
                 if (leafBone.GetComponents<Component>().Length != 1) return false; // except transform
 
-                // No need to check animations if it's just a leaf bone.
+                // endpoint position cannot replicate the stretch and squish of the leaf bone, so replacement should not be performed when these are enabled.
+                // However, replacement can be performed if leaf bone hasn't valid usage even if these are enabled.
+                if (stretchMotionEnabled)
+                {
+                    var mergedUsages = entrypointMap.MergedUsages(componentInfos.GetInfo(leafBone));
+                    const GCComponentInfo.DependencyType allowedUsages = GCComponentInfo.DependencyType.ComponentToTransform | GCComponentInfo.DependencyType.PhysBone;
+                    var anyUsage = (mergedUsages &~ allowedUsages) != 0;
+                    if (anyUsage) return false;
+                }
+
                 return true;
             }
         }
