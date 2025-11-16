@@ -18,17 +18,18 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         protected override void Execute(BuildContext context)
         {
+            var componentInfos = context.Extension<GCComponentInfoContext>();
             foreach (var replacer in context.GetComponents<ReplaceEndBoneWithEndpointPosition>())
             {
                 using (ErrorReport.WithContextObject(replacer))
                 {
-                    Process(replacer);
+                    Process(replacer, componentInfos);
                 }
                 DestroyTracker.DestroyImmediate(replacer);
             }
         }
 
-        private static void Process(ReplaceEndBoneWithEndpointPosition replacer)
+        private static void Process(ReplaceEndBoneWithEndpointPosition replacer, GCComponentInfoContext componentInfos)
         {
             var physbones = replacer.GetComponents<VRCPhysBoneBase>();
             if (physbones.Length == 0) return;
@@ -63,6 +64,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 foreach (var leafBone in leafBones)
                 {
                     physbone.ignoreTransforms.Add(leafBone);
+
+                    componentInfos.GetInfo(leafBone).Dependencies.Remove(physbone);
                 }
                 physbone.endpointPosition = replacementPosition;
             }
