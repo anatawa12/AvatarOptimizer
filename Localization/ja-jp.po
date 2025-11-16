@@ -20,6 +20,9 @@ msgstr "Read in English"
 msgid "LegacyModularAvatarWarning:nextLocale"
 msgstr "en"
 
+msgid "UnityPlayerBuildErrorBug:non-ascii-detected"
+msgstr "Unityのバグにより、プロジェクトまでのパスに非ASCII文字(半角英数字や半角記号等ではない文字)が含まれているとビルドが失敗する場合があります。プロジェクトまでのパスを確認し、ASCII文字のみのパスに移動することを検討してください。"
+
 # region PrefabSafeSet
 
 msgid "PrefabSafeSet:label:Multi editing not supported"
