@@ -287,15 +287,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 return true;
             }
 
-            const GCComponentInfo.DependencyType AllowedUsages =
-                GCComponentInfo.DependencyType.ComponentToTransform
-                | GCComponentInfo.DependencyType.PhysBone;
-
             bool ValidateLeafBone(Transform leafBone)
             {
                 if (state.Exclusions.Contains(leafBone.gameObject)) return false;
                 if (leafBone.GetComponents<Component>().Length != 1) return false; // except transform
-                if ((entrypointMap.MergedUsages(componentInfos.GetInfo(leafBone)) & ~AllowedUsages) != 0) return false;
 
                 // No need to check animations if it's just a leaf bone.
                 return true;

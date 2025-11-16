@@ -62,8 +62,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
                 foreach (var leafBone in leafBones)
                 {
-                    if (!leafBone.gameObject.TryGetComponent<MergeBone>(out _))
-                        leafBone.gameObject.AddComponent<MergeBone>().avoidNameConflict = true;
+                    physbone.ignoreTransforms.Add(leafBone);
                 }
                 physbone.endpointPosition = replacementPosition;
             }
