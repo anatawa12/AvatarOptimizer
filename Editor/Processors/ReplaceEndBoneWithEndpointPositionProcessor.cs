@@ -58,10 +58,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:inequivalentPositions", physbone);
                 }
 
+                if (!leafBones.All(ValidateLeafBone)) continue;
+
                 foreach (var leafBone in leafBones)
                 {
-                    if (!ValidateLeafBone(leafBone)) continue;
-
                     if (!leafBone.gameObject.TryGetComponent<MergeBone>(out _))
                         leafBone.gameObject.AddComponent<MergeBone>().avoidNameConflict = true;
                 }
