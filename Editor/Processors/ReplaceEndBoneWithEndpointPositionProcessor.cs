@@ -50,10 +50,16 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 foreach (var leafBone in leafBones)
                 {
                     physbone.ignoreTransforms.Add(leafBone);
-
-                    componentInfos.GetInfo(leafBone).Dependencies.Remove(physbone);
                 }
                 physbone.endpointPosition = replacementPosition;
+
+                // Remove PB <=> Transform dependencies in the hope that MergeBone will be applied
+                var pbInfo = componentInfos.GetInfo(physbone);
+                foreach (var leafBone in leafBones)
+                {
+                    pbInfo.Dependencies[leafBone] &= ~GCComponentInfo.DependencyType.PhysBone;
+                    componentInfos.GetInfo(leafBone).Dependencies.Remove(physbone);
+                }
             }
         }
 
