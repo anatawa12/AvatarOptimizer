@@ -273,6 +273,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var leafBones = physbone.GetAffectedLeafBones().ToHashSet();
             var stretchMotionEnabled = ReplaceEndBoneWithEndpointPositionProcessor.IsStretchMotionEnabled(physbone);
 
+            if (leafBones.Count == 0) return false;
             if (!ValidatePhysBone(physbone, leafBones)) return false;
 
             if (!HasApproximatelyEqualLocalPosition(leafBones, out var localPosition)) return false;

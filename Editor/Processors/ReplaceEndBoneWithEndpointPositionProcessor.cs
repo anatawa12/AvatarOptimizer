@@ -59,6 +59,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             leafBones = physbone.GetAffectedLeafBones().ToHashSet();
             replacementPosition = default;
 
+            if (leafBones.Count == 0) return false;
             if (!ValidatePhysBone(physbone, leafBones)) return false;
 
             var localPositions = leafBones.Select(x => x.localPosition);
