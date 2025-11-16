@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using nadena.dev.ndmf;
 using UnityEngine;
@@ -31,6 +32,12 @@ namespace Anatawa12.AvatarOptimizer.Processors
         {
             var physbones = replacer.GetComponents<VRCPhysBoneBase>();
             if (physbones.Length == 0) return;
+
+            if (HasNestedPhysBone(physbones, out var nestedPhysBone))
+            {
+                BuildLog.LogError("ReplaceEndBoneWithEndpointPosition:validation:nestedPhysBone", nestedPhysBone);
+                return;
+            }
 
             foreach (var physbone in physbones)
             {
@@ -68,11 +75,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:endpointPositionAlreadySet", physbone);
                     return false;
                 }
-                if (physbone.GetRootTransform().GetComponentsInParent<VRCPhysBoneBase>(true).Length > 1)
-                {
-                    BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:nestedPhysBone", physbone);
-                    return false;
-                }
                 if (!IsSafeMultiChild(physbone, leafBones))
                 {
                     BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:unsafeMultiChild", physbone);
@@ -90,6 +92,23 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 }
                 return true;
             }
+        }
+
+        public static bool HasNestedPhysBone(VRCPhysBoneBase[] physBones, [NotNullWhen(true)] out VRCPhysBoneBase? nestedPhysBone)
+        {
+            nestedPhysBone = null;
+            var allAffectedTransforms = new HashSet<Transform>();
+            foreach (var physbone in physBones)
+            {
+                var affectedTransforms = physbone.GetAffectedTransforms();
+                if (allAffectedTransforms.Overlaps(affectedTransforms))
+                {
+                    nestedPhysBone = physbone;
+                    return true;
+                }
+                allAffectedTransforms.UnionWith(affectedTransforms);
+            }
+            return false;
         }
 
         public static Vector3 GetAvaragePosition(IEnumerable<Vector3> positions)

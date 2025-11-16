@@ -246,6 +246,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 .GroupBy(physbone => physbone.gameObject)
                 .ToArray();
             if (physbonesByGameObjects.Length == 0) return;
+                
+            if (ReplaceEndBoneWithEndpointPositionProcessor.HasNestedPhysBone(allPhysBones, out _)) return;
 
             var componentInfos = context.Extension<GCComponentInfoContext>();
             var entrypointMap = DependantMap.CreateEntrypointsMap(context);
@@ -279,7 +281,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (state.Exclusions.Contains(physbone.gameObject)) return false;
                 if (physbone.gameObject.TryGetComponent<ReplaceEndBoneWithEndpointPosition>(out _)) return false;
                 if (physbone.endpointPosition != Vector3.zero) return false; // alreday used
-                if (physbone.GetRootTransform().GetComponentsInParent<VRCPhysBoneBase>(true).Length > 1) return false;
                 if (!ReplaceEndBoneWithEndpointPositionProcessor.IsSafeMultiChild(physbone, leafBones)) return false;
                 return true;
             }
