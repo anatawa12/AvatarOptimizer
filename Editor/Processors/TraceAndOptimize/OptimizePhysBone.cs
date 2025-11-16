@@ -245,13 +245,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var allPhysBones = context.GetComponents<VRCPhysBoneBase>();
             if (allPhysBones.Length == 0) return;
                 
-            if (ReplaceEndBoneWithEndpointPositionProcessor.HasNestedPhysBone(allPhysBones, out _)) return;
+            var overlappedPhysBones = ReplaceEndBoneWithEndpointPositionProcessor.GetOverlappedPhysBones(allPhysBones);
+            var validPhysBones = allPhysBones.Where(physbone => !overlappedPhysBones.Contains(physbone));
 
             var componentInfos = context.Extension<GCComponentInfoContext>();
             var entrypointMap = DependantMap.CreateEntrypointsMap(context);
 
             // ReplaceEndBoneWithEndpointPosition component affects all physbones attached to the gameobject it is attached to.
-            var physbonesByGameObjects = allPhysBones
+            var physbonesByGameObjects = validPhysBones
                 .GroupBy(physbone => physbone.gameObject)
                 .ToArray();
 

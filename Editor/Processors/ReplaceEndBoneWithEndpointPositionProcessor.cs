@@ -21,10 +21,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var replacers = context.GetComponents<ReplaceEndBoneWithEndpointPosition>();
             if (replacers.Length == 0) return;
 
-            if (HasNestedPhysBone(context.GetComponents<VRCPhysBoneBase>(), out var nestedPhysBone))
+            var overlappedPhysBones = GetOverlappedPhysBones(context.GetComponents<VRCPhysBoneBase>());
+            if (overlappedPhysBones.Count > 0)
             {
-                BuildLog.LogError("ReplaceEndBoneWithEndpointPosition:validation:nestedPhysBone", nestedPhysBone);
-                return;
+                BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:overlappedPhysBones", overlappedPhysBones);
             }
 
             var componentInfos = context.Extension<GCComponentInfoContext>();
@@ -105,21 +105,29 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
         }
 
-        public static bool HasNestedPhysBone(VRCPhysBoneBase[] physBones, [NotNullWhen(true)] out VRCPhysBoneBase? nestedPhysBone)
+        public static HashSet<VRCPhysBoneBase> GetOverlappedPhysBones(VRCPhysBoneBase[] physBones)
         {
-            nestedPhysBone = null;
-            var allAffectedTransforms = new HashSet<Transform>();
-            foreach (var physbone in physBones)
+            var affectedTransformsByPhysBone = physBones.ToDictionary(physbone => physbone, physbone => physbone.GetAffectedTransforms().ToHashSet());
+            var overlappedPhysBones = new HashSet<VRCPhysBoneBase>();
+            
+            for (int i = 0; i < physBones.Length; i++)
             {
-                var affectedTransforms = physbone.GetAffectedTransforms();
-                if (allAffectedTransforms.Overlaps(affectedTransforms))
+                var physbone = physBones[i];
+                var affectedTransforms = affectedTransformsByPhysBone[physbone];
+                
+                for (int j = 0; j < physBones.Length; j++)
                 {
-                    nestedPhysBone = physbone;
-                    return true;
+                    if (i == j) continue;
+                    
+                    if (affectedTransforms.Overlaps(affectedTransformsByPhysBone[physBones[j]]))
+                    {
+                        overlappedPhysBones.Add(physbone);
+                        break;
+                    }
                 }
-                allAffectedTransforms.UnionWith(affectedTransforms);
             }
-            return false;
+            
+            return overlappedPhysBones;
         }
 
         public static Vector3 GetAvaragePosition(IEnumerable<Vector3> positions)
