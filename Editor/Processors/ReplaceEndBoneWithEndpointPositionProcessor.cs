@@ -139,7 +139,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             return true;
         }
 
-        public static bool IsStretchMotionEnabled(VRCPhysBoneBase physBone)
+        public static bool IsBoneLengthChange(VRCPhysBoneBase physBone)
         {
             return physBone.version switch
             {
