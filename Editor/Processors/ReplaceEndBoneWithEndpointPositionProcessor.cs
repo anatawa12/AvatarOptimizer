@@ -156,11 +156,25 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         public static bool IsBoneLengthChange(VRCPhysBoneBase physBone)
         {
+            var anyGrabbingAllowed = IsAnyGrabbingAllowed(physBone.allowGrabbing, physBone.grabFilter);
+            var anyLengthChange = physBone.maxStretch != 0f || physBone.maxSquish != 0f;
+            var stretchMotion = physBone.stretchMotion != 0f;
             return physBone.version switch
             {
-                VRCPhysBoneBase.Version.Version_1_0 => physBone.maxStretch != 0f,
-                VRCPhysBoneBase.Version.Version_1_1 => physBone.stretchMotion != 0f && (physBone.maxStretch != 0f || physBone.maxSquish != 0f),
+                VRCPhysBoneBase.Version.Version_1_0 => anyGrabbingAllowed && anyLengthChange,
+                VRCPhysBoneBase.Version.Version_1_1 => (anyGrabbingAllowed || stretchMotion) && anyLengthChange,
                 _ => throw new InvalidOperationException($"Invalid version: {physBone.version}"),
+            };
+        }
+
+        private static bool IsAnyGrabbingAllowed(VRCPhysBoneBase.AdvancedBool allow, VRCPhysBoneBase.PermissionFilter filter)
+        {
+            return allow switch
+            {
+                VRCPhysBoneBase.AdvancedBool.True => true,
+                VRCPhysBoneBase.AdvancedBool.False => false,
+                VRCPhysBoneBase.AdvancedBool.Other => filter.allowSelf || filter.allowOthers,
+                _ => throw new InvalidOperationException($"Invalid allow: {allow}"),
             };
         }
 
