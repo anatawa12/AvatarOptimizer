@@ -42,24 +42,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             foreach (var physbone in physbones)
             {
-                var leafBones = physbone.GetAffectedLeafBones().ToHashSet();
-
-                if (!ValidatePhysBone(physbone, leafBones)) continue;
-
-                var localPositions = leafBones.Select(x => x.localPosition);
-
-                var replacementPosition = replacer.kind switch
-                {
-                    ReplaceEndBoneWithEndpointPositionKind.Average => GetAvaragePosition(localPositions),
-                    ReplaceEndBoneWithEndpointPositionKind.Manual => replacer.manualReplacementPosition,
-                    _ => throw new InvalidOperationException($"Invalid kind: {replacer.kind}"),
-                };
-                if (!AreApproximatelyEqualPosition(localPositions, replacementPosition))
-                {
-                    BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:inequivalentPositions", physbone);
-                }
-
-                if (!leafBones.All(ValidateLeafBone)) continue;
+                if (!CanReplace(replacer, physbone, out var leafBones, out var replacementPosition)) continue;
 
                 foreach (var leafBone in leafBones)
                 {
@@ -69,7 +52,29 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 }
                 physbone.endpointPosition = replacementPosition;
             }
-            
+        }
+
+        private static bool CanReplace(ReplaceEndBoneWithEndpointPosition replacer, VRCPhysBoneBase physbone, out HashSet<Transform> leafBones, out Vector3 replacementPosition)
+        {
+            leafBones = physbone.GetAffectedLeafBones().ToHashSet();
+            replacementPosition = default;
+
+            if (!ValidatePhysBone(physbone, leafBones)) return false;
+
+            var localPositions = leafBones.Select(x => x.localPosition);
+            replacementPosition = replacer.kind switch
+            {
+                ReplaceEndBoneWithEndpointPositionKind.Average => GetAvaragePosition(localPositions),
+                ReplaceEndBoneWithEndpointPositionKind.Manual => replacer.manualReplacementPosition,
+                _ => throw new InvalidOperationException($"Invalid kind: {replacer.kind}"),
+            };
+            if (!AreApproximatelyEqualPosition(localPositions, replacementPosition))
+            {
+                BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:inequivalentPositions", physbone);
+            }
+
+            return leafBones.All(ValidateLeafBone);
+
             bool ValidatePhysBone(VRCPhysBoneBase physbone, HashSet<Transform> leafBones)
             {
                 if (physbone.endpointPosition != Vector3.zero)
