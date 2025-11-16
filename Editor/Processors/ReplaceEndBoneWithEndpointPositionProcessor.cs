@@ -80,7 +80,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             {
                 if (physbone.endpointPosition != Vector3.zero)
                 {
-                    BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:endpointPositionAlreadySet", physbone);
+                    BuildLog.LogError("ReplaceEndBoneWithEndpointPosition:validation:endpointPositionAlreadySet", physbone);
                     return false;
                 }
                 if (!IsSafeMultiChild(physbone, leafBones))
