@@ -36,6 +36,8 @@ The format is based on [Keep a Changelog].
   - Merge ToonLit Material is now deprecated. Please use this new component instead.
   - Merge ToonLit Material will be removed in next major version.
   - This component will support both Skinned Mesh Renderer and Mesh Renderer.
+- Support for VRCSDK 3.9.1-beta `#1562`
+  - New internal component ParentChangeDetector is added
 - Replace EndBone With Endpoint Position component which replaces the end bone in the vrc physbone with the Endpoint Position [`#1423`](https://github.com/anatawa12/AvatarOptimizer/pull/1423)
 - Automatic Replace EndBone With Endpoint Position [`#1423`](https://github.com/anatawa12/AvatarOptimizer/pull/1423)
 
@@ -65,6 +67,8 @@ The format is based on [Keep a Changelog].
   - Please note that creating animator controllers that can optimized with this optimization is difficult with Float operators because we need to use BitIncrement/Decrement-ed condition threshold for exiting parameters.
   - For example, when we use `> 0` condition for entry transition, we need to use `< 1e-45 (BitIncrement(0))`, which is equivalent to `<= 0`, for exit transition.
 - Streaming mipmap settings are copied when processing textures `#1558`
+- Useful error message will be shown when known unity bug that prevents you from building your avatar `#1563`
+  - Actually I cannot reproduce the bug so I hope this works but nothing certify this works. 
 
 [`AfterPlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_AfterPlugin_System_String_System_String_System_Int32_
 [`BeforePlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_BeforePlugin_System_String_System_String_System_Int32_
@@ -85,7 +89,7 @@ The format is based on [Keep a Changelog].
 - VRM: A NullReferenceException or MissingReferenceException may occur when parsing incomplete VRM components `#1524`
 - MeshCompression settings is not preserved after AvatarOptimizer process `#1529`
   - This bug increases size of some avatars unexpectedly. This is fixed now.
-- Missing `Ignore Other Phys Bone` support for Merge Phys Bone `#1532`
+- Missing `Ignore Other Phys Bone` support for Merge Phys Bone `#1532` `#1561`
   - Ignore Other Phys Bone property is not supported by Merge Phys Bone. This was a bug.
   - This version fixes this bug.
 - Fixed Optimize Texture may throw error in rare cases `#1538`

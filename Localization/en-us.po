@@ -17,6 +17,9 @@ msgstr "日本語で読む"
 msgid "LegacyModularAvatarWarning:nextLocale"
 msgstr "ja"
 
+msgid "UnityPlayerBuildErrorBug:non-ascii-detected"
+msgstr "Due to a Unity bug, builds may fail if the project path contains non-ASCII characters. Please check your project path and consider moving it to a path with only ASCII characters."
+
 # region PrefabSafeSet
 
 msgid "PrefabSafeSet:label:Multi editing not supported"
