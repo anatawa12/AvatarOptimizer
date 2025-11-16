@@ -242,39 +242,41 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         private void ConfigureReplaceEndBoneWithEndpointPosition(BuildContext context, TraceAndOptimizeState state)
         {
-            var physbonesByGameObjects = context.GetComponents<VRCPhysBoneBase>()
-                .GroupBy(physbone => physbone.gameObject)
-                .ToArray();
-            if (physbonesByGameObjects.Length == 0) return;
+            var allPhysBones = context.GetComponents<VRCPhysBoneBase>();
+            if (allPhysBones.Length == 0) return;
                 
             if (ReplaceEndBoneWithEndpointPositionProcessor.HasNestedPhysBone(allPhysBones, out _)) return;
 
             var componentInfos = context.Extension<GCComponentInfoContext>();
             var entrypointMap = DependantMap.CreateEntrypointsMap(context);
 
+            // ReplaceEndBoneWithEndpointPosition component affects all physbones attached to the gameobject it is attached to.
+            var physbonesByGameObjects = allPhysBones
+                .GroupBy(physbone => physbone.gameObject)
+                .ToArray();
+
             foreach (var physbonesByGameObject in physbonesByGameObjects)
             {
                 var gameObject = physbonesByGameObject.Key;
                 var physbones = physbonesByGameObject;
 
-                if (physbones.All(ShouldReplace))
+                if (physbones.All(physbone => ShouldReplace(physbone, state, entrypointMap, componentInfos)))
                 {
                     var component = gameObject.AddComponent<ReplaceEndBoneWithEndpointPosition>();
                     component.kind = ReplaceEndBoneWithEndpointPositionKind.Average;
                 }
             }
+        }
 
-            bool ShouldReplace(VRCPhysBoneBase physbone)
-            {
-                var leafBones = physbone.GetAffectedLeafBones().ToHashSet();
+        private static bool ShouldReplace(VRCPhysBoneBase physbone, TraceAndOptimizeState state, DependantMap entrypointMap, GCComponentInfoContext componentInfos)
+        {
+            var leafBones = physbone.GetAffectedLeafBones().ToHashSet();
 
-                if (!ValidatePhysBone(physbone, leafBones)) return false;
+            if (!ValidatePhysBone(physbone, leafBones)) return false;
 
-                if (!HasApproximatelyEqualLocalPosition(leafBones, out var localPosition))
-                    return false;
+            if (!HasApproximatelyEqualLocalPosition(leafBones, out var localPosition)) return false;
 
-                return leafBones.All(ValidateLeafBone);
-            }
+            return leafBones.All(ValidateLeafBone);
 
             bool ValidatePhysBone(VRCPhysBoneBase physbone, HashSet<Transform> leafBones)
             {
