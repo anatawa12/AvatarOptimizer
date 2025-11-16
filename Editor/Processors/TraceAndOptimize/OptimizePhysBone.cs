@@ -260,6 +260,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 var gameObject = physbonesByGameObject.Key;
                 var physbones = physbonesByGameObject;
 
+                if (state.Exclusions.Contains(gameObject)) continue;
+                if (gameObject.TryGetComponent<ReplaceEndBoneWithEndpointPosition>(out _)) continue;
+
                 if (physbones.All(physbone => ShouldReplace(physbone, state, entrypointMap, componentInfos)))
                 {
                     var component = gameObject.AddComponent<ReplaceEndBoneWithEndpointPosition>();
@@ -282,8 +285,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             bool ValidatePhysBone(VRCPhysBoneBase physbone, HashSet<Transform> leafBones)
             {
-                if (state.Exclusions.Contains(physbone.gameObject)) return false;
-                if (physbone.gameObject.TryGetComponent<ReplaceEndBoneWithEndpointPosition>(out _)) return false;
                 if (physbone.endpointPosition != Vector3.zero) return false; // alreday used
                 if (!ReplaceEndBoneWithEndpointPositionProcessor.IsSafeMultiChild(physbone, leafBones)) return false;
                 return true;
