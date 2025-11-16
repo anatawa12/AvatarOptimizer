@@ -18,8 +18,17 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         protected override void Execute(BuildContext context)
         {
+            var replacers = context.GetComponents<ReplaceEndBoneWithEndpointPosition>();
+            if (replacers.Length == 0) return;
+
+            if (HasNestedPhysBone(context.GetComponents<VRCPhysBoneBase>(), out var nestedPhysBone))
+            {
+                BuildLog.LogError("ReplaceEndBoneWithEndpointPosition:validation:nestedPhysBone", nestedPhysBone);
+                return;
+            }
+
             var componentInfos = context.Extension<GCComponentInfoContext>();
-            foreach (var replacer in context.GetComponents<ReplaceEndBoneWithEndpointPosition>())
+            foreach (var replacer in replacers)
             {
                 using (ErrorReport.WithContextObject(replacer))
                 {
@@ -33,12 +42,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
         {
             var physbones = replacer.GetComponents<VRCPhysBoneBase>();
             if (physbones.Length == 0) return;
-
-            if (HasNestedPhysBone(physbones, out var nestedPhysBone))
-            {
-                BuildLog.LogError("ReplaceEndBoneWithEndpointPosition:validation:nestedPhysBone", nestedPhysBone);
-                return;
-            }
 
             foreach (var physbone in physbones)
             {
