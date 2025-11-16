@@ -22,30 +22,26 @@ namespace Anatawa12.AvatarOptimizer.Processors
             if (replacers.Length == 0) return;
 
             var overlappedPhysBones = GetOverlappedPhysBones(context.GetComponents<VRCPhysBoneBase>());
-            if (overlappedPhysBones.Count > 0)
-            {
-                BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:overlappedPhysBones", overlappedPhysBones);
-            }
-
             var componentInfos = context.Extension<GCComponentInfoContext>();
+            
             foreach (var replacer in replacers)
             {
                 using (ErrorReport.WithContextObject(replacer))
                 {
-                    Process(replacer, componentInfos);
+                    Process(replacer, componentInfos, overlappedPhysBones);
                 }
                 DestroyTracker.DestroyImmediate(replacer);
             }
         }
 
-        private static void Process(ReplaceEndBoneWithEndpointPosition replacer, GCComponentInfoContext componentInfos)
+        private static void Process(ReplaceEndBoneWithEndpointPosition replacer, GCComponentInfoContext componentInfos, HashSet<VRCPhysBoneBase> overlappedPhysBones)
         {
             var physbones = replacer.GetComponents<VRCPhysBoneBase>();
             if (physbones.Length == 0) return;
 
             foreach (var physbone in physbones)
             {
-                if (!CanReplace(replacer, physbone, out var leafBones, out var replacementPosition)) continue;
+                if (!CanReplace(replacer, physbone, overlappedPhysBones, out var leafBones, out var replacementPosition)) continue;
 
                 foreach (var leafBone in leafBones)
                 {
@@ -63,7 +59,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
         }
 
-        private static bool CanReplace(ReplaceEndBoneWithEndpointPosition replacer, VRCPhysBoneBase physbone, out HashSet<Transform> leafBones, out Vector3 replacementPosition)
+        private static bool CanReplace(ReplaceEndBoneWithEndpointPosition replacer, VRCPhysBoneBase physbone, HashSet<VRCPhysBoneBase> overlappedPhysBones, out HashSet<Transform> leafBones, out Vector3 replacementPosition)
         {
             leafBones = physbone.GetAffectedLeafBones().ToHashSet();
             replacementPosition = default;
@@ -87,6 +83,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             bool ValidatePhysBone(VRCPhysBoneBase physbone, HashSet<Transform> leafBones)
             {
+                if (overlappedPhysBones.Contains(physbone))
+                {
+                    BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:overlappedPhysBone", physbone);
+                    return false;
+                }
                 if (physbone.endpointPosition != Vector3.zero)
                 {
                     BuildLog.LogError("ReplaceEndBoneWithEndpointPosition:validation:endpointPositionAlreadySet", physbone);
