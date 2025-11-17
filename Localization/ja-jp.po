@@ -611,7 +611,7 @@ msgid "ReplaceEndBoneWithEndpointPosition:validation:endpointPositionAlreadySet"
 msgstr "Endpoint Positionがすでに設定されているため、置き換えることができません。"
 
 msgid "ReplaceEndBoneWithEndpointPosition:validation:overlappedPhysBone"
-msgstr "影響範囲が他のPhysBoneと重複しているため、置き換えることができません。"
+msgstr "影響範囲が他のPhysBoneと重複しています。PhysBoneの動作が変わる可能性があります。"
 
 msgid "ReplaceEndBoneWithEndpointPosition:validation:inequivalentPositions"
 msgstr "異なる座標のendボーンへと置き換えています。PhysBoneの動作が変わる可能性があります。"

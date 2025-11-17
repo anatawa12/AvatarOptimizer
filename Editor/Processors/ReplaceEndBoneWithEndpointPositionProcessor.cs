@@ -87,7 +87,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 if (overlappedPhysBones.Contains(physbone))
                 {
                     BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:overlappedPhysBone", physbone);
-                    return false;
+                    return true; // just warning
                 }
                 if (physbone.endpointPosition != Vector3.zero)
                 {

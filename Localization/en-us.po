@@ -709,7 +709,7 @@ msgid "ReplaceEndBoneWithEndpointPosition:validation:endpointPositionAlreadySet"
 msgstr "Endpoint Position is already set, so it cannot be replaced."
 
 msgid "ReplaceEndBoneWithEndpointPosition:validation:overlappedPhysBone"
-msgstr "Cannot replace because the affected range is overlapping with another PhysBone."
+msgstr "The affected range is overlapping with another PhysBone. The behavior of the PhysBone may change."
 
 msgid "ReplaceEndBoneWithEndpointPosition:validation:inequivalentPositions"
 msgstr "You are replacing with an end bone at a different position. This may change the behavior of the PhysBone."
