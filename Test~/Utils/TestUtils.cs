@@ -76,6 +76,22 @@ namespace Anatawa12.AvatarOptimizer.Test
 #endif
         }
 
+        public static GameObject AddChild(this GameObject parent, 
+            string name,
+            Vector3 localPosition = default,
+            Quaternion? localRotation = null,
+            Vector3? localScale = null
+        )
+        {
+            var child = new GameObject();
+            child.name = name;
+            child.transform.SetParent(parent.transform, false);
+            child.transform.localPosition = localPosition;
+            child.transform.localRotation = localRotation ?? Quaternion.identity;
+            child.transform.localScale = localScale ?? Vector3.one;
+            return child;
+        }
+
         public static string GetAssetPath(string testRelativePath)
         {
             var path = AssetDatabase.GUIDToAssetPath("801b64144a3842adb8909fd2d209241a");

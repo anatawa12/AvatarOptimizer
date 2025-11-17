@@ -16,7 +16,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         private const float TOLERANCE = 0.00001f;
 
-        protected override void Execute(BuildContext context)
+        protected override void Execute(BuildContext context) => ExecuteImpl(context);
+        public static void ExecuteImpl(BuildContext context)
         {
             var replacers = context.GetComponents<ReplaceEndBoneWithEndpointPosition>();
             if (replacers.Length == 0) return;
