@@ -96,8 +96,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 }
                 if (!IsSafeMultiChild(physbone, leafBones))
                 {
-                    BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:unsafeMultiChild", physbone);
-                    return true; // just warning
+                    BuildLog.LogError("ReplaceEndBoneWithEndpointPosition:validation:unsafeMultiChild", physbone);
+                    return false;
                 }
                 return true;
             }
