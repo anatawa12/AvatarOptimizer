@@ -296,8 +296,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (state.Exclusions.Contains(leafBone.gameObject)) return false;
                 if (leafBone.GetComponents<Component>().Length != 1) return false; // except transform
 
-                // endpoint position cannot replicate the stretch and squish of the leaf bone, so replacement should not be performed when these are enabled.
-                // However, replacement can be performed if leaf bone hasn't valid usage even if these are enabled.
+                // The endpoint position cannot replicate the "stretch" or "squish" behavior of the leaf bone, because with stretch or squish enabled, the transform's position of the leaf bone can actually move.
+                // Therefore, replacement should not be performed when these options are enabled.
+                // However, if the leaf bone does not have a valid usage, replacement can still be performed even if stretch or squish are enabled.
                 if (boneLengthChange)
                 {
                     var mergedUsages = entrypointMap.MergedUsages(componentInfos.GetInfo(leafBone));
