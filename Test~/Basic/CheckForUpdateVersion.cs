@@ -23,7 +23,7 @@ namespace Anatawa12.AvatarOptimizer.Test
         }
 
         [Test]
-        public static void ToString()
+        public new static void ToString()
         {
             Assert.That(new Version(1, 0, 0).ToString(), Is.EqualTo("1.0.0"));
             Assert.That(new Version(1, 0, 0, "alpha").ToString(), Is.EqualTo("1.0.0-alpha"));

@@ -180,15 +180,15 @@ internal struct OptimizeTextureImpl {
 
     internal class SubMeshUVCollection
     {
-        public SubMeshUVNode NonMeshRelated;
-        public SubMeshUVNode UV0;
-        public SubMeshUVNode UV1;
-        public SubMeshUVNode UV2;
-        public SubMeshUVNode UV3;
-        public SubMeshUVNode UV4;
-        public SubMeshUVNode UV5;
-        public SubMeshUVNode UV6;
-        public SubMeshUVNode UV7;
+        public SubMeshUVNode NonMeshRelated = null!; // initialized later
+        public SubMeshUVNode UV0 = null!; // initialized later
+        public SubMeshUVNode UV1 = null!; // initialized later
+        public SubMeshUVNode UV2 = null!; // initialized later
+        public SubMeshUVNode UV3 = null!; // initialized later
+        public SubMeshUVNode UV4 = null!; // initialized later
+        public SubMeshUVNode UV5 = null!; // initialized later
+        public SubMeshUVNode UV6 = null!; // initialized later
+        public SubMeshUVNode UV7 = null!; // initialized later
 
         public SubMeshUVNode this[UVChannel channel]
         {
@@ -928,8 +928,6 @@ internal struct OptimizeTextureImpl {
                 using var tempTexture = Utils.TemporaryRenderTexture(newWidth, newHeight, depthBuffer: 0, format: format);
                 HelperMaterial.SetTexture(MainTexProp, texture2D);
                 HelperMaterial.SetInt(NoClipProp, 1);
-
-                bool isBlack = true;
 
                 foreach (var atlasIsland in atlasIslands)
                 {

@@ -14,7 +14,7 @@ namespace Anatawa12.AvatarOptimizer
     {
         private GCComponentInfoHolder ComponentInfos;
         public Predicate<string> IsParameterUsed => _isParameterUsed ?? throw new InvalidOperationException("GCComponentInfoContext is not activated.");
-        private Predicate<string> _isParameterUsed;
+        private Predicate<string> _isParameterUsed = null!; // initialized on OnActivate
 
         public void OnActivate(BuildContext context)
         {

@@ -49,7 +49,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 var meshInfo = context.TryGetMeshInfoFor(renderer);
                 if (meshInfo != null)
                 {
-                    materials = meshInfo.SubMeshes.SelectMany(x => x.SharedMaterials).Where(m => m != null);
+                    materials = meshInfo.SubMeshes.SelectMany(x => x.SharedMaterials).Where(m => m != null)!;
                 }
                 else
                 {
