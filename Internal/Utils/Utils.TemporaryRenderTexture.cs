@@ -29,7 +29,9 @@ partial class Utils
         int depthBits,
         GraphicsFormat colorFormat)
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         return colorFormat == GraphicsFormat.ShadowAuto
+#pragma warning restore CS0618 // Type or member is obsolete
             ? GraphicsFormatUtility.GetDepthStencilFormat(depthBits, 0)
             : GraphicsFormatUtility.GetDepthStencilFormat(depthBits, 8);
     }

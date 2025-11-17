@@ -81,6 +81,7 @@ internal class MeshRemovalProviderImpl : MeshRemovalProvider
                 5 => renderer.sharedMesh.uv6,
                 6 => renderer.sharedMesh.uv7,
                 7 => renderer.sharedMesh.uv8,
+                _ => throw new InvalidOperationException("AAO BUG: EvacuateUVChannel index out of range"),
             };
 
             for (var index = 0; index < removeMeshByMask.materials.Length && index < _removedByMask.Length; index++)

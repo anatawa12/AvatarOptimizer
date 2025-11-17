@@ -154,7 +154,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             
 #if AAO_VRCSDK3_AVATARS
             {
-                var descriptor = context.AvatarDescriptor;
+                var descriptor = context.AvatarRootObject.GetComponent<VRCAvatarDescriptor>();
                 if (descriptor && descriptor.customizeAnimationLayers)
                 {
                     foreach (var playableLayer in descriptor.baseAnimationLayers)

@@ -649,6 +649,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 // When the current layer weight is always 1, the wierd state behavior will always be activated, so we can always apply the simulating weight change.
                 // The AnimatorWeightChange does not imply always changed, it means 'can be changed to always 1' so no problem with EitherZeroOrOne.
                 (AnimatorWeightState.AlwaysOne or AnimatorWeightState.NonZeroOne, var change) => change,
+                _ => throw new InvalidOperationException("AAO Bug: unhandled combination of current layer weight and simulating weight change"),
             };
         }
 

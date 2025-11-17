@@ -41,7 +41,7 @@ namespace Anatawa12.AvatarOptimizer
             else if (_renderer is MeshRenderer && _renderer.TryGetComponent<MeshFilter>(out var filter))
                 mesh = filter.sharedMesh;
 
-            if (!_renderer || !mesh)
+            if (!_renderer || mesh == null)
             {
                 EditorGUILayout.HelpBox(AAOL10N.Tr("RemoveMeshByMask:warning:NoMesh"), MessageType.Warning);
                 return;

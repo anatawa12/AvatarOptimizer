@@ -9,7 +9,7 @@ namespace Anatawa12.AvatarOptimizer
     internal class RemoveMeshByUVTileEditor : AvatarTagComponentEditorBase
     {
         private SerializedProperty _materials = null!; // Initialized in OnEnable
-        private Renderer _renderer; // Initialized in OnEnable
+        private Renderer _renderer = null!; // Initialized in OnEnable
         public bool automaticallySetWeightWhenToggle;
 
         private void OnEnable()
@@ -36,7 +36,7 @@ namespace Anatawa12.AvatarOptimizer
             else if (_renderer is MeshRenderer && _renderer.TryGetComponent<MeshFilter>(out var filter))
                 mesh = filter.sharedMesh;
 
-            if (!_renderer || !mesh)
+            if (!_renderer || mesh == null)
             {
                 EditorGUILayout.HelpBox(AAOL10N.Tr("RemoveMeshByUVTile:warning:NoMesh"), MessageType.Warning);
                 return;

@@ -63,7 +63,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
 #if AAO_VRCSDK3_AVATARS
             // some BlendShapes manipulated by VRC Avatar Descriptor must exists
-            var descriptor = context.AvatarDescriptor;
+            var descriptor = context.AvatarRootObject.GetComponent<VRCAvatarDescriptor>();
             if (descriptor)
             {
                 switch (descriptor.lipSync)
