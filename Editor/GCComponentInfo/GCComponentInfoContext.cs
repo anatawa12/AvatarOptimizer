@@ -140,7 +140,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             Component = component;
             Activeness = activeness;
-            AddDependency(component.gameObject.transform, DependencyType.ComponentToTransform);
+            if (component is not Transform) AddDependency(component.gameObject.transform, DependencyType.ComponentToTransform);
             if (component is Transform t) AddDependency(t.parent, DependencyType.Parent);
         }
 
