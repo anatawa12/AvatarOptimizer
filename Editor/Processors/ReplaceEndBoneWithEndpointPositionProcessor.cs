@@ -114,26 +114,29 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         public static HashSet<VRCPhysBoneBase> GetOverlappedPhysBones(VRCPhysBoneBase[] physBones)
         {
-            var affectedTransformsByPhysBone = physBones.ToDictionary(physbone => physbone, physbone => physbone.GetAffectedTransforms().ToHashSet());
-            var overlappedPhysBones = new HashSet<VRCPhysBoneBase>();
-            
-            for (int i = 0; i < physBones.Length; i++)
+            var transformToPhysBones = new Dictionary<Transform, List<VRCPhysBoneBase>>();
+            foreach (var physbone in physBones)
             {
-                var physbone = physBones[i];
-                var affectedTransforms = affectedTransformsByPhysBone[physbone];
-                
-                for (int j = 0; j < physBones.Length; j++)
+                foreach (var t in physbone.GetAffectedTransforms())
                 {
-                    if (i == j) continue;
-                    
-                    if (affectedTransforms.Overlaps(affectedTransformsByPhysBone[physBones[j]]))
+                    if (!transformToPhysBones.TryGetValue(t, out var list))
                     {
-                        overlappedPhysBones.Add(physbone);
-                        break;
+                        list = new List<VRCPhysBoneBase>();
+                        transformToPhysBones[t] = list;
                     }
+                    list.Add(physbone);
                 }
             }
-            
+
+            var overlappedPhysBones = new HashSet<VRCPhysBoneBase>();
+            foreach (var physBoneList in transformToPhysBones.Values)
+            {
+                if (physBoneList.Count > 1)
+                {
+                    overlappedPhysBones.UnionWith(physBoneList);
+                }
+            }
+
             return overlappedPhysBones;
         }
 
