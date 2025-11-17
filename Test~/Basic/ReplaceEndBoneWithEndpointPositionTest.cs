@@ -258,7 +258,7 @@ public class ReplaceEndBoneWithEndpointPositionTest
 
     // Not specific to Ignore, but ignore is the best place for testing
     [Test]
-    public void Warn_MultiChildIgnore_MixedEndPoint_WithManual()
+    public void Successful_MultiChildIgnore_MixedEndPoint_WithManual()
     {
         var avatar = TestUtils.NewAvatar();
         TestUtils.SetFxLayer(avatar, new AnimatorController());
