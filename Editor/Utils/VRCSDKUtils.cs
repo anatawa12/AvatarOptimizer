@@ -35,15 +35,16 @@ namespace Anatawa12.AvatarOptimizer
         public static IEnumerable<Transform> GetAffectedLeafBones(this VRCPhysBoneBase physBoneBase)
         {
             var ignores = new HashSet<Transform>(physBoneBase.ignoreTransforms);
+            var rootBone = physBoneBase.GetTarget();
             var queue = new Queue<Transform>();
-            queue.Enqueue(physBoneBase.GetTarget());
+            queue.Enqueue(rootBone);
 
             while (queue.Count != 0)
             {
                 var transform = queue.Dequeue();
 
                 var children = transform.DirectChildrenEnumerable().Where(t => !ignores.Contains(t));
-                if (children.Count() == 0)
+                if (children.Count() == 0 && transform != rootBone)
                     yield return transform;
 
                 foreach (var child in children)
