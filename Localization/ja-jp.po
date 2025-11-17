@@ -611,13 +611,13 @@ msgid "ReplaceEndBoneWithEndpointPosition:validation:endpointPositionAlreadySet"
 msgstr "Endpoint Positionがすでに設定されているため、置き換えることができません。"
 
 msgid "ReplaceEndBoneWithEndpointPosition:validation:overlappedPhysBone"
-msgstr "影響範囲が他のPhysBoneと重複しています。PhysBoneの動作が変わる可能性があります。"
+msgstr "影響範囲が他のPhysBoneと重複しています。これにより、PhysBoneの動作が変わる可能性があります。"
 
 msgid "ReplaceEndBoneWithEndpointPosition:validation:inequivalentPositions"
-msgstr "異なる座標のendボーンへと置き換えています。PhysBoneの動作が変わる可能性があります。"
+msgstr "異なる座標のendボーンを置き換えています。これにより、PhysBoneの動作が変わる可能性があります。"
 
 msgid "ReplaceEndBoneWithEndpointPosition:validation:unsafeMultiChild"
-msgstr "複数の子を持つボーンの設定がEndpoint Positionと置き換えるのに適していないため、置き換えることができません。"
+msgstr "複数の子を持つボーンの設定がEndpoint Positionへと置き換えるのに適していないため、置き換えることができません。"
 
 # endregion
 
