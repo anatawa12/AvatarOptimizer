@@ -302,28 +302,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (boneLengthChange)
                 {
                     var dependencies = entrypointMap[componentInfos.GetInfo(leafBone)];
-                    if (!HasOnlyAllowedDependencies(dependencies))
+                    // The only allowed dependency is physbone
+                    // Transform self-reference is not registered
+                    if (!dependencies.All(dependency => dependency.Key == physbone && dependency.Value == GCComponentInfo.DependencyType.Normal))
                         return false;
                 }
 
                 return true;
-
-                bool HasOnlyAllowedDependencies(Dictionary<Component, GCComponentInfo.DependencyType> dependencies)
-                {
-                    foreach (var dependency in dependencies)
-                    {
-                        var component = dependency.Key;
-                        var dependencyType = dependency.Value;
-
-                        if (component == leafBone && dependencyType == GCComponentInfo.DependencyType.ComponentToTransform)
-                            continue;
-                        if (component == physbone && dependencyType == GCComponentInfo.DependencyType.Normal)
-                            continue;
-
-                        return false;
-                    }
-                    return true;
-                }
             }
         }
 
