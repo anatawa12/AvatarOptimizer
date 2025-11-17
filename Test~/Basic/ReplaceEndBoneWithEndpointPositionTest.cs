@@ -195,6 +195,7 @@ public class ReplaceEndBoneWithEndpointPositionTest
         var pbChain2 = pbChain1.AddChild("PBChain2", localPosition: Vector3.up);
         var pbChain3 = pbChain2.AddChild("PBChain3", localPosition: Vector3.up);
         var physBone = pbRoot.AddComponent<VRCPhysBone>();
+        physBone.endpointPosition = Vector3.one;
         pbRoot.AddComponent<ReplaceEndBoneWithEndpointPosition>();
 
         var context = new BuildContext(avatar, null);
@@ -214,7 +215,7 @@ public class ReplaceEndBoneWithEndpointPositionTest
 
     // Not specific to Ignore, but ignore is the best place for testing
     [Test]
-    public void Successful_MultiChildIgnore_MixedEndPoint()
+    public void Warn_MultiChildIgnore_MixedEndPoint()
     {
         var avatar = TestUtils.NewAvatar();
         TestUtils.SetFxLayer(avatar, new AnimatorController());
