@@ -301,13 +301,29 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // However, if the leaf bone does not have a valid usage, replacement can still be performed even if stretch or squish are enabled.
                 if (boneLengthChange)
                 {
-                    var mergedUsages = entrypointMap.MergedUsages(componentInfos.GetInfo(leafBone));
-                    const GCComponentInfo.DependencyType allowedUsages = GCComponentInfo.DependencyType.ComponentToTransform | GCComponentInfo.DependencyType.PhysBone;
-                    var anyUsage = (mergedUsages &~ allowedUsages) != 0;
-                    if (anyUsage) return false;
+                    var dependencies = entrypointMap[componentInfos.GetInfo(leafBone)];
+                    if (!HasOnlyAllowedDependencies(dependencies))
+                        return false;
                 }
 
                 return true;
+
+                bool HasOnlyAllowedDependencies(Dictionary<Component, GCComponentInfo.DependencyType> dependencies)
+                {
+                    foreach (var dependency in dependencies)
+                    {
+                        var component = dependency.Key;
+                        var dependencyType = dependency.Value;
+
+                        if (component == leafBone && dependencyType == GCComponentInfo.DependencyType.ComponentToTransform)
+                            continue;
+                        if (component == physbone && dependencyType == GCComponentInfo.DependencyType.Normal)
+                            continue;
+
+                        return false;
+                    }
+                    return true;
+                }
             }
         }
 
