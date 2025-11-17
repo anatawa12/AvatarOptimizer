@@ -53,8 +53,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 var pbInfo = componentInfos.GetInfo(physbone);
                 foreach (var leafBone in leafBones)
                 {
-                    pbInfo.Dependencies[leafBone] &= ~GCComponentInfo.DependencyType.PhysBone;
-                    componentInfos.GetInfo(leafBone).Dependencies.Remove(physbone);
+                    pbInfo.RemoveDependencyType(leafBone, GCComponentInfo.DependencyType.PhysBone);
+                    componentInfos.GetInfo(leafBone).RemoveDependencyType(physbone, GCComponentInfo.DependencyType.Normal);
                 }
             }
         }

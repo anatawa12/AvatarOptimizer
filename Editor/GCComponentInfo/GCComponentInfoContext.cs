@@ -163,6 +163,23 @@ namespace Anatawa12.AvatarOptimizer
             Dependencies[dependency] = type | addType;
         }
 
+        public void RemoveDependencyType(Component? dependency, DependencyType type)
+        {
+            if (dependency == null) return;
+
+            if (!Dependencies.TryGetValue(dependency, out var existingType)) return;
+            
+            var updatedType = existingType & ~type;
+            if (updatedType == 0)
+            {
+                Dependencies.Remove(dependency);
+            }
+            else
+            {
+                Dependencies[dependency] = updatedType;
+            }
+        }
+
         [Flags]
         public enum DependencyType : byte
         {
