@@ -1,2 +1,3 @@
 -langversion:10
+-warnaserror
 -nullable:enable
