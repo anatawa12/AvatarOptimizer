@@ -294,7 +294,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             bool ValidateLeafBone(Transform leafBone)
             {
                 if (state.Exclusions.Contains(leafBone.gameObject)) return false;
-                if (leafBone.GetComponents<Component>().Length != 1) return false; // except transform
 
                 // The endpoint position cannot replicate the "stretch" or "squish" behavior of the leaf bone, because with stretch or squish enabled, the transform's position of the leaf bone can actually move.
                 // Therefore, replacement should not be performed when these options are enabled.

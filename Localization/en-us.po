@@ -714,9 +714,6 @@ msgstr "Cannot replace because the affected range is overlapping with another Ph
 msgid "ReplaceEndBoneWithEndpointPosition:validation:inequivalentPositions"
 msgstr "You are replacing with an end bone at a different position. This may change the behavior of the PhysBone."
 
-msgid "ReplaceEndBoneWithEndpointPosition:validation:leafBoneHasComponents"
-msgstr "The end bone has attached components."
-
 msgid "ReplaceEndBoneWithEndpointPosition:validation:unsafeMultiChild"
 msgstr "The configuration of a bone with multiple children is not suitable for replacing it with an end bone. The behavior of the PhysBone may change."
 

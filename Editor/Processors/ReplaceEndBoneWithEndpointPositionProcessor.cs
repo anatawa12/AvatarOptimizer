@@ -104,11 +104,6 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             bool ValidateLeafBone(Transform leafBone)
             {
-                if (leafBone.GetComponents<Component>().Length != 1) // except transform
-                {
-                    BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:leafBoneHasComponents", leafBone);
-                    return true; // just warning
-                }
                 return true;
             }
         }

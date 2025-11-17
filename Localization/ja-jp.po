@@ -616,9 +616,6 @@ msgstr "影響範囲が他のPhysBoneと重複しているため、置き換え�
 msgid "ReplaceEndBoneWithEndpointPosition:validation:inequivalentPositions"
 msgstr "異なる座標のendボーンへと置き換えています。PhysBoneの動作が変わる可能性があります。"
 
-msgid "ReplaceEndBoneWithEndpointPosition:validation:leafBoneHasComponents"
-msgstr "endボーンにコンポーネントが付いています。"
-
 msgid "ReplaceEndBoneWithEndpointPosition:validation:unsafeMultiChild"
 msgstr "複数の子を持つボーンの設定がendボーンへと置き換えるのに適していません。PhysBoneの動作が変わる可能性があります。"
 
