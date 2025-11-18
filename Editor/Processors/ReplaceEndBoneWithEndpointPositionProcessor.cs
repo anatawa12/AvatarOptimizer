@@ -69,15 +69,21 @@ namespace Anatawa12.AvatarOptimizer.Processors
             if (!ValidatePhysBone(physbone, leafBones)) return false;
 
             var localPositions = leafBones.Select(x => x.localPosition);
-            replacementPosition = replacer.kind switch
+            switch (replacer.kind)
             {
-                ReplaceEndBoneWithEndpointPositionKind.Average => GetAvaragePosition(localPositions),
-                ReplaceEndBoneWithEndpointPositionKind.Manual => replacer.manualReplacementPosition,
-                _ => throw new InvalidOperationException($"Invalid kind: {replacer.kind}"),
-            };
-            if (!AreApproximatelyEqualPosition(localPositions, replacementPosition))
-            {
-                BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:inequivalentPositions", physbone);
+                case ReplaceEndBoneWithEndpointPositionKind.Average:
+                    replacementPosition = GetAvaragePosition(localPositions);
+                    if (!AreApproximatelyEqualPosition(localPositions, replacementPosition))
+                    {
+                        BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:inequivalentPositions", physbone);
+                    }
+                    break;
+                case ReplaceEndBoneWithEndpointPositionKind.Manual:
+                    // Manual replacement: User is responsible for correctness, so no warnings are issued here.
+                    replacementPosition = replacer.manualReplacementPosition;
+                    break;
+                default:
+                    throw new InvalidOperationException($"Invalid kind: {replacer.kind}");
             }
 
             return leafBones.All(ValidateLeafBone);
