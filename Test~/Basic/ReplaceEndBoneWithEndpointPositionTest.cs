@@ -715,7 +715,7 @@ public class ReplaceEndBoneWithEndpointPositionTest
 
         // post-run assertions
         Assert.That(physBone1.endpointPosition, Is.EqualTo(Vector3.up));
-        Assert.That(physBone1.ignoreTransforms, Has.Member(new []{ child3.transform }));
+        Assert.That(physBone1.ignoreTransforms, Has.Member(child3.transform));
         AssertNonAnimatedBy(context, child3.transform, physBone1);
     }
 
