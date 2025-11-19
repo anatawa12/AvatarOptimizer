@@ -29,13 +29,17 @@ namespace Anatawa12.AvatarOptimizer.Processors
             {
                 using (ErrorReport.WithContextObject(replacer))
                 {
-                    Process(replacer, componentInfos, overlappedPhysBones);
+                    Process(context, replacer, componentInfos, overlappedPhysBones);
                 }
                 DestroyTracker.DestroyImmediate(replacer);
             }
         }
 
-        private static void Process(ReplaceEndBoneWithEndpointPosition replacer, GCComponentInfoContext componentInfos, HashSet<VRCPhysBoneBase> overlappedPhysBones)
+        private static void Process(
+            BuildContext context,
+            ReplaceEndBoneWithEndpointPosition replacer, 
+            GCComponentInfoContext componentInfos, 
+            HashSet<VRCPhysBoneBase> overlappedPhysBones)
         {
             var physbones = replacer.GetComponents<VRCPhysBoneBase>();
             if (physbones.Length == 0) return;
@@ -56,6 +60,19 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 {
                     pbInfo.RemoveDependencyType(leafBone, GCComponentInfo.DependencyType.PhysBone);
                     componentInfos.GetInfo(leafBone).RemoveDependencyType(physbone, GCComponentInfo.DependencyType.Normal);
+                }
+                
+                // Remove PhysBone mutations on leafBones in the hope that MergeBone will be applied
+                foreach (var leafBone in leafBones)
+                {
+                    var animationInfo = context.GetAnimationComponent(leafBone);
+                    animationInfo.GetFloatNode("m_LocalPosition.x").Remove(physbone);
+                    animationInfo.GetFloatNode("m_LocalPosition.y").Remove(physbone);
+                    animationInfo.GetFloatNode("m_LocalPosition.z").Remove(physbone);
+                    animationInfo.GetFloatNode("m_LocalRotation.x").Remove(physbone);
+                    animationInfo.GetFloatNode("m_LocalRotation.y").Remove(physbone);
+                    animationInfo.GetFloatNode("m_LocalRotation.z").Remove(physbone);
+                    animationInfo.GetFloatNode("m_LocalRotation.w").Remove(physbone);
                 }
             }
         }
