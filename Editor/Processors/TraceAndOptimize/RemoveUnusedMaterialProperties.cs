@@ -5,6 +5,7 @@ using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Profiling;
+using UnityEngine.Rendering;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
@@ -48,7 +49,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     // GetTexturePropertyNames returns all texture properties regardless of the current shader.
                     foreach (var property in material.GetTexturePropertyNames())
                     {
-                        if (!usedProperties.Contains(property))
+                        // Non-2D textures are not supported by ShaderInformation yet.
+                        if (!usedProperties.Contains(property) && material.GetTexture(property) is Texture2D or RenderTexture { dimension: TextureDimension.Tex2D })
                             material.SetTexture(property, null);
                     }
                 }
