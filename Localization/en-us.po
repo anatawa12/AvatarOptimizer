@@ -700,7 +700,7 @@ msgstr "There are multiple BlendShapes with the same name '{0}' after renaming. 
 # region ReplaceEndBoneWithEndpointPosition
 
 msgid "ReplaceEndBoneWithEndpointPosition:prop:kind"
-msgstr "Endpoint Position mode"
+msgstr "Endpoint Position Mode"
 
 msgid "ReplaceEndBoneWithEndpointPosition:prop:manualReplacementPosition"
 msgstr "Endpoint Position Override"
