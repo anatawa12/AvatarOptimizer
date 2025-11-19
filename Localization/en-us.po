@@ -703,7 +703,7 @@ msgid "ReplaceEndBoneWithEndpointPosition:prop:kind"
 msgstr "Endpoint Position mode"
 
 msgid "ReplaceEndBoneWithEndpointPosition:prop:manualReplacementPosition"
-msgstr "Value for Endpoint Position"
+msgstr "Endpoint Position Override"
 
 msgid "ReplaceEndBoneWithEndpointPosition:validation:endpointPositionAlreadySet"
 msgstr "Endpoint Position is already set, so it cannot be replaced."
