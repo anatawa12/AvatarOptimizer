@@ -12,10 +12,10 @@ namespace Anatawa12.AvatarOptimizer
         Manual,
     }
 
-    [AddComponentMenu("Avatar Optimizer/AAO Replace EndBone With Endpoint Position")]
+    [AddComponentMenu("Avatar Optimizer/AAO Replace End Bone With Endpoint Position")]
     [RequireComponent(typeof(VRCPhysBone))]
     [DisallowMultipleComponent]
-    [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/replace-endbone-with-endpoint-position/")]
+    [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/replace-end-bone-with-endpoint-position/")]
     internal class ReplaceEndBoneWithEndpointPosition : AvatarTagComponent
     {
         [SerializeField]
