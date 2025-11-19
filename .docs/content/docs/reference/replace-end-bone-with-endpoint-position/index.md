@@ -25,8 +25,8 @@ Select how the value for the Endpoint Position is determined.
 - `Manual`\
   Uses the value specified in `Value for Endpoint Position` as the Endpoint Position.
 
-### Value for Endpoint Position {#value-for-endpoint-position}
+### Endpoint Position Override {#endpoint-position-override}
 
-Only available when `Endpoint Position Mode` is set to `Manual`.
+This option is available only when `Endpoint Position Mode` is set to `Manual`.
 
-Manually specify the local position to use for the Endpoint Position.
+Here, you can directly enter the local position that will be used as the Endpoint Position.

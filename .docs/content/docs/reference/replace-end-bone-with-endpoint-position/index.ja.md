@@ -25,8 +25,8 @@ Endpoint Positionの値を決定する方法を選択します。
 - `Manual`（手動）\
   `Endpoint Positionに設定する値`で指定した値を、Endpoint Positionとして使用します。
 
-### Endpoint Positionに設定する値 {#value-for-endpoint-position}
+### Endpoint Positionの上書き {#endpoint-position-override}
 
-`Endpoint Positionの設定方法`が`Manual`の場合のみ有効です。
+このオプションは、`Endpoint Positionの設定方法`が`Manual`の場合のみ利用できます。
 
-Endpoint Positionとして使用するローカル座標を手動で指定します。
+ここでEndpoint Positionとして使用するローカル座標を直接入力できます。
