@@ -775,7 +775,6 @@ public class ReplaceEndBoneWithEndpointPositionTest
         Assert.That(context.GetAnimationComponent(transform).GetFloatNode("m_LocalRotation.w").SourceComponents, Has.Member(animator));
     }
 
-    [System.Diagnostics.Conditional("_____")]
     private void AssertNonAnimatedBy(BuildContext context, Transform transform, Component animator)
     {
         Assert.That(context.GetAnimationComponent(transform).GetFloatNode("m_LocalPosition.x").SourceComponents, Does.Not.Contains(animator));
