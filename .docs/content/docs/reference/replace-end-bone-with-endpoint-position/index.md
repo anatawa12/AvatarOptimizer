@@ -20,7 +20,7 @@ If multiple PhysBone components are attached to the GameObject with this compone
 Select how the value for the Endpoint Position is determined.
 
 - `Average`\
-  Calculates the average of the local positions of all End Bones and uses that value as the Endpoint Position.
+  For each applicable PhysBone, calculates the average of the local positions of its End Bones and uses that value as the Endpoint Position.
 
 - `Manual`\
   Uses the value specified in `Value for Endpoint Position` as the Endpoint Position.

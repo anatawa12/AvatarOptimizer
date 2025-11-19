@@ -20,7 +20,7 @@ weight: 100
 Endpoint Positionの値を決定する方法を選択します。
 
 - `Average`（平均）\
-  すべてのEnd Boneのローカル座標の平均を計算して、その値をEndpoint Positionとして使用します。
+  適用対象の各PhysBoneにおいて、End Boneのローカル座標の平均を計算して、その値をEndpoint Positionとして使用します。
 
 - `Manual`（手動）\
   `Endpoint Positionに設定する値`で指定した値を、Endpoint Positionとして使用します。
