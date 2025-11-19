@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Cubemap textures are removed unexpectedly `#1566`
 
 ### Security
 

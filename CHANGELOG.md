@@ -13,7 +13,7 @@ The format is based on [Keep a Changelog].
   - Since this version, Entry => State1 => State2 => Exit pattern is now supported.
 - More cases are supported by Automatically Freeze BlendShape `#1510`
   - AAO can now freeze BlendShapes that are animated in animator layers with weights between 0 and 1.
-- Remove unused textures in Remove Unused Objects `1502`
+- Remove unused textures in Remove Unused Objects `#1502` `#1566`
 - Invert option of Remove Mesh by BlendShape `#1535`
 - Automatically merge PhysBone when no grabbing PhysBone is detected `#1539`
 - Automatic Merge BlendTree support for WriteDefaults off BlendTree `#1283`
