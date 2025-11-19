@@ -21,7 +21,7 @@ namespace Anatawa12.AvatarOptimizer
             serializedObject.UpdateIfRequiredOrScript();
 
             EditorGUILayout.PropertyField(kindProperty);
-            if (kindProperty.enumValueIndex == (int)ReplaceEndBoneWithEndpointPositionKind.Manual)
+            using (new EditorGUI.DisabledScope(kindProperty.enumValueIndex != (int)ReplaceEndBoneWithEndpointPositionKind.Manual))
             {
                 EditorGUILayout.PropertyField(manualReplacementPositionProperty);
             }
