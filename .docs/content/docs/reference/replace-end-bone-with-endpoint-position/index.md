@@ -11,6 +11,10 @@ Add this component to the GameObject that has the PhysBone component.
 
 If multiple PhysBone components are attached to the GameObject with this component, the settings will be applied to all of them.
 
+## Benefits {#benefits}
+
+By replacing the End Bone with an Endpoint Position, you can reduce the number of `PhysBone Affected Transforms` counted by the VRChat Performance Rank system.
+
 ## Settings {#settings}
 
 ![component.png](component.png)

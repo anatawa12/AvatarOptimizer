@@ -11,6 +11,10 @@ weight: 100
 
 このコンポーネントがアタッチされたGameObjectに複数のPhysBoneがある場合、その全てのPhysBoneに設定が適用されます。
 
+## 利点 {#benefits}
+
+End BoneをEndpoint Positionに置き換えることにより、VRChatのPerformance Rankシステムにおける、`PhysBone Affected Transforms`の数を減らすことができます。
+
 ## 設定 {#settings}
 
 ![component.png](component.png)
