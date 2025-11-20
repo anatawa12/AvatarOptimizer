@@ -272,8 +272,8 @@ public class ReplaceEndBoneWithEndpointPositionTest
         var physBone = pbRoot.AddComponent<VRCPhysBone>();
         physBone.multiChildType = VRCPhysBoneBase.MultiChildType.Ignore;
         var replaceEndBoneWithEndpointPosition = pbRoot.AddComponent<ReplaceEndBoneWithEndpointPosition>();
-        replaceEndBoneWithEndpointPosition.kind = ReplaceEndBoneWithEndpointPositionKind.Manual;
-        replaceEndBoneWithEndpointPosition.manualReplacementPosition = (Vector3.up + Vector3.left) * 0.5f;
+        replaceEndBoneWithEndpointPosition.kind = ReplaceEndBoneWithEndpointPositionKind.Override;
+        replaceEndBoneWithEndpointPosition.overridePosition = (Vector3.up + Vector3.left) * 0.5f;
 
         var context = new BuildContext(avatar, null);
         context.GetState<AAOEnabled>().Enabled = true;
