@@ -26,11 +26,11 @@ Endpoint Positionの値を決定する方法を選択します。
 - `Average`（平均）\
   適用対象の各PhysBoneにおいて、End Boneのローカル座標の平均を計算して、その値をEndpoint Positionとして使用します。
 
-- `Manual`（手動）\
-  `Endpoint Positionに設定する値`で指定した値を、Endpoint Positionとして使用します。
+- `Override`（オーバーライド）\
+  手動で`Endpoint Position Override`に指定した値を、Endpoint Positionとして使用します。
 
-### Endpoint Positionの上書き {#endpoint-position-override}
+### Endpoint Position Override {#endpoint-position-override}
 
-このオプションは、`Endpoint Positionの設定方法`が`Manual`の場合のみ利用できます。
+このオプションは、`Endpoint Positionの設定方法`が`Override`の場合のみ利用できます。
 
 ここでEndpoint Positionとして使用するローカル座標を直接入力できます。

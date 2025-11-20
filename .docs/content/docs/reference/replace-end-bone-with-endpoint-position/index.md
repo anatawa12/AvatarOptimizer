@@ -26,11 +26,11 @@ Select how the value for the Endpoint Position is determined.
 - `Average`\
   For each applicable PhysBone, calculates the average of the local positions of its End Bones and uses that value as the Endpoint Position.
 
-- `Manual`\
-  Uses the value specified in `Value for Endpoint Position` as the Endpoint Position.
+- `Override`\
+  Uses the manually specified value in `Endpoint Position Override` as the Endpoint Position.
 
 ### Endpoint Position Override {#endpoint-position-override}
 
-This option is available only when `Endpoint Position Mode` is set to `Manual`.
+This option is available only when `Endpoint Position Mode` is set to `Override`.
 
 Here, you can directly enter the local position that will be used as the Endpoint Position.
