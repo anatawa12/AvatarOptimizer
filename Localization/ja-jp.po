@@ -605,7 +605,7 @@ msgid "ReplaceEndBoneWithEndpointPosition:prop:kind"
 msgstr "Endpoint Positionの設定方法"
 
 msgid "ReplaceEndBoneWithEndpointPosition:prop:overridePosition"
-msgstr "Endpoint Positionの上書き"
+msgstr "Endpoint Position Override"
 
 msgid "ReplaceEndBoneWithEndpointPosition:validation:endpointPositionAlreadySet"
 msgstr "Endpoint Positionがすでに設定されているため、置き換えることができません。"
