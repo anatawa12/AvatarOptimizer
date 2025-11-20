@@ -604,7 +604,7 @@ msgstr "BlendShape名 '{0}' は重複しています。Rename BlendShapeコン�
 msgid "ReplaceEndBoneWithEndpointPosition:prop:kind"
 msgstr "Endpoint Positionの設定方法"
 
-msgid "ReplaceEndBoneWithEndpointPosition:prop:manualReplacementPosition"
+msgid "ReplaceEndBoneWithEndpointPosition:prop:overridePosition"
 msgstr "Endpoint Positionの上書き"
 
 msgid "ReplaceEndBoneWithEndpointPosition:validation:endpointPositionAlreadySet"

@@ -95,9 +95,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         BuildLog.LogWarning("ReplaceEndBoneWithEndpointPosition:validation:inequivalentPositions", physbone);
                     }
                     break;
-                case ReplaceEndBoneWithEndpointPositionKind.Manual:
+                case ReplaceEndBoneWithEndpointPositionKind.Override:
                     // Manual replacement: User is responsible for correctness, so no warnings are issued here.
-                    replacementPosition = replacer.manualReplacementPosition;
+                    replacementPosition = replacer.overridePosition;
                     break;
                 default:
                     throw new InvalidOperationException($"Invalid kind: {replacer.kind}");

@@ -8,12 +8,12 @@ namespace Anatawa12.AvatarOptimizer
     internal class ReplaceEndBoneWithEndpointPositionEditor : AvatarTagComponentEditorBase
     {
         SerializedProperty kindProperty = null!; // initialized in OnEnable
-        SerializedProperty manualReplacementPositionProperty = null!; // initialized in OnEnable
+        SerializedProperty overridePositionProperty = null!; // initialized in OnEnable
         
         void OnEnable()
         {
             kindProperty = serializedObject.FindProperty(nameof(ReplaceEndBoneWithEndpointPosition.kind));
-            manualReplacementPositionProperty = serializedObject.FindProperty(nameof(ReplaceEndBoneWithEndpointPosition.manualReplacementPosition));
+            overridePositionProperty = serializedObject.FindProperty(nameof(ReplaceEndBoneWithEndpointPosition.overridePosition));
         }
 
         protected override void OnInspectorGUIInner()
@@ -21,9 +21,9 @@ namespace Anatawa12.AvatarOptimizer
             serializedObject.UpdateIfRequiredOrScript();
 
             EditorGUILayout.PropertyField(kindProperty);
-            using (new EditorGUI.DisabledScope(kindProperty.enumValueIndex != (int)ReplaceEndBoneWithEndpointPositionKind.Manual))
+            using (new EditorGUI.DisabledScope(kindProperty.enumValueIndex != (int)ReplaceEndBoneWithEndpointPositionKind.Override))
             {
-                EditorGUILayout.PropertyField(manualReplacementPositionProperty);
+                EditorGUILayout.PropertyField(overridePositionProperty);
             }
             
             serializedObject.ApplyModifiedProperties();

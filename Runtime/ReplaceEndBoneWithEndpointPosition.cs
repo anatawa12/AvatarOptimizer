@@ -9,7 +9,7 @@ namespace Anatawa12.AvatarOptimizer
     internal enum ReplaceEndBoneWithEndpointPositionKind
     {
         Average,
-        Manual,
+        Override,
     }
 
     [AddComponentMenu("Avatar Optimizer/AAO Replace End Bone With Endpoint Position")]
@@ -24,9 +24,9 @@ namespace Anatawa12.AvatarOptimizer
         internal ReplaceEndBoneWithEndpointPositionKind kind = ReplaceEndBoneWithEndpointPositionKind.Average;
 
         [SerializeField]
-        [AAOLocalized("ReplaceEndBoneWithEndpointPosition:prop:manualReplacementPosition")]
+        [AAOLocalized("ReplaceEndBoneWithEndpointPosition:prop:overridePosition")]
         [NotKeyable]
-        internal Vector3 manualReplacementPosition = Vector3.zero;
+        internal Vector3 overridePosition = Vector3.zero;
     }
 }
 
