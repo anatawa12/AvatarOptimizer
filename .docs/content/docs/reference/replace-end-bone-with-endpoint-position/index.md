@@ -7,9 +7,8 @@ weight: 100
 
 This component replaces the End Bone, which is the tip bone in a PhysBone, with an Endpoint Position.
 
-Add this component to the GameObject that has the PhysBone component.
-
-If multiple PhysBone components are attached to the GameObject with this component, the settings will be applied to all of them.
+Add this component to the GameObject that has the PhysBone component.\
+If there are multiple PhysBone components, the settings will be applied to all of them.
 
 ## Benefits {#benefits}
 
@@ -24,7 +23,7 @@ By replacing the End Bone with an Endpoint Position, you can reduce the number o
 Select how the value for the Endpoint Position is determined.
 
 - `Average`\
-  For each applicable PhysBone, calculates the average of the local positions of its End Bones and uses that value as the Endpoint Position.
+  For each target PhysBone, calculates the average of the local positions of its End Bones and uses that value as the Endpoint Position.
 
 - `Override`\
   Uses the manually specified value in `Endpoint Position Override` as the Endpoint Position.
