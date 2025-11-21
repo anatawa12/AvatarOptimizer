@@ -33,4 +33,4 @@ Endpoint Positionの値を決定する方法を選択します。
 
 このオプションは、`Endpoint Positionの設定方法`が`Override`の場合のみ利用できます。
 
-ここでEndpoint Positionとして使用するローカル座標を直接入力できます。
+Endpoint Positionとして使用するローカル座標を直接入力できます。
