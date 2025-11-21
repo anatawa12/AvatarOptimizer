@@ -18,12 +18,9 @@ This component will create a new PhysBone root GameObject and make the bones swa
 Since the root GameObject is treated as a PhysBone affected Transforms, the number of `PhysBone Affected Transforms` will be increased by one for each Merge PhysBone.
 The GameObject added by this component will not be swayed by PhysBone, so this can be a bug of the VRChat Performance Rank System.
 
-### About Grab Behavior {#about-grab-behavior}
-
-When merging multiple PhysBones, the Grab behavior changes slightly.
-Before merging, each PhysBone could be grabbed individually, but after merging, all bones are treated as a single PhysBone system.
-This is because the merged PhysBone's `MultiChildType` is set to `Ignore`.
-In most cases, the impact is minimal, but if you need to manipulate multiple PhysBones separately, consider not merging them.
+When merging multiple PhysBones, the Grab behavior changes.
+Before merging, each PhysBone can be held simultaneously, but after merging, only one bone can be held at a single time.
+This is because there is one grab point per one PhysBone component.
 
 ## Settings
 
