@@ -17,7 +17,14 @@ MultiChildTypeはIgnoreになります。
 
 このコンポーネントは、PhysBoneのルートとなるGameObjectを新たに作成し、統合対象のPhysBoneによって揺らされるボーンを、作成したGameObjectの子にします。\
 なお、ルートとなっているGameObjectも、PhysBoneによって影響を受けるボーンの1つとみなされるため、各Merge PhysBoneごとに`PhysBone Affected Transforms`の数が1つ増えてしまいます。
-このコンポーネントによって追加されるGameObjectがPhysBoneによって揺らされることはないため、これはVRChatのPerformance Rankシステムのバグである可能性があります。 
+このコンポーネントによって追加されるGameObjectがPhysBoneによって揺らされることはないため、これはVRChatのPerformance Rankシステムのバグである可能性があります。
+
+### Grabの動作について {#about-grab-behavior}
+
+複数のPhysBoneを統合すると、Grabの動作が少し変わります。
+統合前は、それぞれのPhysBoneを個別に掴むことができましたが、統合後は全てのボーンが1つのPhysBoneシステムとして扱われます。
+これは、統合されたPhysBoneの`MultiChildType`が`Ignore`に設定されるためです。
+ほとんどの場合、これによる影響は小さいですが、複数のPhysBoneを個別に操作する必要がある場合は、統合しないことを検討してください。 
 
 ## 設定 {#settings}
 
