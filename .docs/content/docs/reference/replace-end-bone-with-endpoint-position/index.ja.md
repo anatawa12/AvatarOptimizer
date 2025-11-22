@@ -12,7 +12,7 @@ weight: 100
 
 ## 利点 {#benefits}
 
-End BoneをEndpoint Positionに置き換えることにより、VRChatのPerformance Rankシステムにおける、`PhysBone Affected Transforms`の数を減らすことができます。
+End BoneをEndpoint Positionに置き換えることにより、VRChatのPerformance Rankシステムにおける`PhysBone Affected Transforms`の数を減らすことができます。
 
 ## 設定 {#settings}
 
@@ -23,7 +23,7 @@ End BoneをEndpoint Positionに置き換えることにより、VRChatのPerform
 Endpoint Positionの値を決定する方法を選択します。
 
 - `Average`（平均）\
-  適用対象の各PhysBoneにおいて、End Boneのローカル座標の平均を計算して、その値をEndpoint Positionとして使用します。
+  適用対象となるPhysBoneのそれぞれについて、End Boneのローカル座標の平均を計算し、その値をEndpoint Positionとして使用します。
 
 - `Override`（オーバーライド）\
   `Endpoint Position Override`で指定した値をEndpoint Positionとして使用します。
