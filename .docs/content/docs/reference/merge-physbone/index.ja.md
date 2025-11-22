@@ -15,13 +15,14 @@ MultiChildTypeはIgnoreになります。
 統合対象は同じGameObjectの子である必要があります。
 代わりに`このGameObjectの子にする`オプションを使用することも出来ます。
 
-このコンポーネントは、PhysBoneのルートとなるGameObjectを新たに作成し、統合対象のPhysBoneによって揺らされるボーンを、作成したGameObjectの子にします。\
-なお、ルートとなっているGameObjectも、PhysBoneによって影響を受けるボーンの1つとみなされるため、各Merge PhysBoneごとに`PhysBone Affected Transforms`の数が1つ増えてしまいます。
+このコンポーネントは、PhysBoneのルートとなるGameObjectを新たに作成し、統合対象のPhysBoneによって揺らされるボーンを、作成したGameObjectの子にします。
+
+なお、ルートとなっているGameObjectも、PhysBoneによって影響を受けるボーンの1つとみなされるため、各Merge PhysBoneごとに`PhysBone Affected Transforms`の数が1つ増えてしまいます。\
 このコンポーネントによって追加されるGameObjectがPhysBoneによって揺らされることはないため、これはVRChatのPerformance Rankシステムのバグである可能性があります。
 
-複数のPhysBoneを統合すると、Grabの動作が変わります。
-統合前は、それぞれのPhysBoneを同時に掴むことができましたが、統合後は1つのボーンしか同時に掴むことができません。
-これは、1つのPhysBoneコンポーネントにつき1つのGrabポイントしかないためです。
+また、複数のPhysBoneを統合すると、PhysBoneを掴む際の動作が変わります。\
+統合前は、それぞれのPhysBoneのボーンを同時に掴むことができますが、統合後は1つのボーンしか掴むことができません。\
+これは、PhysBoneコンポーネント1つに対し、掴めるのは1箇所だけであるというVRChatの仕様があるためです。
 
 ## 設定 {#settings}
 
