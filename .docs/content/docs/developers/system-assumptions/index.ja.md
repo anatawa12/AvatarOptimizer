@@ -10,7 +10,7 @@ Avatar Optimizerと連携するツールを開発している場合は、これ�
 
 ## Transformインスタンスの使用方法 {#transform-instance-usage}
 
-同じTransformインスタンスは、Avatar Optimizer内で同じボーンを表現するために使用されます。
+Transformインスタンスが同一であるか否かは、Avatar Optimizer内で同じボーンであるか否かを判定するために使用されます。
 
 Avatar Optimizerは、Resolving Phaseで取得したTransform行列を使用して、Remove Mesh By Boxにより削除対象となる頂点を判断する場合があります。
 
