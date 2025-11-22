@@ -412,6 +412,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             _children.RemoveAll(x => x.Component.GetInstanceID() == objectId);
         }
 
+        public void Remove(Component sourceComponent)
+        {
+            var removed = _children.RemoveAll(x => x.Component == sourceComponent);
+            if (removed > 0)
+                DestroyTracker.Untrack(sourceComponent, OnDestroy);
+        }
+
         public void Invalidate()
         {
             foreach (var componentInfo in _children)

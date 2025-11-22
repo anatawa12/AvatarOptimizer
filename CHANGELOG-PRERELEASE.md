@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog].
 ### Added
 - Support for VRCSDK 3.9.1-beta `#1562`
   - New internal component ParentChangeDetector is added
+- Replace EndBone With Endpoint Position component which replaces the end bone in the vrc physbone with the Endpoint Position [`#1423`](https://github.com/anatawa12/AvatarOptimizer/pull/1423)
+- Automatic Replace EndBone With Endpoint Position [`#1423`](https://github.com/anatawa12/AvatarOptimizer/pull/1423)
+  - Trace and Optimize now automatically replaces PhysBone's EndBone with Endpoint Position if possible.
 
 ### Changed
 - Useful error message will be shown when known unity bug that prevents you from building your avatar `#1563`

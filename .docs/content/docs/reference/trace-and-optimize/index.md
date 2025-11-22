@@ -63,7 +63,7 @@ See tooltips or implementation for more details.
 
 ![component.png](component.png)
 
-[^endbone]: AAO currently assumes any bones whose name ends with `end` (ignoring case) are end bones.
+[^endbone]: Trace And Optimize currently assumes any bones whose name ends with `end` (ignoring case) are end bones.
 
 ## Animator Optimizer {#animator-optimizer}
 

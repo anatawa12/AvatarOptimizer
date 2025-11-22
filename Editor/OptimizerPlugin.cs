@@ -103,6 +103,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                             .Then.Run(new Processors.GCDebugPass(InternalGcDebugPosition.AfterMeshProcessing))
 #if AAO_VRCSDK3_AVATARS
                             .Then.Run(Processors.TraceAndOptimizes.OptimizePhysBone.Instance)
+                            .Then.Run(Processors.ReplaceEndBoneWithEndpointPositionProcessor.Instance)
 #endif
                             .Then.Run(Processors.TraceAndOptimizes.AutoMergeSkinnedMesh.Instance)
                             .Then.Run(Processors.TraceAndOptimizes.MergeMaterialSlots.Instance)

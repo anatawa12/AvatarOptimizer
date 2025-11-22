@@ -152,6 +152,8 @@ namespace Anatawa12.AvatarOptimizer
             [ToggleLeft]
             public bool skipCompleteGraphToEntryExit;
             [ToggleLeft]
+            public bool skipReplaceEndBoneWithEndpointPosition;
+            [ToggleLeft]
             public bool skipOptimizationWarnings;
         }
     }
