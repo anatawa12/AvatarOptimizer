@@ -715,7 +715,7 @@ msgid "ReplaceEndBoneWithEndpointPosition:validation:inequivalentPositions"
 msgstr "You are replacing with an end bone at a different position. This may change the behavior of the PhysBone."
 
 msgid "ReplaceEndBoneWithEndpointPosition:validation:unsafeMultiChild"
-msgstr "The configuration of a bone with multiple children is not suitable for replacing it with Endpoint Position, so it cannot be replaced."
+msgstr "The configuration of a bone with multiple children is not suitable for replacing with Endpoint Position, so it cannot be replaced."
 
 # endregion
 

@@ -62,7 +62,7 @@ Trace and Optimizeは「**見た目に絶対に影響させてはならない**�
 
 ![component.png](component.png)
 
-[^endbone]: Trace And Optimizeは名前が`end`(大文字小文字の区別なし)で終わるボーンをendボーンとして扱います。
+[^endbone]: Trace And Optimizeでは、名前が`end`(大文字小文字の区別なし)で終わるボーンをendボーンとして扱います。
 
 ## アニメーターの最適化 {#animator-optimizer}
 
