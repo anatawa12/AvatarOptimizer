@@ -5,7 +5,7 @@ weight: 100
 
 # Replace End Bone With Endpoint Position
 
-このコンポーネントは、PhysBoneの末端のボーンであるEnd BoneをEndpoint Positionに置き換えます。
+このコンポーネントは、PhysBoneの末端のボーンであるEnd BoneをEndpoint Position設定で置き換えます。
 
 このコンポーネントはPhysBoneコンポーネントがあるGameObjectに追加してください。\
 当該GameObjectに複数のPhysBoneコンポーネントがある場合、その全てに設定が適用されます。
