@@ -140,7 +140,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             Component = component;
             Activeness = activeness;
-            AddDependency(component.gameObject.transform, DependencyType.ComponentToTransform);
+            if (component is not Transform) AddDependency(component.gameObject.transform, DependencyType.ComponentToTransform);
             if (component is Transform t) AddDependency(t.parent, DependencyType.Parent);
         }
 
@@ -163,6 +163,23 @@ namespace Anatawa12.AvatarOptimizer
             Dependencies[dependency] = type | addType;
         }
 
+        public void RemoveDependencyType(Component? dependency, DependencyType type)
+        {
+            if (dependency == null) return;
+
+            if (!Dependencies.TryGetValue(dependency, out var existingType)) return;
+            
+            var updatedType = existingType & ~type;
+            if (updatedType == 0)
+            {
+                Dependencies.Remove(dependency);
+            }
+            else
+            {
+                Dependencies[dependency] = updatedType;
+            }
+        }
+
         [Flags]
         public enum DependencyType : byte
         {
@@ -170,6 +187,7 @@ namespace Anatawa12.AvatarOptimizer
             Parent = 1 << 1,
             ComponentToTransform = 1 << 2,
             Bone = 1 << 3,
+            PhysBone = 1 << 4,
         }
 
         public override string ToString() => "GCComponentInfo(" + Component.GetType().Name + " on " + Component.gameObject.name + ")";

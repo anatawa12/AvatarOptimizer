@@ -22,6 +22,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             
             if (!state.SkipMergePhysBoneCollider)
                 MergePhysBoneColliders(context);
+            
+            if (!state.SkipReplaceEndBoneWithEndpointPosition)
+                ConfigureReplaceEndBoneWithEndpointPosition(context, state);
         }
 
         private void MergePhysBoneColliders(BuildContext context)
@@ -236,6 +239,84 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             "rotation",
             "bonesAsSpheres",
         };
+
+        private void ConfigureReplaceEndBoneWithEndpointPosition(BuildContext context, TraceAndOptimizeState state)
+        {
+            var allPhysBones = context.GetComponents<VRCPhysBoneBase>();
+            if (allPhysBones.Length == 0) return;
+                
+            var overlappedPhysBones = ReplaceEndBoneWithEndpointPositionProcessor.GetOverlappedPhysBones(allPhysBones);
+            var validPhysBones = allPhysBones.Where(physbone => !overlappedPhysBones.Contains(physbone));
+
+            var componentInfos = context.Extension<GCComponentInfoContext>();
+            var entrypointMap = DependantMap.CreateEntrypointsMap(context);
+
+            // ReplaceEndBoneWithEndpointPosition component affects all physbones attached to the gameobject it is attached to.
+            var physbonesByGameObjects = validPhysBones
+                .GroupBy(physbone => physbone.gameObject)
+                .ToArray();
+
+            foreach (var physbonesByGameObject in physbonesByGameObjects)
+            {
+                var gameObject = physbonesByGameObject.Key;
+                var physbones = physbonesByGameObject;
+
+                if (state.Exclusions.Contains(gameObject)) continue;
+                if (gameObject.TryGetComponent<ReplaceEndBoneWithEndpointPosition>(out _)) continue;
+
+                if (physbones.All(physbone => ShouldReplace(physbone, state, entrypointMap, componentInfos)))
+                {
+                    var component = gameObject.AddComponent<ReplaceEndBoneWithEndpointPosition>();
+                    component.kind = ReplaceEndBoneWithEndpointPositionKind.Average;
+                }
+            }
+        }
+
+        private static bool ShouldReplace(VRCPhysBoneBase physbone, TraceAndOptimizeState state, DependantMap entrypointMap, GCComponentInfoContext componentInfos)
+        {
+            var leafBones = physbone.GetAffectedLeafBones().ToHashSet();
+            var boneLengthChange = ReplaceEndBoneWithEndpointPositionProcessor.IsBoneLengthChange(physbone);
+
+            if (leafBones.Count == 0) return false;
+            if (!ValidatePhysBone(physbone, leafBones)) return false;
+
+            if (!HasApproximatelyEqualLocalPosition(leafBones, out var localPosition)) return false;
+
+            return leafBones.All(ValidateLeafBone);
+
+            bool ValidatePhysBone(VRCPhysBoneBase physbone, HashSet<Transform> leafBones)
+            {
+                if (physbone.endpointPosition != Vector3.zero) return false; // alreday used
+                if (!ReplaceEndBoneWithEndpointPositionProcessor.IsSafeMultiChild(physbone, leafBones)) return false;
+                return true;
+            }
+
+            bool ValidateLeafBone(Transform leafBone)
+            {
+                if (state.Exclusions.Contains(leafBone.gameObject)) return false;
+
+                // The endpoint position cannot replicate the "stretch" or "squish" behavior of the leaf bone, because with stretch or squish enabled, the transform's position of the leaf bone can actually move.
+                // Therefore, replacement should not be performed when these options are enabled.
+                // However, if the leaf bone does not have a valid usage, replacement can still be performed even if stretch or squish are enabled.
+                if (boneLengthChange)
+                {
+                    var dependencies = entrypointMap[componentInfos.GetInfo(leafBone)];
+                    // The only allowed dependency is physbone
+                    // Transform self-reference is not registered
+                    if (!dependencies.All(dependency => dependency.Key == physbone && dependency.Value == GCComponentInfo.DependencyType.Normal))
+                        return false;
+                }
+
+                return true;
+            }
+        }
+
+        private static bool HasApproximatelyEqualLocalPosition(IEnumerable<Transform> transforms, out Vector3 localPosition)
+        {
+            var localPositions = transforms.Select(x => x.localPosition);
+            localPosition = ReplaceEndBoneWithEndpointPositionProcessor.GetAvaragePosition(localPositions);
+            return ReplaceEndBoneWithEndpointPositionProcessor.AreApproximatelyEqualPosition(localPositions, localPosition);
+        }
     }
 }
 #endif

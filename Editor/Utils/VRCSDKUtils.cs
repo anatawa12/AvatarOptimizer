@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using VRC.Dynamics;
 using VRC.SDK3.Avatars.Components;
@@ -28,6 +29,26 @@ namespace Anatawa12.AvatarOptimizer
                 foreach (var child in transform.DirectChildrenEnumerable())
                     if (!ignores.Contains(child))
                         queue.Enqueue(child);
+            }
+        }
+
+        public static IEnumerable<Transform> GetAffectedLeafBones(this VRCPhysBoneBase physBoneBase)
+        {
+            var ignores = new HashSet<Transform>(physBoneBase.ignoreTransforms);
+            var rootBone = physBoneBase.GetTarget();
+            var queue = new Queue<Transform>();
+            queue.Enqueue(rootBone);
+
+            while (queue.Count != 0)
+            {
+                var transform = queue.Dequeue();
+
+                var children = transform.DirectChildrenEnumerable().Where(t => !ignores.Contains(t));
+                if (children.Count() == 0 && transform != rootBone)
+                    yield return transform;
+
+                foreach (var child in children)
+                    queue.Enqueue(child);
             }
         }
 
