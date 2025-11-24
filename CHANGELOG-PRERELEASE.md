@@ -8,24 +8,31 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Replace EndBone With Endpoint Position component which replaces the end bone in the vrc physbone with the Endpoint Position [`#1423`](https://github.com/anatawa12/AvatarOptimizer/pull/1423)
-- Automatic Replace EndBone With Endpoint Position [`#1423`](https://github.com/anatawa12/AvatarOptimizer/pull/1423)
-  - Trace and Optimize now automatically replaces PhysBone's EndBone with Endpoint Position if possible.
 
 ### Changed
-- Useful error message will be shown when known unity bug that prevents you from building your avatar `#1563`
-  - Actually I cannot reproduce the bug so I hope this works but nothing certify this works.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Cubemap textures are removed unexpectedly `#1566`
-- Unexpectedly textures with uv transforms are atlased `#1569`
-- Error with insoncistent animator controller `#1571`
 
 ### Security
+
+## [1.9.0-beta.6] - 2025-11-24
+### Added
+- Replace EndBone With Endpoint Position component which replaces the end bone in the vrc physbone with the Endpoint Position [`#1423`](https://github.com/anatawa12/AvatarOptimizer/pull/1423)
+- Automatic Replace EndBone With Endpoint Position [`#1423`](https://github.com/anatawa12/AvatarOptimizer/pull/1423)
+  - Trace and Optimize now automatically replaces PhysBone's EndBone with Endpoint Position if possible.
+
+### Changed
+- Useful error message will be shown when known unity bug that prevents you from building your avatar [`#1563`](https://github.com/anatawa12/AvatarOptimizer/pull/1563)
+  - Actually I cannot reproduce the bug so I hope this works but nothing certify this works.
+
+### Fixed
+- Cubemap textures are removed unexpectedly [`#1566`](https://github.com/anatawa12/AvatarOptimizer/pull/1566)
+- Unexpectedly textures with uv transforms are atlased [`#1569`](https://github.com/anatawa12/AvatarOptimizer/pull/1569)
+- Error with insoncistent animator controller [`#1571`](https://github.com/anatawa12/AvatarOptimizer/pull/1571)
 
 ## [1.8.15] - 2025-11-24
 ### Added
@@ -2049,7 +2056,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.15...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.6...HEAD
+[1.9.0-beta.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.15...v1.9.0-beta.6
 [1.8.15]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.5...v1.8.15
 [1.9.0-beta.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.4...v1.9.0-beta.5
 [1.9.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.3...v1.9.0-beta.4
