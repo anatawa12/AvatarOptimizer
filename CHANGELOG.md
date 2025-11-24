@@ -36,8 +36,6 @@ The format is based on [Keep a Changelog].
   - Merge ToonLit Material is now deprecated. Please use this new component instead.
   - Merge ToonLit Material will be removed in next major version.
   - This component will support both Skinned Mesh Renderer and Mesh Renderer.
-- Support for VRCSDK 3.10.x `#1562` `#1570`
-  - New internal component ParentChangeDetector is added
 - Replace EndBone With Endpoint Position component which replaces the end bone in the vrc physbone with the Endpoint Position [`#1423`](https://github.com/anatawa12/AvatarOptimizer/pull/1423)
 - Automatic Replace EndBone With Endpoint Position [`#1423`](https://github.com/anatawa12/AvatarOptimizer/pull/1423)
   - Trace and Optimize now automatically replaces PhysBone's EndBone with Endpoint Position if possible.
@@ -99,6 +97,11 @@ The format is based on [Keep a Changelog].
   - Parameter drivers now use intermediate parameters to preserve original type semantics
 
 ### Security
+
+## [1.8.15] - 2025-11-24
+### Added
+- Support for VRCSDK 3.10.x [`#1562`](https://github.com/anatawa12/AvatarOptimizer/pull/1562) [`#1570`](https://github.com/anatawa12/AvatarOptimizer/pull/1570)
+  - New internal component ParentChangeDetector is added
 
 ## [1.8.14] - 2025-10-04
 ### Added
@@ -1331,7 +1334,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.14...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.15...HEAD
+[1.8.15]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.14...v1.8.15
 [1.8.14]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13...v1.8.14
 [1.8.13]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.12...v1.8.13
 [1.8.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.11...v1.8.12

@@ -8,8 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Support for VRCSDK 3.10.x `#1562` `#1570`
-  - New internal component ParentChangeDetector is added
 - Replace EndBone With Endpoint Position component which replaces the end bone in the vrc physbone with the Endpoint Position [`#1423`](https://github.com/anatawa12/AvatarOptimizer/pull/1423)
 - Automatic Replace EndBone With Endpoint Position [`#1423`](https://github.com/anatawa12/AvatarOptimizer/pull/1423)
   - Trace and Optimize now automatically replaces PhysBone's EndBone with Endpoint Position if possible.
@@ -28,6 +26,11 @@ The format is based on [Keep a Changelog].
 - Error with insoncistent animator controller `#1571`
 
 ### Security
+
+## [1.8.15] - 2025-11-24
+### Added
+- Support for VRCSDK 3.10.x [`#1562`](https://github.com/anatawa12/AvatarOptimizer/pull/1562) [`#1570`](https://github.com/anatawa12/AvatarOptimizer/pull/1570)
+  - New internal component ParentChangeDetector is added
 
 ## [1.9.0-beta.5] - 2025-11-12
 ### Fixed
@@ -2046,7 +2049,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.5...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.15...HEAD
+[1.8.15]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.5...v1.8.15
 [1.9.0-beta.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.4...v1.9.0-beta.5
 [1.9.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.3...v1.9.0-beta.4
 [1.9.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.14...v1.9.0-beta.3
