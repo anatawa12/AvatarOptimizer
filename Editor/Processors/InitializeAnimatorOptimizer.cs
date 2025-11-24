@@ -162,7 +162,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         if (playableLayer.isDefault || !playableLayer.animatorController ||
                             changerBehaviours[playableLayer.type] == null) continue;
 
-                        var wrapper = clonedToController[(AnimatorController)playableLayer.animatorController];
+                        if (!clonedToController.TryGetValue((AnimatorController)playableLayer.animatorController, out var wrapper)) 
+                            continue;
 
                         foreach (var control in changerBehaviours[playableLayer.type])
                         {
