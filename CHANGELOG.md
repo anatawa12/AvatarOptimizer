@@ -63,7 +63,7 @@ The format is based on [Keep a Changelog].
 - Motion time state is now supported in EntryExit to BlendTree optimization `#1552`
   - Motion time state is safe to convert to BlendTree since it does not affect parameter evaluation.
   - This change may increase the number of states converted to BlendTree.
-- Greater / Less and Float conditions support for Entry-Exit to BlendTree optimization `#1554`
+- Greater / Less and Float conditions support for Entry-Exit to BlendTree optimization `#1554` `#1571`
   - Equals / NotEquals conditions for Ints or Bool operators are only supported in previous versions of Animator Optimizer.
   - Please note that creating animator controllers that can optimized with this optimization is difficult with Float operators because we need to use BitIncrement/Decrement-ed condition threshold for exiting parameters.
   - For example, when we use `> 0` condition for entry transition, we need to use `< 1e-45 (BitIncrement(0))`, which is equivalent to `<= 0`, for exit transition.
