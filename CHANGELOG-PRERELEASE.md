@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Cubemap textures are removed unexpectedly `#1566`
+- Unexpectedly textures with uv transforms are atlased `#1569`
 
 ### Security
 
