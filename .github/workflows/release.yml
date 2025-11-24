@@ -175,11 +175,11 @@ jobs:
           
       - name: update csc.rsp
         run: |
-          update_csc_rsp .csc.rsp.nullunsafe
-          update_csc_rsp .csc.rsp.nullsafe
           update_csc_rsp() {
             sed '/-warnaserror/d;p' -i "$1"
           }
+          update_csc_rsp .csc.rsp.nullunsafe
+          update_csc_rsp .csc.rsp.nullsafe
 
       # region vpm release
       - name: Build VPM release
