@@ -617,7 +617,7 @@ msgid "ReplaceEndBoneWithEndpointPosition:validation:inequivalentPositions"
 msgstr "End Boneが異なる座標のものに置き換えられています。これにより、PhysBoneの動作が変わる可能性があります。"
 
 msgid "ReplaceEndBoneWithEndpointPosition:validation:unsafeMultiChild"
-msgstr "複数の子を持つボーンの設定がEndpoint Positionへと置き換えるのに適していないため、置き換えることができません。"
+msgstr "複数の子を持ち、Endpoint Positionへの置き換えに適さない(動作が変わってしまう)構造・設定になっているPhysBoneがあります。これはサポートされていません。"
 
 # endregion
 
