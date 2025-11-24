@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Support for VRCSDK 3.9.1-beta `#1562`
+- Support for VRCSDK 3.10.x `#1562` `#1570`
   - New internal component ParentChangeDetector is added
 
 ### Changed

@@ -17,7 +17,7 @@
   "license": "MIT",
   "vpmDependencies": {
     "nadena.dev.ndmf": "^1.6.0",
-    "com.vrchat.avatars": ">=3.7.0 <3.10.0"
+    "com.vrchat.avatars": ">=3.7.0 <3.11.0"
   },
   "dependencies": {
     "com.unity.burst": "1.8.7"
