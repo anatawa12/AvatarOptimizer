@@ -3,6 +3,7 @@
     "rootNamespace": "Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes",
     "references": [
         "com.anatawa12.avatar-optimizer.runtime",
+        "com.anatawa12.avatar-optimizer.internal.localization.editor",
         "com.anatawa12.avatar-optimizer.internal.utils",
         "nadena.dev.ndmf"
     ],

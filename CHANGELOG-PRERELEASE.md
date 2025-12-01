@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Experimental support for NDMF Platform Support `#1577` `#1576`
+  - This is an experimental feature that does not follow semantic versioning.
 
 ### Changed
 

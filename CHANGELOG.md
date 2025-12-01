@@ -39,6 +39,8 @@ The format is based on [Keep a Changelog].
 - Replace EndBone With Endpoint Position component which replaces the end bone in the vrc physbone with the Endpoint Position [`#1423`](https://github.com/anatawa12/AvatarOptimizer/pull/1423)
 - Automatic Replace EndBone With Endpoint Position [`#1423`](https://github.com/anatawa12/AvatarOptimizer/pull/1423)
   - Trace and Optimize now automatically replaces PhysBone's EndBone with Endpoint Position if possible.
+- Experimental support for NDMF Platform Support `#1577` `#1576`
+  - This is an experimental feature that does not follow semantic versioning.
 
 ### Changed
 - Avatar Optimizer will run as late as possible in NDMF Pipeline by default `#1493`
