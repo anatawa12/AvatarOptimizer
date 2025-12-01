@@ -101,8 +101,6 @@ internal struct OptimizeTextureImpl {
 
     internal void Execute(BuildContext context, TraceAndOptimizeState state)
     {
-        if (!state.OptimizeTexture) return;
-
         // collect all connected components of materialSlot - material - texture graph
         var connectedComponentInfos = CollectMaterialsUnionFind(context);
 

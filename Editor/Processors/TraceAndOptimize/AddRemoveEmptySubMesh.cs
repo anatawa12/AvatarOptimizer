@@ -9,9 +9,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            if (!state.RemoveUnusedObjects) return;
-            if (state.SkipRemoveEmptySubMesh) return;
-
+            if (!state.RemoveEmptySubMesh) return;
             foreach (var renderer in context.GetComponents<SkinnedMeshRenderer>())
             {
                 if (state.Exclusions.Contains(renderer.gameObject))

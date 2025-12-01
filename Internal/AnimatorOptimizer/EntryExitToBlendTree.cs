@@ -51,10 +51,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         private protected override void Execute(BuildContext context, AOAnimatorController controller,
             TraceAndOptimizeState settings)
         {
-            if (settings.SkipEntryExitToBlendTree) return; // feature disabled
-
-            var state = context.GetState<AnimatorOptimizerState>();
-            Execute(state, controller);
+            if (settings.EntryExitToBlendTree)
+                Execute(context.GetState<AnimatorOptimizerState>(), controller);
         }
 
         public static void Execute(AnimatorOptimizerState state, AOAnimatorController controller)

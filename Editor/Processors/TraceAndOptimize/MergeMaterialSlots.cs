@@ -15,8 +15,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            if (!state.RemoveUnusedObjects) return;
-            if (state.SkipMergeMaterials) return;
+            if (!state.MergeMaterials) return;
 
             var mergeMeshes = FilterMergeMeshes(context, state);
             if (mergeMeshes.Count == 0) return;

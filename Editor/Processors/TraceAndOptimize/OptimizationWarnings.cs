@@ -10,7 +10,7 @@ internal class OptimizationWarnings : TraceAndOptimizePass<OptimizationWarnings>
 
     protected override void Execute(BuildContext context, TraceAndOptimizeState state)
     {
-        if (state.SkipOptimizationWarnings) return;
+        if (!state.OptimizationWarnings) return;
 
         // Warning if some lints with almost-no-false-positives.
         // DO NOT add warnings with possible false positive.

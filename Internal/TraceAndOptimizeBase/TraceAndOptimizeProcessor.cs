@@ -8,91 +8,120 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     public class TraceAndOptimizeState
     {
         public bool Enabled;
-        public bool OptimizeBlendShape;
-        public bool RemoveUnusedObjects;
         public bool RemoveZeroSizedPolygon;
-        public bool OptimizePhysBone;
         public bool OptimizeAnimator;
         public bool MergeSkinnedMesh;
-        public bool AllowShuffleMaterialSlots;
         public bool OptimizeTexture;
-        public bool MmdWorldCompatibility = true;
 
+        // optimization options
+        public bool AllowShuffleMaterialSlots;
+        public bool MmdWorldCompatibility = true;
         public bool PreserveEndBone;
+
+        // Debug Options
         public HashSet<GameObject?> Exclusions = new();
         public int GCDebug;
-        public bool NoSweepComponents;
-        public bool NoConfigureLeafMergeBone;
-        public bool NoConfigureMiddleMergeBone;
-        public bool NoActivenessAnimation;
-        public bool SkipFreezingNonAnimatedBlendShape;
-        public bool SkipFreezingMeaninglessBlendShape;
-        public bool SkipIsAnimatedOptimization;
-        public bool SkipMergePhysBoneCollider;
-        public bool SkipEntryExitToBlendTree;
-        public bool SkipRemoveUnusedAnimatingProperties;
-        public bool SkipMergeBlendTreeLayer;
-        public bool SkipRemoveMeaninglessAnimatorLayer;
-        public bool SkipMergeStaticSkinnedMesh;
-        public bool SkipMergeAnimatingSkinnedMesh;
-        public bool SkipMergeMaterialAnimatingSkinnedMesh;
-        public bool SkipMergeMaterials;
-        public bool SkipRemoveEmptySubMesh;
-        public bool SkipAnyStateToEntryExit;
-        public bool SkipRemoveMaterialUnusedProperties;
-        public bool SkipRemoveMaterialUnusedTextures;
-        public bool SkipAutoMergeBlendShape;
-        public bool SkipRemoveUnusedSubMesh;
-        public bool SkipMergePhysBones;
-        public bool SkipCompleteGraphToEntryExit;
-        public bool SkipReplaceEndBoneWithEndpointPosition;
-        public bool SkipOptimizationWarnings;
+
+        // all feature flags
+        public bool SweepComponents;
+        public bool ConfigureLeafMergeBone;
+        public bool ConfigureMiddleMergeBone;
+        public bool ActivenessAnimation;
+        public bool FreezingNonAnimatedBlendShape;
+        public bool FreezingMeaninglessBlendShape;
+        public bool IsAnimatedOptimization;
+        public bool MergePhysBoneCollider;
+        public bool EntryExitToBlendTree;
+        public bool RemoveUnusedAnimatingProperties;
+        public bool MergeBlendTreeLayer;
+        public bool RemoveMeaninglessAnimatorLayer;
+        public bool MergeStaticSkinnedMesh;
+        public bool MergeAnimatingSkinnedMesh;
+        public bool MergeMaterialAnimatingSkinnedMesh;
+        public bool MergeMaterials;
+        public bool RemoveEmptySubMesh;
+        public bool AnyStateToEntryExit;
+        public bool RemoveMaterialUnusedProperties;
+        public bool RemoveMaterialUnusedTextures;
+        public bool AutoMergeBlendShape;
+        public bool RemoveUnusedSubMesh;
+        public bool MergePhysBones;
+        public bool CompleteGraphToEntryExit;
+        public bool ReplaceEndBoneWithEndpointPosition;
+        public bool OptimizationWarnings;
 
         public Dictionary<SkinnedMeshRenderer, HashSet<string>> PreserveBlendShapes =
             new Dictionary<SkinnedMeshRenderer, HashSet<string>>();
 
         internal void Initialize(TraceAndOptimize config)
         {
-            OptimizeBlendShape = config.optimizeBlendShape;
-            RemoveUnusedObjects = config.removeUnusedObjects;
-            RemoveZeroSizedPolygon = config.removeZeroSizedPolygons;
-            OptimizePhysBone = config.optimizePhysBone;
-            OptimizeAnimator = config.optimizeAnimator;
-            MergeSkinnedMesh = config.mergeSkinnedMesh;
+            // optimization settings
             AllowShuffleMaterialSlots = config.allowShuffleMaterialSlots;
-            OptimizeTexture = config.optimizeTexture;
             MmdWorldCompatibility = config.mmdWorldCompatibility;
-
             PreserveEndBone = config.preserveEndBone;
 
             Exclusions = new HashSet<GameObject?>(config.debugOptions.exclusions ?? Array.Empty<GameObject?>());
             GCDebug = (int)config.debugOptions.gcDebug;
-            NoSweepComponents = config.debugOptions.noSweepComponents;
-            NoConfigureLeafMergeBone = config.debugOptions.noConfigureLeafMergeBone;
-            NoConfigureMiddleMergeBone = config.debugOptions.noConfigureMiddleMergeBone;
-            NoActivenessAnimation = config.debugOptions.noActivenessAnimation;
-            SkipFreezingNonAnimatedBlendShape = config.debugOptions.skipFreezingNonAnimatedBlendShape;
-            SkipFreezingMeaninglessBlendShape = config.debugOptions.skipFreezingMeaninglessBlendShape;
-            SkipIsAnimatedOptimization = config.debugOptions.skipIsAnimatedOptimization;
-            SkipMergePhysBoneCollider = config.debugOptions.skipMergePhysBoneCollider;
-            SkipEntryExitToBlendTree = config.debugOptions.skipEntryExitToBlendTree;
-            SkipRemoveUnusedAnimatingProperties = config.debugOptions.skipRemoveUnusedAnimatingProperties;
-            SkipMergeBlendTreeLayer = config.debugOptions.skipMergeBlendTreeLayer;
-            SkipRemoveMeaninglessAnimatorLayer = config.debugOptions.skipRemoveMeaninglessAnimatorLayer;
-            SkipMergeStaticSkinnedMesh = config.debugOptions.skipMergeStaticSkinnedMesh;
-            SkipMergeAnimatingSkinnedMesh = config.debugOptions.skipMergeAnimatingSkinnedMesh;
-            SkipMergeMaterialAnimatingSkinnedMesh = config.debugOptions.skipMergeMaterialAnimatingSkinnedMesh;
-            SkipMergeMaterials = config.debugOptions.skipMergeMaterials;
-            SkipRemoveEmptySubMesh = config.debugOptions.skipRemoveEmptySubMesh;
-            SkipAnyStateToEntryExit = config.debugOptions.skipAnyStateToEntryExit;
-            SkipRemoveMaterialUnusedProperties = config.debugOptions.skipRemoveMaterialUnusedProperties;
-            SkipRemoveMaterialUnusedTextures = config.debugOptions.skipRemoveMaterialUnusedTextures;
-            SkipAutoMergeBlendShape = config.debugOptions.skipAutoMergeBlendShape;
-            SkipRemoveUnusedSubMesh = config.debugOptions.skipRemoveUnusedSubMesh;
-            SkipMergePhysBones = config.debugOptions.skipMergePhysBones;
-            SkipCompleteGraphToEntryExit = config.debugOptions.skipCompleteGraphToEntryExit;
-            SkipReplaceEndBoneWithEndpointPosition = config.debugOptions.skipReplaceEndBoneWithEndpointPosition;
-            SkipOptimizationWarnings = config.debugOptions.skipOptimizationWarnings;
+
+            if (config.optimizeBlendShape)
+            {
+                FreezingNonAnimatedBlendShape = !config.debugOptions.skipFreezingNonAnimatedBlendShape;
+                FreezingMeaninglessBlendShape = !config.debugOptions.skipFreezingMeaninglessBlendShape;
+                AutoMergeBlendShape = !config.debugOptions.skipAutoMergeBlendShape;
+            }
+
+            if (config.removeUnusedObjects)
+            {
+                SweepComponents = !config.debugOptions.noSweepComponents;
+                ConfigureLeafMergeBone = !config.debugOptions.noConfigureLeafMergeBone;
+                ConfigureMiddleMergeBone = !config.debugOptions.noConfigureMiddleMergeBone;
+                ActivenessAnimation = !config.debugOptions.noActivenessAnimation;
+                RemoveEmptySubMesh = !config.debugOptions.skipRemoveEmptySubMesh;
+                RemoveMaterialUnusedProperties = !config.debugOptions.skipRemoveMaterialUnusedProperties;
+                RemoveMaterialUnusedTextures = !config.debugOptions.skipRemoveMaterialUnusedTextures;
+                MergeMaterials = !config.debugOptions.skipMergeMaterials;
+            }
+
+            if (config.optimizePhysBone)
+            {
+                IsAnimatedOptimization = !config.debugOptions.skipIsAnimatedOptimization;
+                MergePhysBoneCollider = !config.debugOptions.skipMergePhysBoneCollider;
+                ReplaceEndBoneWithEndpointPosition = !config.debugOptions.skipReplaceEndBoneWithEndpointPosition;
+                MergePhysBones = !config.debugOptions.skipMergePhysBones;
+            }
+
+            if (config.removeZeroSizedPolygons)
+            {
+                RemoveZeroSizedPolygon = true;
+            }
+
+            if (config.optimizeAnimator)
+            {
+                OptimizeAnimator = true;
+                EntryExitToBlendTree = !config.debugOptions.skipEntryExitToBlendTree;
+                RemoveUnusedAnimatingProperties = !config.debugOptions.skipRemoveUnusedAnimatingProperties;
+                MergeBlendTreeLayer = !config.debugOptions.skipMergeBlendTreeLayer;
+                RemoveMeaninglessAnimatorLayer = !config.debugOptions.skipRemoveMeaninglessAnimatorLayer;
+                AnyStateToEntryExit = !config.debugOptions.skipAnyStateToEntryExit;
+                CompleteGraphToEntryExit = !config.debugOptions.skipCompleteGraphToEntryExit;
+            }
+
+            if (config.mergeSkinnedMesh)
+            {
+                MergeSkinnedMesh = true;
+                MergeStaticSkinnedMesh = !config.debugOptions.skipMergeStaticSkinnedMesh;
+                MergeAnimatingSkinnedMesh = !config.debugOptions.skipMergeAnimatingSkinnedMesh;
+                MergeMaterialAnimatingSkinnedMesh = !config.debugOptions.skipMergeMaterialAnimatingSkinnedMesh;
+            }
+
+            if (config.optimizeTexture)
+            {
+                OptimizeTexture = true;
+            }
+
+            // always applied
+            RemoveUnusedSubMesh = !config.debugOptions.skipRemoveUnusedSubMesh;
+            OptimizationWarnings = !config.debugOptions.skipOptimizationWarnings;
 
             Enabled = true;
         }

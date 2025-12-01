@@ -7,7 +7,7 @@ class RemoveSubMeshesWithoutMaterial : TraceAndOptimizePass<RemoveSubMeshesWitho
 {
     protected override void Execute(BuildContext context, TraceAndOptimizeState state)
     {
-        if (state.SkipRemoveUnusedSubMesh) return;
+        if (!state.RemoveUnusedSubMesh) return;
 
         var componentInfos = context.Extension<GCComponentInfoContext>();
         var entrypointMap = DependantMap.CreateEntrypointsMap(context);

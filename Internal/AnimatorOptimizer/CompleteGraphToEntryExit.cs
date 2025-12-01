@@ -37,7 +37,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         private protected override void Execute(BuildContext context, AOAnimatorController controller,
             TraceAndOptimizeState settings)
         {
-            if (settings.SkipCompleteGraphToEntryExit) return; // feature disabled
+            if (!settings.CompleteGraphToEntryExit) return; // feature disabled
 
             var state = context.GetState<AnimatorOptimizerState>();
             Execute(state, controller);

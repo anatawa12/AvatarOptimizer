@@ -21,8 +21,7 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
 
     protected override void Execute(BuildContext context, TraceAndOptimizeState state)
     {
-        if (!state.OptimizePhysBone) return;
-        if (state.SkipMergePhysBones) return;
+        if (!state.MergePhysBones) return;
 
         var physBonesByKey = new Dictionary<PbInfo, List<VRCPhysBone>>();
         foreach (var physBone in context.GetComponents<VRCPhysBone>())

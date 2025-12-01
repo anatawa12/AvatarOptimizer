@@ -18,8 +18,7 @@ class AutoMergeBlendShape: TraceAndOptimizePass<AutoMergeBlendShape>
 
     protected override void Execute(BuildContext context, TraceAndOptimizeState state)
     {
-        if (!state.OptimizeBlendShape) return;
-        if (state.SkipAutoMergeBlendShape) return;
+        if (!state.AutoMergeBlendShape) return;
 
         foreach (var skinnedMeshRenderer in context.GetComponents<SkinnedMeshRenderer>())
         {

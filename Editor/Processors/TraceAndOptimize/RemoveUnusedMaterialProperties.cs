@@ -14,12 +14,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public override string DisplayName => "T&O: RemoveUnusedMaterialProperties";
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            if (!state.RemoveUnusedObjects) { return; }
-
-            if (!state.SkipRemoveMaterialUnusedProperties)
+            if (state.RemoveMaterialUnusedProperties)
                 RemoveUnusedProperties(context);
 
-            if (!state.SkipRemoveMaterialUnusedTextures)
+            if (state.RemoveMaterialUnusedTextures)
                 RemoveUnusedTextures(context);
         }
 

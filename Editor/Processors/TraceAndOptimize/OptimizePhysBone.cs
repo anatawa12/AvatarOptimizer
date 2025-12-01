@@ -15,15 +15,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            if (!state.OptimizePhysBone) return;
-
-            if (!state.SkipIsAnimatedOptimization)
+            if (state.IsAnimatedOptimization)
                 IsAnimatedOptimization(context);
             
-            if (!state.SkipMergePhysBoneCollider)
+            if (state.MergePhysBoneCollider)
                 MergePhysBoneColliders(context);
             
-            if (!state.SkipReplaceEndBoneWithEndpointPosition)
+            if (state.ReplaceEndBoneWithEndpointPosition)
                 ConfigureReplaceEndBoneWithEndpointPosition(context, state);
         }
 

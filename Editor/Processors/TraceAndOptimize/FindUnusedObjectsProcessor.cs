@@ -12,8 +12,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            if (!state.RemoveUnusedObjects) return;
-
             var processor = new FindUnusedObjectsProcessor(context, state);
             processor.ProcessNew();
         }
@@ -22,33 +20,33 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     internal readonly struct FindUnusedObjectsProcessor
     {
         private readonly BuildContext _context;
-        private readonly bool _noSweepComponents;
-        private readonly bool _noConfigureLeafMergeBone;
-        private readonly bool _noConfigureMiddleMergeBone;
-        private readonly bool _noActivenessAnimation;
-        private readonly bool _skipRemoveUnusedSubMesh;
+        private readonly bool _sweepComponents;
+        private readonly bool _configureLeafMergeBone;
+        private readonly bool _configureMiddleMergeBone;
+        private readonly bool _activenessAnimation;
+        private readonly bool _removeUnusedSubMesh;
 
         public FindUnusedObjectsProcessor(BuildContext context, TraceAndOptimizeState state)
         {
             _context = context;
 
-            _noSweepComponents = state.NoSweepComponents;
-            _noConfigureLeafMergeBone = state.NoConfigureLeafMergeBone;
-            _noConfigureMiddleMergeBone = state.NoConfigureMiddleMergeBone;
-            _noActivenessAnimation = state.NoActivenessAnimation;
-            _skipRemoveUnusedSubMesh = state.SkipRemoveUnusedSubMesh;
+            _sweepComponents = state.SweepComponents;
+            _configureLeafMergeBone = state.ConfigureLeafMergeBone;
+            _configureMiddleMergeBone = state.ConfigureMiddleMergeBone;
+            _activenessAnimation = state.ActivenessAnimation;
+            _removeUnusedSubMesh = state.RemoveUnusedSubMesh;
         }
 
         public void ProcessNew()
         {
             var componentInfos = _context.Extension<GCComponentInfoContext>();
             var entrypointMap = DependantMap.CreateEntrypointsMap(_context);
-            if (!_noSweepComponents)
+            if (_sweepComponents)
                 Sweep(componentInfos, entrypointMap);
-            if (!_noConfigureLeafMergeBone || !_noConfigureMiddleMergeBone)
+            if (_configureLeafMergeBone || _configureMiddleMergeBone)
                 MergeBone(componentInfos, entrypointMap);
             var behaviorMap = DependantMap.CreateDependantsMap(_context);
-            if (!_noActivenessAnimation)
+            if (_activenessAnimation)
                 ActivenessAnimation(componentInfos, behaviorMap);
         }
 
@@ -204,8 +202,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         private void MergeBone(GCComponentInfoContext componentInfos, DependantMap entrypointMap)
         {
-            var noConfigureLeafMergeBone = _noConfigureLeafMergeBone;
-            var noConfigureMiddleMergeBone = _noConfigureMiddleMergeBone;
+            var configureLeafMergeBone = _configureLeafMergeBone;
+            var configureMiddleMergeBone = _configureMiddleMergeBone;
             ConfigureRecursive(_context.AvatarRootTransform, _context);
 
             // returns (original mergedChildren, list of merged children if merged, and null if not merged)
@@ -267,12 +265,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     }
                 }
 
-                if (afterChildren.Count == 0 ? noConfigureLeafMergeBone : noConfigureMiddleMergeBone) return NotMerged();
+                if (afterChildren.Count == 0 ? configureLeafMergeBone : configureMiddleMergeBone)
+                {
+                    if (!transform.gameObject.GetComponent<MergeBone>())
+                        transform.gameObject.AddComponent<MergeBone>().avoidNameConflict = true;
 
-                if (!transform.gameObject.GetComponent<MergeBone>())
-                    transform.gameObject.AddComponent<MergeBone>().avoidNameConflict = true;
+                    return YesMerge();
+                }
 
-                return YesMerge();
+                return NotMerged();
             }
 
             bool TransformAnimated(Transform transform, BuildContext context)
