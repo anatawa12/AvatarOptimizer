@@ -20,6 +20,39 @@ msgstr "ja"
 msgid "UnityPlayerBuildErrorBug:non-ascii-detected"
 msgstr "Due to a Unity bug, builds may fail if the project path contains non-ASCII characters. Please check your project path and consider moving it to a path with only ASCII characters."
 
+msgid "NonVRChatPlatformSupport:experimentalMessage"
+msgstr ""
+"Non-VRChat platform support of Trace and Optimize is EXPERIMENTAL.\n"
+"You might experience some bugs, or incompatible changes in future updates.\n"
+"Use at your own risk."
+
+msgid "NonVRChatPlatformSupport:genericPlatformMessage"
+msgstr ""
+"You're using Trace and Optimize for Generic-Unity platform.\n"
+"Currently Avatar Optimizer assumes VRChat platform in general, so some optimizations may not work well on other platforms.\n"
+"Please configure ndmf platform correctly if you're building for other platform."
+
+msgid "NonVRChatPlatformSupport:noPlatformSettings"
+msgstr ""
+"No platform settings found for platform '{0}' ('{1}').\n"
+"Avatar Optimizer will optimize the avatar for VRChat platform, but this may not be optimal for the target platform.\n"
+"Please create TraceAndOptimizePlatformSettings asset for this platform to get better optimization results."
+
+msgid "NonVRChatPlatformSupport:manyPlatformSettings"
+msgstr ""
+"There are many platform settings found for platform '{0}' ('{1}').\n"
+"Picking first one at '{2}'.\n"
+
+msgid "NonVRChatPlatformSupport:versionMismatchMessage:inspector"
+msgstr ""
+"This platform settings asset has settings version {0}, but your Avatar Optimizer requires version {1}.\n"
+"Please migrate platform settings asset to correct version, or create new one."
+
+msgid "NonVRChatPlatformSupport:versionMismatchMessage:build"
+msgstr ""
+"The best matching platform settings asset found at '{0}' has settings version {2}, but your Avatar Optimizer requires version {3}.\n"
+"Some settings may not work properly. Please create or migrate platform settings asset to correct version."
+
 # region PrefabSafeSet
 
 msgid "PrefabSafeSet:label:Multi editing not supported"
