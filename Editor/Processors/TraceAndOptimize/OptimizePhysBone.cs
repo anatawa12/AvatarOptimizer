@@ -150,7 +150,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
     internal class OptimizePhysBoneIsAnimated : TraceAndOptimizePass<OptimizePhysBoneIsAnimated>
     {
-        public override string DisplayName => "T&O: Optimize PhysBone";
+        public override string DisplayName => "T&O: Optimize PhysBone IsAnimated";
         protected override bool Enabled(TraceAndOptimizeState state) => state.IsAnimatedOptimization;
 
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
