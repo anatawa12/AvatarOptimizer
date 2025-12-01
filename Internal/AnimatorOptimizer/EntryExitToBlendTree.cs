@@ -48,12 +48,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
     {
         private static CachedGuidLoader<AnimationClip> _emptyClip = "ce6c609e7fd58444d9d59e98296eed35";
 
+        public override string DisplayName => "Animator Optimizer: Entry-Exit to BlendTree";
+        protected override bool Enabled(TraceAndOptimizeState state) => state.EntryExitToBlendTree;
+
         private protected override void Execute(BuildContext context, AOAnimatorController controller,
-            TraceAndOptimizeState settings)
-        {
-            if (settings.EntryExitToBlendTree)
-                Execute(context.GetState<AnimatorOptimizerState>(), controller);
-        }
+            TraceAndOptimizeState settings) =>
+            Execute(context.GetState<AnimatorOptimizerState>(), controller);
 
         public static void Execute(AnimatorOptimizerState state, AOAnimatorController controller)
         {

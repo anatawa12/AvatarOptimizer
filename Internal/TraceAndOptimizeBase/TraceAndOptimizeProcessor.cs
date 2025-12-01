@@ -7,12 +7,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
     public class TraceAndOptimizeState
     {
-        public bool Enabled;
-        public bool RemoveZeroSizedPolygon;
-        public bool OptimizeAnimator;
-        public bool MergeSkinnedMesh;
-        public bool OptimizeTexture;
-
         // optimization options
         public bool AllowShuffleMaterialSlots;
         public bool MmdWorldCompatibility = true;
@@ -22,7 +16,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public HashSet<GameObject?> Exclusions = new();
         public int GCDebug;
 
+        // feature group flags
+        public bool OptimizeAnimator;
+        public bool MergeSkinnedMesh;
+
         // all feature flags
+        public bool RemoveZeroSizedPolygon;
+        public bool OptimizeTexture;
         public bool SweepComponents;
         public bool ConfigureLeafMergeBone;
         public bool ConfigureMiddleMergeBone;
@@ -38,7 +38,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool MergeStaticSkinnedMesh;
         public bool MergeAnimatingSkinnedMesh;
         public bool MergeMaterialAnimatingSkinnedMesh;
-        public bool MergeMaterials;
+        public bool MergeMaterials; // This is feature flag but option of merge skinned mesh
         public bool RemoveEmptySubMesh;
         public bool AnyStateToEntryExit;
         public bool RemoveMaterialUnusedProperties;
@@ -122,8 +122,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             // always applied
             RemoveUnusedSubMesh = !config.debugOptions.skipRemoveUnusedSubMesh;
             OptimizationWarnings = !config.debugOptions.skipOptimizationWarnings;
-
-            Enabled = true;
         }
     }
 
@@ -142,10 +140,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
     public abstract class TraceAndOptimizePass<T> : Pass<T> where T : TraceAndOptimizePass<T>, new()
     {
+        public abstract override string DisplayName { get; }
+        protected abstract bool Enabled(TraceAndOptimizeState state);
+
         protected sealed override void Execute(BuildContext context)
         {
             var state = context.GetState<TraceAndOptimizeState>();
-            if (!state.Enabled) return;
+            if (!Enabled(state)) return;
             Execute(context, state);
         }
 

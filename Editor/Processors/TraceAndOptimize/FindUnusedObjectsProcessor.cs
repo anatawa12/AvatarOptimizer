@@ -6,52 +6,17 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    internal class FindUnusedObjects : TraceAndOptimizePass<FindUnusedObjects>
+    internal class ToggleUnusedComponents : TraceAndOptimizePass<ToggleUnusedComponents>
     {
-        public override string DisplayName => "T&O: FindUnusedObjects";
+        public override string DisplayName => "T&O: Automatically Toggle Unused Components";
+
+        protected override bool Enabled(TraceAndOptimizeState state) => state.ActivenessAnimation;
 
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            var processor = new FindUnusedObjectsProcessor(context, state);
-            processor.ProcessNew();
-        }
-    }
+            var componentInfos = context.Extension<GCComponentInfoContext>();
+            var behaviorMap = DependantMap.CreateDependantsMap(context);
 
-    internal readonly struct FindUnusedObjectsProcessor
-    {
-        private readonly BuildContext _context;
-        private readonly bool _sweepComponents;
-        private readonly bool _configureLeafMergeBone;
-        private readonly bool _configureMiddleMergeBone;
-        private readonly bool _activenessAnimation;
-        private readonly bool _removeUnusedSubMesh;
-
-        public FindUnusedObjectsProcessor(BuildContext context, TraceAndOptimizeState state)
-        {
-            _context = context;
-
-            _sweepComponents = state.SweepComponents;
-            _configureLeafMergeBone = state.ConfigureLeafMergeBone;
-            _configureMiddleMergeBone = state.ConfigureMiddleMergeBone;
-            _activenessAnimation = state.ActivenessAnimation;
-            _removeUnusedSubMesh = state.RemoveUnusedSubMesh;
-        }
-
-        public void ProcessNew()
-        {
-            var componentInfos = _context.Extension<GCComponentInfoContext>();
-            var entrypointMap = DependantMap.CreateEntrypointsMap(_context);
-            if (_sweepComponents)
-                Sweep(componentInfos, entrypointMap);
-            if (_configureLeafMergeBone || _configureMiddleMergeBone)
-                MergeBone(componentInfos, entrypointMap);
-            var behaviorMap = DependantMap.CreateDependantsMap(_context);
-            if (_activenessAnimation)
-                ActivenessAnimation(componentInfos, behaviorMap);
-        }
-
-        private void ActivenessAnimation(GCComponentInfoContext componentInfos, DependantMap behaviorMap)
-        {
             // entrypoint -> affected activeness animated components / GameObjects
             Dictionary<Component, HashSet<Component>> entryPointActiveness =
                 new Dictionary<Component, HashSet<Component>>();
@@ -61,14 +26,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (!componentInfo.Component) continue; // swept
                 if (componentInfo.IsEntrypoint) continue;
                 if (!componentInfo.HeavyBehaviourComponent) continue;
-                if (_context.GetAnimationComponent(componentInfo.Component).ContainsAnimationForFloat(Props.EnabledFor(componentInfo.Component)))
+                if (context.GetAnimationComponent(componentInfo.Component).ContainsAnimationForFloat(Props.EnabledFor(componentInfo.Component)))
                     continue; // enabled is animated so we will not generate activeness animation
 
                 HashSet<Component> resultSet;
                 using (var enumerator = behaviorMap[componentInfo].Keys.GetEnumerator())
                 {
                     Utils.Assert(enumerator.MoveNext());
-                    resultSet = GetEntrypointActiveness(enumerator.Current!, _context);
+                    resultSet = GetEntrypointActiveness(enumerator.Current!, context);
 
                     // resultSet.Count == 0 => no longer meaning
                     if (enumerator.MoveNext() && resultSet.Count != 0)
@@ -80,7 +45,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                             var component = enumerator.Current;
                             if (component == null) continue;
                             if (component == componentInfo.Component) continue;
-                            var current = GetEntrypointActiveness(component, _context);
+                            var current = GetEntrypointActiveness(component, context);
                             resultSet.IntersectWith(current);
                         } while (enumerator.MoveNext() && resultSet.Count != 0);
                     }
@@ -135,13 +100,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 if (commonActiveness is Transform)
                 {
-                    _context.Extension<ObjectMappingContext>().MappingBuilder!
+                    context.Extension<ObjectMappingContext>().MappingBuilder!
                         .RecordCopyProperty(commonActiveness.gameObject, Props.IsActive,
                             componentInfo.Component, Props.EnabledFor(componentInfo.Component));
                 }
                 else
                 {
-                    _context.Extension<ObjectMappingContext>().MappingBuilder!
+                    context.Extension<ObjectMappingContext>().MappingBuilder!
                         .RecordCopyProperty(commonActiveness, Props.EnabledFor(commonActiveness),
                             componentInfo.Component, Props.EnabledFor(componentInfo.Component));
                 }
@@ -168,9 +133,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 return set;
             }
         }
+    }
 
-        private void Sweep(GCComponentInfoContext componentInfos, DependantMap entrypointMap)
+    internal class SweepComponentsOrGameObjects : TraceAndOptimizePass<SweepComponentsOrGameObjects>
+    {
+        public override string DisplayName => "T&O: Sweep Components or GameObjects";
+
+        protected override bool Enabled(TraceAndOptimizeState state) => state.SweepComponents;
+
+        protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
+            var componentInfos = context.Extension<GCComponentInfoContext>();
+            var entrypointMap = DependantMap.CreateEntrypointsMap(context);
+
             foreach (var componentInfo in componentInfos.AllInformation)
             {
                 // null values are ignored
@@ -199,12 +174,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 DestroyWithDependencies(child);
             DestroyTracker.DestroyImmediate(component);
         }
+    }
 
-        private void MergeBone(GCComponentInfoContext componentInfos, DependantMap entrypointMap)
+    internal class ConfigureMergeBone : TraceAndOptimizePass<ConfigureMergeBone>
+    {
+        public override string DisplayName => "T&O: Automatically Configure MergeBone";
+        protected override bool Enabled(TraceAndOptimizeState state) => state.ConfigureLeafMergeBone || state.ConfigureMiddleMergeBone;
+
+        protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            var configureLeafMergeBone = _configureLeafMergeBone;
-            var configureMiddleMergeBone = _configureMiddleMergeBone;
-            ConfigureRecursive(_context.AvatarRootTransform, _context);
+            var componentInfos = context.Extension<GCComponentInfoContext>();
+            var entrypointMap = DependantMap.CreateEntrypointsMap(context);
+
+            ConfigureRecursive(context.AvatarRootTransform, context);
 
             // returns (original mergedChildren, list of merged children if merged, and null if not merged)
             (bool, List<Transform>?) ConfigureRecursive(Transform transform, BuildContext context)
@@ -265,7 +247,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     }
                 }
 
-                if (afterChildren.Count == 0 ? configureLeafMergeBone : configureMiddleMergeBone)
+                if (afterChildren.Count == 0 ? state.ConfigureLeafMergeBone : state.ConfigureMiddleMergeBone)
                 {
                     if (!transform.gameObject.GetComponent<MergeBone>())
                         transform.gameObject.AddComponent<MergeBone>().avoidNameConflict = true;

@@ -36,11 +36,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
     // - all states have same write defaults value
     public class AnyStateToEntryExit : AnimOptPassBase<AnyStateToEntryExit>
     {
+        public override string DisplayName => "Animator Optimizer: AnyState to Entry-Exit";
+        protected override bool Enabled(TraceAndOptimizeState state) => state.AnyStateToEntryExit;
+
         private protected override void Execute(BuildContext context, AOAnimatorController controller,
             TraceAndOptimizeState settings)
         {
-            if (!settings.AnyStateToEntryExit) return; // feature disabled
-
             var state = context.GetState<AnimatorOptimizerState>();
             Execute(state, controller);
         }

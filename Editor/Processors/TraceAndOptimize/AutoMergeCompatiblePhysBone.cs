@@ -18,11 +18,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysBone>
 {
     public override string DisplayName => "T&O: Auto Merge Compatible PhysBone";
+    protected override bool Enabled(TraceAndOptimizeState state) => state.MergePhysBones;
 
     protected override void Execute(BuildContext context, TraceAndOptimizeState state)
     {
-        if (!state.MergePhysBones) return;
-
         var physBonesByKey = new Dictionary<PbInfo, List<VRCPhysBone>>();
         foreach (var physBone in context.GetComponents<VRCPhysBone>())
         {

@@ -34,11 +34,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
     // This optimization allows:
     public class CompleteGraphToEntryExit : AnimOptPassBase<CompleteGraphToEntryExit>
     {
+        public override string DisplayName => "Animator Optimizer: Complete Graph to Entry-Exit";
+        protected override bool Enabled(TraceAndOptimizeState state) => state.CompleteGraphToEntryExit;
+
         private protected override void Execute(BuildContext context, AOAnimatorController controller,
             TraceAndOptimizeState settings)
         {
-            if (!settings.CompleteGraphToEntryExit) return; // feature disabled
-
             var state = context.GetState<AnimatorOptimizerState>();
             Execute(state, controller);
         }

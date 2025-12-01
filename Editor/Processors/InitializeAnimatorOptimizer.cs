@@ -22,11 +22,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
     class InitializeAnimatorOptimizer : TraceAndOptimizePass<InitializeAnimatorOptimizer>
     {
         public override string DisplayName => "AnimOpt: Initialize";
+        protected override bool Enabled(TraceAndOptimizeState state) => state.OptimizeAnimator;
 
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            if (!state.OptimizeAnimator) return;
-
             var animatorState = context.GetState<AnimatorOptimizerState>();
 
 #if AAO_VRCSDK3_AVATARS

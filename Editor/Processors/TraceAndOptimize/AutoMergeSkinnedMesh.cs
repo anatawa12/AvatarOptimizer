@@ -13,11 +13,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     internal class AutoMergeSkinnedMesh : TraceAndOptimizePass<AutoMergeSkinnedMesh>
     {
         public override string DisplayName => "T&O: AutoMergeSkinnedMesh";
+        protected override bool Enabled(TraceAndOptimizeState state) => state.MergeSkinnedMesh;
 
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            if (!state.MergeSkinnedMesh) return;
-
             var mergeMeshes = FilterMergeMeshes(context, state);
             if (mergeMeshes.Count == 0) return;
 
