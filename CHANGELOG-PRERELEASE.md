@@ -8,8 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Experimental support for NDMF Platform Support `#1577` `#1576`
-  - This is an experimental feature that does not follow semantic versioning.
 
 ### Changed
 
@@ -18,9 +16,16 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Error in AutoFreezeBlendShape with broken viseme settings `#1575`
 
 ### Security
+
+## [1.9.0-rc.1] - 2025-12-01
+### Added
+- Experimental support for NDMF Platform Support [`#1577`](https://github.com/anatawa12/AvatarOptimizer/pull/1577) [`#1576`](https://github.com/anatawa12/AvatarOptimizer/pull/1576)
+  - This is an experimental feature that does not follow semantic versioning.
+
+### Fixed
+- Error in AutoFreezeBlendShape with broken viseme settings [`#1575`](https://github.com/anatawa12/AvatarOptimizer/pull/1575)
 
 ## [1.9.0-beta.6] - 2025-11-24
 ### Added
@@ -2059,7 +2064,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.6...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.1...HEAD
+[1.9.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.6...v1.9.0-rc.1
 [1.9.0-beta.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.15...v1.9.0-beta.6
 [1.8.15]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.5...v1.8.15
 [1.9.0-beta.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.4...v1.9.0-beta.5
