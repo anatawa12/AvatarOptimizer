@@ -108,7 +108,9 @@ namespace Anatawa12.AvatarOptimizer
             public bool noSweepComponents;
             [Tooltip("Do Not Configure MergeBone in New GC algorithm")]
             [ToggleLeft]
-            public bool noConfigureMergeBone;
+            public bool noConfigureLeafMergeBone;
+            [ToggleLeft]
+            public bool noConfigureMiddleMergeBone;
             [ToggleLeft]
             public bool noActivenessAnimation;
             [ToggleLeft]

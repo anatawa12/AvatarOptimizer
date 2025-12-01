@@ -23,7 +23,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     {
         private readonly BuildContext _context;
         private readonly bool _noSweepComponents;
-        private readonly bool _noConfigureMergeBone;
+        private readonly bool _noConfigureLeafMergeBone;
+        private readonly bool _noConfigureMiddleMergeBone;
         private readonly bool _noActivenessAnimation;
         private readonly bool _skipRemoveUnusedSubMesh;
 
@@ -32,7 +33,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             _context = context;
 
             _noSweepComponents = state.NoSweepComponents;
-            _noConfigureMergeBone = state.NoConfigureMergeBone;
+            _noConfigureLeafMergeBone = state.NoConfigureLeafMergeBone;
+            _noConfigureMiddleMergeBone = state.NoConfigureMiddleMergeBone;
             _noActivenessAnimation = state.NoActivenessAnimation;
             _skipRemoveUnusedSubMesh = state.SkipRemoveUnusedSubMesh;
         }
@@ -43,7 +45,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var entrypointMap = DependantMap.CreateEntrypointsMap(_context);
             if (!_noSweepComponents)
                 Sweep(componentInfos, entrypointMap);
-            if (!_noConfigureMergeBone)
+            if (!_noConfigureLeafMergeBone || !_noConfigureMiddleMergeBone)
                 MergeBone(componentInfos, entrypointMap);
             var behaviorMap = DependantMap.CreateDependantsMap(_context);
             if (!_noActivenessAnimation)
@@ -202,6 +204,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         private void MergeBone(GCComponentInfoContext componentInfos, DependantMap entrypointMap)
         {
+            var noConfigureLeafMergeBone = _noConfigureLeafMergeBone;
+            var noConfigureMiddleMergeBone = _noConfigureMiddleMergeBone;
             ConfigureRecursive(_context.AvatarRootTransform, _context);
 
             // returns (original mergedChildren, list of merged children if merged, and null if not merged)
@@ -262,6 +266,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                             return NotMerged();
                     }
                 }
+
+                if (afterChildren.Count == 0 ? noConfigureLeafMergeBone : noConfigureMiddleMergeBone) return NotMerged();
 
                 if (!transform.gameObject.GetComponent<MergeBone>())
                     transform.gameObject.AddComponent<MergeBone>().avoidNameConflict = true;
