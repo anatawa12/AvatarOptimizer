@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Error in AutoFreezeBlendShape with broken viseme settings `#1575`
 
 ### Security
 
