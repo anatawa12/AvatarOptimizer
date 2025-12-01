@@ -152,7 +152,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             string platformQualifiedName, string displayName)
         {
             if (_full == null) _full = ScriptableObject.CreateInstance<TraceAndOptimizePlatformSettings>();
-            //if (platformQualifiedName == WellKnownPlatforms.VRChatAvatar30) return _full;
+            if (platformQualifiedName == WellKnownPlatforms.VRChatAvatar30) return _full;
             if (platformQualifiedName == WellKnownPlatforms.Generic)
             {
                 BuildLog.LogInfo("NonVRChatPlatformSupport:genericPlatformMessage");
