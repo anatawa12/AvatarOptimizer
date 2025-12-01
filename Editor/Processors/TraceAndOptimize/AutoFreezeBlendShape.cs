@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using nadena.dev.ndmf;
 using UnityEngine;
 
@@ -12,21 +10,12 @@ using VRC.SDKBase;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    internal class AutoFreezeBlendShape : TraceAndOptimizePass<AutoFreezeBlendShape>
+    internal class AutoFreezeNonAnimatedBlendShape : TraceAndOptimizePass<AutoFreezeNonAnimatedBlendShape>
     {
-        public override string DisplayName => "T&O: AutoFreezeBlendShape";
+        public override string DisplayName => "T&O: Automatically Freeze Non-Animated BlendShapes";
+        protected override bool Enabled(TraceAndOptimizeState state) => state.FreezingNonAnimatedBlendShape;
 
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
-        {
-            if (!state.OptimizeBlendShape) return;
-
-            if (!state.SkipFreezingNonAnimatedBlendShape)
-                FreezeNonAnimatedBlendShapes(context, state);
-            if (!state.SkipFreezingMeaninglessBlendShape)
-                FreezeMeaninglessBlendShapes(context, state);
-        }
-
-        void FreezeNonAnimatedBlendShapes(BuildContext context, TraceAndOptimizeState state)
         {
             var mergeBlendShapeMergeSkinnedMeshSources = new HashSet<SkinnedMeshRenderer>();
             foreach (var mergeSkinnedMesh in context.GetComponents<MergeSkinnedMesh>())
@@ -45,8 +34,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 skinnedMeshRenderer.gameObject.GetOrAddComponent<InternalAutoFreezeNonAnimatedBlendShapes>();
             }
         }
+    }
 
-        void FreezeMeaninglessBlendShapes(BuildContext context, TraceAndOptimizeState state) {
+    internal class AutoFreezeConstantlyAnimatedBlendShape : TraceAndOptimizePass<AutoFreezeConstantlyAnimatedBlendShape>
+    {
+        public override string DisplayName => "T&O: Automatically Freeze Constantly Animated BlendShapes";
+        protected override bool Enabled(TraceAndOptimizeState state) => state.FreezingMeaninglessBlendShape;
+
+        protected override void Execute(BuildContext context, TraceAndOptimizeState state)
+        {
             ComputePreserveBlendShapes(context, state.PreserveBlendShapes);
 
             // second optimization: remove meaningless blendShapes

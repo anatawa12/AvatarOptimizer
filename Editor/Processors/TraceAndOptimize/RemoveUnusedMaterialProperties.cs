@@ -9,21 +9,12 @@ using UnityEngine.Rendering;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    internal class RemoveUnusedMaterialProperties : TraceAndOptimizePass<RemoveUnusedMaterialProperties>
+    internal class RemoveUnusedMaterialTextures : TraceAndOptimizePass<RemoveUnusedMaterialTextures>
     {
-        public override string DisplayName => "T&O: RemoveUnusedMaterialProperties";
+        public override string DisplayName => "T&O: Remove Unused Material Textures";
+        protected override bool Enabled(TraceAndOptimizeState state) => state.RemoveMaterialUnusedTextures;
+
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
-        {
-            if (!state.RemoveUnusedObjects) { return; }
-
-            if (!state.SkipRemoveMaterialUnusedProperties)
-                RemoveUnusedProperties(context);
-
-            if (!state.SkipRemoveMaterialUnusedTextures)
-                RemoveUnusedTextures(context);
-        }
-
-        internal void RemoveUnusedTextures(BuildContext context)
         {
             var materials = context.GetComponents<Renderer>()
                 .SelectMany(x => context.GetAllPossibleMaterialFor(x))
@@ -56,8 +47,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 }
             }
         }
+    }
 
-        internal void RemoveUnusedProperties(BuildContext context)
+    internal class RemoveUnusedMaterialProperties : TraceAndOptimizePass<RemoveUnusedMaterialProperties>
+    {
+        public override string DisplayName => "T&O: Remove Unused Material Properties";
+        protected override bool Enabled(TraceAndOptimizeState state) => state.RemoveMaterialUnusedProperties;
+
+        protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
             var renderers = context.GetComponents<Renderer>();
             var cleaned = new HashSet<Material>();

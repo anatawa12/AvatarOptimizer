@@ -20,10 +20,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
 {
     public override string DisplayName => "T&O: OptimizeTexture";
+    protected override bool Enabled(TraceAndOptimizeState state) => state.OptimizeTexture;
 
     protected override void Execute(BuildContext context, TraceAndOptimizeState state)
     {
-        if (!state.OptimizeTexture) return;
         new OptimizeTextureImpl().Execute(context, state);
     }
 }
@@ -101,8 +101,6 @@ internal struct OptimizeTextureImpl {
 
     internal void Execute(BuildContext context, TraceAndOptimizeState state)
     {
-        if (!state.OptimizeTexture) return;
-
         // collect all connected components of materialSlot - material - texture graph
         var connectedComponentInfos = CollectMaterialsUnionFind(context);
 

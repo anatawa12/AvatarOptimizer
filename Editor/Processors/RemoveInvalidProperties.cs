@@ -11,12 +11,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
     class RemoveInvalidProperties : TraceAndOptimizePass<RemoveInvalidProperties>
     {
         public override string DisplayName => "T&O: AnimOpt: Remove Invalid Properties";
+        protected override bool Enabled(TraceAndOptimizeState state) => state.RemoveUnusedAnimatingProperties;
 
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            if (!state.OptimizeAnimator) return;
-            if (state.SkipRemoveUnusedAnimatingProperties) return;
-
             var mappingBuilder = context.GetMappingBuilder();
 
             foreach (var component in mappingBuilder.GetAllAnimationComponents())

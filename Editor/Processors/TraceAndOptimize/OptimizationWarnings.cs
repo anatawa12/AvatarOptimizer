@@ -7,11 +7,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 internal class OptimizationWarnings : TraceAndOptimizePass<OptimizationWarnings>
 {
     public override string DisplayName => "T&O: Analyze and show Optimization warnings";
+    protected override bool Enabled(TraceAndOptimizeState state) => state.OptimizationWarnings;
 
     protected override void Execute(BuildContext context, TraceAndOptimizeState state)
     {
-        if (state.SkipOptimizationWarnings) return;
-
         // Warning if some lints with almost-no-false-positives.
         // DO NOT add warnings with possible false positive.
 

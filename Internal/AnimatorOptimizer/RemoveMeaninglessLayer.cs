@@ -6,11 +6,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
     public class RemoveMeaninglessLayer : AnimOptPassBase<RemoveMeaninglessLayer>
     {
-        private protected override void Execute(BuildContext context, AOAnimatorController controller, TraceAndOptimizeState settings)
-        {
-            if (settings.SkipRemoveMeaninglessAnimatorLayer) return;
-            Execute(controller);
-        }
+        public override string DisplayName => "Animator Optimizer: Remove Meaningless Layer";
+        protected override bool Enabled(TraceAndOptimizeState state) => state.RemoveMeaninglessAnimatorLayer;
+
+        private protected override void Execute(BuildContext context, AOAnimatorController controller, TraceAndOptimizeState settings) => Execute(controller);
 
         public static void Execute(AOAnimatorController controller)
         {
