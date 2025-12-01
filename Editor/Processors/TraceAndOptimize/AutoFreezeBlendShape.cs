@@ -102,6 +102,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                                 preserveBlendShapes.Add(skinnedMeshRenderer, set = new HashSet<string>());
 
                             var mesh = skinnedMeshRenderer.sharedMesh;
+                            if (mesh == null) break; // no blendShapes
                             set.UnionWith(
                                 from index in descriptor.customEyeLookSettings.eyelidsBlendshapes
                                 where 0 <= index && index < mesh.blendShapeCount
