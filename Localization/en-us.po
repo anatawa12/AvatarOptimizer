@@ -22,7 +22,7 @@ msgstr "Due to a Unity bug, builds may fail if the project path contains non-ASC
 
 msgid "NonVRChatPlatformSupport:experimentalMessage"
 msgstr ""
-"Non-VRChat platform support of Trace and Optimize is EXPERIMENTAL.\n"
+"Non-VRChat platform support for Trace and Optimize is EXPERIMENTAL.\n"
 "You might experience some bugs, or incompatible changes in future updates.\n"
 "Use at your own risk."
 
@@ -30,7 +30,7 @@ msgid "NonVRChatPlatformSupport:genericPlatformMessage"
 msgstr ""
 "You're using Trace and Optimize for Generic-Unity platform.\n"
 "Currently Avatar Optimizer assumes VRChat platform in general, so some optimizations may not work well on other platforms.\n"
-"Please configure ndmf platform correctly if you're building for other platform."
+"Please configure NDMF platform correctly if you're building for other platform."
 
 msgid "NonVRChatPlatformSupport:noPlatformSettings"
 msgstr ""
@@ -40,7 +40,7 @@ msgstr ""
 
 msgid "NonVRChatPlatformSupport:manyPlatformSettings"
 msgstr ""
-"There are many platform settings found for platform '{0}' ('{1}').\n"
+"Multiple platform settings are found for platform '{0}' ('{1}').\n"
 "Picking first one at '{2}'.\n"
 
 msgid "NonVRChatPlatformSupport:versionMismatchMessage:inspector"
@@ -50,7 +50,7 @@ msgstr ""
 
 msgid "NonVRChatPlatformSupport:versionMismatchMessage:build"
 msgstr ""
-"The best matching platform settings asset found at '{0}' has settings version {2}, but your Avatar Optimizer requires version {3}.\n"
+"The best matching platform settings asset found at '{0}' has settings version {1}, but your Avatar Optimizer requires version {2}.\n"
 "Some settings may not work properly. Please create or migrate platform settings asset to correct version."
 
 # region PrefabSafeSet
