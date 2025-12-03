@@ -31,7 +31,7 @@ msgstr ""
 
 msgid "NonVRChatPlatformSupport:genericPlatformMessage"
 msgstr ""
-"Trace and Optimizeが汎用Unityプロジェクト上で使用されています。\n"
+"Trace and Optimizeが汎用のUnityプロジェクト上で使用されています。\n"
 "現時点で、Avatar Optimizerは基本的にVRChat用のプロジェクトで使用されることを想定しているため、他のプラットフォーム向けに使用すると一部の最適化がうまく機能しない場合があります。\n"
 "他のプラットフォーム向けにビルドする場合は、NDMFのプラットフォーム設定を正しく設定してください。"
 
