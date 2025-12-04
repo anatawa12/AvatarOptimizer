@@ -25,36 +25,37 @@ msgstr "Unityのバグにより、プロジェクトまでのパスに非ASCII�
 
 msgid "NonVRChatPlatformSupport:experimentalMessage"
 msgstr ""
-"Trace and Optimizeの非VRChatプラットフォームサポートは実験的な機能です。\n"
-"バグや将来のアップデートでの非互換な変更が発生する可能性があります。\n"
-"気をつけて使用してください。"
+"Trace and OptimizeのVRChat以外のプラットフォームへの対応は実験的なものです。\n"
+"バグがあったり、将来のアップデートで互換性のない変更が発生したりする可能性があります。\n"
+"使用する際はご注意ください。"
 
 msgid "NonVRChatPlatformSupport:genericPlatformMessage"
 msgstr ""
-"Trace and Optimize を 汎用 Unity 向けに使用しています。\n"
-"現在のところ、Avatar Optimizerは一般的にVRChatプラットフォームを想定しているため、他のプラットフォームでは一部の最適化がうまく機能しない場合があります。\n"
-"他のプラットフォーム向けにビルドする場合は、ndmfのプラットフォーム設定を正しく設定してください。"
+"Trace and Optimizeが汎用のUnityプロジェクト上で使用されています。\n"
+"現時点で、Avatar Optimizerは基本的にVRChat用のプロジェクトで使用されることを想定しているため、他のプラットフォーム向けに使用すると一部の最適化がうまく機能しない場合があります。\n"
+"他のプラットフォーム向けにビルドする場合は、NDMFのプラットフォーム設定を正しく設定してください。"
 
 msgid "NonVRChatPlatformSupport:noPlatformSettings"
 msgstr ""
-"'{0}' ('{1}') 向けの Platform Settings が見つかりませんでした。\n"
-"Avatar OptimizerはVRChatプラットフォーム向けにアバターを最適化しますが、このプラットフォームに最適ではない可能性があります。\n"
-"このプラットフォームの Trace And Optimize Platform Settings アセットを作成して、より良い最適化結果を得てください。"
+"'{0}' ('{1}')用のPlatform Settingsが見つかりませんでした。\n"
+"そのため、Avatar OptimizerはVRChatプラットフォーム向けにアバターの最適化を行います。\n"
+"これは当該プラットフォーム向けには適していない可能性があります。\n"
+"当該プラットフォーム用のTrace And Optimize Platform Settingsアセットを作成することで、より良い最適化結果を得ることが出来ます。"
 
 msgid "NonVRChatPlatformSupport:manyPlatformSettings"
 msgstr ""
-"'{0}' ('{1}') 向けの Platform Settings が複数見つかりました。\n"
-"１つ目の設定であり'{2}'にある設定を使用します。\n"
+"'{0}' ('{1}')用のPlatform Settingsが複数見つかりました。\n"
+"1つ目の設定となる、'{2}'にある設定を使用します。\n"
 
 msgid "NonVRChatPlatformSupport:versionMismatchMessage:inspector"
 msgstr ""
-"この Platform Settings アセットの設定バージョンは {0} ですが、この Avatar Optimizer ではバージョン {1} が必要です。\n"
-"Platform Settings アセットを適切なバージョンに変更するか、新しいものを作成してください。"
+"このPlatform Settingsアセットの設定バージョンは{0}ですが、現在使用されているAvatar Optimizerではバージョン{1}のものが必要です。\n"
+"Platform Settingsアセットを適切なバージョンに移行するか、新しいものを作成してください。"
 
 msgid "NonVRChatPlatformSupport:versionMismatchMessage:build"
 msgstr ""
-"存在する中で最適な Platform Settings アセットは '{0}' にありますが、その設定バージョンは {2} であり、この Avatar Optimizer ではバージョン {3} が必要です。\n"
-"一部の設定が正しく動作しない可能性があります。Platform Settings アセットを作成または変更して、適切なバージョンのものを作成してください。"
+"存在する中で最適なものとして選ばれたPlatform Settingsアセットは'{0}'にありますが、その設定バージョンは{1}であり、現在使用されているAvatar Optimizerにはバージョン{2}のものが必要です。\n"
+"一部の設定が正常に動作しない可能性があります。Platform Settingsアセットを新たに作成するか移行して、適切なバージョンのものを使用してください。"
 
 # region PrefabSafeSet
 

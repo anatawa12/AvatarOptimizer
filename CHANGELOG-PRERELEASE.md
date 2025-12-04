@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Update some message text `#1579`
 
 ### Deprecated
 
