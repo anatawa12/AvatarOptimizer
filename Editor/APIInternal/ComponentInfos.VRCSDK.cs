@@ -77,8 +77,9 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                 {
                     if (component.VisemeSkinnedMesh != null)
                     {
-                        collector.ModifyProperties(component.VisemeSkinnedMesh,
-                            $"blendShape.{component.MouthOpenBlendShapeName}");
+                        collector.PreserveProperties(component.VisemeSkinnedMesh, new []{
+                            $"blendShape.{component.MouthOpenBlendShapeName}"
+                        });
                     }
                     break;
                 }
@@ -86,7 +87,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                 {
                     if (component.VisemeSkinnedMesh != null)
                     {
-                        collector.ModifyProperties(component.VisemeSkinnedMesh,
+                        collector.PreserveProperties(component.VisemeSkinnedMesh,
                             component.VisemeBlendShapes.Select(blendShape => $"blendShape.{blendShape}"));
                     }
                     break;
@@ -254,7 +255,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
 
                             if (mesh != null)
                             {
-                                collector.ModifyProperties(skinnedMeshRenderer,
+                                collector.PreserveProperties(skinnedMeshRenderer,
                                     from index in component.customEyeLookSettings.eyelidsBlendshapes
                                     where 0 <= index && index < mesh.blendShapeCount
                                     select $"blendShape.{mesh.GetBlendShapeName(index)}");
