@@ -23,9 +23,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public override void Process(BuildContext context, MeshInfo2 target)
         {
             var meaninglessBlendShapes = new HashSet<string>(target.BlendShapes.Select(x => x.name));
-            var state = context.GetState<TraceAndOptimizes.TraceAndOptimizeState>();
-            if (state.PreserveBlendShapes.TryGetValue(Target, out var preserve))
-                meaninglessBlendShapes.ExceptWith(preserve);
+            meaninglessBlendShapes.RemoveWhere(blendShape =>
+            {
+                // When animator parser requests preserving blendshape, 
+                var floatNode = context.GetAnimationComponent(Target).GetPropertyInfo($"blendShape.{blendShape}").FloatNode;
+                return floatNode.RequestPreserve;
+            });
 
             var buffers = new Dictionary<BlendShapeBuffer, NativeArray<bool>>();
             using var dispose = Utils.NewMultiDisposable(() => buffers.Values);

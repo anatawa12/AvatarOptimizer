@@ -389,6 +389,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public override TValueInfo Value => default(TValueInfo).ConstantInfoForSideBySide(_children.Select(x => x.Node));
 
+        public bool RequestPreserve => _children.Any(x => x.Node.RequestPreserve);
+
         public bool IsEmpty => _children.Count == 0 || ApplyState == ApplyState.Never;
 
         public IEnumerable<Component> SourceComponents => _children.Select(x => x.Component);
@@ -594,6 +596,8 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public override IEnumerable<ObjectReference> ContextReferences =>
             new[] { ObjectRegistry.GetReference(Component) };
+
+        public virtual bool RequestPreserve => false;
     }
 
     abstract class ComponentPropModNode<TValueInfo, TComponent> : ComponentPropModNodeBase<TValueInfo>
@@ -617,9 +621,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         public VariableComponentPropModNode(Component component) : base(component)
         {
         }
+        public VariableComponentPropModNode(Component component, bool preserve) : base(component)
+        {
+            RequestPreserve = preserve;
+        }
 
         public override ApplyState ApplyState => ApplyState.Partially;
         public override FloatValueInfo Value => FloatValueInfo.Variable;
+        public override bool RequestPreserve { get; }
     }
 
     class AnimationComponentPropModNode<TValueInfo> : ComponentPropModNode<TValueInfo, Animation>

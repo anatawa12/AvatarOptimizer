@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog].
 
 ### Changed
 - Update some message text `#1579`
+- Improved preserving VRCSDK required BlendShapes `#1585`
 
 ### Deprecated
 

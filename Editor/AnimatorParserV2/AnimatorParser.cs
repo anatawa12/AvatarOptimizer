@@ -142,6 +142,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     _modifications.Add(component, prop, new VariableComponentPropModNode(Modifier!), ApplyState.Always);
                 }
             }
+
+            internal override void PreserveProperties(Component component, IEnumerable<string> properties)
+            {
+                foreach (var prop in properties)
+                {
+                    _modifications.Add(component, prop, new VariableComponentPropModNode(Modifier!, preserve: true), ApplyState.Always);
+                }
+            }
         }
 
         /// <summary>
