@@ -98,6 +98,7 @@ The format is based on [Keep a Changelog].
   - Based on fix from NDMF (bdunderscore/ndmf#693)
   - Parameter drivers now use intermediate parameters to preserve original type semantics
 - Error in AutoFreezeBlendShape with broken viseme settings `#1575`
+- Error with Object as the animation target `#1586`
 
 ### Security
 

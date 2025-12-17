@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Error with Object as the animation target `#1586`
 
 ### Security
 
