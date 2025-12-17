@@ -10,17 +10,22 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Update some message text `#1579`
-- Improved preserving VRCSDK required BlendShapes `#1585`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Error with Object as the animation target `#1586`
 
 ### Security
+
+## [1.9.0-rc.2] - 2025-12-17
+### Changed
+- Update some message text [`#1579`](https://github.com/anatawa12/AvatarOptimizer/pull/1579)
+- Improved preserving VRCSDK required BlendShapes [`#1585`](https://github.com/anatawa12/AvatarOptimizer/pull/1585)
+
+### Fixed
+- Error with Object as the animation target [`#1586`](https://github.com/anatawa12/AvatarOptimizer/pull/1586)
 
 ## [1.9.0-rc.1] - 2025-12-01
 ### Added
@@ -2067,7 +2072,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.2...HEAD
+[1.9.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.1...v1.9.0-rc.2
 [1.9.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.6...v1.9.0-rc.1
 [1.9.0-beta.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.15...v1.9.0-beta.6
 [1.8.15]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.5...v1.8.15
