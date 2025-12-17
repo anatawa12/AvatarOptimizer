@@ -500,8 +500,15 @@ namespace Anatawa12.AvatarOptimizer
                     .Where(x => x.name == name))
                 .FirstOrDefault();
 
-        public static Object? GetAnimatedObject(GameObject obj, EditorCurveBinding binding)
+        public static Object? GetAnimatedObject(GameObject obj, EditorCurveBinding binding, Object? context = null)
         {
+            if (binding.type == typeof(Object))
+            {
+                // I don't know why but some tools like face emo generates Object as the target
+                Debug.LogWarning($"Parsing object '{context?.ToString() ?? "unknown"}': we found animation clip with 'UnityEngine.Object' as the target, which is invalid. " +
+                                 $"ignoring the animation. (path: {binding.path}, property: {binding.propertyName})");
+                return null;
+            }
             var gameObject = ResolveAnimationPath(obj.transform, binding.path);
             if (gameObject == null) return null;
             return binding.type == typeof(GameObject) ? gameObject.gameObject : gameObject.GetComponent(binding.type);
