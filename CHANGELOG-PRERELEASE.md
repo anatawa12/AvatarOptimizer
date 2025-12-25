@@ -16,12 +16,15 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Complete Graph to Entry Exit optimization broke such patterns with immediate transition `#1588`
+
+### Security
+
+## [1.9.0-rc.3] - 2025-12-25
+### Fixed
+- Complete Graph to Entry Exit optimization broke such patterns with immediate transition [`#1588`](https://github.com/anatawa12/AvatarOptimizer/pull/1588)
   - This bug broke miminoko V2 Hard Mode. Thank you [Safkert], the author of miminoko, for providing test data!
 
 [Safkert]: https://x.com/Safkert
-
-### Security
 
 ## [1.9.0-rc.2] - 2025-12-17
 ### Changed
@@ -2076,7 +2079,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.3...HEAD
+[1.9.0-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.2...v1.9.0-rc.3
 [1.9.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.1...v1.9.0-rc.2
 [1.9.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.6...v1.9.0-rc.1
 [1.9.0-beta.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.15...v1.9.0-beta.6
