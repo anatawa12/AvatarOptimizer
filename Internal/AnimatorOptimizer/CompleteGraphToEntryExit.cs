@@ -53,14 +53,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             var layers = controller.layers;
             foreach (var layer in layers)
             {
-                if (CanConvert(layer))
+                if (CanConvert(layer, typeByName))
                 {
                     DoConvert(layer, typeByName);
                 }
             }
         }
 
-        private static bool CanConvert(AOAnimatorControllerLayer layer)
+        private static bool CanConvert(AOAnimatorControllerLayer layer,
+            Dictionary<string, AnimatorControllerParameterType> typeByName)
         {
             // basic check
             if (layer is not
@@ -124,11 +125,29 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 if (!currentChildTargets.SetEquals(childStates)) return false; // incomplete graph
             }
 
-            foreach (var (_, transitions) in transitonByTargetState)
+            foreach (var (targetState, transitions) in transitonByTargetState)
             {
                 var firstConditions = transitions[0].conditions;
                 if (transitions.Any(t => !t.conditions.SequenceEqual(firstConditions, AnimatorConditionComparator.Instance)))
                     return false; // different conditions for same target
+
+                // The exiting conditions must not be true when entering conditions are true.
+                // If so, after optimization, exiting the state may return to the same state,
+                // causing behavior change.
+                // We check this by checking if `entering AND exiting` is a contradiction or not.
+                var entryConditions = firstConditions;
+
+                foreach (var transition in targetState.transitions)
+                {
+                    if (transition.destinationState == targetState) continue; // self-transitions are fine
+                    if (transition.destinationState == null) continue; // exit transition. should not happen here but check just in case
+
+                    var exitConditions = transition.conditions;
+                    
+                    // if `entry AND exit` is not a contradiction, it's problematic.
+                    if (!Conditions.IsContradiction(entryConditions.Concat(exitConditions), typeByName))
+                        return false;
+                }
             }
 
             // it seems we can convert this layer
@@ -153,7 +172,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             var transitonByTargetState = new Dictionary<AnimatorState, AnimatorStateTransition>();
             foreach (var child in states)
                 foreach (var transition in child.transitions)
-                    transitonByTargetState.TryAdd(transition.destinationState, transition);
+                    if (transition.destinationState != child)
+                        transitonByTargetState.TryAdd(transition.destinationState, transition);
 
             // Each state will:
             // - Have entry transition with conditions same as transitonByTargetState[self]

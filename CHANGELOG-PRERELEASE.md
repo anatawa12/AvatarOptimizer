@@ -16,6 +16,10 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Complete Graph to Entry Exit optimization broke such patterns with immediate transition `#1588`
+  - This bug broke miminoko V2 Hard Mode. Thank you [Safkert], the author of miminoko, for providing test data!
+
+[Safkert]: https://x.com/Safkert
 
 ### Security
 
