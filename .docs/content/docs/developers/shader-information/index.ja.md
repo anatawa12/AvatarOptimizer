@@ -235,161 +235,13 @@ public override void GetMaterialInformation(MaterialInformationCallback matInfo)
 }
 ```
 
-## 完全な例 {#examples}
-
-その他の例については、GitHubにあるAvatar Optimizerの組み込みシェーダー情報実装を参照してください:
-- [VRChat SDKシェーダー](https://github.com/anatawa12/AvatarOptimizer/blob/master/Editor/APIInternal/ShaderInformation.VRCSDK.cs)
-- [lilToon](https://github.com/anatawa12/AvatarOptimizer/blob/master/Editor/APIInternal/ShaderInformation.Liltoon.cs)
-- [Unity組み込みシェーダー](https://github.com/anatawa12/AvatarOptimizer/blob/master/Editor/APIInternal/ShaderInformation.Builtin.cs)
-
-### メインテクスチャを持つシンプルなシェーダー {#example-simple}
-
-```csharp
-[InitializeOnLoad]
-internal class SimpleShaderInformation : ShaderInformation
-{
-    static SimpleShaderInformation()
-    {
-        ShaderInformationRegistry.RegisterShaderInformationWithGUID(
-            "your-shader-guid",
-            new SimpleShaderInformation()
-        );
-    }
-
-    public override ShaderInformationKind SupportedInformationKind =>
-        ShaderInformationKind.TextureAndUVUsage;
-
-    public override void GetMaterialInformation(MaterialInformationCallback matInfo)
-    {
-        var mainTexST = matInfo.GetVector("_MainTex_ST");
-        Matrix2x3? uvMatrix = mainTexST is { } st 
-            ? Matrix2x3.NewScaleOffset(st) 
-            : null;
-
-        matInfo.RegisterTextureUVUsage(
-            "_MainTex",
-            "_MainTex",
-            UsingUVChannels.UV0,
-            uvMatrix
-        );
-    }
-}
-```
-
-### 条件付き機能を持つシェーダー {#example-conditional}
-
-```csharp
-[InitializeOnLoad]
-internal class FeatureShaderInformation : ShaderInformation
-{
-    static FeatureShaderInformation()
-    {
-        ShaderInformationRegistry.RegisterShaderInformationWithGUID(
-            "your-shader-guid",
-            new FeatureShaderInformation()
-        );
-    }
-
-    public override ShaderInformationKind SupportedInformationKind =>
-        ShaderInformationKind.TextureAndUVUsage;
-
-    public override void GetMaterialInformation(MaterialInformationCallback matInfo)
-    {
-        // メインテクスチャ (常に存在)
-        var mainTexST = matInfo.GetVector("_MainTex_ST");
-        Matrix2x3? mainUVMatrix = mainTexST is { } st 
-            ? Matrix2x3.NewScaleOffset(st) 
-            : null;
-
-        matInfo.RegisterTextureUVUsage(
-            "_MainTex", "_MainTex", UsingUVChannels.UV0, mainUVMatrix
-        );
-
-        // 法線マップ (キーワードで条件付き)
-        if (matInfo.IsShaderKeywordEnabled("_NORMALMAP") != false)
-        {
-            matInfo.RegisterTextureUVUsage(
-                "_BumpMap", "_BumpMap", UsingUVChannels.UV0, mainUVMatrix
-            );
-        }
-
-        // 詳細テクスチャ (プロパティで条件付き)
-        if (matInfo.GetFloat("_UseDetail") != 0)
-        {
-            var detailST = matInfo.GetVector("_DetailTex_ST");
-            Matrix2x3? detailUVMatrix = detailST is { } st2 
-                ? Matrix2x3.NewScaleOffset(st2) 
-                : null;
-
-            var detailUV = matInfo.GetFloat("_DetailUV") switch
-            {
-                0 => UsingUVChannels.UV0,
-                1 => UsingUVChannels.UV1,
-                _ => UsingUVChannels.UV0 | UsingUVChannels.UV1
-            };
-
-            matInfo.RegisterTextureUVUsage(
-                "_DetailTex", "_DetailTex", detailUV, detailUVMatrix
-            );
-        }
-
-        // MatCap (スクリーンスペース、UV変換なし)
-        if (matInfo.IsShaderKeywordEnabled("_MATCAP") != false)
-        {
-            matInfo.RegisterTextureUVUsage(
-                "_MatCap",
-                SamplerStateInformation.LinearClampSampler,
-                UsingUVChannels.NonMesh,
-                null
-            );
-        }
-    }
-}
-```
-
-### 頂点インデックスを使用するシェーダー {#example-vertex-index}
-
-```csharp
-[InitializeOnLoad]
-internal class VertexShaderInformation : ShaderInformation
-{
-    static VertexShaderInformation()
-    {
-        ShaderInformationRegistry.RegisterShaderInformationWithGUID(
-            "your-shader-guid",
-            new VertexShaderInformation()
-        );
-    }
-
-    public override ShaderInformationKind SupportedInformationKind =>
-        ShaderInformationKind.TextureAndUVUsage | 
-        ShaderInformationKind.VertexIndexUsage;
-
-    public override void GetMaterialInformation(MaterialInformationCallback matInfo)
-    {
-        // テクスチャを登録...
-        var mainTexST = matInfo.GetVector("_MainTex_ST");
-        Matrix2x3? uvMatrix = mainTexST is { } st 
-            ? Matrix2x3.NewScaleOffset(st) 
-            : null;
-
-        matInfo.RegisterTextureUVUsage(
-            "_MainTex", "_MainTex", UsingUVChannels.UV0, uvMatrix
-        );
-
-        // シェーダーは効果のためにSV_VertexIDを使用
-        matInfo.RegisterVertexIndexUsage();
-    }
-}
-```
-
 ## 登録方法 {#registration-methods}
 
 Shader Informationを登録する方法は2つあります:
 
 ### GUIDで登録 (推奨) {#register-by-guid}
 
-シェーダーアセットの場合、シェーダーのGUIDを使用します:
+シェーダーアセットの場合、シェーダーのGUIDを使用します。このメソッドは、GUIDが変更されず、重複せず、AssetDatabaseへのアクセスを必要としないため推奨されます (InitializeOnLoadメソッドでAssetDatabaseにアクセスすることは無効であるため、シェーダーインスタンスによる登録は無効になる可能性があります)。
 
 ```csharp
 ShaderInformationRegistry.RegisterShaderInformationWithGUID(
@@ -409,8 +261,6 @@ ShaderInformationRegistry.RegisterShaderInformation(
     new YourShaderInformation()
 );
 ```
-
-**注意:** 同じシェーダーが両方の方法で登録されている場合、インスタンス登録が優先されます。
 
 ## ベストプラクティス {#best-practices}
 
@@ -439,7 +289,7 @@ internal class YourShaderInformation : ShaderInformation
 
 ### 不明な値を処理
 
-マテリアルプロパティはアニメーション化されている可能性があります。`null`値を処理してください:
+マテリアルプロパティはアニメーション化されている可能性があります。`null`値を処理してください。シェーダーがプロパティのアニメーション化をサポートしていない場合でも、Avatar Optimizerが一度に複数のマテリアルを処理する可能性があるため、`null`として渡される可能性があります。
 
 ```csharp
 // パターンマッチングを使用
@@ -482,18 +332,157 @@ if (matInfo.GetFloat("_UseEmission") != 0)
 - UV行列が動的またはアニメーション化されている場合は`null`に設定
 - スクリーンスペースUVには`UsingUVChannels.NonMesh`を使用
 
-### 実装をテスト
+## 完全な例 {#examples}
 
-`AAO Merge Material`コンポーネントでテストして確認してください:
+シンプルなシェーダーのためのシンプルなShaderInformation例です。
 
-1. テクスチャが正しくアトラス化できる
-2. UV変換が適切に適用される
-3. 最適化後に視覚的なアーティファクトがない
-4. 異なる設定を持つマテリアルが正しく処理される
+より複雑な例については、GitHubにあるAvatar Optimizerの組み込みシェーダー情報実装を参照してください:
+- [VRChat SDKシェーダー](https://github.com/anatawa12/AvatarOptimizer/blob/master/Editor/APIInternal/ShaderInformation.VRCSDK.cs)
+- [lilToon](https://github.com/anatawa12/AvatarOptimizer/blob/master/Editor/APIInternal/ShaderInformation.Liltoon.cs)
+- [Unity組み込みシェーダー](https://github.com/anatawa12/AvatarOptimizer/blob/master/Editor/APIInternal/ShaderInformation.Builtin.cs)
+
+### メインテクスチャを持つシンプルなシェーダー
+
+```csharp
+[InitializeOnLoad]
+internal class SimpleShaderInformation : ShaderInformation
+{
+    static SimpleShaderInformation()
+    {
+        ShaderInformationRegistry.RegisterShaderInformationWithGUID(
+            "your-shader-guid",
+            new SimpleShaderInformation()
+        );
+    }
+
+    public override ShaderInformationKind SupportedInformationKind =>
+        ShaderInformationKind.TextureAndUVUsage;
+
+    public override void GetMaterialInformation(MaterialInformationCallback matInfo)
+    {
+        var mainTexST = matInfo.GetVector("_MainTex_ST");
+        Matrix2x3? uvMatrix = mainTexST is { } st 
+            ? Matrix2x3.NewScaleOffset(st) 
+            : null;
+
+        matInfo.RegisterTextureUVUsage(
+            "_MainTex",
+            "_MainTex",
+            UsingUVChannels.UV0,
+            uvMatrix
+        );
+    }
+}
+```
+
+### 条件付き機能を持つシェーダー
+
+```csharp
+[InitializeOnLoad]
+internal class FeatureShaderInformation : ShaderInformation
+{
+    static FeatureShaderInformation()
+    {
+        ShaderInformationRegistry.RegisterShaderInformationWithGUID(
+            "your-shader-guid",
+            new FeatureShaderInformation()
+        );
+    }
+
+    public override ShaderInformationKind SupportedInformationKind =>
+        ShaderInformationKind.TextureAndUVUsage;
+
+    public override void GetMaterialInformation(MaterialInformationCallback matInfo)
+    {
+        // メインテクスチャ (常に存在)
+        var mainTexST = matInfo.GetVector("_MainTex_ST");
+        Matrix2x3? mainUVMatrix = mainTexST is { } st 
+            ? Matrix2x3.NewScaleOffset(st) 
+            : null;
+
+        matInfo.RegisterTextureUVUsage(
+            "_MainTex", "_MainTex", UsingUVChannels.UV0, mainUVMatrix
+        );
+
+        // 法線マップ (キーワードに依存)
+        if (matInfo.IsShaderKeywordEnabled("_NORMALMAP") != false)
+        {
+            matInfo.RegisterTextureUVUsage(
+                "_BumpMap", "_BumpMap", UsingUVChannels.UV0, mainUVMatrix
+            );
+        }
+
+        // 詳細テクスチャ (プロパティに依存)
+        if (matInfo.GetFloat("_UseDetail") != 0)
+        {
+            var detailST = matInfo.GetVector("_DetailTex_ST");
+            Matrix2x3? detailUVMatrix = detailST is { } st2 
+                ? Matrix2x3.NewScaleOffset(st2) 
+                : null;
+
+            var detailUV = matInfo.GetFloat("_DetailUV") switch
+            {
+                0 => UsingUVChannels.UV0,
+                1 => UsingUVChannels.UV1,
+                _ => UsingUVChannels.UV0 | UsingUVChannels.UV1
+            };
+
+            matInfo.RegisterTextureUVUsage(
+                "_DetailTex", "_DetailTex", detailUV, detailUVMatrix
+            );
+        }
+
+        // MatCap (スクリーンスペース、UV変換なし)
+        if (matInfo.IsShaderKeywordEnabled("_MATCAP") != false)
+        {
+            matInfo.RegisterTextureUVUsage(
+                "_MatCap",
+                SamplerStateInformation.LinearClampSampler,
+                UsingUVChannels.NonMesh,
+                null
+            );
+        }
+    }
+}
+```
+
+### 頂点インデックスを使用するシェーダー
+
+```csharp
+[InitializeOnLoad]
+internal class VertexShaderInformation : ShaderInformation
+{
+    static VertexShaderInformation()
+    {
+        ShaderInformationRegistry.RegisterShaderInformationWithGUID(
+            "your-shader-guid",
+            new VertexShaderInformation()
+        );
+    }
+
+    public override ShaderInformationKind SupportedInformationKind =>
+        ShaderInformationKind.TextureAndUVUsage | ShaderInformationKind.VertexIndexUsage;
+
+    public override void GetMaterialInformation(MaterialInformationCallback matInfo)
+    {
+        var mainTexST = matInfo.GetVector("_MainTex_ST");
+        Matrix2x3? uvMatrix = mainTexST is { } st 
+            ? Matrix2x3.NewScaleOffset(st) 
+            : null;
+
+        matInfo.RegisterTextureUVUsage(
+            "_MainTex", "_MainTex", UsingUVChannels.UV0, uvMatrix
+        );
+
+        // シェーダーは効果のためにSV_VertexIDを使用
+        matInfo.RegisterVertexIndexUsage();
+    }
+}
+```
 
 ## サポート {#support}
 
-質問やヘルプが必要な場合:
+質問やヘルプが必要な場合、`@anatawa12`にメンションしてください:
 
 - **Discord**: [NDMF Discord]
 - **Fediverse**: [@anatawa12@misskey.niri.la][fediverse]
