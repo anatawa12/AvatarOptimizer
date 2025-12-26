@@ -4,7 +4,7 @@ title: Shader Information API
 
 # Shader Information API
 
-Since Avatar Optimizer v1.9.0-beta.3, Avatar Optimizer provides the Shader Information API to help optimize materials for materials with your custom shaders.
+Since Avatar Optimizer v1.8.0, Avatar Optimizer provides the Shader Information API to help optimize materials for materials with your custom shaders.
 By registering shader information, you can enable Avatar Optimizer to perform advanced optimizations like texture atlasing and UV packing.
 
 ## What is Shader Information? {#what-is-shader-information}
@@ -23,17 +23,17 @@ Without Shader Information, Avatar Optimizer treats your shader conservatively a
 
 ## Core Concepts {#core-concepts}
 
-### Null Values
-
-Throughout the Shader Information API, `null` values have a consistent meaning: they represent either **unknown values** or **animated (statically undecidable) values**. When a material property might be animated or its value cannot be determined at build time, the API returns `null` to indicate uncertainty. You should pass `null` for parameters when their values cannot be determined statically.
-
 ### Main Classes
 
 The Shader Information API consists of three main classes:
 
 - **`ShaderInformation`**: Base class you extend to provide information about your shader. Override `GetMaterialInformation` to register texture and UV usage for materials using your shader.
-- **`ShaderInformationRegistry`**: Static class used to register your `ShaderInformation` implementation with Avatar Optimizer during editor initialization.
+- **`ShaderInformationRegistry`**: Static class used to [register](#registration-methods) your `ShaderInformation` implementation with Avatar Optimizer during editor initialization.
 - **`MaterialInformationCallback`**: Passed to `GetMaterialInformation`, provides methods to read material properties and register texture/UV usage information.
+
+### Null Values
+
+Throughout the Shader Information API, `null` values have a consistent meaning: they represent either **unknown values** or **animated (statically undecidable) values**. When a material property might be animated or its value cannot be determined at build time, the API returns `null` to indicate uncertainty. You should pass `null` for parameters when their values cannot be determined statically.
 
 ## Getting Started {#getting-started}
 
@@ -48,11 +48,11 @@ The assembly should be Editor-only since Shader Information is only used at buil
 
 Add `com.anatawa12.avatar-optimizer.api.editor` to your assembly definition's references.
 
-If you don't want to require Avatar Optimizer, use [Version Defines] with the symbol `AVATAR_OPTIMIZER`:
+If you don't want to require Avatar Optimizer as the dependency, use [Version Defines] with symbols like `AVATAR_OPTIMIZER`, to detect if Avatar Optimizer is installed and if AAO version is newer than specified version.
 
 ![version-defines.png](../make-your-components-compatible-with-aao/version-defines.png)
 
-Recommended version range: `[1.9-beta.3,2.0)` (supports v1.9.0-beta.3 and later but will require updates for v2.0.0). Note that some APIs may have been added in later versions, so you may need to adjust the version range based on which APIs you use.
+We recommended version range like `[1.8,2.0)` (supports v1.8.0 and later but will require updates for v2.0.0). Note that some APIs may have been added in later versions, so you may need to adjust the version range based on which APIs you use.
 
 ### 3. Create Shader Information Class {#create-class}
 
@@ -235,8 +235,9 @@ public override void GetMaterialInformation(MaterialInformationCallback matInfo)
 }
 ```
 
-## Registration Methods {#registration-methods}
+## Registering Shader Information {#registration-methods}
 
+You have to register your ShaderInformation implementation to link information to your shader.
 There are two ways to register Shader Information:
 
 ### Register by GUID (Recommended) {#register-by-guid}
@@ -252,7 +253,7 @@ ShaderInformationRegistry.RegisterShaderInformationWithGUID(
 
 ### Register by Shader Instance {#register-by-instance}
 
-For shaders dynamically created on build or when you have the shader instance:
+For shaders dynamically created on build or when you have the shader instance, you can register with shader instance.
 
 ```csharp
 Shader shader = Shader.Find("Your/Shader/Name");
@@ -266,7 +267,7 @@ ShaderInformationRegistry.RegisterShaderInformation(
 
 ### Use InitializeOnLoad
 
-Register your Shader Information in a static constructor with `[InitializeOnLoad]`:
+Register your Shader Information in a static constructor with `[InitializeOnLoad]` to register before 'apply on play' builds.
 
 ```csharp
 [InitializeOnLoad]
@@ -482,7 +483,7 @@ internal class VertexShaderInformation : ShaderInformation
 
 ## Support {#support}
 
-If you have questions or need help, mention `@anatawa12`:
+If you have questions or need help, mention `@anatawa12` on Discord:
 
 - **Discord**: [NDMF Discord]
 - **Fediverse**: [@anatawa12@misskey.niri.la][fediverse]
