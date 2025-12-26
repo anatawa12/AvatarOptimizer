@@ -23,7 +23,7 @@ Without Shader Information, Avatar Optimizer treats your shader conservatively a
 
 ## Core Concepts {#core-concepts}
 
-### Main Classes
+### Main Classes {#main-classes}
 
 The Shader Information API consists of three main classes:
 
@@ -31,7 +31,7 @@ The Shader Information API consists of three main classes:
 - **`ShaderInformationRegistry`**: Static class used to [register](#registration-methods) your `ShaderInformation` implementation with Avatar Optimizer during editor initialization.
 - **`MaterialInformationCallback`**: Passed to `GetMaterialInformation`, provides methods to read material properties and register texture/UV usage information.
 
-### Null Values
+### Null Values {#null-values}
 
 Throughout the Shader Information API, `null` values have a consistent meaning: they represent either **unknown values** or **animated (statically undecidable) values**. When a material property might be animated or its value cannot be determined at build time, the API returns `null` to indicate uncertainty. You should pass `null` for parameters when their values cannot be determined statically.
 
@@ -158,7 +158,7 @@ public override void GetMaterialInformation(MaterialInformationCallback matInfo)
 }
 ```
 
-#### Sampler States
+#### Sampler States {#sampler-states}
 
 Sampler states define texture wrapping and filtering. Most shaders use a sampler from a material property - use the property name (string implicitly converts to `SamplerStateInformation`):
 
@@ -175,7 +175,7 @@ If your shader uses inline samplers (e.g., `SamplerState linearClampSampler`), u
 
 If the sampler cannot be determined, use `SamplerStateInformation.Unknown`.
 
-#### UV Channels
+#### UV Channels {#uv-channels}
 
 Specify which UV channel(s) the texture samples from using `UsingUVChannels`. For textures that don't use mesh UVs (screen space, MatCap, view-direction based, etc.), use `UsingUVChannels.NonMesh`:
 
@@ -201,7 +201,7 @@ var uvChannel = matInfo.GetFloat("_UVChannel") switch
 matInfo.RegisterTextureUVUsage("_DetailTex", "_DetailTex", uvChannel, uvMatrix);
 ```
 
-#### UV Transform Matrices
+#### UV Transform Matrices {#uv-transform-matrices}
 
 UV transform matrices describe how UVs are scaled and offset (like `_MainTex_ST`). Most Unity shaders use a Vector4 with `(scaleX, scaleY, offsetX, offsetY)`:
 
@@ -265,7 +265,7 @@ ShaderInformationRegistry.RegisterShaderInformation(
 
 ## Best Practices {#best-practices}
 
-### Use InitializeOnLoad
+### Use InitializeOnLoad {#use-initializeonload}
 
 Register your Shader Information in a static constructor with `[InitializeOnLoad]` to register before 'apply on play' builds.
 
@@ -288,7 +288,7 @@ internal class YourShaderInformation : ShaderInformation
 }
 ```
 
-### Handle Unknown Values
+### Handle Unknown Values {#handle-unknown-values}
 
 Material properties might be animated or unknown. Handle `null` values. Even when your shader does not support animating a property, Avatar Optimizer may pass it as `null` since Avatar Optimizer may process multiple materials at once.
 
@@ -307,7 +307,7 @@ var uvChannel = matInfo.GetFloat("_UVChannel") switch
 };
 ```
 
-### Check Keywords and Properties
+### Check Keywords and Properties {#check-keywords-properties}
 
 Only register textures that are actually used:
 
@@ -326,7 +326,7 @@ if (matInfo.GetFloat("_UseEmission") != 0)
 **Note:** `!= false` checks if the value is `true` or `null` (unknown).
 This conservative approach assumes features are enabled if unknown.
 
-### Provide Accurate Information
+### Provide Accurate Information {#provide-accurate-information}
 
 - Only set `VertexIndexUsage` if vertex indices truly matter
 - Use correct sampler states (affects texture filtering during atlasing)
@@ -342,7 +342,7 @@ For more complex examples, see Avatar Optimizer's built-in shader information im
 - [lilToon](https://github.com/anatawa12/AvatarOptimizer/blob/master/Editor/APIInternal/ShaderInformation.Liltoon.cs)
 - [Unity Built-in Shaders](https://github.com/anatawa12/AvatarOptimizer/blob/master/Editor/APIInternal/ShaderInformation.Builtin.cs)
 
-### Simple Shader with Main Texture
+### Simple Shader with Main Texture {#example-simple}
 
 ```csharp
 [InitializeOnLoad]
@@ -376,7 +376,7 @@ internal class SimpleShaderInformation : ShaderInformation
 }
 ```
 
-### Shader with Conditional Features
+### Shader with Conditional Features {#example-conditional}
 
 ```csharp
 [InitializeOnLoad]
@@ -447,7 +447,7 @@ internal class FeatureShaderInformation : ShaderInformation
 }
 ```
 
-### Shader Using Vertex Indices
+### Shader Using Vertex Indices {#example-vertex-indices}
 
 ```csharp
 [InitializeOnLoad]
@@ -483,9 +483,9 @@ internal class VertexShaderInformation : ShaderInformation
 
 ## Support {#support}
 
-If you have questions or need help, mention `@anatawa12` on Discord:
+If you have questions or need help ask me on
 
-- **Discord**: [NDMF Discord]
+- **Discord**: [NDMF Discord] mention `@anatawa12`
 - **Fediverse**: [@anatawa12@misskey.niri.la][fediverse]
 - **GitHub Issues**: [AvatarOptimizer Issues]
 
