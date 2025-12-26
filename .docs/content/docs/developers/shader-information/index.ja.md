@@ -249,7 +249,7 @@ public override void GetMaterialInformation(MaterialInformationCallback matInfo)
 }
 ```
 
-**重要**: 頂点インデックスが視覚的結果に大きく影響する場合にのみこれを呼び出してください。頂点インデックスに基づくノイズやランダム生成は、ユーザーがノイズ用の頂点IDを制御できないため、一般的にこの使用状況を登録する必要はありません。
+**重要**: 頂点インデックスが視覚的結果に大きく影響する場合にのみこれを呼び出してください。
 
 ## 完全な例 {#examples}
 
@@ -414,16 +414,6 @@ ShaderInformationRegistry.RegisterShaderInformationWithGUID(
 );
 ```
 
-**シェーダーGUIDの見つけ方:**
-
-1. Projectウィンドウでシェーダーを選択
-2. 右クリック → Copy GUID
-3. または`.meta`ファイルを開いてGUIDをコピー
-
-**利点:**
-- シェーダーアセットがまだロードされていなくても機能します
-- パッケージとして配布されるシェーダーアセットに推奨されます
-
 ### シェーダーインスタンスで登録 {#register-by-instance}
 
 ビルド時に動的に作成されるシェーダー、またはシェーダーインスタンスがある場合:
@@ -522,6 +512,10 @@ if (matInfo.GetFloat("_UseEmission") != 0)
 質問やヘルプが必要な場合:
 
 - **Discord**: [NDMF Discord]
+- **Fediverse**: [@anatawa12@misskey.niri.la][fediverse]
+- **GitHub Issues**: [AvatarOptimizer Issues]
 
 [Version Defines]: https://docs.unity3d.com/2019.4/Documentation/Manual/ScriptCompilationAssemblyDefinitionFiles.html#define-symbols
 [NDMF Discord]: https://discord.gg/dV4cVpewmM
+[fediverse]: https://misskey.niri.la/@anatawa12
+[AvatarOptimizer Issues]: https://github.com/anatawa12/AvatarOptimizer/issues

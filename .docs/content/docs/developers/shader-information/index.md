@@ -279,7 +279,7 @@ public override void GetMaterialInformation(MaterialInformationCallback matInfo)
 }
 ```
 
-**Important**: Only call this if vertex indices significantly affect the visual result. Noise or random generation based on vertex indices does not generally need to register this usage, since users cannot control vertex IDs for noise.
+**Important**: Only call this if vertex indices significantly affect the visual result.
 
 ## Complete Examples {#examples}
 
@@ -444,16 +444,6 @@ ShaderInformationRegistry.RegisterShaderInformationWithGUID(
 );
 ```
 
-**How to find the shader GUID:**
-
-1. Select the shader in the Project window
-2. Right-click → Copy GUID
-3. Or open the `.meta` file and copy the GUID
-
-**Advantages:**
-- Works even if the shader asset isn't loaded yet
-- Recommended for shader assets distributed as packages
-
 ### Register by Shader Instance {#register-by-instance}
 
 For shaders dynamically created on build or when you have the shader instance:
@@ -552,6 +542,10 @@ Test with the `AAO Merge Material` component to verify:
 If you have questions or need help:
 
 - **Discord**: [NDMF Discord]
+- **Fediverse**: [@anatawa12@misskey.niri.la][fediverse]
+- **GitHub Issues**: [AvatarOptimizer Issues]
 
 [Version Defines]: https://docs.unity3d.com/2019.4/Documentation/Manual/ScriptCompilationAssemblyDefinitionFiles.html#define-symbols
 [NDMF Discord]: https://discord.gg/dV4cVpewmM
+[fediverse]: https://misskey.niri.la/@anatawa12
+[AvatarOptimizer Issues]: https://github.com/anatawa12/AvatarOptimizer/issues
