@@ -100,7 +100,7 @@ Avatar Optimizerにコンポーネントの情報を登録できます。
 Avatar Optimizer 1.6.0より前にはAPIが無く、Avatar Optimizer 2.0.0ではAPIの互換性を破壊する可能性があるため、
 バージョンの範囲を`[1.6,2.0)`(または、将来的に追加されたAPIを用いる必要がある場合、より厳密に `[1.7,2.0)`など)のように指定することを推奨します。
 
-![version-defines.png](version-defines.png)
+![version-defines.png](../version-defines.png)
 
 続いて、ツールのコンポーネントについての`ComponentInformation`を定義してください。
 
