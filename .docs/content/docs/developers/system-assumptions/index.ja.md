@@ -21,11 +21,15 @@ Transformを操作するツールを作成する場合は、Avatar Optimizerの�
 ShaderInformationで明示的に登録されていない限り、頂点インデックスは、シェーダーやAvatar Optimizerの後に実行される他のプラグインなどにおいて使用されないものと仮定して扱われます。
 
 Avatar Optimizerは、その最適化処理においてメッシュを統合し、頂点インデックスを変更する可能性があります。\
-シェーダーやツールで頂点インデックスを使用する場合は、ShaderInformation APIを介してその利用状況を登録し、不適切な最適化処理を防止する必要があります。
+シェーダーやツールで頂点インデックスを使用する場合は、[ShaderInformation API][ShaderInformation]を介してその利用状況を登録し、不適切な最適化処理を防止する必要があります。
+
+[ShaderInformation]: ../shader-information
 
 ## 外部ツールによるAnimatorパラメーターの使用 {#external-parameter-usage}
 
 AssetDescriptionで明示的に宣言されていない限り、Animatorパラメーターは外部ツールによって変更されたり読み取られたりしないものと仮定して扱われます。
 
 Avatar Optimizerは、アバター上で使用されていない限り、パラメーターの値が変更されたり読み取られたりしない前提で最適化を行います。\
-ツールがOSCなどでパラメーターを変更したり読み取ったりする場合は、AssetDescriptionを介して外部ツールから使用されるパラメーターとして登録してください。
+ツールがOSCなどでパラメーターを変更したり読み取ったりする場合は、[AssetDescription]を介して外部ツールから使用されるパラメーターとして登録してください。
+
+[AssetDescription]: ../asset-description
