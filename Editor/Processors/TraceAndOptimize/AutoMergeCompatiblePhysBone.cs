@@ -18,12 +18,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysBone>
 {
     public override string DisplayName => "T&O: Auto Merge Compatible PhysBone";
+    protected override bool Enabled(TraceAndOptimizeState state) => state.MergePhysBones;
 
     protected override void Execute(BuildContext context, TraceAndOptimizeState state)
     {
-        if (!state.OptimizePhysBone) return;
-        if (state.SkipMergePhysBones) return;
-
         var physBonesByKey = new Dictionary<PbInfo, List<VRCPhysBone>>();
         foreach (var physBone in context.GetComponents<VRCPhysBone>())
         {
@@ -153,7 +151,11 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
             var rootTransform = physBone.rootTransform;
             if (rootTransform == null) rootTransform = physBone.transform;
             RootTransformParent = rootTransform.parent;
+#if AAO_VRCSDK3_AVATARS_IGNORE_OTHER_PHYSBONE
             IgnoreOtherPhysBones = physBone.ignoreOtherPhysBones;
+#else
+            IgnoreOtherPhysBones = false;
+#endif
             EndpointPosition = physBone.endpointPosition;
             MultiChildType = physBone.multiChildType;
             // force

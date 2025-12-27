@@ -11,12 +11,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
     public class MergeBlendTreeLayer : AnimOptPassBase<MergeBlendTreeLayer>
     {
+        public override string DisplayName => "Animator Optimizer: Merge BlendTree Layers";
+        protected override bool Enabled(TraceAndOptimizeState state) => state.MergeBlendTreeLayer;
+
         private protected override void Execute(BuildContext context, AOAnimatorController controller,
-            TraceAndOptimizeState settings)
-        {
-            if (settings.SkipMergeBlendTreeLayer) return;
-            Execute(controller);
-        }
+            TraceAndOptimizeState settings) => Execute(controller);
 
         public static void Execute(AOAnimatorController controller, string? alwaysOneParameter = null)
         {

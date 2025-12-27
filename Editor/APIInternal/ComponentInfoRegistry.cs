@@ -40,15 +40,15 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         [InitializeOnLoadMethod]
         static void NDMFComponents()
         {
-            var contextHolder = Type.GetType("nadena.dev.ndmf.VRChat.ContextHolder, nadena.dev.ndmf", false);
-            // since NDMF 1.4.0, ContextHolder is moved to nadena.dev.ndmf.vrchat assembly
-            if (contextHolder == null)
-                contextHolder = Type.GetType("nadena.dev.ndmf.VRChat.ContextHolder, nadena.dev.ndmf.vrchat", false);
-
-            // nadena.dev.ndmf.VRChat.ContextHolder is internal so I use reflection
-            if (contextHolder != null)
+            // Register NDMF Internal components as entrypoint components
+            // Currently known components are the following but may change in future:
+            // - nadena.dev.ndmf.runtime.AlreadyProcessedTag
+            // - nadena.dev.ndmf.runtime.AvatarActivator
+            // - nadena.dev.ndmf.VRChat.ContextHolder
+            // - nadena.dev.ndmf.AvatarBuildStateTracker
+            foreach (var type in TypeCache.GetTypesWithAttribute<nadena.dev.ndmf.runtime.NDMFInternal>())
             {
-                InformationByType.Add(contextHolder, new EntrypointComponentInformation());
+                InformationByType.TryAdd(type, new EntrypointComponentInformation());
             }
         }
 

@@ -13,11 +13,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     internal class AutoMergeSkinnedMesh : TraceAndOptimizePass<AutoMergeSkinnedMesh>
     {
         public override string DisplayName => "T&O: AutoMergeSkinnedMesh";
+        protected override bool Enabled(TraceAndOptimizeState state) => state.MergeSkinnedMesh;
 
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            if (!state.MergeSkinnedMesh) return;
-
             var mergeMeshes = FilterMergeMeshes(context, state);
             if (mergeMeshes.Count == 0) return;
 
@@ -26,12 +25,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes;
 
             // createSubMeshes must preserve first material to be the first material
-            if (state.SkipMergeMaterials)
-                createSubMeshes = CreateSubMeshesNoMerge;
-            else if (state.AllowShuffleMaterialSlots)
-                createSubMeshes = CreateSubMeshesMergeShuffling;
+            if (state.MergeMaterials)
+                createSubMeshes = state.AllowShuffleMaterialSlots
+                    ? CreateSubMeshesMergeShuffling
+                    : CreateSubMeshesMergePreserveOrder;
             else
-                createSubMeshes = CreateSubMeshesMergePreserveOrder;
+                createSubMeshes = CreateSubMeshesNoMerge;
 
             MergeMeshes(context, state, categorizedMeshes, createSubMeshes);
         }
@@ -181,19 +180,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             foreach (var (key, meshInfos) in categorizedMeshes)
             {
-                if (key.RendererAnimationLocations.Count != 0 && state.SkipMergeMaterialAnimatingSkinnedMesh)
+                if (key.RendererAnimationLocations.Count != 0 && !state.MergeMaterialAnimatingSkinnedMesh)
                     continue;
 
                 if (key.Activeness != Activeness.Animating)
                 {
-                    if (!state.SkipMergeStaticSkinnedMesh)
+                    if (state.MergeStaticSkinnedMesh)
                     {
                         MergeStaticSkinnedMesh(context, gameObjectFactory, key, meshInfos, createSubMeshes);
                     }
                 }
                 else
                 {
-                    if (!state.SkipMergeAnimatingSkinnedMesh)
+                    if (state.MergeAnimatingSkinnedMesh)
                     {
                         MergeAnimatingSkinnedMesh(context, gameObjectFactory, key, meshInfos, createSubMeshes,
                             mappingBuilder);

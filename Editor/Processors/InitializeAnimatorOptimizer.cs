@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 using nadena.dev.ndmf;
 using UnityEditor;
@@ -21,11 +22,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
     class InitializeAnimatorOptimizer : TraceAndOptimizePass<InitializeAnimatorOptimizer>
     {
         public override string DisplayName => "AnimOpt: Initialize";
+        protected override bool Enabled(TraceAndOptimizeState state) => state.OptimizeAnimator;
 
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            if (!state.OptimizeAnimator) return;
-
             var animatorState = context.GetState<AnimatorOptimizerState>();
 
 #if AAO_VRCSDK3_AVATARS
@@ -67,6 +67,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             {
                 if (runtimeController == null) return;
                 var cloned = (AnimatorController)runtimeController;
+                if (!ValidateController(cloned)) return; // If transition types are invalid, skip processing
                 var wrapper = new AOAnimatorController(cloned, rootGameObject);
                 animatorState.Add(wrapper);
                 if (!clonedToController.TryAdd(cloned, wrapper)) return;
@@ -85,9 +86,74 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 #endif
             }
             
+            bool ValidateController(AnimatorController animatorController)
+            {
+                if (animatorController.parameters.Select(x => x.name).Distinct().Count() != animatorController.parameters.Length)
+                {
+                    Debug.LogError(
+                        $"Animator Controller '{animatorController.name}' has parameters with duplicate names. Animator Optimizer requires unique parameter names to function correctly. Skipping optimization for this controller.",
+                        context.AvatarRootObject);
+                    return false;
+                }
+
+                var parameterTypes = animatorController.parameters.ToDictionary(p => p.name, p => p.type);
+
+                // check types are valid types
+                foreach (var (name, type) in parameterTypes)
+                {
+                    if (type is not (AnimatorControllerParameterType.Float or
+                        AnimatorControllerParameterType.Int or
+                        AnimatorControllerParameterType.Bool or
+                        AnimatorControllerParameterType.Trigger))
+                    {
+                        Debug.LogError(
+                            $"Animator Controller '{animatorController.name}' has a parameter '{name}' with an unsupported type '{type}'. Supported types are Float, Int, Bool, and Trigger. Skipping optimization for this controller.",
+                            context.AvatarRootObject);
+                        return false;
+                    }
+                }
+
+                foreach (var layer in animatorController.layers)
+                {
+                    if (layer.syncedLayerIndex >= 0) continue; // skip synced layers
+                    foreach (var transition in ACUtils.AllTransitions(layer.stateMachine))
+                    {
+                        foreach (var condition in transition.conditions)
+                        {
+                            if (!parameterTypes.TryGetValue(condition.parameter, out var paramType))
+                            {
+                                Debug.LogError(
+                                    $"Animator Controller '{animatorController.name}' has a transition condition that references a non-existent parameter (hash: {condition.parameter}). Skipping optimization for this controller.",
+                                    context.AvatarRootObject);
+                                return false;
+                            }
+
+                            bool isValid = paramType switch
+                            {
+                                AnimatorControllerParameterType.Float => condition.IsValidForFloat(),
+                                AnimatorControllerParameterType.Int => condition.IsValidForInt(),
+                                AnimatorControllerParameterType.Bool => condition.IsValidForBool(),
+                                AnimatorControllerParameterType.Trigger => condition.IsValidForTrigger(),
+                                _ => throw new ArgumentOutOfRangeException()
+                            };
+
+                            if (!isValid)
+                            {
+                                Debug.LogError(
+                                    $"Animator Controller '{animatorController.name}' has a transition condition with an invalid parameter type for the condition mode '{condition.mode}' on parameter '{condition.parameter}'. Skipping optimization for this controller.",
+                                    context.AvatarRootObject);
+                                return false;
+                            }
+                        }
+                    }
+                }
+
+                return true;
+            }
+            
 #if AAO_VRCSDK3_AVATARS
             {
-                var descriptor = context.AvatarDescriptor;
+                var descriptor = context.AvatarRootObject.GetComponent<VRCAvatarDescriptor>();
                 if (descriptor && descriptor.customizeAnimationLayers)
                 {
                     foreach (var playableLayer in descriptor.baseAnimationLayers)
@@ -95,7 +161,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         if (playableLayer.isDefault || !playableLayer.animatorController ||
                             changerBehaviours[playableLayer.type] == null) continue;
 
-                        var wrapper = clonedToController[(AnimatorController)playableLayer.animatorController];
+                        if (!clonedToController.TryGetValue((AnimatorController)playableLayer.animatorController, out var wrapper)) 
+                            continue;
 
                         foreach (var control in changerBehaviours[playableLayer.type])
                         {

@@ -36,11 +36,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
     // - all states have same write defaults value
     public class AnyStateToEntryExit : AnimOptPassBase<AnyStateToEntryExit>
     {
+        public override string DisplayName => "Animator Optimizer: AnyState to Entry-Exit";
+        protected override bool Enabled(TraceAndOptimizeState state) => state.AnyStateToEntryExit;
+
         private protected override void Execute(BuildContext context, AOAnimatorController controller,
             TraceAndOptimizeState settings)
         {
-            if (settings.SkipAnyStateToEntryExit) return; // feature disabled
-
             var state = context.GetState<AnimatorOptimizerState>();
             Execute(state, controller);
         }
@@ -176,7 +177,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 static bool IsMeaningfulBinding(AnimationClip clip, EditorCurveBinding binding, GameObject? rootGameObject)
                 {
                     if (rootGameObject == null) return false; // we can't check no-op without rootGameObject
-                    var component = Utils.GetAnimatedObject(rootGameObject, binding);
+                    var component = Utils.GetAnimatedObject(rootGameObject, binding, clip);
                     if (component == null) return true; // target is not exist: no-op
 
                     if (binding.isPPtrCurve)

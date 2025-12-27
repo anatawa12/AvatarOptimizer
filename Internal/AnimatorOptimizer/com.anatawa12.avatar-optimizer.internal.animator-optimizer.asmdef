@@ -18,6 +18,7 @@
     "precompiledReferences": [
         "VRCSDKBase.dll",
         "VRCSDK3A.dll",
+        "System.Collections.Immutable.dll",
         "System.Memory.dll"
     ],
     "autoReferenced": false,

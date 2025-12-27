@@ -640,3 +640,16 @@ msgid "AssetDescription:OpenDocs"
 msgstr "打开文档"
 
 # endregion
+
+# region MaxTextureSize
+
+msgid "MaxTextureSize:description"
+msgstr "使用Mipmap限制此GameObject及其子对象中纹理的最大尺寸以避免重压缩。"
+
+msgid "MaxTextureSize:prop:maxTextureSize"
+msgstr "最大纹理尺寸"
+
+msgid "MaxTextureSize:warning:crunchedNotSupported"
+msgstr "不支持调整Crunched纹理格式的大小。"
+
+# endregion

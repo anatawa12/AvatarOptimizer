@@ -77,8 +77,9 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                 {
                     if (component.VisemeSkinnedMesh != null)
                     {
-                        collector.ModifyProperties(component.VisemeSkinnedMesh,
-                            $"blendShape.{component.MouthOpenBlendShapeName}");
+                        collector.PreserveProperties(component.VisemeSkinnedMesh, new []{
+                            $"blendShape.{component.MouthOpenBlendShapeName}"
+                        });
                     }
                     break;
                 }
@@ -86,7 +87,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                 {
                     if (component.VisemeSkinnedMesh != null)
                     {
-                        collector.ModifyProperties(component.VisemeSkinnedMesh,
+                        collector.PreserveProperties(component.VisemeSkinnedMesh,
                             component.VisemeBlendShapes.Select(blendShape => $"blendShape.{blendShape}"));
                     }
                     break;
@@ -254,7 +255,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
 
                             if (mesh != null)
                             {
-                                collector.ModifyProperties(skinnedMeshRenderer,
+                                collector.PreserveProperties(skinnedMeshRenderer,
                                     from index in component.customEyeLookSettings.eyelidsBlendshapes
                                     where 0 <= index && index < mesh.blendShapeCount
                                     select $"blendShape.{mesh.GetBlendShapeName(index)}");
@@ -343,10 +344,14 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
     [ComponentInformation(typeof(VRCPhysBone))]
     internal class VRCPhysBoneInformation : ComponentInformation<VRCPhysBoneBase>
     {
+        private static readonly Type? ParentChangeDetectorType = Type.GetType("VRC.Dynamics.ParentChangeDetector, VRC.Dynamics");
+
         protected override void CollectDependency(VRCPhysBoneBase component, ComponentDependencyCollector collector)
         {
             if (!IsOperatingPhysBone(component))
                 return;
+            
+            var info = ((ComponentDependencyRetriever.Collector)collector)._info!;
 
             // first, Transform <=> PhysBone
             // Transform is used even if the bone is inactive so Transform => PB is always dependency
@@ -357,11 +362,20 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             void CollectTransforms(Transform bone)
             {
                 collector.AddDependency(bone, component).EvenIfDependantDisabled().OnlyIfTargetCanBeEnable();
-                collector.AddDependency(bone);
+                info.AddDependency(bone, GCComponentInfo.DependencyType.PhysBone);
                 foreach (var child in bone.DirectChildrenEnumerable())
                 {
                     if (!ignoreTransforms.Contains(child))
                         CollectTransforms(child);
+                }
+            }
+
+            if (ParentChangeDetectorType != null)
+            {
+                var target = component.GetTarget();
+                if (target.TryGetComponent(ParentChangeDetectorType, out var parentChangeDetector))
+                {
+                    collector.AddDependency(parentChangeDetector);
                 }
             }
 
@@ -404,7 +418,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             void CollectTransforms(Transform bone)
             {
                 gcContext.GetInfo(bone).AddDependency(component);
-                gcInfo.AddDependency(bone);
+                gcInfo.AddDependency(bone, GCComponentInfo.DependencyType.PhysBone);
                 foreach (var child in bone.DirectChildrenEnumerable())
                 {
                     if (!ignoreTransforms.Contains(child))
@@ -620,6 +634,15 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
         {
             // this component is used only for storing platform overrides
+        }
+    }
+
+    // ParentChangeDetector
+    [ComponentInformationWithGUID("cdfe97a8253414b4bb5dd295880489bd", 1906240614)]
+    internal class ParentChangeDetectorInformation : ComponentInformation<Component>
+    {
+        protected override void CollectDependency(Component component, ComponentDependencyCollector collector)
+        {
         }
     }
 }

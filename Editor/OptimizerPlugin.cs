@@ -76,6 +76,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                             })
                         .Then.Run("Validation", (ctx) => ComponentValidation.ValidateAll(ctx.AvatarRootObject))
                         .Then.Run(Processors.TraceAndOptimizes.LoadTraceAndOptimizeConfiguration.Instance)
+                        .Then.Run(Processors.TraceAndOptimizes.OptimizationWarnings.Instance)
                         .Then.Run(Processors.DupliacteAssets.Instance)
                         .Then.Run(Processors.ParseAnimator.Instance)
                         .Then.Run(Processors.GatherShaderMaterialInformation.Instance)
@@ -83,13 +84,15 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                             .Run(new Processors.GCDebugPass(InternalGcDebugPosition.AtTheBeginning))
                             .Then.Run(Processors.TraceAndOptimizes.RemoveSubMeshesWithoutMaterial.Instance)
                             .Then.Run(Processors.TraceAndOptimizes.AddRemoveEmptySubMesh.Instance)
-                            .Then.Run(Processors.TraceAndOptimizes.AutoFreezeBlendShape.Instance)
+                            .Then.Run(Processors.TraceAndOptimizes.AutoFreezeNonAnimatedBlendShape.Instance)
+                            .Then.Run(Processors.TraceAndOptimizes.AutoFreezeConstantlyAnimatedBlendShape.Instance)
 #if AAO_VRCSDK3_AVATARS
                             .Then.Run(Processors.TraceAndOptimizes.AutoMergeCompatiblePhysBone.Instance)
                             .Then.Run(Processors.ClearEndpointPositionProcessor.Instance)
                             .Then.Run(Processors.MergePhysBoneProcessor.Instance)
                             .Then.Run(new Processors.GCDebugPass(InternalGcDebugPosition.AfterPhysBone))
 #endif
+                            .Then.Run(Processors.MaxTextureSizeProcessor.Instance)
                             .Then.Run(Processors.EditSkinnedMeshComponentProcessor.Instance)
                             .PreviewingWith(EditModePreview.RemoveMeshByMaskRenderFilter.Instance)
                             .PreviewingWith(EditModePreview.RemoveMeshByBlendShapeRenderFilter.Instance)
@@ -100,15 +103,21 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                             )
                             .Then.Run(new Processors.GCDebugPass(InternalGcDebugPosition.AfterMeshProcessing))
 #if AAO_VRCSDK3_AVATARS
-                            .Then.Run(Processors.TraceAndOptimizes.OptimizePhysBone.Instance)
+                            .Then.Run(Processors.TraceAndOptimizes.OptimizePhysBoneIsAnimated.Instance)
+                            .Then.Run(Processors.TraceAndOptimizes.MergePhysBoneCollider.Instance)
+                            .Then.Run(Processors.TraceAndOptimizes.ReplaceEndBoneWithEndpointPositionPass.Instance)
+                            .Then.Run(Processors.ReplaceEndBoneWithEndpointPositionProcessor.Instance)
 #endif
                             .Then.Run(Processors.TraceAndOptimizes.AutoMergeSkinnedMesh.Instance)
                             .Then.Run(Processors.TraceAndOptimizes.MergeMaterialSlots.Instance)
                             .Then.Run(new Processors.GCDebugPass(InternalGcDebugPosition.AfterAutoMergeSkinnedMesh))
-                            .Then.Run(Processors.TraceAndOptimizes.FindUnusedObjects.Instance)
+                            .Then.Run(Processors.TraceAndOptimizes.SweepComponentsOrGameObjects.Instance)
+                            .Then.Run(Processors.TraceAndOptimizes.ConfigureMergeBone.Instance) // Merge Bone
+                            .Then.Run(Processors.TraceAndOptimizes.ToggleUnusedComponents.Instance) // Activeness
                             .Then.Run(new Processors.GCDebugPass(InternalGcDebugPosition.AfterGcComponents))
                             .Then.Run(Processors.TraceAndOptimizes.ConfigureRemoveZeroSizedPolygon.Instance)
                             .Then.Run(Processors.TraceAndOptimizes.RemoveUnusedMaterialProperties.Instance)
+                            .Then.Run(Processors.TraceAndOptimizes.RemoveUnusedMaterialTextures.Instance)
                             .Then.Run(Processors.TraceAndOptimizes.AutoMergeBlendShape.Instance)
                             .Then.Run(Processors.MergeBoneProcessor.Instance)
                             .Then.Run(Processors.RemoveZeroSizedPolygonProcessor.Instance)

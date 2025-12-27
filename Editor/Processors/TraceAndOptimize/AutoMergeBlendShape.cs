@@ -15,12 +15,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 class AutoMergeBlendShape: TraceAndOptimizePass<AutoMergeBlendShape>
 {
     public override string DisplayName => "T&O: Auto Merge Blend Shape";
+    protected override bool Enabled(TraceAndOptimizeState state) => state.AutoMergeBlendShape;
 
     protected override void Execute(BuildContext context, TraceAndOptimizeState state)
     {
-        if (!state.OptimizeBlendShape) return;
-        if (state.SkipAutoMergeBlendShape) return;
-
         foreach (var skinnedMeshRenderer in context.GetComponents<SkinnedMeshRenderer>())
         {
             if (state.Exclusions.Contains(skinnedMeshRenderer.gameObject)) continue; // manual exclusion

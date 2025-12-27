@@ -5,10 +5,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 
 class RemoveSubMeshesWithoutMaterial : TraceAndOptimizePass<RemoveSubMeshesWithoutMaterial>
 {
+    public override string DisplayName => "T&O: Remove SubMeshes Without Material";
+    protected override bool Enabled(TraceAndOptimizeState state) => state.RemoveUnusedSubMesh;
+
     protected override void Execute(BuildContext context, TraceAndOptimizeState state)
     {
-        if (state.SkipRemoveUnusedSubMesh) return;
-
         var componentInfos = context.Extension<GCComponentInfoContext>();
         var entrypointMap = DependantMap.CreateEntrypointsMap(context);
 

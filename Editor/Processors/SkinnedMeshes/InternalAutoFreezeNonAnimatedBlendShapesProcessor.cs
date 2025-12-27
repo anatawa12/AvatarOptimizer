@@ -48,12 +48,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                             return false;
                         }
                     }
-                        break;
                     case ApplyState.Partially:
                     {
                         return prop.Value.TryGetConstantValue(weight, out var constWeight) && constWeight.Equals(weight);
                     }
-                        break;
                     case ApplyState.Never:
                         return true;
                     default:

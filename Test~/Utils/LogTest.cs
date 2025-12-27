@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using nadena.dev.ndmf;
 
 namespace Anatawa12.AvatarOptimizer.Test
@@ -27,14 +28,21 @@ namespace Anatawa12.AvatarOptimizer.Test
 
         public void CheckErrors(List<ErrorContext> errors)
         {
+            var foundErrors = new HashSet<(ErrorSeverity, string)>();
             foreach (var errorContext in errors)
             {
                 var simpleError = (SimpleError)errorContext.TheError;
 
                 if (!expectingErrors.Contains((simpleError.Severity, simpleError.TitleKey)))
                 {
-                    throw new Exception($"unexpected error: {simpleError.TitleKey}");
+                    throw new Exception($"unexpected {simpleError.Severity}: {simpleError.TitleKey}");
                 }
+                foundErrors.Add((simpleError.Severity, simpleError.TitleKey));
+            }
+
+            if (expectingErrors.Except(foundErrors).Any())
+            {
+                throw new Exception($"expected errors not found: {string.Join(", ", expectingErrors.Except(foundErrors))}");
             }
         }
     }

@@ -51,11 +51,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
     public abstract class AnimOptPassBase<T> : TraceAndOptimizePass<T> where T : TraceAndOptimizePass<T>, new()
     {
-        public override string DisplayName => "T&O: AnimOpt: " + typeof(T).Name;
-
         protected sealed override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            if (!state.OptimizeAnimator) return;
             foreach (var controller in context.GetState<AnimatorOptimizerState>().Controllers)
             {
                 Profiler.BeginSample("Apply to Animator");

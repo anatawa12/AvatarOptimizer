@@ -133,7 +133,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             Profiler.BeginSample("AnimationParser.ProcessFloatNodes");
             foreach (var binding in floatBindings)
             {
-                var obj = Utils.GetAnimatedObject(root, binding);
+                var obj = Utils.GetAnimatedObject(root, binding, clip);
                 if (obj == null) continue;
                 var componentOrGameObject = obj is Component component ? (ComponentOrGameObject)component
                     : obj is GameObject gameObject ? (ComponentOrGameObject)gameObject
@@ -156,7 +156,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             Profiler.BeginSample("ProcessObjectNodes");
             foreach (var binding in objectBindings)
             {
-                var obj = Utils.GetAnimatedObject(root, binding);
+                var obj = Utils.GetAnimatedObject(root, binding, clip);
                 if (obj == null) continue;
                 var componentOrGameObject = obj is Component component ? (ComponentOrGameObject)component
                     : obj is GameObject gameObject ? (ComponentOrGameObject)gameObject

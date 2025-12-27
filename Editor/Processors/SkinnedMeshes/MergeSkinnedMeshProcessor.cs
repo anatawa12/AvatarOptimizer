@@ -94,7 +94,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     .ToArray();
 
                 foreach (var meshInfo2 in meshInfos) meshInfo2.FlattenMultiPassRendering("Merge Skinned Mesh");
-                foreach (var meshInfo2 in meshInfos) meshInfo2.MakeBoned();
+                foreach (var meshInfo2 in meshInfos) meshInfo2.MakeBoned(evenIfBasicMesh: true);
                 Profiler.EndSample();
 
                 return (basicRendererMeshInfos, meshInfos);
@@ -310,16 +310,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
             var rendererPrefixes = BlendShapePrefixComputer.Create();
 
-            var traceAndOptimizeState = context.GetState<TraceAndOptimizes.TraceAndOptimizeState>();
-
-            void AddPreserveBlendShapes(IEnumerable<string> preserves)
-            {
-                var targetRenderer = (SkinnedMeshRenderer)target.SourceRenderer;
-                if (!traceAndOptimizeState.PreserveBlendShapes.TryGetValue(targetRenderer, out var thisPreserve))
-                    traceAndOptimizeState.PreserveBlendShapes.Add(targetRenderer, thisPreserve = new HashSet<string>());
-                thisPreserve.UnionWith(preserves);
-            }
-
             for (var i = 0; i < meshInfos.Length; i++)
             {
                 Profiler.BeginSample($"Process MeshInfo#{i}");
@@ -350,10 +340,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 }
                 meshInfo.SubMeshes.Clear();
 
-                var preserveShapes = meshInfo.SourceRenderer is SkinnedMeshRenderer skinnedRenderer
-                    ? traceAndOptimizeState.PreserveBlendShapes.GetValueOrDefault(skinnedRenderer)
-                    : null;
-
                 // rename if componentBlendShapeMode is RenameToAvoidConflict
                 if (componentBlendShapeMode == MergeSkinnedMesh.BlendShapeMode.RenameToAvoidConflict)
                 {
@@ -373,13 +359,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                         }
 
                         mappings.Add(($"blendShape.{name}", $"blendShape.{newName}"));
-                        if (preserveShapes?.Contains(name) ?? false)
-                            preserveShapes.Add(newName);
                     }
                 }
-
-                if (preserveShapes != null)
-                    AddPreserveBlendShapes(preserveShapes);
 
                 // add BlendShape if not defined by name
                 for (var sourceI = 0; sourceI < meshInfo.BlendShapes.Count; sourceI++)

@@ -20,6 +20,43 @@ msgstr "Read in English"
 msgid "LegacyModularAvatarWarning:nextLocale"
 msgstr "en"
 
+msgid "UnityPlayerBuildErrorBug:non-ascii-detected"
+msgstr "Unityのバグにより、プロジェクトまでのパスに非ASCII文字(半角英数字や半角記号等ではない文字)が含まれているとビルドが失敗する場合があります。プロジェクトまでのパスを確認し、ASCII文字のみのパスに移動することを検討してください。"
+
+msgid "NonVRChatPlatformSupport:experimentalMessage"
+msgstr ""
+"Trace and OptimizeのVRChat以外のプラットフォームへの対応は実験的なものです。\n"
+"バグがあったり、将来のアップデートで互換性のない変更が発生したりする可能性があります。\n"
+"使用する際はご注意ください。"
+
+msgid "NonVRChatPlatformSupport:genericPlatformMessage"
+msgstr ""
+"Trace and Optimizeが汎用のUnityプロジェクト上で使用されています。\n"
+"現時点で、Avatar Optimizerは基本的にVRChat用のプロジェクトで使用されることを想定しているため、他のプラットフォーム向けに使用すると一部の最適化がうまく機能しない場合があります。\n"
+"他のプラットフォーム向けにビルドする場合は、NDMFのプラットフォーム設定を正しく設定してください。"
+
+msgid "NonVRChatPlatformSupport:noPlatformSettings"
+msgstr ""
+"'{0}' ('{1}')用のPlatform Settingsが見つかりませんでした。\n"
+"そのため、Avatar OptimizerはVRChatプラットフォーム向けにアバターの最適化を行います。\n"
+"これは当該プラットフォーム向けには適していない可能性があります。\n"
+"当該プラットフォーム用のTrace And Optimize Platform Settingsアセットを作成することで、より良い最適化結果を得ることが出来ます。"
+
+msgid "NonVRChatPlatformSupport:manyPlatformSettings"
+msgstr ""
+"'{0}' ('{1}')用のPlatform Settingsが複数見つかりました。\n"
+"1つ目の設定となる、'{2}'にある設定を使用します。\n"
+
+msgid "NonVRChatPlatformSupport:versionMismatchMessage:inspector"
+msgstr ""
+"このPlatform Settingsアセットの設定バージョンは{0}ですが、現在使用されているAvatar Optimizerではバージョン{1}のものが必要です。\n"
+"Platform Settingsアセットを適切なバージョンに移行するか、新しいものを作成してください。"
+
+msgid "NonVRChatPlatformSupport:versionMismatchMessage:build"
+msgstr ""
+"存在する中で最適なものとして選ばれたPlatform Settingsアセットは'{0}'にありますが、その設定バージョンは{1}であり、現在使用されているAvatar Optimizerにはバージョン{2}のものが必要です。\n"
+"一部の設定が正常に動作しない可能性があります。Platform Settingsアセットを新たに作成するか移行して、適切なバージョンのものを使用してください。"
+
 # region PrefabSafeSet
 
 msgid "PrefabSafeSet:label:Multi editing not supported"
@@ -227,6 +264,14 @@ msgstr "コンポーネント"
 
 # endregion
 
+#region EditSkinnedMeshComponents
+
+msgid "EditSkinnedMeshComponents:invalid-renderer-type"
+msgstr "このコンポーネントはSkinnedMeshRendererかMeshRendererに対して使用することが想定されていますが、対象のGameObjectにはそれら以外のレンダラーが付いています。\n"
+"これはサポートされておらず、このコンポーネントの設定は無視されます。"
+
+#endregion
+
 # region MergeSkinnedMesh
 
 msgid "MergeSkinnedMesh:warning:blendShapeWeightMismatch"
@@ -373,6 +418,31 @@ msgstr "プレビューを生成"
 
 msgid "MergeToonLitMaterial:label:Texture Size"
 msgstr "テクスチャのサイズ"
+
+msgid "MergeToonLitMaterial:suggestMigrate"
+msgstr ""
+"Merge ToonLit Materialは非推奨であり、廃止予定です！\n"
+"より多くのシェーダーをサポートし、保存形式も改善されたMerge Materialに置き換えられました。\n"
+"下のボタンを押し、Merge Materialに移行することを強くお勧めします！ (設定は引き継がれます)"
+
+msgid "MergeToonLitMaterial:button:Migrate to MergeMaterial"
+msgstr "Merge Materialに移行する"
+
+msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:title"
+msgstr "Merge Materialに移行"
+
+msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:message"
+msgstr ""
+"Merge ToonLit MaterialコンポーネントからMerge Materialコンポーネントに移行しようとしています。\n"
+"これにより、すべての設定が新しいMerge Materialコンポーネントにコピーされ、このコンポーネントは削除されます。\n"
+"ただし、移行後に完全に同じ結果になることを保証することができません。移行後に結果を確認してください。\n"
+"また、この移行はPrefabに対応していません。Prefab上で使用している場合は手動で移行する必要があります。"
+
+msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:ok"
+msgstr "移行する"
+
+msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:cancel"
+msgstr "キャンセル"
 
 # endregion
 
@@ -563,6 +633,28 @@ msgstr "BlendShape名 '{0}' は重複しています。Rename BlendShapeコン�
 
 # endregion
 
+# region ReplaceEndBoneWithEndpointPosition
+
+msgid "ReplaceEndBoneWithEndpointPosition:prop:kind"
+msgstr "Endpoint Positionの設定方法"
+
+msgid "ReplaceEndBoneWithEndpointPosition:prop:overridePosition"
+msgstr "Endpoint Position Override"
+
+msgid "ReplaceEndBoneWithEndpointPosition:validation:endpointPositionAlreadySet"
+msgstr "Endpoint Positionがすでに設定されているため、置き換えることができません。"
+
+msgid "ReplaceEndBoneWithEndpointPosition:validation:overlappedPhysBone"
+msgstr "他のPhysBoneと影響を与える(揺らす)範囲が重複しています。これにより、PhysBoneの動作が変わる可能性があります。"
+
+msgid "ReplaceEndBoneWithEndpointPosition:validation:inequivalentPositions"
+msgstr "End Boneが異なる座標のものに置き換えられています。これにより、PhysBoneの動作が変わる可能性があります。"
+
+msgid "ReplaceEndBoneWithEndpointPosition:validation:unsafeMultiChild"
+msgstr "複数の子を持ち、Endpoint Positionへの置き換えに適さない(動作が変わってしまう)構造・設定になっているPhysBoneがあります。これはサポートされていません。"
+
+# endregion
+
 # region AvatarGlobalComponent
 
 msgid "AvatarGlobalComponent:NotOnAvatarRoot"
@@ -619,7 +711,16 @@ msgstr "Trace and Optimizeへの移行が完了しました！"
 # region TraceAndOptimize
 
 msgid "TraceAndOptimize:description"
-msgstr "このコンポーネントをアバターにつけると、アバターを走査して自動的にできる限りの最適化を行います。"
+msgstr "このコンポーネントをアバターにつけると、アバターを走査して自動的にできる限りの最適化を行います。\n"
+"Trace and Optimizeはほとんどのユーザーにとって設定変更が不要なように設計されています。\n"
+"設定を変更する必要がある場合、Avatar Optimizerのバグに遭遇している可能性があります。"
+
+msgid "TraceAndOptimize:warn:changeFeaturesNotNecessary"
+msgstr ""
+"通常、これらの機能を無効化する必要はありません。\n"
+"VRChatアバターに対してはデフォルトの設定が最適となるように設計されているため、設定を変更する必要がある場合はAvatar Optimizerのバグに遭遇している可能性があります。\n"
+"その場合、Avatar Optimizerの作者に報告してください。\n"
+"問題の報告方法については、 https://an12.net/aao/ja/tao-bug をご覧ください。"
 
 msgid "TraceAndOptimize:prop:optimizeBlendShape"
 msgstr "BlendShapeを最適化する"
@@ -662,8 +763,21 @@ msgstr ""
 msgid "TraceAndOptimize:prop:debugOptions"
 msgstr "デバッグ用オプション"
 
+msgid "TraceAndOptimize:dialog:debugOptions:description"
+msgstr ""
+"デバッグ用オプションはAvatar Optimizerのバグを回避するための設定です。\n"
+"これらの設定を変更すると、アバターが適切に最適化されなくなったり、最適化処理が失敗したりする可能性があります。\n"
+"また、一部のデバッグ用オプションが正しく機能しなかったり、その動作が変更されたりする可能性があります。\n"
+"これらのことを理解した上で、設定を変更しますか？"
+
+msgid "TraceAndOptimize:dialog:debugOptions:proceed"
+msgstr "設定を変更する"
+
+msgid "TraceAndOptimize:dialog:debugOptions:cancel"
+msgstr "キャンセル"
+
 msgid "TraceAndOptimize:warn:debugOptions"
-msgstr "デバッグ用オプションはAvatarOptimizerのバグを回避するための設定です。\n"
+msgstr "デバッグ用オプションはAvatar Optimizerのバグを回避するための設定です。\n"
 "これらの設定を変更すると、アバターが適切に最適化されなくなる可能性があります。\n"
 "また、一部のデバッグ用オプションが正しく機能しなかったり、その動作が変更されたりする可能性があります。ご注意ください！"
 
@@ -777,6 +891,16 @@ msgstr "アバターのルートにAnimatorコンポーネントがありませ�
 
 #endregion
 
+#region OptimizationWarnings
+
+msgid "OptimizationWarnings:multi-pass-rendering-with-same-material"
+msgstr ""
+"同一マテリアルによるマルチパスレンダリングが使用されているメッシュが存在します。\n"
+"通常、同一マテリアルでのマルチパスレンダリングは描画負荷が増えるのみであり、効果がないはずです。\n"
+"このマルチパスレンダリングを意図的に行っている場合は、不具合の発生を防ぐために、どのような目的で設定しているかとともにAvatar Optimizerの作者に連絡してください。"
+
+#endregion
+
 #region MeshInfo2
 
 msgid "MeshInfo2:warning:multiPassRendering"
@@ -819,5 +943,100 @@ msgstr "Trace and Optimizeの追加に失敗しました"
 
 msgid "ContextMenus:AddTraceAndOptimize:FailedToAddTraceAndOptimize:Message"
 msgstr "Trace and Optimizeはアバターのルートにのみ追加することができます。アバターのルートを選択してもう一度お試しください。"
+
+# endregion
+
+# region MaxTextureSize
+
+msgid "MaxTextureSize:description"
+msgstr "Mipmapを利用して、このGameObjectやその子孫で使用されているテクスチャの最大サイズを制限します。\n"
+"これにより、重い再圧縮処理を避けることができます。"
+
+msgid "MaxTextureSize:prop:maxTextureSize"
+msgstr "最大テクスチャサイズ"
+
+msgid "MaxTextureSize:warning:crunchedNotSupported"
+msgstr "Crunch圧縮されたテクスチャフォーマットはリサイズに対応していません。"
+
+msgid "MaxTextureSize:warning:insufficientMipmaps"
+msgstr "テクスチャに十分なMipmapレベルがないため、リサイズできません。"
+
+# endregion
+
+# region MergeMaterial
+
+msgid "MergeMaterial:button:Add Merged Material"
+msgstr "統合したマテリアルを追加"
+
+msgid "MergeMaterial:button:Add Source"
+msgstr "統合対象を追加"
+
+msgid "MergeMaterial:label:Texture Size"
+msgstr "テクスチャのサイズ"
+
+msgid "MergeMaterial:label:Reference Material"
+msgstr "設定参照用マテリアル"
+
+msgid "MergeMaterial:Reference Material:tooltip"
+msgstr "統合後のマテリアルの、UVベースのテクスチャ以外のすべての設定が、このマテリアルと同じ内容になります。"
+
+msgid "MergeMaterial:label:Texture Config Overrides"
+msgstr "テクスチャ設定のオーバーライド"
+
+msgid "MergeMaterial:button:Add Texture Config Override"
+msgstr "テクスチャ設定のオーバーライドを追加"
+
+msgid "MergeMaterial:label:Texture Name"
+msgstr "テクスチャ名"
+
+msgid "MergeMaterial:label:Texture Size Override"
+msgstr "サイズのオーバーライド"
+
+msgid "MergeMaterial:label:Texture Format Override"
+msgstr "フォーマットのオーバーライド"
+
+
+# region errors
+
+msgid "MergeMaterial:error:DuplicateMaterialInMergeSetting"
+msgstr "複数の統合設定で同じマテリアルが統合対象として指定されています。これはサポートされていません。"
+
+msgid "MergeMaterial:error:MaterialNotFoundInMesh"
+msgstr "統合対象のマテリアルがSkinned Mesh Renderer上に存在しません。"
+
+msgid "MergeMaterial:error:MaterialUsedInMultipleSubMeshes"
+msgstr "統合対象のマテリアルがSkinned Mesh Renderer上の複数のマテリアルスロットで使用されています。Merge Skinned Meshなどによりサブメッシュが統合されている必要があります。"
+
+msgid "MergeMaterial:error:MultiMaterialSubMesh"
+msgstr "統合対象のマテリアルを使用しているサブメッシュが複数のマテリアルを持っています。\n"
+"複数マテリアルを用いたマルチパスレンダリングはサポートされていません。"
+
+msgid "MergeMaterial:error:UnsupportedShaderInMergeSetting"
+msgstr "Merge Materialの設定で指定されたマテリアルで使用されているシェーダーは、Merge Materialでサポートされていません。"
+
+msgid "MergeMaterial:error:UnsupportedShaderInMergeSetting:description"
+msgstr "当該シェーダーは、Avatar Optimizer向けのShader Informationを提供していないか、Shader Informationにおいて'TextureAndUVUsage'情報を提供していません。\n"
+"これらの情報がない場合、Avatar Optimizerはマテリアルを正常に統合することができません。"
+
+msgid "MergeMaterial:error:UnsupportedUVTransformInReferenceMaterial"
+msgstr "設定参照用マテリアル(または統合対象の最初のマテリアル)に、サポートされていないUV変換が適用されたテクスチャがあります: {0}"
+
+msgid "MergeMaterial:error:UnsupportedUVTransformInReferenceMaterial:description"
+msgstr "設定参照用マテリアルは_STやParallaxのようなUV変換を使用してはいけません。"
+
+msgid "MergeMaterial:error:UnknownUVTransform"
+msgstr "サポートされていないか、または未知のUV変換が適用されるテクスチャを含むマテリアルがあります: {0}"
+
+msgid "MergeMaterial:error:UnknownUVTransform:description"
+msgstr "マテリアルを統合するには、テクスチャがどのように使用されているかをAvatar Optimizerが知る必要がありますが、これらのテクスチャには、未知の参照位置、またはParallaxやUVスクロールのような参照位置の動的変化があります。\n"
+"Merge Materialはそのような機能とは互換性がありません。"
+
+msgid "MergeMaterial:error:DifferentShaderInMergeSetting"
+msgstr "統合対象のマテリアルで使用されているシェーダーが、指定しているマテリアル間で異なるか、設定参照用マテリアルと異なっています。"
+
+msgid "MergeMaterial:error:ReferenceMaterial:NotAllTexturesUsed"
+msgstr "統合対象のマテリアルで使用されている一部のテクスチャプロパティが、設定参照用マテリアルでは使用されていません。現時点では、これはサポートされていません: {0}"
+
+# endregion
 
 # endregion

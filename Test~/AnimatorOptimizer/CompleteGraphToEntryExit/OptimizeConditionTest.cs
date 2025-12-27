@@ -9,6 +9,9 @@ using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer.CompleteGraphToEntryExits
 {
+    using IntRangeSet = RangeSet<int, RangeIntTrait>;
+    using FloatRangeSet = RangeSet<float, RangeFloatTrait>;
+
     public class OptimizeConditionTest
     {
         // utilities
@@ -125,7 +128,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer.CompleteGraphToEntryE
         [TestCaseSource(nameof(FloatCases))]
         public void OptimizeFloatConditions_Various(List<AnimatorCondition[]> input, List<AnimatorCondition[]> expected)
         {
-            var res = CompleteGraphToEntryExit.OptimizeFloatConditions(input);
+            var res = CompleteGraphToEntryExit.OptimizeConditions<FloatRangeSet, FloatSetTrait>(input);
             Assert.That(res, Is.EquivalentTo(expected).Using(AnimatorConditionArrayComparer.Instance));
         }
 
@@ -262,7 +265,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer.CompleteGraphToEntryE
         [TestCaseSource(nameof(IntCases))]
         public void OptimizeIntConditions_Various(List<AnimatorCondition[]> input, List<AnimatorCondition[]> expected)
         {
-            var res = CompleteGraphToEntryExit.OptimizeIntConditions(input);
+            var res = CompleteGraphToEntryExit.OptimizeConditions<IntRangeSet, IntSetTrait>(input);
             Assert.That(res, Is.EquivalentTo(expected).Using(AnimatorConditionArrayComparer.Instance));
         }
 
@@ -322,7 +325,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer.CompleteGraphToEntryE
         [TestCaseSource(nameof(BoolCases))]
         public void OptimizeBoolConditions_Various(List<AnimatorCondition[]> input, List<AnimatorCondition[]> expected)
         {
-            var res = CompleteGraphToEntryExit.OptimizeBoolConditions(input);
+            var res = CompleteGraphToEntryExit.OptimizeConditions<BoolSet, BoolSetTrait>(input);
             Assert.That(res, Is.EquivalentTo(expected).Using(AnimatorConditionArrayComparer.Instance));
         }
 
@@ -359,7 +362,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer.CompleteGraphToEntryE
         [TestCaseSource(nameof(TriggerCases))]
         public void OptimizeTriggerConditions_Various(List<AnimatorCondition[]> input, List<AnimatorCondition[]> expected)
         {
-            var res = CompleteGraphToEntryExit.OptimizeTriggerConditions(input);
+            var res = CompleteGraphToEntryExit.OptimizeConditions<BoolSet, BoolSetTrait>(input);
             Assert.That(res, Is.EquivalentTo(expected).Using(AnimatorConditionArrayComparer.Instance));
         }
 

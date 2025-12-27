@@ -12,12 +12,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
     internal class MergeMaterialSlots : TraceAndOptimizePass<MergeMaterialSlots>
     {
         public override string DisplayName => "T&O: MergeMaterialSlots";
+        protected override bool Enabled(TraceAndOptimizeState state) => state.MergeMaterials;
 
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            if (!state.RemoveUnusedObjects) return;
-            if (state.SkipMergeMaterials) return;
-
             var mergeMeshes = FilterMergeMeshes(context, state);
             if (mergeMeshes.Count == 0) return;
 

@@ -76,6 +76,22 @@ namespace Anatawa12.AvatarOptimizer.Test
 #endif
         }
 
+        public static GameObject AddChild(this GameObject parent, 
+            string name,
+            Vector3 localPosition = default,
+            Quaternion? localRotation = null,
+            Vector3? localScale = null
+        )
+        {
+            var child = new GameObject();
+            child.name = name;
+            child.transform.SetParent(parent.transform, false);
+            child.transform.localPosition = localPosition;
+            child.transform.localRotation = localRotation ?? Quaternion.identity;
+            child.transform.localScale = localScale ?? Vector3.one;
+            return child;
+        }
+
         public static string GetAssetPath(string testRelativePath)
         {
             var path = AssetDatabase.GUIDToAssetPath("801b64144a3842adb8909fd2d209241a");
@@ -142,6 +158,24 @@ namespace Anatawa12.AvatarOptimizer.Test
             };
             mesh.subMeshCount = 1;
             mesh.SetSubMesh(0, new SubMeshDescriptor(0, 12 * 3));
+            return mesh;
+        }
+
+        public static Mesh NewCubeMeshWithBone()
+        {
+            var mesh = NewCubeMesh();
+            mesh.bindposes = new UnityEngine.Matrix4x4[1] { Matrix4x4.identity };
+            mesh.boneWeights = new BoneWeight[8]
+            {
+                new BoneWeight { boneIndex0 = 0, weight0 = 1 },
+                new BoneWeight { boneIndex0 = 0, weight0 = 1 },
+                new BoneWeight { boneIndex0 = 0, weight0 = 1 },
+                new BoneWeight { boneIndex0 = 0, weight0 = 1 },
+                new BoneWeight { boneIndex0 = 0, weight0 = 1 },
+                new BoneWeight { boneIndex0 = 0, weight0 = 1 },
+                new BoneWeight { boneIndex0 = 0, weight0 = 1 },
+                new BoneWeight { boneIndex0 = 0, weight0 = 1 },
+            };
             return mesh;
         }
         

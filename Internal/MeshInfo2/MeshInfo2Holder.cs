@@ -58,6 +58,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
         private readonly Dictionary<SkinnedMeshRenderer, MeshInfo2> _skinnedCache =
             new Dictionary<SkinnedMeshRenderer, MeshInfo2>();
 
+        private readonly Dictionary<MeshRenderer, MeshInfo2> _basicCache =
+            new Dictionary<MeshRenderer, MeshInfo2>();
+
         public MeshInfo2Holder(GameObject rootObject)
         {
             var avatarTagComponent = rootObject.GetComponentInChildren<AvatarTagComponent>(true);
@@ -70,10 +73,33 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
         }
 
+        public MeshInfo2 GetMeshInfoFor(Renderer renderer)
+        {
+            if (renderer is SkinnedMeshRenderer skinned)
+                return GetMeshInfoFor(skinned);
+            if (renderer is MeshRenderer basic)
+                return GetMeshInfoFor(basic);
+            throw new ArgumentException("Renderer must be SkinnedMeshRenderer or MeshRenderer", nameof(renderer));
+        }
+
+        public MeshInfo2? TryGetMeshInfoFor(Renderer renderer)
+        {
+            if (renderer is SkinnedMeshRenderer skinned && _skinnedCache.TryGetValue(skinned, out var cached))
+                return cached;
+            if (renderer is MeshRenderer basic && _basicCache.TryGetValue(basic, out cached))
+                return cached;
+            return null;
+        }
+
         public MeshInfo2 GetMeshInfoFor(SkinnedMeshRenderer renderer) =>
             _skinnedCache.TryGetValue(renderer, out var cached)
                 ? cached
                 : _skinnedCache[renderer] = new MeshInfo2(renderer);
+
+        public MeshInfo2 GetMeshInfoFor(MeshRenderer renderer) =>
+            _basicCache.TryGetValue(renderer, out var cached)
+                ? cached
+                : _basicCache[renderer] = new MeshInfo2(renderer);
 
 
         public void SaveToMesh()
@@ -85,6 +111,15 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
                 Profiler.BeginSample($"Save Skinned Mesh {targetRenderer.name}");
                 keyValuePair.Value.WriteToSkinnedMeshRenderer(targetRenderer);
+                Profiler.EndSample();
+            }
+
+            foreach (var (renderer, meshInfo2) in _basicCache)
+            {
+                if (!renderer) continue;
+
+                Profiler.BeginSample($"Save Basic Mesh {renderer.name}");
+                meshInfo2.WriteToMeshRenderer(renderer);
                 Profiler.EndSample();
             }
         }

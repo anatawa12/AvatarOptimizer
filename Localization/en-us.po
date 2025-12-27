@@ -17,6 +17,42 @@ msgstr "日本語で読む"
 msgid "LegacyModularAvatarWarning:nextLocale"
 msgstr "ja"
 
+msgid "UnityPlayerBuildErrorBug:non-ascii-detected"
+msgstr "Due to a Unity bug, builds may fail if the project path contains non-ASCII characters. Please check your project path and consider moving it to a path with only ASCII characters."
+
+msgid "NonVRChatPlatformSupport:experimentalMessage"
+msgstr ""
+"Non-VRChat platform support for Trace and Optimize is EXPERIMENTAL.\n"
+"You might experience some bugs, or incompatible changes in future updates.\n"
+"Use at your own risk."
+
+msgid "NonVRChatPlatformSupport:genericPlatformMessage"
+msgstr ""
+"You're using Trace and Optimize for Generic-Unity platform.\n"
+"Currently Avatar Optimizer assumes VRChat platform in general, so some optimizations may not work well on other platforms.\n"
+"Please configure NDMF platform correctly if you're building for other platform."
+
+msgid "NonVRChatPlatformSupport:noPlatformSettings"
+msgstr ""
+"No platform settings found for platform '{0}' ('{1}').\n"
+"Avatar Optimizer will optimize the avatar for VRChat platform, but this may not be optimal for the target platform.\n"
+"Please create TraceAndOptimizePlatformSettings asset for this platform to get better optimization results."
+
+msgid "NonVRChatPlatformSupport:manyPlatformSettings"
+msgstr ""
+"Multiple platform settings are found for platform '{0}' ('{1}').\n"
+"Picking first one at '{2}'.\n"
+
+msgid "NonVRChatPlatformSupport:versionMismatchMessage:inspector"
+msgstr ""
+"This platform settings asset has settings version {0}, but your Avatar Optimizer requires version {1}.\n"
+"Please migrate platform settings asset to correct version, or create new one."
+
+msgid "NonVRChatPlatformSupport:versionMismatchMessage:build"
+msgstr ""
+"The best matching platform settings asset found at '{0}' has settings version {1}, but your Avatar Optimizer requires version {2}.\n"
+"Some settings may not work properly. Please create or migrate platform settings asset to correct version."
+
 # region PrefabSafeSet
 
 msgid "PrefabSafeSet:label:Multi editing not supported"
@@ -302,6 +338,14 @@ msgstr "This is not supported with Limit Rotation mode Fix for now."
 
 # endregion
 
+#region EditSkinnedMeshComponents
+
+msgid "EditSkinnedMeshComponents:invalid-renderer-type"
+msgstr "This component is expected to be used with SkinnedMeshRenderer or MeshRenderer, but the target GameObject has different Renderer.\n"
+"This is not supported, and this component will be ignored."
+
+#endregion
+
 # region MergeSkinnedMesh
 
 msgid "MergeSkinnedMesh:warning:blendShapeWeightMismatch"
@@ -470,6 +514,29 @@ msgstr "Add Source"
 
 msgid "MergeToonLitMaterial:button:Generate Preview"
 msgstr "Generate Preview"
+
+msgid "MergeToonLitMaterial:suggestMigrate"
+msgstr ""
+"Merge ToonLit Material is obsoleted by Merge Material which supports more shaders and has better save format!\n"
+"We recommend migrating to Merge Material by clicking the button below."
+
+msgid "MergeToonLitMaterial:button:Migrate to MergeMaterial"
+msgstr "Migrate to Merge Material"
+
+msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:title"
+msgstr "Migrate to Merge Material"
+
+msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:message"
+msgstr "You're migrating to Merge Material component from Merge ToonLit Material component.\n"
+"This will copy all settings to new Merge Material component and remove this component.\n"
+"However, this migration does not guarantee perfect migration. Please check the result after migration.\n"
+"In addition, this migration does not support prefabs. Migrate manually if you're using prefabs."
+
+msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:ok"
+msgstr "Migrate"
+
+msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:cancel"
+msgstr "Cancel"
 
 msgid "MergeToonLitMaterial:label:Texture Size"
 msgstr "Texture Size"
@@ -663,6 +730,28 @@ msgstr "There are multiple BlendShapes with the same name '{0}' after renaming. 
 
 # endregion
 
+# region ReplaceEndBoneWithEndpointPosition
+
+msgid "ReplaceEndBoneWithEndpointPosition:prop:kind"
+msgstr "Endpoint Position Mode"
+
+msgid "ReplaceEndBoneWithEndpointPosition:prop:overridePosition"
+msgstr "Endpoint Position Override"
+
+msgid "ReplaceEndBoneWithEndpointPosition:validation:endpointPositionAlreadySet"
+msgstr "Endpoint Position is already set, so it cannot be replaced."
+
+msgid "ReplaceEndBoneWithEndpointPosition:validation:overlappedPhysBone"
+msgstr "The affected range is overlapping with another PhysBone. This may change the behavior of the PhysBone."
+
+msgid "ReplaceEndBoneWithEndpointPosition:validation:inequivalentPositions"
+msgstr "You are replacing with an end bone at a different position. This may change the behavior of the PhysBone."
+
+msgid "ReplaceEndBoneWithEndpointPosition:validation:unsafeMultiChild"
+msgstr "The configuration of a bone with multiple children is not suitable for replacing with Endpoint Position, so it cannot be replaced."
+
+# endregion
+
 # region AvatarGlobalComponent
 
 msgid "AvatarGlobalComponent:NotOnAvatarRoot"
@@ -720,7 +809,15 @@ msgstr "Migrating to Trace and Optimize is finished!"
 # region TraceAndOptimize
 
 msgid "TraceAndOptimize:description"
-msgstr "When you added this component to your avatar, AvatarOptimizer will trace your avatar and optimize automatically."
+msgstr "When you added this component to your avatar, Avatar Optimizer will trace your avatar and optimize automatically.\n"
+"Trace and Optimize is designed to be zero-config for most users, so you don't need to change settings in general.\n"
+"If not, you may be encountering some bugs of Avatar Optimizer."
+
+msgid "TraceAndOptimize:warn:changeFeaturesNotNecessary"
+msgstr "In general, disabling features is not necessary.\n"
+"For VRChat avatars, default settings are best. If you need to change them, it's likely that you are encountering some Avatar Optimizer's bugs.\n"
+"Please report us instead of disabling some optimizations.\n"
+"https://an12.net/aao/en/tao-bug for how to report issues."
 
 msgid "TraceAndOptimize:prop:optimizeBlendShape"
 msgstr "Optimize BlendShape"
@@ -762,6 +859,19 @@ msgstr ""
 
 msgid "TraceAndOptimize:prop:debugOptions"
 msgstr "Debug Options"
+
+msgid "TraceAndOptimize:dialog:debugOptions:description"
+msgstr ""
+"Debug Options are settings to workaround bugs in Avatar Optimizer.\n"
+"Changing Debug Options may cause your avatar to be not properly optimized or optimization process to fail.\n"
+"In addition, some Debug Options may not work properly or their behavior may be changed.\n"
+"Do you understand this and want to change these settings?"
+
+msgid "TraceAndOptimize:dialog:debugOptions:proceed"
+msgstr "Proceed"
+
+msgid "TraceAndOptimize:dialog:debugOptions:cancel"
+msgstr "Cancel"
 
 msgid "TraceAndOptimize:warn:debugOptions"
 msgstr "Debug Options is for workaround bugs in Avatar Optimizer.\n"
@@ -851,6 +961,16 @@ msgstr "Animator component not found on Avatar Root"
 
 #endregion
 
+#region OptimizationWarnings
+
+msgid "OptimizationWarnings:multi-pass-rendering-with-same-material"
+msgstr ""
+"Multi pass rendering with the same material is used in the mesh.\n"
+"In general, multi pass rendering with the exactly same material is unnecessary and only increases draw calls.\n"
+"If you are intentionally using this type of multi pass rendering, to avoid causing problems, please contact the author of Avatar Optimizer along with how you are using it."
+
+#endregion
+
 #region MeshInfo2
 
 msgid "MeshInfo2:warning:multiPassRendering"
@@ -893,5 +1013,98 @@ msgstr "Failed to add Trace and Optimize"
 
 msgid "ContextMenus:AddTraceAndOptimize:FailedToAddTraceAndOptimize:Message"
 msgstr "Trace and Optimize can only be added to the root of the avatar."
+
+# endregion
+
+# region MaxTextureSize
+
+msgid "MaxTextureSize:description"
+msgstr "Limits the maximum size of textures on this GameObject and its children using mipmaps to avoid heavy recompression."
+
+msgid "MaxTextureSize:prop:maxTextureSize"
+msgstr "Max Texture Size"
+
+msgid "MaxTextureSize:warning:crunchedNotSupported"
+msgstr "Crunched texture format is not supported for resizing."
+
+msgid "MaxTextureSize:warning:insufficientMipmaps"
+msgstr "Texture does not have enough mipmaps for the specified max size."
+
+# endregion
+
+# region MergeMaterial
+
+msgid "MergeMaterial:button:Add Merged Material"
+msgstr "Add Merged Material"
+
+msgid "MergeMaterial:button:Add Source"
+msgstr "Add Source Material"
+
+msgid "MergeMaterial:label:Texture Size"
+msgstr "Texture Size"
+
+msgid "MergeMaterial:label:Reference Material"
+msgstr "Reference Material"
+
+msgid "MergeMaterial:Reference Material:tooltip"
+msgstr "All properties in the reference material other than UV-based textures are used for the merged material."
+
+msgid "MergeMaterial:label:Texture Config Overrides"
+msgstr "Texture Config Overrides"
+
+msgid "MergeMaterial:button:Add Texture Config Override"
+msgstr "Add Config Override"
+
+msgid "MergeMaterial:label:Texture Name"
+msgstr "Override Texture Name"
+
+msgid "MergeMaterial:label:Texture Size Override"
+msgstr "Override Size"
+
+msgid "MergeMaterial:label:Texture Format Override"
+msgstr "Override Format"
+
+
+# region errors
+
+msgid "MergeMaterial:error:DuplicateMaterialInMergeSetting"
+msgstr "Some source materials are used in multiple merge settings. This is not supported."
+
+msgid "MergeMaterial:error:MaterialNotFoundInMesh"
+msgstr "Some source materials are not in the Skinned Mesh Renderer."
+
+msgid "MergeMaterial:error:MaterialUsedInMultipleSubMeshes"
+msgstr "Some source materials are used in multiple material slots in the Skinned Mesh Renderer. You have to merge submeshes before processing."
+
+msgid "MergeMaterial:error:MultiMaterialSubMesh"
+msgstr "Some source materials are used by submeshes with multiple materials attached for multi-material multi-pass rendering. This is not supported."
+
+msgid "MergeMaterial:error:UnsupportedShaderInMergeSetting"
+msgstr "The shader of the material configured in the Merge Material is not supported by Merge Material."
+
+msgid "MergeMaterial:error:UnsupportedShaderInMergeSetting:description"
+msgstr "The shader does not provide the ShaderInformation for Avatar Optimizer or the ShaderInformation does not provide 'TextureAndUVUsage' information.\n"
+"Without those information, Avatar Optimizer cannot merge materials correctly."
+
+msgid "MergeMaterial:error:UnsupportedUVTransformInReferenceMaterial"
+msgstr "The reference material (or the first source material) has some textures with unsupported UV Transform applied to the texture: {0}"
+
+msgid "MergeMaterial:error:UnsupportedUVTransformInReferenceMaterial:description"
+msgstr "The reference material must not have UV transform like _ST or parallax."
+
+msgid "MergeMaterial:error:UnknownUVTransform"
+msgstr "The material has some textures with unsupported / unknown UV Transform applied to the texture: {0}"
+
+msgid "MergeMaterial:error:UnknownUVTransform:description"
+msgstr "To merge material, Avatar Optimizer needs to know how the texture is used, but those textures have unknown texture transform or dynamic transform like parallax or scroll.\n"
+"Merge material is incompatible with such features."
+
+msgid "MergeMaterial:error:DifferentShaderInMergeSetting"
+msgstr "Shaders used in source materials of Merge Material are different among configured materials or different from the reference material."
+
+msgid "MergeMaterial:error:ReferenceMaterial:NotAllTexturesUsed"
+msgstr "Some texture properties used in source materials are not used by the reference material. This is currently unsupported: {0}"
+
+# endregion
 
 # endregion

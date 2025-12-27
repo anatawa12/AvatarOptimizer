@@ -170,6 +170,24 @@ namespace Anatawa12.AvatarOptimizer
                 _ => null
             };
 
+        public static bool IsValidForBool(this AnimatorCondition condition) => condition.mode.IsValidModeForBool();
+        public static bool IsValidForTrigger(this AnimatorCondition condition) => condition.mode.IsValidModeForTrigger();
+        public static bool IsValidForInt(this AnimatorCondition condition) => condition.mode.IsValidModeForInt();
+        public static bool IsValidForFloat(this AnimatorCondition condition) => condition.mode.IsValidModeForFloat();
+
+        public static bool IsValidModeForBool(this AnimatorConditionMode mode) =>
+            mode is AnimatorConditionMode.If or AnimatorConditionMode.IfNot;
+
+        public static bool IsValidModeForTrigger(this AnimatorConditionMode mode) =>
+            mode is AnimatorConditionMode.If;
+
+        public static bool IsValidModeForInt(this AnimatorConditionMode mode) =>
+            mode is AnimatorConditionMode.Equals or AnimatorConditionMode.NotEqual or 
+                AnimatorConditionMode.Greater or AnimatorConditionMode.Less;
+
+        public static bool IsValidModeForFloat(this AnimatorConditionMode mode) =>
+            mode is AnimatorConditionMode.Greater or AnimatorConditionMode.Less;
+
         public static HashSet<EditorCurveBinding> GetBindings(this AnimationClip clip)
         {
             var bindings = new HashSet<EditorCurveBinding>();

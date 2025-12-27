@@ -1,94 +1,130 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using nadena.dev.ndmf;
+using UnityEditor;
 using UnityEngine;
+using static Anatawa12.AvatarOptimizer.TraceAndOptimizePlatformSettings;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
     public class TraceAndOptimizeState
     {
-        public bool Enabled;
-        public bool OptimizeBlendShape;
-        public bool RemoveUnusedObjects;
-        public bool RemoveZeroSizedPolygon;
-        public bool OptimizePhysBone;
-        public bool OptimizeAnimator;
-        public bool MergeSkinnedMesh;
+        // optimization options
         public bool AllowShuffleMaterialSlots;
-        public bool OptimizeTexture;
         public bool MmdWorldCompatibility = true;
-
         public bool PreserveEndBone;
+
+        // Debug Options
         public HashSet<GameObject?> Exclusions = new();
         public int GCDebug;
-        public bool NoSweepComponents;
-        public bool NoConfigureMergeBone;
-        public bool NoActivenessAnimation;
-        public bool SkipFreezingNonAnimatedBlendShape;
-        public bool SkipFreezingMeaninglessBlendShape;
-        public bool SkipIsAnimatedOptimization;
-        public bool SkipMergePhysBoneCollider;
-        public bool SkipEntryExitToBlendTree;
-        public bool SkipRemoveUnusedAnimatingProperties;
-        public bool SkipMergeBlendTreeLayer;
-        public bool SkipRemoveMeaninglessAnimatorLayer;
-        public bool SkipMergeStaticSkinnedMesh;
-        public bool SkipMergeAnimatingSkinnedMesh;
-        public bool SkipMergeMaterialAnimatingSkinnedMesh;
-        public bool SkipMergeMaterials;
-        public bool SkipRemoveEmptySubMesh;
-        public bool SkipAnyStateToEntryExit;
-        public bool SkipRemoveMaterialUnusedProperties;
-        public bool SkipRemoveMaterialUnusedTextures;
-        public bool SkipAutoMergeBlendShape;
-        public bool SkipRemoveUnusedSubMesh;
-        public bool SkipMergePhysBones;
-        public bool SkipCompleteGraphToEntryExit;
+
+        // feature group flags
+        public bool OptimizeAnimator;
+        public bool MergeSkinnedMesh;
+
+        // all feature flags
+        public bool RemoveZeroSizedPolygon;
+        public bool OptimizeTexture;
+        public bool SweepComponents;
+        public bool ConfigureLeafMergeBone;
+        public bool ConfigureMiddleMergeBone;
+        public bool ActivenessAnimation;
+        public bool FreezingNonAnimatedBlendShape;
+        public bool FreezingMeaninglessBlendShape;
+        public bool IsAnimatedOptimization;
+        public bool MergePhysBoneCollider;
+        public bool EntryExitToBlendTree;
+        public bool RemoveUnusedAnimatingProperties;
+        public bool MergeBlendTreeLayer;
+        public bool RemoveMeaninglessAnimatorLayer;
+        public bool MergeStaticSkinnedMesh;
+        public bool MergeAnimatingSkinnedMesh;
+        public bool MergeMaterialAnimatingSkinnedMesh;
+        public bool MergeMaterials; // This is feature flag but option of merge skinned mesh
+        public bool RemoveEmptySubMesh;
+        public bool AnyStateToEntryExit;
+        public bool RemoveMaterialUnusedProperties;
+        public bool RemoveMaterialUnusedTextures;
+        public bool AutoMergeBlendShape;
+        public bool RemoveUnusedSubMesh;
+        public bool MergePhysBones;
+        public bool CompleteGraphToEntryExit;
+        public bool ReplaceEndBoneWithEndpointPosition;
+        public bool OptimizationWarnings;
 
         public Dictionary<SkinnedMeshRenderer, HashSet<string>> PreserveBlendShapes =
             new Dictionary<SkinnedMeshRenderer, HashSet<string>>();
 
-        internal void Initialize(TraceAndOptimize config)
+        internal void Initialize(TraceAndOptimize config, TraceAndOptimizePlatformSettings settings)
         {
-            OptimizeBlendShape = config.optimizeBlendShape;
-            RemoveUnusedObjects = config.removeUnusedObjects;
-            RemoveZeroSizedPolygon = config.removeZeroSizedPolygons;
-            OptimizePhysBone = config.optimizePhysBone;
-            OptimizeAnimator = config.optimizeAnimator;
-            MergeSkinnedMesh = config.mergeSkinnedMesh;
+            // optimization settings
             AllowShuffleMaterialSlots = config.allowShuffleMaterialSlots;
-            OptimizeTexture = config.optimizeTexture;
             MmdWorldCompatibility = config.mmdWorldCompatibility;
-
             PreserveEndBone = config.preserveEndBone;
 
             Exclusions = new HashSet<GameObject?>(config.debugOptions.exclusions ?? Array.Empty<GameObject?>());
             GCDebug = (int)config.debugOptions.gcDebug;
-            NoSweepComponents = config.debugOptions.noSweepComponents;
-            NoConfigureMergeBone = config.debugOptions.noConfigureMergeBone;
-            NoActivenessAnimation = config.debugOptions.noActivenessAnimation;
-            SkipFreezingNonAnimatedBlendShape = config.debugOptions.skipFreezingNonAnimatedBlendShape;
-            SkipFreezingMeaninglessBlendShape = config.debugOptions.skipFreezingMeaninglessBlendShape;
-            SkipIsAnimatedOptimization = config.debugOptions.skipIsAnimatedOptimization;
-            SkipMergePhysBoneCollider = config.debugOptions.skipMergePhysBoneCollider;
-            SkipEntryExitToBlendTree = config.debugOptions.skipEntryExitToBlendTree;
-            SkipRemoveUnusedAnimatingProperties = config.debugOptions.skipRemoveUnusedAnimatingProperties;
-            SkipMergeBlendTreeLayer = config.debugOptions.skipMergeBlendTreeLayer;
-            SkipRemoveMeaninglessAnimatorLayer = config.debugOptions.skipRemoveMeaninglessAnimatorLayer;
-            SkipMergeStaticSkinnedMesh = config.debugOptions.skipMergeStaticSkinnedMesh;
-            SkipMergeAnimatingSkinnedMesh = config.debugOptions.skipMergeAnimatingSkinnedMesh;
-            SkipMergeMaterialAnimatingSkinnedMesh = config.debugOptions.skipMergeMaterialAnimatingSkinnedMesh;
-            SkipMergeMaterials = config.debugOptions.skipMergeMaterials;
-            SkipRemoveEmptySubMesh = config.debugOptions.skipRemoveEmptySubMesh;
-            SkipAnyStateToEntryExit = config.debugOptions.skipAnyStateToEntryExit;
-            SkipRemoveMaterialUnusedProperties = config.debugOptions.skipRemoveMaterialUnusedProperties;
-            SkipRemoveMaterialUnusedTextures = config.debugOptions.skipRemoveMaterialUnusedTextures;
-            SkipAutoMergeBlendShape = config.debugOptions.skipAutoMergeBlendShape;
-            SkipRemoveUnusedSubMesh = config.debugOptions.skipRemoveUnusedSubMesh;
-            SkipMergePhysBones = config.debugOptions.skipMergePhysBones;
-            SkipCompleteGraphToEntryExit = config.debugOptions.skipCompleteGraphToEntryExit;
 
-            Enabled = true;
+            if (config.optimizeBlendShape && settings.optimizeBlendShape)
+            {
+                FreezingNonAnimatedBlendShape = !config.debugOptions.skipFreezingNonAnimatedBlendShape && settings.freezingNonAnimatedBlendShape;
+                FreezingMeaninglessBlendShape = !config.debugOptions.skipFreezingMeaninglessBlendShape && settings.freezingMeaninglessBlendShape;
+                AutoMergeBlendShape = !config.debugOptions.skipAutoMergeBlendShape && settings.autoMergeBlendShape;
+            }
+
+            if (config.removeUnusedObjects && settings.removeUnusedObjects)
+            {
+                SweepComponents = !config.debugOptions.noSweepComponents && settings.sweepComponents;
+                ConfigureLeafMergeBone = !config.debugOptions.noConfigureLeafMergeBone && settings.configureLeafMergeBone;
+                ConfigureMiddleMergeBone = !config.debugOptions.noConfigureMiddleMergeBone && settings.configureMiddleMergeBone;
+                ActivenessAnimation = !config.debugOptions.noActivenessAnimation && settings.activenessAnimation;
+                RemoveEmptySubMesh = !config.debugOptions.skipRemoveEmptySubMesh && settings.removeEmptySubMesh;
+                RemoveMaterialUnusedProperties = !config.debugOptions.skipRemoveMaterialUnusedProperties && settings.removeMaterialUnusedProperties;
+                RemoveMaterialUnusedTextures = !config.debugOptions.skipRemoveMaterialUnusedTextures && settings.removeMaterialUnusedTextures;
+                MergeMaterials = !config.debugOptions.skipMergeMaterials && settings.mergeMaterials;
+            }
+
+            if (config.optimizePhysBone && settings.optimizePhysBone)
+            {
+                IsAnimatedOptimization = !config.debugOptions.skipIsAnimatedOptimization && settings.isAnimatedOptimization;
+                MergePhysBoneCollider = !config.debugOptions.skipMergePhysBoneCollider && settings.mergePhysBoneCollider;
+                ReplaceEndBoneWithEndpointPosition = !config.debugOptions.skipReplaceEndBoneWithEndpointPosition && settings.replaceEndBoneWithEndpointPosition;
+                MergePhysBones = !config.debugOptions.skipMergePhysBones && settings.mergePhysBones;
+            }
+
+            if (config.removeZeroSizedPolygons && settings.removeZeroSizedPolygons)
+            {
+                RemoveZeroSizedPolygon = true;
+            }
+
+            if (config.optimizeAnimator && settings.optimizeAnimator)
+            {
+                OptimizeAnimator = true;
+                EntryExitToBlendTree = !config.debugOptions.skipEntryExitToBlendTree && settings.entryExitToBlendTree;
+                RemoveUnusedAnimatingProperties = !config.debugOptions.skipRemoveUnusedAnimatingProperties && settings.removeUnusedAnimatingProperties;
+                MergeBlendTreeLayer = !config.debugOptions.skipMergeBlendTreeLayer && settings.mergeBlendTreeLayer;
+                RemoveMeaninglessAnimatorLayer = !config.debugOptions.skipRemoveMeaninglessAnimatorLayer && settings.removeMeaninglessAnimatorLayer;
+                AnyStateToEntryExit = !config.debugOptions.skipAnyStateToEntryExit && settings.anyStateToEntryExit;
+                CompleteGraphToEntryExit = !config.debugOptions.skipCompleteGraphToEntryExit && settings.completeGraphToEntryExit;
+            }
+
+            if (config.mergeSkinnedMesh && settings.mergeSkinnedMesh)
+            {
+                MergeSkinnedMesh = true;
+                MergeStaticSkinnedMesh = !config.debugOptions.skipMergeStaticSkinnedMesh;
+                MergeAnimatingSkinnedMesh = !config.debugOptions.skipMergeAnimatingSkinnedMesh;
+                MergeMaterialAnimatingSkinnedMesh = !config.debugOptions.skipMergeMaterialAnimatingSkinnedMesh;
+            }
+
+            if (config.optimizeTexture && settings.optimizeTexture)
+            {
+                OptimizeTexture = true;
+            }
+
+            // always applied
+            RemoveUnusedSubMesh = !config.debugOptions.skipRemoveUnusedSubMesh;
+            OptimizationWarnings = !config.debugOptions.skipOptimizationWarnings;
         }
     }
 
@@ -99,18 +135,83 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         protected override void Execute(BuildContext context)
         {
             var config = context.AvatarRootObject.GetComponent<TraceAndOptimize>();
+            TraceAndOptimizePlatformSettings settings = LoadPlatformSettings(context.PlatformProvider.QualifiedName,
+                context.PlatformProvider.DisplayName);
+
             if (config)
-                context.GetState<TraceAndOptimizeState>().Initialize(config);
+            {
+                context.GetState<TraceAndOptimizeState>().Initialize(config, settings);
+            }
+
             DestroyTracker.DestroyImmediate(config);
+        }
+
+        private static TraceAndOptimizePlatformSettings? _full;
+
+        private static TraceAndOptimizePlatformSettings LoadPlatformSettings(
+            string platformQualifiedName, string displayName)
+        {
+            if (_full == null) _full = ScriptableObject.CreateInstance<TraceAndOptimizePlatformSettings>();
+            if (platformQualifiedName == WellKnownPlatforms.VRChatAvatar30) return _full;
+            if (platformQualifiedName == WellKnownPlatforms.Generic)
+            {
+                BuildLog.LogInfo("NonVRChatPlatformSupport:genericPlatformMessage");
+                return _full;
+            }
+
+            var settings = AssetDatabase.FindAssets("t:TraceAndOptimizePlatformSettings")
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .Select(AssetDatabase.LoadAssetAtPath<TraceAndOptimizePlatformSettings>)
+                .Where(x => x != null)
+                .Where(x => x.platformQualifiedName == platformQualifiedName)
+                .ToList();
+
+            settings.Sort((a, b) =>
+            {
+                var aDiff = Math.Abs(a!.experimentalPlatformSettingsVersion - CurrentExperimentalPlatformSettingsVersion);
+                var bDiff = Math.Abs(b!.experimentalPlatformSettingsVersion - CurrentExperimentalPlatformSettingsVersion);
+                return aDiff.CompareTo(bDiff);
+            });
+
+            BuildLog.LogWarning("NonVRChatPlatformSupport:experimentalMessage");
+
+            using var enumerator = settings.GetEnumerator();
+
+            if (!enumerator.MoveNext())
+            {
+                BuildLog.LogWarning("NonVRChatPlatformSupport:noPlatformSettings", displayName, platformQualifiedName);
+                return _full;
+            }
+
+            var result = enumerator.Current!;
+
+            if (enumerator.MoveNext())
+            {
+                BuildLog.LogWarning("NonVRChatPlatformSupport:manyPlatformSettings", displayName, platformQualifiedName,
+                    AssetDatabase.GetAssetPath(result));
+            }
+
+            if (result.experimentalPlatformSettingsVersion != CurrentExperimentalPlatformSettingsVersion)
+            {
+                BuildLog.LogWarning("NonVRChatPlatformSupport:versionMismatchMessage:build",
+                    AssetDatabase.GetAssetPath(result),
+                    result!.experimentalPlatformSettingsVersion, 
+                    CurrentExperimentalPlatformSettingsVersion);
+            }
+
+            return result!;
         }
     }
 
     public abstract class TraceAndOptimizePass<T> : Pass<T> where T : TraceAndOptimizePass<T>, new()
     {
+        public abstract override string DisplayName { get; }
+        protected abstract bool Enabled(TraceAndOptimizeState state);
+
         protected sealed override void Execute(BuildContext context)
         {
             var state = context.GetState<TraceAndOptimizeState>();
-            if (!state.Enabled) return;
+            if (!Enabled(state)) return;
             Execute(context, state);
         }
 

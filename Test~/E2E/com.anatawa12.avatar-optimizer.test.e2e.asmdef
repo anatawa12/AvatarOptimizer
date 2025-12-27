@@ -26,6 +26,7 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
+        "System.Collections.Immutable.dll",
         "VRC.SDK3.Dynamics.PhysBone.dll",
         "VRC.Dynamics.dll",
         "VRCSDK3A.dll",

@@ -12,8 +12,6 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     [ComponentInformation(typeof(Camera))]
     [ComponentInformation(typeof(Animation))]
     [ComponentInformation(typeof(AudioSource))]
-    [ComponentInformation(typeof(nadena.dev.ndmf.runtime.AvatarActivator))]
-    // nadena.dev.ndmf.VRChat.ContextHolder with reflection
     [ComponentInformationWithGUID("52fa21b17bc14dc294959f976e3e184f", 11500000)] // NDMFAvatarRoot experimental component in NDMF 1.8.0
     internal class EntrypointComponentInformation : ComponentInformation<Component>
     {
@@ -29,8 +27,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
     {
         protected override void CollectDependency(Transform component, ComponentDependencyCollector collector)
         {
+            // parent dependency is automatically collected on creating GCComponentInfo for Transform
             var casted = (ComponentDependencyRetriever.Collector)collector;
-            casted.AddParentDependency(component);
             // For compatibility with UnusedBonesByReferenceTool
             // https://github.com/anatawa12/AvatarOptimizer/issues/429
             if (casted.PreserveEndBone &&

@@ -5,24 +5,16 @@ using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Profiling;
+using UnityEngine.Rendering;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    internal class RemoveUnusedMaterialProperties : TraceAndOptimizePass<RemoveUnusedMaterialProperties>
+    internal class RemoveUnusedMaterialTextures : TraceAndOptimizePass<RemoveUnusedMaterialTextures>
     {
-        public override string DisplayName => "T&O: RemoveUnusedMaterialProperties";
+        public override string DisplayName => "T&O: Remove Unused Material Textures";
+        protected override bool Enabled(TraceAndOptimizeState state) => state.RemoveMaterialUnusedTextures;
+
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
-        {
-            if (!state.RemoveUnusedObjects) { return; }
-
-            if (!state.SkipRemoveMaterialUnusedProperties)
-                RemoveUnusedProperties(context);
-
-            if (!state.SkipRemoveMaterialUnusedTextures)
-                RemoveUnusedTextures(context);
-        }
-
-        internal void RemoveUnusedTextures(BuildContext context)
         {
             var materials = context.GetComponents<Renderer>()
                 .SelectMany(x => context.GetAllPossibleMaterialFor(x))
@@ -48,14 +40,21 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     // GetTexturePropertyNames returns all texture properties regardless of the current shader.
                     foreach (var property in material.GetTexturePropertyNames())
                     {
-                        if (!usedProperties.Contains(property))
+                        // Non-2D textures are not supported by ShaderInformation yet.
+                        if (!usedProperties.Contains(property) && material.GetTexture(property) is Texture2D or RenderTexture { dimension: TextureDimension.Tex2D })
                             material.SetTexture(property, null);
                     }
                 }
             }
         }
+    }
 
-        internal void RemoveUnusedProperties(BuildContext context)
+    internal class RemoveUnusedMaterialProperties : TraceAndOptimizePass<RemoveUnusedMaterialProperties>
+    {
+        public override string DisplayName => "T&O: Remove Unused Material Properties";
+        protected override bool Enabled(TraceAndOptimizeState state) => state.RemoveMaterialUnusedProperties;
+
+        protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
             var renderers = context.GetComponents<Renderer>();
             var cleaned = new HashSet<Material>();

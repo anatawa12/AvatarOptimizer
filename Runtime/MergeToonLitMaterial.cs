@@ -6,6 +6,7 @@ namespace Anatawa12.AvatarOptimizer
 {
     [AddComponentMenu("Avatar Optimizer/AAO Merge Toon Lit Material")]
     [DisallowMultipleComponent]
+    [RequireComponent(typeof(SkinnedMeshRenderer))]
     [HelpURL("https://vpm.anatawa12.com/avatar-optimizer/ja/docs/reference/merge-toonlit-material/")]
     internal class MergeToonLitMaterial : EditSkinnedMeshComponent
     {

@@ -28,6 +28,8 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             RecursiveCheckEquals(except, controller);
         }
 
+        /*
+        // This is no longer convertible due to the new restriction from RC releases.
         [Test]
         public void CompleteGraphWithDifferentConditions()
         {
@@ -37,6 +39,17 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             var except = LoadAnimatorController("CompleteGraphWithDifferentConditions.converted");
             RecursiveCheckEquals(except, controller);
         }
+        // */
+
+        [Test]
+         public void NonConvertibleSimultaneouslySatisfiableEntryExitCondition()
+         {
+             var controller = LoadCloneAnimatorController("NonConvertibleSimultaneouslySatisfiableEntryExitCondition");
+             controller.name = "NonConvertibleSimultaneouslySatisfiableEntryExitCondition";
+             CompleteGraphToEntryExit.Execute(_state, new AOAnimatorController(controller));
+             var except = LoadAnimatorController("NonConvertibleSimultaneouslySatisfiableEntryExitCondition");
+             RecursiveCheckEquals(except, controller);
+         }
 
         [Test]
         public void NonConvertibleIncompleteGraph()

@@ -116,7 +116,6 @@ internal class LiltoonShaderInformation : ShaderInformation
     public override void GetMaterialInformation(MaterialInformationCallback matInfo)
     {
         var uvMain = UsingUVChannels.UV0;
-        var uvMainScaleOffset = "_MainTex_ST";
         Matrix2x3? uvMainMatrix = ComputeUVMainMatrix();
 
         Matrix2x3? ComputeUVMainMatrix()

@@ -9,18 +9,20 @@ namespace Anatawa12.AvatarOptimizer
     internal class RemoveMeshByUVTileEditor : AvatarTagComponentEditorBase
     {
         private SerializedProperty _materials = null!; // Initialized in OnEnable
-        private SkinnedMeshRenderer? _renderer; // Initialized in OnEnable
+        private Renderer _renderer = null!; // Initialized in OnEnable
         public bool automaticallySetWeightWhenToggle;
 
         private void OnEnable()
         {
             NativeLeakDetection.Mode = NativeLeakDetectionMode.EnabledWithStackTrace;
-            _renderer = ((Component)target).GetComponent<SkinnedMeshRenderer>();
+            _renderer = ((Component)target).GetComponent<Renderer>();
             _materials = serializedObject.FindProperty(nameof(RemoveMeshByUVTile.materials));
         }
 
         protected override void OnInspectorGUIInner()
         {
+            GenericEditSkinnedMeshComponentsEditor.DrawUnexpectedRendererError(targets);
+
             // if there is source skinned mesh component, show error
             if (((Component)target).TryGetComponent<ISourceSkinnedMeshComponent>(out _))
             {
@@ -28,13 +30,17 @@ namespace Anatawa12.AvatarOptimizer
                 return;
             }
 
-            if (_renderer == null || _renderer.sharedMesh == null)
+            Mesh? mesh = null;
+            if (_renderer is SkinnedMeshRenderer skinnedMeshRenderer)
+                mesh = skinnedMeshRenderer.sharedMesh;
+            else if (_renderer is MeshRenderer && _renderer.TryGetComponent<MeshFilter>(out var filter))
+                mesh = filter.sharedMesh;
+
+            if (!_renderer || mesh == null)
             {
                 EditorGUILayout.HelpBox(AAOL10N.Tr("RemoveMeshByUVTile:warning:NoMesh"), MessageType.Warning);
                 return;
             }
-
-            var mesh = _renderer.sharedMesh;
 
             _materials.arraySize = mesh.subMeshCount;
 

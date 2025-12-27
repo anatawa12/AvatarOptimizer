@@ -20,10 +20,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 internal class OptimizeTexture : TraceAndOptimizePass<OptimizeTexture>
 {
     public override string DisplayName => "T&O: OptimizeTexture";
+    protected override bool Enabled(TraceAndOptimizeState state) => state.OptimizeTexture;
 
     protected override void Execute(BuildContext context, TraceAndOptimizeState state)
     {
-        if (!state.OptimizeTexture) return;
         new OptimizeTextureImpl().Execute(context, state);
     }
 }
@@ -101,8 +101,6 @@ internal struct OptimizeTextureImpl {
 
     internal void Execute(BuildContext context, TraceAndOptimizeState state)
     {
-        if (!state.OptimizeTexture) return;
-
         // collect all connected components of materialSlot - material - texture graph
         var connectedComponentInfos = CollectMaterialsUnionFind(context);
 
@@ -180,15 +178,15 @@ internal struct OptimizeTextureImpl {
 
     internal class SubMeshUVCollection
     {
-        public SubMeshUVNode NonMeshRelated;
-        public SubMeshUVNode UV0;
-        public SubMeshUVNode UV1;
-        public SubMeshUVNode UV2;
-        public SubMeshUVNode UV3;
-        public SubMeshUVNode UV4;
-        public SubMeshUVNode UV5;
-        public SubMeshUVNode UV6;
-        public SubMeshUVNode UV7;
+        public SubMeshUVNode NonMeshRelated = null!; // initialized later
+        public SubMeshUVNode UV0 = null!; // initialized later
+        public SubMeshUVNode UV1 = null!; // initialized later
+        public SubMeshUVNode UV2 = null!; // initialized later
+        public SubMeshUVNode UV3 = null!; // initialized later
+        public SubMeshUVNode UV4 = null!; // initialized later
+        public SubMeshUVNode UV5 = null!; // initialized later
+        public SubMeshUVNode UV6 = null!; // initialized later
+        public SubMeshUVNode UV7 = null!; // initialized later
 
         public SubMeshUVNode this[UVChannel channel]
         {
@@ -431,6 +429,9 @@ internal struct OptimizeTextureImpl {
     {
         // all material slot / uv must be known
         if (info.SubMeshUvs.Any(x => !x.CanBeUsedForAtlas))
+            return EmptyAtlasConnectedResult;
+        // non-identity UV Transform is allowed
+        if (info.Textures.SelectMany(x => x.Users).SelectMany(x => x.Value).All(x => x.UVMatrix == Matrix2x3.Identity))
             return EmptyAtlasConnectedResult;
 
         // the material should not be used by other renderers.
@@ -918,6 +919,7 @@ internal struct OptimizeTextureImpl {
                 newTexture.anisoLevel = texture2D.anisoLevel;
                 newTexture.mipMapBias = texture2D.mipMapBias;
                 newTexture.SetPixelData(destTextureData, 0);
+                newTexture.SetStreamingMipMapSettings(texture2D.GetStreamingMipMapSettings());
                 newTexture.Apply(true, !texture2D.isReadable);
             }
             else
@@ -927,8 +929,6 @@ internal struct OptimizeTextureImpl {
                 using var tempTexture = Utils.TemporaryRenderTexture(newWidth, newHeight, depthBuffer: 0, format: format);
                 HelperMaterial.SetTexture(MainTexProp, texture2D);
                 HelperMaterial.SetInt(NoClipProp, 1);
-
-                bool isBlack = true;
 
                 foreach (var atlasIsland in atlasIslands)
                 {
@@ -972,6 +972,7 @@ internal struct OptimizeTextureImpl {
                     newTexture.filterMode = texture2D.filterMode;
                     newTexture.anisoLevel = texture2D.anisoLevel;
                     newTexture.mipMapBias = texture2D.mipMapBias;
+                    newTexture.SetStreamingMipMapSettings(texture2D.GetStreamingMipMapSettings());
                     newTexture.Apply(true, !texture2D.isReadable);
                 }
             }

@@ -9,32 +9,22 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
-    internal class OptimizePhysBone : TraceAndOptimizePass<OptimizePhysBone>
+    internal class MergePhysBoneCollider : TraceAndOptimizePass<MergePhysBoneCollider>
     {
-        public override string DisplayName => "T&O: Optimize PhysBone";
+        public override string DisplayName => "T&O: Merge PhysBone Colliders";
+        protected override bool Enabled(TraceAndOptimizeState state) => state.MergePhysBoneCollider;
 
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            if (!state.OptimizePhysBone) return;
-
-            if (!state.SkipIsAnimatedOptimization)
-                IsAnimatedOptimization(context);
-            
-            if (!state.SkipMergePhysBoneCollider)
-                MergePhysBoneColliders(context);
-        }
-
-        private void MergePhysBoneColliders(BuildContext context)
-        {
             var collidersByTransform = new Dictionary<(
-                Transform rootTransformAnimated, 
+                Transform rootTransformAnimated,
                 VRCPhysBoneColliderBase.ShapeType shapeType
                 ), List<VRCPhysBoneColliderBase>>();
 
             foreach (var collider in context.GetComponents<VRCPhysBoneColliderBase>())
             {
                 // if any of the property is animated, we do not merge the collider.
-                if (PhysBoneColliderProperties.Any(context.GetAnimationComponent(collider).IsAnimatedFloat))
+                if (Properties.PhysBoneColliderProperties.Any(context.GetAnimationComponent(collider).IsAnimatedFloat))
                     continue;
 
                 var rootTransform = collider.GetRootTransform();
@@ -45,8 +35,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 bool IsAnimated()
                 {
-                    if (TransformProperties.Any(context.GetAnimationComponent(transform).IsAnimatedFloat)) return true;
-                    if (context.GetAnimationComponent(transform.gameObject).IsAnimatedFloat(Props.IsActive)) return true;
+                    if (Properties.TransformProperties.Any(context.GetAnimationComponent(transform).IsAnimatedFloat))
+                        return true;
+                    if (context.GetAnimationComponent(transform.gameObject).IsAnimatedFloat(Props.IsActive))
+                        return true;
                     return false;
                 }
 
@@ -91,7 +83,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                             var headPosition = centerPosition + offset;
                             var tailPosition = centerPosition - offset;
 
-                            return (RoundError.Float(radius), RoundError.Vector3(headPosition), RoundError.Vector3(tailPosition));
+                            return (RoundError.Float(radius), RoundError.Vector3(headPosition),
+                                RoundError.Vector3(tailPosition));
                         });
                         break;
                     case VRCPhysBoneColliderBase.ShapeType.Plane:
@@ -108,11 +101,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                                 centerPosition.x = 0;
                                 centerPosition.z = 0;
                             }
+
                             return (RoundError.Quaternion(rotation), RoundError.Vector3(centerPosition));
                         });
                         break;
                     default:
-                        BuildLog.LogWarning("TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape", shapeType.ToString(), colliders);
+                        BuildLog.LogWarning("TraceAndOptimize:Properties:UnknownPhysBoneColliderShape",
+                            shapeType.ToString(), colliders);
                         break;
                 }
             }
@@ -129,7 +124,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var colliderBase in mergedColliders.Keys.ToList())
                 DestroyTracker.DestroyImmediate(colliderBase);
         }
-        
+
         void MergeColliders<TKey>(IEnumerable<VRCPhysBoneColliderBase> colliders,
             Dictionary<VRCPhysBoneColliderBase, VRCPhysBoneColliderBase> colliderMapping,
             Func<VRCPhysBoneColliderBase, TKey> colliderKey)
@@ -151,17 +146,23 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var lossyScale = transform.lossyScale;
             return Mathf.Max(Mathf.Max(lossyScale.x, lossyScale.y), lossyScale.z);
         }
+    }
 
-        private void IsAnimatedOptimization(BuildContext context)
+    internal class OptimizePhysBoneIsAnimated : TraceAndOptimizePass<OptimizePhysBoneIsAnimated>
+    {
+        public override string DisplayName => "T&O: Optimize PhysBone IsAnimated";
+        protected override bool Enabled(TraceAndOptimizeState state) => state.IsAnimatedOptimization;
+
+        protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
             foreach (var physBone in context.GetComponents<VRCPhysBoneBase>())
             {
                 using (ErrorReport.WithContextObject(physBone))
                 {
                     var isAnimated = physBone.GetAffectedTransforms()
-                        .Select(transform => context.GetAnimationComponent(transform))
-                        .Any(animation => IsAnimatedExternally(physBone, animation))
-                        || ParentsScaleIsAnimated(context, physBone);
+                                         .Select(transform => context.GetAnimationComponent(transform))
+                                         .Any(animation => IsAnimatedExternally(physBone, animation))
+                                     || ParentsScaleIsAnimated(context, physBone);
                     if (physBone.isAnimated && !isAnimated)
                     {
                         physBone.isAnimated = false;
@@ -185,7 +186,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var parents in physBone.transform.ParentEnumerable(context.AvatarRootTransform))
             {
                 var animation = context.GetAnimationComponent(parents);
-                foreach (var transformProperty in ScaleProperties)
+                foreach (var transformProperty in Properties.ScaleProperties)
                 {
                     var property = animation.GetFloatNode(transformProperty);
                     if (property.SourceComponents.Any(sourceComponent => sourceComponent != physBone)) return true;
@@ -195,9 +196,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             return false;
         }
 
-        private static bool IsAnimatedExternally(VRCPhysBoneBase physBone, AnimationComponentInfo<PropertyInfo> animation)
+        private static bool IsAnimatedExternally(VRCPhysBoneBase physBone,
+            AnimationComponentInfo<PropertyInfo> animation)
         {
-            foreach (var transformProperty in TransformProperties)
+            foreach (var transformProperty in Properties.TransformProperties)
             {
                 var property = animation.GetFloatNode(transformProperty);
                 if (property.SourceComponents.Any(sourceComponent => sourceComponent != physBone)) return true;
@@ -205,27 +207,119 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             return false;
         }
+    }
 
-        private static readonly string[] ScaleProperties =
+
+    internal class ReplaceEndBoneWithEndpointPositionPass : TraceAndOptimizePass<ReplaceEndBoneWithEndpointPositionPass>
+    {
+        public override string DisplayName => "T&O: Replace End Bone With Endpoint Position";
+        protected override bool Enabled(TraceAndOptimizeState state) => state.ReplaceEndBoneWithEndpointPosition;
+
+        protected override void Execute(BuildContext context, TraceAndOptimizeState state)
+        {
+            var allPhysBones = context.GetComponents<VRCPhysBoneBase>();
+            if (allPhysBones.Length == 0) return;
+
+            var overlappedPhysBones = ReplaceEndBoneWithEndpointPositionProcessor.GetOverlappedPhysBones(allPhysBones);
+            var validPhysBones = allPhysBones.Where(physbone => !overlappedPhysBones.Contains(physbone));
+
+            var componentInfos = context.Extension<GCComponentInfoContext>();
+            var entrypointMap = DependantMap.CreateEntrypointsMap(context);
+
+            // ReplaceEndBoneWithEndpointPosition component affects all physbones attached to the gameobject it is attached to.
+            var physbonesByGameObjects = validPhysBones
+                .GroupBy(physbone => physbone.gameObject)
+                .ToArray();
+
+            foreach (var physbonesByGameObject in physbonesByGameObjects)
+            {
+                var gameObject = physbonesByGameObject.Key;
+                var physbones = physbonesByGameObject;
+
+                if (state.Exclusions.Contains(gameObject)) continue;
+                if (gameObject.TryGetComponent<ReplaceEndBoneWithEndpointPosition>(out _)) continue;
+
+                if (physbones.All(physbone => ShouldReplace(physbone, state, entrypointMap, componentInfos)))
+                {
+                    var component = gameObject.AddComponent<ReplaceEndBoneWithEndpointPosition>();
+                    component.kind = ReplaceEndBoneWithEndpointPositionKind.Average;
+                }
+            }
+        }
+
+        private static bool ShouldReplace(VRCPhysBoneBase physbone, TraceAndOptimizeState state,
+            DependantMap entrypointMap, GCComponentInfoContext componentInfos)
+        {
+            var leafBones = physbone.GetAffectedLeafBones().ToHashSet();
+            var boneLengthChange = ReplaceEndBoneWithEndpointPositionProcessor.IsBoneLengthChange(physbone);
+
+            if (leafBones.Count == 0) return false;
+            if (!ValidatePhysBone(physbone, leafBones)) return false;
+
+            if (!HasApproximatelyEqualLocalPosition(leafBones, out var localPosition)) return false;
+
+            return leafBones.All(ValidateLeafBone);
+
+            bool ValidatePhysBone(VRCPhysBoneBase physbone, HashSet<Transform> leafBones)
+            {
+                if (physbone.endpointPosition != Vector3.zero) return false; // alreday used
+                if (!ReplaceEndBoneWithEndpointPositionProcessor.IsSafeMultiChild(physbone, leafBones)) return false;
+                return true;
+            }
+
+            bool ValidateLeafBone(Transform leafBone)
+            {
+                if (state.Exclusions.Contains(leafBone.gameObject)) return false;
+
+                // The endpoint position cannot replicate the "stretch" or "squish" behavior of the leaf bone, because with stretch or squish enabled, the transform's position of the leaf bone can actually move.
+                // Therefore, replacement should not be performed when these options are enabled.
+                // However, if the leaf bone does not have a valid usage, replacement can still be performed even if stretch or squish are enabled.
+                if (boneLengthChange)
+                {
+                    var dependencies = entrypointMap[componentInfos.GetInfo(leafBone)];
+                    // The only allowed dependency is physbone
+                    // Transform self-reference is not registered
+                    if (!dependencies.All(dependency =>
+                            dependency.Key == physbone && dependency.Value == GCComponentInfo.DependencyType.Normal))
+                        return false;
+                }
+
+                return true;
+            }
+        }
+
+        private static bool HasApproximatelyEqualLocalPosition(IEnumerable<Transform> transforms,
+            out Vector3 localPosition)
+        {
+            var localPositions = transforms.Select(x => x.localPosition);
+            localPosition = ReplaceEndBoneWithEndpointPositionProcessor.GetAvaragePosition(localPositions);
+            return ReplaceEndBoneWithEndpointPositionProcessor.AreApproximatelyEqualPosition(localPositions,
+                localPosition);
+        }
+    }
+
+    internal static class Properties
+    {
+        public static readonly string[] ScaleProperties =
         {
             "m_LocalScale.x", "m_LocalScale.y", "m_LocalScale.z",
             // Animator Window won't create the following properties, but generated by some scripts and works in runtime
             "localScale.x", "localScale.y", "localScale.z",
         };
 
-        private static readonly string[] TransformProperties =
+        public static readonly string[] TransformProperties =
         {
             "m_LocalRotation.x", "m_LocalRotation.y", "m_LocalRotation.z", "m_LocalRotation.w",
-            "m_LocalPosition.x", "m_LocalPosition.y", "m_LocalPosition.z", 
-            "m_LocalScale.x", "m_LocalScale.y", "m_LocalScale.z", 
+            "m_LocalPosition.x", "m_LocalPosition.y", "m_LocalPosition.z",
+            "m_LocalScale.x", "m_LocalScale.y", "m_LocalScale.z",
             // Animator Window won't create the following properties, but generated by some scripts and works in runtime
             "localRotation.x", "localRotation.y", "localRotation.z", "localRotation.w",
-            "localPosition.x", "localPosition.y", "localPosition.z", 
-            "localScale.x", "localScale.y", "localScale.z", 
+            "localPosition.x", "localPosition.y", "localPosition.z",
+            "localScale.x", "localScale.y", "localScale.z",
             "localEulerAnglesRaw.x", "localEulerAnglesRaw.y", "localEulerAnglesRaw.z"
         };
-        
-        private static readonly string[] PhysBoneColliderProperties =
+
+        public static readonly string[] PhysBoneColliderProperties =
         {
             Props.EnabledFor(typeof(VRCPhysBoneColliderBase)),
             "shapeType",
