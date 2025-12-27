@@ -108,7 +108,7 @@ Because Avatar Optimizer didn't have public API prior to 1.6.0 and will break in
 it's recommended to add version range like `[1.6,2.0)`
 (or stricter like `[1.7,2.0)` when you need new APIs that can be available in the future).
 
-![version-defines.png](version-defines.png)
+![version-defines.png](../version-defines.png)
 
 Then, define `ComponentInformation` for your component in your assembly.
 
