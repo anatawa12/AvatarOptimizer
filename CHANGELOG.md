@@ -51,7 +51,6 @@ The format is based on [Keep a Changelog].
 - Moved removing submeshes with no materials assigned to the early process of AAO `#1495`
   - This should let other process like freezing blendshapes ignore such submeshes.
 - Replace Mask Texture Editor ['#1470'](https://github.com/anatawa12/AvatarOptimizer/pull/1470)
-- Ignore unknown IEditorOnly components and log a warning in console instead of showing a popup. ['#1422'](https://github.com/anatawa12/AvatarOptimizer/pull/1422)
 - Orphan Vertices will be kept `#1515`
   - Vertices that are not part of any triangle will be kept.
   - Orphan vertices are likely to be used to control the bounds of the mesh so they will be kept.
