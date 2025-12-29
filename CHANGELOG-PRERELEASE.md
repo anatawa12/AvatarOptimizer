@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Reverted Ignore unknown IEditorOnly components and log a warning in console instead of showing a popup. `#1592`
+  - We added a button to create Asset Description instead.
 
 ### Deprecated
 

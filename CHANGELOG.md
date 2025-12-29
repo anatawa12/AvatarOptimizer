@@ -70,6 +70,7 @@ The format is based on [Keep a Changelog].
 - Useful error message will be shown when known unity bug that prevents you from building your avatar `#1563`
   - Actually I cannot reproduce the bug so I hope this works but nothing certify this works. 
 - Improved preserving VRCSDK required BlendShapes `#1585`
+- Added button to create Asseet Description when unknown `IEditorOnly` component is detected `#1592`
 
 [`AfterPlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_AfterPlugin_System_String_System_String_System_Int32_
 [`BeforePlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_BeforePlugin_System_String_System_String_System_Int32_
