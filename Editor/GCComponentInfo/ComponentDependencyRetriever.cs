@@ -75,7 +75,8 @@ namespace Anatawa12.AvatarOptimizer
             foreach (var (type, objects) in unknownComponents)
             {
                 var monoScript = MonoScript.FromMonoBehaviour(objects[0] as MonoBehaviour);
-                if (monoScript && monoScript.GetClass() == type && AssetDatabase.GetAssetPath(monoScript) != "")
+#if AAO_VRCSDK3_AVATARS
+                if (monoScript && monoScript.GetClass() == type && AssetDatabase.GetAssetPath(monoScript) != "" && typeof(VRC.SDKBase.IEditorOnly).IsAssignableFrom(type))
                 {
                     BuildLog.LogWarningWithAutoFix("TraceAndOptimize:warn:unknown-type", AutoFix, type, objects)
                         .AutoFixKey = "TraceAndOptimize:warn:unknown-type:autofix";
@@ -99,6 +100,7 @@ namespace Anatawa12.AvatarOptimizer
                     }
                 }
                 else
+#endif
                 {
                     BuildLog.LogWarning("TraceAndOptimize:warn:unknown-type", type, objects);                    
                 }
