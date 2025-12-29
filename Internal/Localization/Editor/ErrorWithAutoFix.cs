@@ -15,6 +15,7 @@ namespace Anatawa12.AvatarOptimizer
         public override string TitleKey { get; }
         public override ErrorSeverity Severity { get; }
         private string[] _subst;
+        public string AutoFixKey = "ErrorReporter:autoFix";
         
         public ErrorWithAutoFix(ErrorSeverity errorSeverity, string key, Action autoFix, params object[] args)
         {
@@ -69,7 +70,7 @@ namespace Anatawa12.AvatarOptimizer
         public override VisualElement CreateVisualElement(ErrorReport report)
         {
             var element = base.CreateVisualElement(report);
-            element[0].Add(new Button(() => { AutoFix(); }) {text = AAOL10N.Tr("ErrorReporter:autoFix")});
+            element[0].Add(new Button(() => { AutoFix(); }) {text = AAOL10N.Tr(AutoFixKey)});
             return element;
         }
 

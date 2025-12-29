@@ -799,6 +799,32 @@ msgstr ""
 "\n"
 "ツール作者に依頼する場合は、開発者向けドキュメントへのリンク( https://vpm.anatawa12.com/avatar-optimizer/ja/docs/developers/make-your-components-compatible-with-aao/ )を共有してください。"
 
+msgid "TraceAndOptimize:warn:unknown-type:autofix"
+msgstr "Asset Descriptionを作成して修正する"
+
+msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:message"
+msgstr ""
+"未知のコンポーネント'{0}'に対してAsset Descriptionを作成し、Avatar Optimizerに登録しようとしています。\n"
+"これにより、次回以降この警告はこのコンポーネントに対して表示されなくなります。\n"
+"\n"
+"ただし、この方法は完全ではなく、非破壊的なツールに対してうまく機能しない可能性があります。\n"
+"もしこのコンポーネントのユーザーである場合は、この方法を使用する前に、ツール作者にAvatar Optimizerへの対応を依頼することを検討してください。\n"
+"\n"
+"もしこのコンポーネントの作者である場合は、Avatar Optimizerへのコンポーネント登録を検討してください。\n"
+"詳しくはドキュメントをご覧ください。"
+
+msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:create"
+msgstr "Asset Descriptionを作成する"
+
+msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:open-docs"
+msgstr "ドキュメントを開く"
+
+msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:cancel"
+msgstr "キャンセル"
+
+msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:url"
+msgstr "https://vpm.anatawa12.com/avatar-optimizer/ja/docs/developers/make-your-components-compatible-with-aao/"
+
 msgid "TraceAndOptimize:prop:preserveEndBone"
 msgstr "endボーンを残す"
 

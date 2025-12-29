@@ -126,6 +126,24 @@ namespace Anatawa12.AvatarOptimizer
             return data;
         }
 
+        internal void AddMeaninglessComponents(IEnumerable<MonoScript> types)
+        {
+            var meaninglessComponentsList = meaninglessComponents.ToList();
+            foreach (var type in types)
+            {
+                var id = GlobalObjectId.GetGlobalObjectIdSlow(type);
+                Utils.Assert(id.identifierType == MonoScriptIdentifierType);
+                Utils.Assert(id.targetPrefabId == 0);
+                meaninglessComponentsList.Add(new ClassReference
+                {
+                    className = type.GetClass()?.Name ?? "",
+                    guid = id.assetGUID.ToString(),
+                    fileID = id.targetObjectId,
+                });
+            }
+            meaninglessComponents = meaninglessComponentsList.ToArray();
+        }
+
         private static IEnumerable<AssetDescription> GetAllAssetDescriptions()
         {
             foreach (var findAsset in AssetDatabase.FindAssets("t:AssetDescription"))
