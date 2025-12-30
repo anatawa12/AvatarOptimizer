@@ -11,7 +11,9 @@ The format is based on [Keep a Changelog].
 
 ### Changed
 - Reverted Ignore unknown IEditorOnly components and log a warning in console instead of showing a popup. `#1592`
-  - We added a button to create Asset Description instead.
+  - We added button to ignore such components instead.
+  - As a part of this feature, we added Project-level settings to store a list of ignored components.
+  - You can access this settings in `Project/Avatar Optimizer` of `Project settings` and stored at `ProjectSettings/AvatarOptimizerSettings.asset` file.
 
 ### Deprecated
 
