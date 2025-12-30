@@ -12,8 +12,7 @@ Avatar Optimizerと連携するツールを開発している場合は、これ�
 
 Transformインスタンスが同一であるか否かは、Avatar Optimizer内で同じボーンであるか否かを判定するために使用されます。
 
-Avatar Optimizerは、Resolving Phaseで取得したTransform行列を使用して、Remove Mesh By Boxにより削除対象となる頂点を判断する場合があります。
-
+Avatar Optimizerは、Resolving Phaseで取得したTransform行列を使用し、Remove Mesh By Boxにより削除対象となる頂点を判断する場合があります。\
 Transformを操作するツールを作成する場合は、Avatar Optimizerの最適化処理内において各Transformインスタンスが一貫して単一のボーンや目的を表すことを確認してください。
 
 ## 頂点インデックスの使用 {#vertex-index-usage}

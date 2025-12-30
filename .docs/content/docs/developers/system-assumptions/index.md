@@ -12,8 +12,7 @@ If you are developing tools that integrate with Avatar Optimizer, please ensure 
 
 The same instance of Transform is used to express the same bone in Avatar Optimizer.
 
-Avatar Optimizer may use transform matrices from the Resolving phase to determine which vertices will be removed with Remove Mesh By Box.
-
+Avatar Optimizer may use transform matrices from the Resolving phase to determine which vertices will be removed with Remove Mesh By Box.\
 If you create tools that manipulate transforms, ensure each Transform instance represents a single, consistent bone or purpose throughout the optimization process.
 
 ## Vertex Index Usage {#vertex-index-usage}
