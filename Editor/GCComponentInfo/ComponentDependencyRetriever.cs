@@ -50,18 +50,11 @@ namespace Anatawa12.AvatarOptimizer
                     }
                     else
                     {
-                        if (component is AvatarTagComponent)
-                        {
-                            // our components can be ignored
-                        }
-                        else
-                        {
-                            if (!unknownComponents.TryGetValue(component.GetType(), out var list))
-                                unknownComponents.Add(component.GetType(), list = new List<Object>());
-                            list.Add(component);
+                        if (!unknownComponents.TryGetValue(component.GetType(), out var list))
+                            unknownComponents.Add(component.GetType(), list = new List<Object>());
+                        list.Add(component);
 
-                            FallbackDependenciesParser(component, collector);
-                        }
+                        FallbackDependenciesParser(component, collector);
                     }
 
                     foreach (var requiredComponent in RequireComponentCache.GetRequiredComponents(component.GetType()))
@@ -79,18 +72,15 @@ namespace Anatawa12.AvatarOptimizer
                 if (monoScript && monoScript.GetClass() == type && AssetDatabase.GetAssetPath(monoScript) != "" && typeof(VRC.SDKBase.IEditorOnly).IsAssignableFrom(type))
                 {
                     // Check if already ignored
-                    if (!AvatarOptimizerSettings.instance.IsIgnored(type))
+                    BuildLog.LogWarningWithAutoFix("TraceAndOptimize:warn:unknown-type", AutoFix, type, objects)
+                        .AutoFixKey = "TraceAndOptimize:warn:unknown-type:autofix";
+
+                    async void AutoFix()
                     {
-                        BuildLog.LogWarningWithAutoFix("TraceAndOptimize:warn:unknown-type", AutoFix, type, objects)
-                            .AutoFixKey = "TraceAndOptimize:warn:unknown-type:autofix";
+                        if (!await ConfirmAutoFixDialog.ShowDialog(type))
+                            return;
 
-                        async void AutoFix()
-                        {
-                            if (!await ConfirmAutoFixDialog.ShowDialog(type))
-                                return;
-
-                            AvatarOptimizerSettings.instance.AddIgnoredComponent(monoScript);
-                        }
+                        AvatarOptimizerSettings.instance.AddIgnoredComponent(monoScript);
                     }
                 }
                 else

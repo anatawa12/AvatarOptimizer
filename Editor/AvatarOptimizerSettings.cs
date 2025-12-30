@@ -12,10 +12,21 @@ namespace Anatawa12.AvatarOptimizer
     /// Stored in ProjectSettings directory.
     /// </summary>
     [FilePath("ProjectSettings/AvatarOptimizerSettings.asset", FilePathAttribute.Location.ProjectFolder)]
-    internal class AvatarOptimizerSettings : ScriptableSingleton<AvatarOptimizerSettings>
+    internal class AvatarOptimizerSettings : ScriptableSingleton<AvatarOptimizerSettings>, ISerializationCallbackReceiver
     {
         [SerializeField]
         private MonoScript[] ignoredComponents = Array.Empty<MonoScript>();
+
+        private HashSet<Type>? _ignoredComponentSetCache;
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize()
+        {
+        }
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
+            _ignoredComponentSetCache = null;
+        }
 
         public void Save() => Save(false);
 
@@ -24,31 +35,21 @@ namespace Anatawa12.AvatarOptimizer
         /// </summary>
         public HashSet<Type> GetIgnoredComponentTypes()
         {
-            var types = new HashSet<Type>();
-            foreach (var script in ignoredComponents)
+            if (_ignoredComponentSetCache == null)
             {
-                if (script != null)
-                {
-                    var type = script.GetClass();
-                    if (type != null)
-                        types.Add(type);
-                }
+                _ignoredComponentSetCache = ignoredComponents.Where(script => script != null)
+                    .Select(script => script.GetClass())
+                    .Where(type => type != null)
+                    .ToHashSet();
             }
-            return types;
+
+            return _ignoredComponentSetCache;
         }
 
         /// <summary>
         /// Check if a component type is ignored
         /// </summary>
-        public bool IsIgnored(Type type)
-        {
-            foreach (var script in ignoredComponents)
-            {
-                if (script != null && script.GetClass() == type)
-                    return true;
-            }
-            return false;
-        }
+        public bool IsIgnored(Type type) => GetIgnoredComponentTypes().Contains(type);
 
         /// <summary>
         /// Add a MonoScript to the ignored list
@@ -62,9 +63,8 @@ namespace Anatawa12.AvatarOptimizer
                 return;
 
             Undo.RecordObject(this, "Add Ignored Component");
-            var list = ignoredComponents.ToList();
-            list.Add(script);
-            ignoredComponents = list.ToArray();
+            _ignoredComponentSetCache = null;
+            ArrayUtility.Add(ref ignoredComponents, script);
             Save(true);
         }
 
@@ -76,19 +76,15 @@ namespace Anatawa12.AvatarOptimizer
             if (script == null) return;
 
             Undo.RecordObject(this, "Remove Ignored Component");
-            var list = ignoredComponents.ToList();
-            list.Remove(script);
-            ignoredComponents = list.ToArray();
+            _ignoredComponentSetCache = null;
+            ArrayUtility.Remove(ref ignoredComponents, script);
             Save(true);
         }
 
         /// <summary>
         /// Get all ignored MonoScripts
         /// </summary>
-        public MonoScript[] GetIgnoredComponents()
-        {
-            return ignoredComponents.ToArray();
-        }
+        public MonoScript[] GetIgnoredComponents() => ignoredComponents.ToArray();
 
         /// <summary>
         /// Clear all ignored components
@@ -96,6 +92,7 @@ namespace Anatawa12.AvatarOptimizer
         public void ClearIgnoredComponents()
         {
             Undo.RecordObject(this, "Clear Ignored Components");
+            _ignoredComponentSetCache = null;
             ignoredComponents = Array.Empty<MonoScript>();
             Save(true);
         }

@@ -103,6 +103,20 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                 return true;
             }
 
+            // Ignore Avatar Optimizers components
+            if (typeof(AvatarTagComponent).IsAssignableFrom(type))
+            {
+                information = MeaninglessComponentInformation.Instance;
+                return true;
+            }
+
+            // Manually ignored types from settings
+            if (AvatarOptimizerSettings.instance.IsIgnored(type))
+            {
+                information = MeaninglessComponentInformation.Instance;
+                return true;
+            }
+
             return false;
         }
 
