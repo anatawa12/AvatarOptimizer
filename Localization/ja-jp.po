@@ -800,21 +800,21 @@ msgstr ""
 "ツール作者に依頼する場合は、開発者向けドキュメントへのリンク( https://vpm.anatawa12.com/avatar-optimizer/ja/docs/developers/make-your-components-compatible-with-aao/ )を共有してください。"
 
 msgid "TraceAndOptimize:warn:unknown-type:autofix"
-msgstr "Asset Descriptionを作成して修正する"
+msgstr "このコンポーネントを無視する"
 
 msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:message"
 msgstr ""
-"未知のコンポーネント'{0}'に対してAsset Descriptionを作成し、Avatar Optimizerに登録しようとしています。\n"
-"これにより、次回以降この警告はこのコンポーネントに対して表示されなくなります。\n"
+"未知のコンポーネント'{0}'を無視しようとしています。\n"
+"これにより、このコンポーネントタイプに対する警告が抑制されます。\n"
 "\n"
-"ただし、この方法は完全ではなく、非破壊的なツールに対してうまく機能しない可能性があります。\n"
-"もしこのコンポーネントのユーザーである場合は、この方法を使用する前に、ツール作者にAvatar Optimizerへの対応を依頼することを検討してください。\n"
+"ただし、これは推奨される方法ではありません。\n"
+"このコンポーネントのユーザーである場合は、ツール作者にAvatar Optimizerへの対応を依頼してください。\n"
 "\n"
-"もしこのコンポーネントの作者である場合は、Avatar Optimizerへのコンポーネント登録を検討してください。\n"
+"このコンポーネントの作者である場合は、Avatar Optimizerへの登録を検討してください。\n"
 "詳しくはドキュメントをご覧ください。"
 
-msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:create"
-msgstr "Asset Descriptionを作成する"
+msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:ignore"
+msgstr "コンポーネントを無視する"
 
 msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:open-docs"
 msgstr "ドキュメントを開く"
@@ -1066,3 +1066,33 @@ msgstr "統合対象のマテリアルで使用されている一部のテクス
 # endregion
 
 # endregion
+
+msgid "AvatarOptimizerSettings:Header"
+msgstr "Avatar Optimizer 設定"
+
+msgid "AvatarOptimizerSettings:Description"
+msgstr "Avatar Optimizerのグローバル設定です。"
+
+msgid "AvatarOptimizerSettings:OpenDocs"
+msgstr "ドキュメントを開く"
+
+msgid "AvatarOptimizerSettings:DocsUrl"
+msgstr "https://vpm.anatawa12.com/avatar-optimizer/ja/docs/developers/make-your-components-compatible-with-aao/"
+
+msgid "AvatarOptimizerSettings:IgnoredComponents"
+msgstr "無視するコンポーネント"
+
+msgid "AvatarOptimizerSettings:ClearAll"
+msgstr "すべての無視設定をクリア"
+
+msgid "AvatarOptimizerSettings:ClearAll:Confirm:Title"
+msgstr "すべての無視設定をクリア"
+
+msgid "AvatarOptimizerSettings:ClearAll:Confirm:Message"
+msgstr "すべての無視設定をクリアしてもよろしいですか？"
+
+msgid "AvatarOptimizerSettings:ClearAll:Confirm:OK"
+msgstr "クリア"
+
+msgid "AvatarOptimizerSettings:ClearAll:Confirm:Cancel"
+msgstr "キャンセル"

@@ -78,25 +78,19 @@ namespace Anatawa12.AvatarOptimizer
 #if AAO_VRCSDK3_AVATARS
                 if (monoScript && monoScript.GetClass() == type && AssetDatabase.GetAssetPath(monoScript) != "" && typeof(VRC.SDKBase.IEditorOnly).IsAssignableFrom(type))
                 {
-                    BuildLog.LogWarningWithAutoFix("TraceAndOptimize:warn:unknown-type", AutoFix, type, objects)
-                        .AutoFixKey = "TraceAndOptimize:warn:unknown-type:autofix";
-
-                    async void AutoFix()
+                    // Check if already ignored
+                    if (!AvatarOptimizerSettings.instance.IsIgnored(type))
                     {
-                        if (!await ConfirmAutoFixDialog.ShowDialog(type))
-                            return;
+                        BuildLog.LogWarningWithAutoFix("TraceAndOptimize:warn:unknown-type", AutoFix, type, objects)
+                            .AutoFixKey = "TraceAndOptimize:warn:unknown-type:autofix";
 
-                        var createPath = EditorUtility.SaveFilePanelInProject(
-                            "Create Asset Description",
-                            type.Name + "AssetDescription",
-                            "asset",
-                            "Create Asset Description for " + type.FullName);
-                        if (string.IsNullOrEmpty(createPath)) return;
-                        var newAssetDescription = ScriptableObject.CreateInstance<AssetDescription>();
-                        newAssetDescription.AddMeaninglessComponents(new[] { monoScript });
-                        AssetDatabase.CreateAsset(newAssetDescription, createPath);
-                        Undo.RegisterCreatedObjectUndo(newAssetDescription,
-                            "Create Asset Description for " + type.FullName);
+                        async void AutoFix()
+                        {
+                            if (!await ConfirmAutoFixDialog.ShowDialog(type))
+                                return;
+
+                            AvatarOptimizerSettings.instance.AddIgnoredComponent(monoScript);
+                        }
                     }
                 }
                 else
@@ -119,7 +113,7 @@ namespace Anatawa12.AvatarOptimizer
                 window.type = type;
                 window._callback = result => tcs.TrySetResult(result);
                 var mainWindowPos = EditorGUIUtility.GetMainWindowPosition();
-                var size = new Vector2(500, 400);
+                var size = new Vector2(500, 350);
                 window.position = new Rect(mainWindowPos.xMin + (mainWindowPos.width - size.x) * 0.5f,
                     mainWindowPos.yMin + (mainWindowPos.height - size.y) * 0.5f, size.x, size.y);
                 window.titleContent = new GUIContent(AAOL10N.Tr("TraceAndOptimize:warn:unknown-type:autofix"));
@@ -154,7 +148,7 @@ namespace Anatawa12.AvatarOptimizer
                 actionsBox.style.flexDirection = FlexDirection.Row;
                 actionsBox.style.flexWrap = Wrap.Wrap;
                 actionsBox.Add(NewButton(Cancel, AAOL10N.Tr("TraceAndOptimize:warn:unknown-type:autofix:dialog:cancel")));
-                actionsBox.Add(NewButton(CreateAssetDescription, AAOL10N.Tr("TraceAndOptimize:warn:unknown-type:autofix:dialog:create")));
+                actionsBox.Add(NewButton(IgnoreComponent, AAOL10N.Tr("TraceAndOptimize:warn:unknown-type:autofix:dialog:ignore")));
                 actionsBox.Add(NewButton(OpenDocs, AAOL10N.Tr("TraceAndOptimize:warn:unknown-type:autofix:dialog:open-docs")));
 
                 Button NewButton(Action onClick, string text) => new(onClick)
@@ -182,7 +176,7 @@ namespace Anatawa12.AvatarOptimizer
                 Close();
             }
 
-            void CreateAssetDescription()
+            void IgnoreComponent()
             {
                 _callback(true);
                 Close();

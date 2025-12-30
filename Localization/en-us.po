@@ -897,24 +897,24 @@ msgstr ""
 "If you ask tool author to register the component, please share the link to the documentation for developer ( https://vpm.anatawa12.com/avatar-optimizer/en/docs/developers/make-your-components-compatible-with-aao/ )."
 
 msgid "TraceAndOptimize:warn:unknown-type:autofix"
-msgstr "Create Asset Description to Fix"
+msgstr "Ignore This Component"
 
 msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:title"
-msgstr "Create Asset Description to Fix Unknown Component Type"
+msgstr "Ignore Unknown Component Type"
 
 msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:message"
 msgstr ""
-"You're creating Asset Description to make Avatar Optimizer recognize unknown component type '{0}'.\n"
-"This will make this warning disappear for this component.\n"
+"You're about to ignore the unknown component type '{0}'.\n"
+"This will suppress the warning for this component type.\n"
 "\n"
-"However, this workaround is not perfect and may not work well for non-destructive tools.\n"
-"If you're user of the component, please consider asking tool author to make the component compatible with Avatar Optimizer before using this workaround.\n"
+"However, this is not the recommended approach.\n"
+"If you're a user of this component, please ask the tool author to make it compatible with Avatar Optimizer.\n"
 "\n"
-"If you're author of the component, please consider registering the component to Avatar Optimizer.\n"
-"Please read the documentation for more details."
+"If you're the author of this component, please register it with Avatar Optimizer.\n"
+"See the documentation for more details."
 
-msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:create"
-msgstr "Create Asset Description"
+msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:ignore"
+msgstr "Ignore Component"
 
 msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:open-docs"
 msgstr "Open Documentation"
@@ -1137,3 +1137,33 @@ msgstr "Some texture properties used in source materials are not used by the ref
 # endregion
 
 # endregion
+
+msgid "AvatarOptimizerSettings:Header"
+msgstr "Avatar Optimizer Settings"
+
+msgid "AvatarOptimizerSettings:Description"
+msgstr "Global settings for Avatar Optimizer."
+
+msgid "AvatarOptimizerSettings:OpenDocs"
+msgstr "Open Documentation"
+
+msgid "AvatarOptimizerSettings:DocsUrl"
+msgstr "https://vpm.anatawa12.com/avatar-optimizer/en/docs/developers/make-your-components-compatible-with-aao/"
+
+msgid "AvatarOptimizerSettings:IgnoredComponents"
+msgstr "Ignored Components"
+
+msgid "AvatarOptimizerSettings:ClearAll"
+msgstr "Clear All Ignored Components"
+
+msgid "AvatarOptimizerSettings:ClearAll:Confirm:Title"
+msgstr "Clear All Ignored Components"
+
+msgid "AvatarOptimizerSettings:ClearAll:Confirm:Message"
+msgstr "Are you sure you want to clear all ignored components?"
+
+msgid "AvatarOptimizerSettings:ClearAll:Confirm:OK"
+msgstr "Clear"
+
+msgid "AvatarOptimizerSettings:ClearAll:Confirm:Cancel"
+msgstr "Cancel"
