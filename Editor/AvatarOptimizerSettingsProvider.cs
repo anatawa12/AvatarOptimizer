@@ -44,7 +44,7 @@ namespace Anatawa12.AvatarOptimizer
             
             if (_serializedObject.ApplyModifiedProperties())
             {
-                AvatarOptimizerSettings.instance.Save(true);
+                AvatarOptimizerSettings.instance.Save();
             }
 
             EditorGUILayout.Space();

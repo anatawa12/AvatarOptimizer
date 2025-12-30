@@ -17,6 +17,8 @@ namespace Anatawa12.AvatarOptimizer
         [SerializeField]
         private MonoScript[] ignoredComponents = Array.Empty<MonoScript>();
 
+        public void Save() => Save(false);
+
         /// <summary>
         /// Get the set of ignored component types
         /// </summary>
