@@ -27,9 +27,9 @@ If your shader or tool uses vertex indices, you must register this usage via [Sh
 
 ## External Parameter Usage {#external-parameter-usage}
 
-Unless explicitly declared in AssetDescription, animator parameters are treated as not being modified or read by external tools.
+Avatar Optimizer may optimize unnecessary animations and other objects based on the usage and value range of animator parameters.\
+However, parameters used by external tools cannot be reliably inferred from the avatar data, so unless explicitly declared in AssetDescription, they are treated as not being externally modified or read.
 
-Avatar Optimizer optimizes based on the assumption that parameter values are not modified or read externally unless marked otherwise.\
 If your tool modifies or reads parameters at runtime (like OSC), ensure they are properly registered as externally used parameters via [AssetDescription].
 
 [AssetDescription]: ../asset-description
