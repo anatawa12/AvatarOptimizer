@@ -10,10 +10,6 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Reverted Ignore unknown IEditorOnly components and log a warning in console instead of showing a popup. `#1592`
-  - We added button to ignore such components instead.
-  - As a part of this feature, we added Project-level settings to store a list of ignored components.
-  - You can access this settings in `Project/Avatar Optimizer` of `Project settings` and stored at `ProjectSettings/AvatarOptimizerSettings.asset` file.
 
 ### Deprecated
 
@@ -22,6 +18,13 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.9.0-rc.4] - 2026-01-01
+### Changed
+- Reverted Ignore unknown IEditorOnly components and log a warning in console instead of showing a popup. [`#1592`](https://github.com/anatawa12/AvatarOptimizer/pull/1592)
+  - We added button to ignore such components instead.
+  - As a part of this feature, we added Project-level settings to store a list of ignored components.
+  - You can access this settings in `Project/Avatar Optimizer` of `Project settings` and stored at `ProjectSettings/AvatarOptimizerSettings.asset` file.
 
 ## [1.9.0-rc.3] - 2025-12-25
 ### Fixed
@@ -2083,7 +2086,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.4...HEAD
+[1.9.0-rc.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.3...v1.9.0-rc.4
 [1.9.0-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.2...v1.9.0-rc.3
 [1.9.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.1...v1.9.0-rc.2
 [1.9.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.6...v1.9.0-rc.1
