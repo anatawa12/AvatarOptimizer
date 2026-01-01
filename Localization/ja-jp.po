@@ -805,12 +805,12 @@ msgstr "このコンポーネントを無視する"
 msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:message"
 msgstr ""
 "未知のコンポーネント'{0}'を無視しようとしています。\n"
-"これにより、このコンポーネントタイプに対する警告が抑制されます。\n"
+"これにより、このコンポーネントに対する警告が抑制されます。\n"
 "\n"
 "ただし、これは推奨される方法ではありません。\n"
-"このコンポーネントのユーザーである場合は、ツール作者にAvatar Optimizerへの対応を依頼するのを検討してください。\n"
+"あなたがこのコンポーネントのユーザーである場合は、ツール作者にAvatar Optimizerへの対応を依頼することを検討してください。\n"
 "\n"
-"このコンポーネントの作者である場合は、Avatar Optimizerへの登録をおねがいします。\n"
+"あなたがこのコンポーネントの作者である場合は、Avatar Optimizerへのコンポーネント登録をお願いします。\n"
 "詳しくはドキュメントをご覧ください。"
 
 msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:ignore"
@@ -1068,7 +1068,7 @@ msgstr "統合対象のマテリアルで使用されている一部のテクス
 # endregion
 
 msgid "AvatarOptimizerSettings:Header"
-msgstr "Avatar Optimizer 設定"
+msgstr "Avatar Optimizer設定"
 
 msgid "AvatarOptimizerSettings:Description"
 msgstr "Avatar Optimizerのグローバル設定です。"
