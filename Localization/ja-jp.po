@@ -799,6 +799,33 @@ msgstr ""
 "\n"
 "ツール作者に依頼する場合は、開発者向けドキュメントへのリンク( https://vpm.anatawa12.com/avatar-optimizer/ja/docs/developers/make-your-components-compatible-with-aao/ )を共有してください。"
 
+msgid "TraceAndOptimize:warn:unknown-type:autofix"
+msgstr "このコンポーネントを無視する"
+
+msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:message"
+msgstr ""
+"未知のコンポーネント'{0}'を無視しようとしています。\n"
+"これにより、このコンポーネントに対する警告が抑制されます。\n"
+"(この設定は、Project SettingsのAvatar Optimizerセクションから元に戻すことができます)\n"
+"\n"
+"ただし、これは推奨される方法ではありません。\n"
+"あなたがこのコンポーネントのユーザーである場合は、ツール作者にAvatar Optimizerへの対応を依頼することを検討してください。\n"
+"\n"
+"あなたがこのコンポーネントの作者である場合は、Avatar Optimizerへのコンポーネント登録をお願いします。\n"
+"詳しくはドキュメントをご覧ください。"
+
+msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:ignore"
+msgstr "コンポーネントを無視する"
+
+msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:open-docs"
+msgstr "ドキュメントを開く"
+
+msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:cancel"
+msgstr "キャンセル"
+
+msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:url"
+msgstr "https://vpm.anatawa12.com/avatar-optimizer/ja/docs/developers/make-your-components-compatible-with-aao/"
+
 msgid "TraceAndOptimize:prop:preserveEndBone"
 msgstr "endボーンを残す"
 
@@ -1040,3 +1067,33 @@ msgstr "統合対象のマテリアルで使用されている一部のテクス
 # endregion
 
 # endregion
+
+msgid "AvatarOptimizerSettings:Header"
+msgstr "Avatar Optimizer設定"
+
+msgid "AvatarOptimizerSettings:Description"
+msgstr "Avatar Optimizerのグローバル設定です。"
+
+msgid "AvatarOptimizerSettings:OpenDocs"
+msgstr "ドキュメントを開く"
+
+msgid "AvatarOptimizerSettings:DocsUrl"
+msgstr "https://vpm.anatawa12.com/avatar-optimizer/ja/docs/developers/make-your-components-compatible-with-aao/"
+
+msgid "AvatarOptimizerSettings:IgnoredComponents"
+msgstr "無視するコンポーネント"
+
+msgid "AvatarOptimizerSettings:ClearAll"
+msgstr "すべての無視設定をクリア"
+
+msgid "AvatarOptimizerSettings:ClearAll:Confirm:Title"
+msgstr "すべての無視設定をクリア"
+
+msgid "AvatarOptimizerSettings:ClearAll:Confirm:Message"
+msgstr "すべての無視設定をクリアしてもよろしいですか？"
+
+msgid "AvatarOptimizerSettings:ClearAll:Confirm:OK"
+msgstr "クリア"
+
+msgid "AvatarOptimizerSettings:ClearAll:Confirm:Cancel"
+msgstr "キャンセル"

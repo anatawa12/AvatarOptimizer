@@ -891,10 +891,40 @@ msgstr ""
 "If it is a component of your tool, please consider registering it to Avatar Optimizer.\n"
 "See https://vpm.anatawa12.com/avatar-optimizer/en/docs/developers/make-your-components-compatible-with-aao/ for more details.\n"
 "\n"
-"If it is a component of a tool you are using, please ask tool author to register the component to Avatar Optimizer\n"
+"If it is a component of a tool you are using, please ask tool author to register the component with Avatar Optimizer\n"
 "or ask Avatar Optimizer to support the component if the tool is a well-known one.\n"
 "\n"
 "If you ask tool author to register the component, please share the link to the documentation for developer ( https://vpm.anatawa12.com/avatar-optimizer/en/docs/developers/make-your-components-compatible-with-aao/ )."
+
+msgid "TraceAndOptimize:warn:unknown-type:autofix"
+msgstr "Ignore This Component"
+
+msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:title"
+msgstr "Ignore Unknown Component Type"
+
+msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:message"
+msgstr ""
+"You're about to ignore the unknown component type '{0}'.\n"
+"This will suppress the warning for this component type.\n"
+"(You can revert this setting from Avatar Optimizer section in Project Settings.)\n"
+"\n"
+"However, this is not the recommended approach.\n"
+"If you're a user of this component, please consider asking the tool author to make it compatible with Avatar Optimizer.\n"
+"\n"
+"If you're the author of this component, please register it with Avatar Optimizer.\n"
+"See the documentation for more details."
+
+msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:ignore"
+msgstr "Ignore Component"
+
+msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:open-docs"
+msgstr "Open Documentation"
+
+msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:cancel"
+msgstr "Cancel"
+
+msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:url"
+msgstr "https://vpm.anatawa12.com/avatar-optimizer/en/docs/developers/make-your-components-compatible-with-aao/"
 
 msgid "TraceAndOptimize:prop:preserveEndBone"
 msgstr "Preserve EndBone"
@@ -1108,3 +1138,33 @@ msgstr "Some texture properties used in source materials are not used by the ref
 # endregion
 
 # endregion
+
+msgid "AvatarOptimizerSettings:Header"
+msgstr "Avatar Optimizer Settings"
+
+msgid "AvatarOptimizerSettings:Description"
+msgstr "Global settings for Avatar Optimizer."
+
+msgid "AvatarOptimizerSettings:OpenDocs"
+msgstr "Open Documentation"
+
+msgid "AvatarOptimizerSettings:DocsUrl"
+msgstr "https://vpm.anatawa12.com/avatar-optimizer/en/docs/developers/make-your-components-compatible-with-aao/"
+
+msgid "AvatarOptimizerSettings:IgnoredComponents"
+msgstr "Ignored Components"
+
+msgid "AvatarOptimizerSettings:ClearAll"
+msgstr "Clear All Ignored Components"
+
+msgid "AvatarOptimizerSettings:ClearAll:Confirm:Title"
+msgstr "Clear All Ignored Components"
+
+msgid "AvatarOptimizerSettings:ClearAll:Confirm:Message"
+msgstr "Are you sure you want to clear all ignored components?"
+
+msgid "AvatarOptimizerSettings:ClearAll:Confirm:OK"
+msgstr "Clear"
+
+msgid "AvatarOptimizerSettings:ClearAll:Confirm:Cancel"
+msgstr "Cancel"

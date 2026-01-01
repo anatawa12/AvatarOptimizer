@@ -16,5 +16,12 @@ namespace Anatawa12.AvatarOptimizer
 
         public static void LogErrorWithAutoFix(string code, Action autoFix, params object[] args) =>
             ErrorReport.ReportError(new ErrorWithAutoFix(ErrorSeverity.Error, code, autoFix, args));
+
+        public static ErrorWithAutoFix LogWarningWithAutoFix(string code, Action autoFix, params object[] args)
+        {
+            var error = new ErrorWithAutoFix(ErrorSeverity.NonFatal, code, autoFix, args);
+            ErrorReport.ReportError(error);
+            return error;
+        }
     }
 }

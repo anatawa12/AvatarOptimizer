@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Anatawa12.AvatarOptimizer.APIInternal;
 using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
@@ -48,26 +50,11 @@ namespace Anatawa12.AvatarOptimizer
                     }
                     else
                     {
-                        if (component is AvatarTagComponent)
-                        {
-                            // our components can be ignored
-                        }
-                        else
-                        {
-                            // Ignore IEditorOnly components.
-                            if (!(component is VRC.SDKBase.IEditorOnly))
-                            {
-                                if (!unknownComponents.TryGetValue(component.GetType(), out var list))
-                                    unknownComponents.Add(component.GetType(), list = new List<Object>());
-                                list.Add(component);
-                            }
-                            else
-                            {
-                                Debug.LogWarning($"Ignored IEditorOnly component: {component.GetType().FullName}",component);
-                            }
+                        if (!unknownComponents.TryGetValue(component.GetType(), out var list))
+                            unknownComponents.Add(component.GetType(), list = new List<Object>());
+                        list.Add(component);
 
-                            FallbackDependenciesParser(component, collector);
-                        }
+                        FallbackDependenciesParser(component, collector);
                     }
 
                     foreach (var requiredComponent in RequireComponentCache.GetRequiredComponents(component.GetType()))
@@ -79,7 +66,117 @@ namespace Anatawa12.AvatarOptimizer
                 }
             }
             foreach (var (type, objects) in unknownComponents)
-                BuildLog.LogWarning("TraceAndOptimize:warn:unknown-type", type, objects);
+            {
+                var monoScript = MonoScript.FromMonoBehaviour(objects[0] as MonoBehaviour);
+#if AAO_VRCSDK3_AVATARS
+                if (monoScript && monoScript.GetClass() == type && AssetDatabase.GetAssetPath(monoScript) != "" && typeof(VRC.SDKBase.IEditorOnly).IsAssignableFrom(type))
+                {
+                    // Check if already ignored
+                    BuildLog.LogWarningWithAutoFix("TraceAndOptimize:warn:unknown-type", AutoFix, type, objects)
+                        .AutoFixKey = "TraceAndOptimize:warn:unknown-type:autofix";
+
+                    async void AutoFix()
+                    {
+                        if (!await ConfirmAutoFixDialog.ShowDialog(type))
+                            return;
+
+                        AvatarOptimizerSettings.instance.AddIgnoredComponent(monoScript);
+                    }
+                }
+                else
+#endif
+                {
+                    BuildLog.LogWarning("TraceAndOptimize:warn:unknown-type", type, objects);                    
+                }
+            }
+        }
+
+        class ConfirmAutoFixDialog : EditorWindow
+        {
+            private Type type;
+            private Action<bool> _callback;
+
+            public static Task<bool> ShowDialog(Type type)
+            {
+                var tcs = new TaskCompletionSource<bool>();
+                var window = CreateInstance<ConfirmAutoFixDialog>();
+                window.type = type;
+                window._callback = result => tcs.TrySetResult(result);
+                var mainWindowPos = EditorGUIUtility.GetMainWindowPosition();
+                var size = new Vector2(500, 350);
+                window.position = new Rect(mainWindowPos.xMin + (mainWindowPos.width - size.x) * 0.5f,
+                    mainWindowPos.yMin + (mainWindowPos.height - size.y) * 0.5f, size.x, size.y);
+                window.titleContent = new GUIContent(AAOL10N.Tr("TraceAndOptimize:warn:unknown-type:autofix"));
+                window.minSize = size;
+                window.maxSize = size;
+                window.Create();
+                window.ShowModal();
+                return tcs.Task;
+            }
+
+            private void Create()
+            {
+                var root = rootVisualElement;
+                root.style.display = DisplayStyle.Flex;
+                root.style.flexDirection = FlexDirection.Column;
+                root.style.justifyContent = Justify.SpaceBetween;
+                root.style.paddingLeft = 10;
+                root.style.paddingRight = 10;
+                root.style.paddingTop = 10;
+                root.style.paddingBottom = 10;
+                root.Add(new Label(AAOL10N.Tr("TraceAndOptimize:warn:unknown-type:autofix:dialog:message").Replace("{0}", type.FullName))
+                {
+                    style =
+                    {
+                        whiteSpace = WhiteSpace.Normal,
+                        fontSize = 14,
+                    }
+                });
+                var actionsBox = new VisualElement();
+                root.Add(actionsBox);
+                actionsBox.style.display = DisplayStyle.Flex;
+                actionsBox.style.flexDirection = FlexDirection.Row;
+                actionsBox.style.flexWrap = Wrap.Wrap;
+                actionsBox.Add(NewButton(Cancel, AAOL10N.Tr("TraceAndOptimize:warn:unknown-type:autofix:dialog:cancel")));
+                actionsBox.Add(NewButton(IgnoreComponent, AAOL10N.Tr("TraceAndOptimize:warn:unknown-type:autofix:dialog:ignore")));
+                actionsBox.Add(NewButton(OpenDocs, AAOL10N.Tr("TraceAndOptimize:warn:unknown-type:autofix:dialog:open-docs")));
+
+                Button NewButton(Action onClick, string text) => new(onClick)
+                {
+                    text = text,
+                    selection =
+                    {
+                        isSelectable = true,
+                    },
+                    style =
+                    {
+                        paddingLeft = 10,
+                        paddingRight = 10,
+                        paddingTop = 10,
+                        paddingBottom = 10,
+                    }
+                };
+            }
+
+            private void OnDisable() => _callback(false);
+
+            void Cancel()
+            {
+                _callback(false);
+                Close();
+            }
+
+            void IgnoreComponent()
+            {
+                _callback(true);
+                Close();
+            }
+
+            void OpenDocs()
+            {
+                var url = AAOL10N.Tr("TraceAndOptimize:warn:unknown-type:autofix:dialog:url");
+                System.Diagnostics.Process.Start(url);
+            }
         }
 
         private static void FallbackDependenciesParser(Component component, API.ComponentDependencyCollector collector)

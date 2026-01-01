@@ -51,7 +51,6 @@ The format is based on [Keep a Changelog].
 - Moved removing submeshes with no materials assigned to the early process of AAO `#1495`
   - This should let other process like freezing blendshapes ignore such submeshes.
 - Replace Mask Texture Editor ['#1470'](https://github.com/anatawa12/AvatarOptimizer/pull/1470)
-- Ignore unknown IEditorOnly components and log a warning in console instead of showing a popup. ['#1422'](https://github.com/anatawa12/AvatarOptimizer/pull/1422)
 - Orphan Vertices will be kept `#1515`
   - Vertices that are not part of any triangle will be kept.
   - Orphan vertices are likely to be used to control the bounds of the mesh so they will be kept.
@@ -71,6 +70,9 @@ The format is based on [Keep a Changelog].
 - Useful error message will be shown when known unity bug that prevents you from building your avatar `#1563`
   - Actually I cannot reproduce the bug so I hope this works but nothing certify this works. 
 - Improved preserving VRCSDK required BlendShapes `#1585`
+- Added button to ignore specified components when unknown `IEditorOnly` component is detected `#1592`
+  - As a part of this feature, we added Project-level settings to store a list of ignored components.
+  - You can access this setting in `Project/Avatar Optimizer` of `Project settings` and stored at `ProjectSettings/AvatarOptimizerSettings.asset` file.
 
 [`AfterPlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_AfterPlugin_System_String_System_String_System_Int32_
 [`BeforePlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_BeforePlugin_System_String_System_String_System_Int32_
