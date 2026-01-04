@@ -37,7 +37,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var child2Component = AddConfigure(child2);
             var merged = Utils.NewGameObject("merged", root.transform);
             var mergePhysBone = CreateMergePhysBone(merged, child1Component, child2Component);
-            mergePhysBone.endpointPositionConfig.@override = MergePhysBone.EndPointPositionConfig.Override.Copy;
+            mergePhysBone.endpointPositionConfig.@override = MergePhysBone.EndPointPositionConfigStruct.Override.Copy;
 
             MergePhysBoneProcessor.DoMerge(mergePhysBone, null);
 

@@ -28,7 +28,7 @@ namespace Anatawa12.AvatarOptimizer
         // == Transform ==
         // rootTransform
         // ignoreTransforms
-        [NotKeyable, SerializeField] internal EndPointPositionConfig endpointPositionConfig;
+        [NotKeyable, SerializeField] internal EndPointPositionConfigStruct endpointPositionConfig;
         [NotKeyable, SerializeField] internal ValueWithOverride<bool> ignoreOtherPhysBones;
         // multiChildType
         // == Forces ==
@@ -45,11 +45,11 @@ namespace Anatawa12.AvatarOptimizer
         [NotKeyable, SerializeField] internal ValueWithOverride<VRCPhysBoneBase.LimitType> limitTypeConfig;
         [NotKeyable, SerializeField] [Range(0f, 180f)] internal CurveFloatConfig maxAngleXConfig = new(45f);
         [NotKeyable, SerializeField] [Range(0f, 90f)] internal CurveFloatConfig maxAngleZConfig = new(45f);
-        [NotKeyable, SerializeField] internal LimitRotationConfig limitRotationConfig;
+        [NotKeyable, SerializeField] internal LimitRotationConfigStruct limitRotationConfig;
         // == Collision ==
         [NotKeyable, SerializeField] internal CurveFloatConfig radiusConfig;
         [NotKeyable, SerializeField] internal PermissionConfig allowCollisionConfig;
-        [NotKeyable, SerializeField] internal CollidersConfig collidersConfig;
+        [NotKeyable, SerializeField] internal CollidersConfigStruct collidersConfig;
         // == Stretch & Squish ==
         [NotKeyable, SerializeField] [Range(0f, 1f)] internal CurveFloatConfig stretchMotionConfig;
         [NotKeyable, SerializeField] internal CurveFloatConfig maxStretchConfig;
@@ -67,11 +67,11 @@ namespace Anatawa12.AvatarOptimizer
         private void Reset()
         {
             // copy by default for newly added component
-            endpointPositionConfig.@override = EndPointPositionConfig.Override.Copy;
+            endpointPositionConfig.@override = EndPointPositionConfigStruct.Override.Copy;
         }
 
         [Serializable]
-        internal struct EndPointPositionConfig
+        internal struct EndPointPositionConfigStruct
         {
             public Override @override;
             public Vector3 value;
@@ -90,7 +90,7 @@ namespace Anatawa12.AvatarOptimizer
             public bool @override;
             [DrawWithContainer]
             public float value;
-            public AnimationCurve curve;
+            public AnimationCurve? curve;
 
             public CurveFloatConfig(float value) : this()
             {
@@ -100,15 +100,15 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         [Serializable]
-        internal struct LimitRotationConfig
+        internal struct LimitRotationConfigStruct
         {
-            public CurveOverride @override;
+            public Override @override;
             public Vector3 value;
-            public AnimationCurve curveX;
-            public AnimationCurve curveY;
-            public AnimationCurve curveZ;
+            public AnimationCurve? curveX;
+            public AnimationCurve? curveY;
+            public AnimationCurve? curveZ;
             
-            public enum CurveOverride
+            public enum Override
             {
                 Copy,
                 Override,
@@ -138,12 +138,12 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         [Serializable]
-        internal struct CollidersConfig
+        internal struct CollidersConfigStruct
         {
-            public CollidersOverride @override;
+            public Override @override;
             public List<VRCPhysBoneColliderBase>? value;
             
-            public enum CollidersOverride
+            public enum Override
             {
                 Copy,
                 Override,
@@ -178,13 +178,6 @@ namespace Anatawa12.AvatarOptimizer
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
         }
-    }
-
-    internal enum CollidersSettings
-    {
-        Copy,
-        Merge,
-        Override,
     }
 }
 

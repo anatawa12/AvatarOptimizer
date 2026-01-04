@@ -314,7 +314,7 @@ namespace Anatawa12.AvatarOptimizer
 
             switch (prop.GetOverride(forceOverride))
             {
-                case MergePhysBone.LimitRotationConfig.CurveOverride.Copy:
+                case MergePhysBone.LimitRotationConfigStruct.Override.Copy:
                 {
                     var valueProp = prop.SourceValue!;
                     var xCurveProp = prop.SourceCurveX!;
@@ -334,7 +334,7 @@ namespace Anatawa12.AvatarOptimizer
                     }
                 }
                     break;
-                case MergePhysBone.LimitRotationConfig.CurveOverride.Override:
+                case MergePhysBone.LimitRotationConfigStruct.Override.Override:
                 {
                     var valueProp = prop.OverrideValue;
                     var xCurveProp = prop.OverrideCurveX;
@@ -344,7 +344,7 @@ namespace Anatawa12.AvatarOptimizer
                     DrawProperties(rect, new GUIContent(label), valueProp, xCurveProp, yCurveProp, zCurveProp);
                 }
                     break;
-                case MergePhysBone.LimitRotationConfig.CurveOverride.Fix:
+                case MergePhysBone.LimitRotationConfigStruct.Override.Fix:
                 {
                     EditorGUI.LabelField(rect, label, AAOL10N.Tr("MergePhysBone:message:fix-yaw-pitch"));
                     
@@ -362,10 +362,10 @@ namespace Anatawa12.AvatarOptimizer
                             EditorGUILayout.HelpBox(AAOL10N.Tr("MergePhysBone:error:LimitRotationFix:DifferRotation"), MessageType.Error);
 
                         // endpoint position must be zero
-                        switch ((MergePhysBone.EndPointPositionConfig.Override)EndpointPosition.OverrideProperty.enumValueIndex)
+                        switch ((MergePhysBone.EndPointPositionConfigStruct.Override)EndpointPosition.OverrideProperty.enumValueIndex)
                         {
-                            case MergePhysBone.EndPointPositionConfig.Override.Copy when EndpointPosition.PhysBoneValue!.vector3Value != Vector3.zero:
-                            case MergePhysBone.EndPointPositionConfig.Override.Override when EndpointPosition.ValueProperty.vector3Value != Vector3.zero:
+                            case MergePhysBone.EndPointPositionConfigStruct.Override.Copy when EndpointPosition.PhysBoneValue!.vector3Value != Vector3.zero:
+                            case MergePhysBone.EndPointPositionConfigStruct.Override.Override when EndpointPosition.ValueProperty.vector3Value != Vector3.zero:
                                 EditorGUILayout.HelpBox(AAOL10N.Tr("MergePhysBone:error:LimitRotationFix:NonZeroEndpointPosition"), MessageType.Error);
                                 break;
                         }
@@ -480,9 +480,9 @@ namespace Anatawa12.AvatarOptimizer
 
             Rect valueRect, overrideRect;
 
-            switch ((MergePhysBone.CollidersConfig.CollidersOverride)prop.OverrideProperty.enumValueIndex)
+            switch ((MergePhysBone.CollidersConfigStruct.Override)prop.OverrideProperty.enumValueIndex)
             {
-                case MergePhysBone.CollidersConfig.CollidersOverride.Copy:
+                case MergePhysBone.CollidersConfigStruct.Override.Copy:
                 {
                     var colliders = prop.PhysBoneValue!;
 
@@ -500,7 +500,7 @@ namespace Anatawa12.AvatarOptimizer
                     }
                 }
                     break;
-                case MergePhysBone.CollidersConfig.CollidersOverride.Merge:
+                case MergePhysBone.CollidersConfigStruct.Override.Merge:
                 {
                     (valueRect, overrideRect) =
                         SplitRect(EditorGUILayout.GetControlRect(true, EditorGUIUtility.singleLineHeight), OverrideWidth);
@@ -520,7 +520,7 @@ namespace Anatawa12.AvatarOptimizer
                     EditorGUI.EndDisabledGroup();
                 }
                     break;
-                case MergePhysBone.CollidersConfig.CollidersOverride.Override:
+                case MergePhysBone.CollidersConfigStruct.Override.Override:
                 {
                     var colliders = prop.ValueProperty;
 
@@ -548,9 +548,9 @@ namespace Anatawa12.AvatarOptimizer
 
             Rect valueRect, overrideRect;
 
-            switch ((MergePhysBone.EndPointPositionConfig.Override)prop.OverrideProperty.enumValueIndex)
+            switch ((MergePhysBone.EndPointPositionConfigStruct.Override)prop.OverrideProperty.enumValueIndex)
             {
-                case MergePhysBone.EndPointPositionConfig.Override.Clear:
+                case MergePhysBone.EndPointPositionConfigStruct.Override.Clear:
                 {
                     (valueRect, overrideRect) =
                         SplitRect(EditorGUILayout.GetControlRect(true, EditorGUIUtility.singleLineHeight), OverrideWidth);
@@ -558,7 +558,7 @@ namespace Anatawa12.AvatarOptimizer
                     EditorGUI.LabelField(valueRect, labelContent, new GUIContent("Cleared to zero"));
                 }
                     break;
-                case MergePhysBone.EndPointPositionConfig.Override.Copy:
+                case MergePhysBone.EndPointPositionConfigStruct.Override.Copy:
                 {
                     var valueProperty = prop.PhysBoneValue!;
 
@@ -576,7 +576,7 @@ namespace Anatawa12.AvatarOptimizer
                     }
                 }
                     break;
-                case MergePhysBone.EndPointPositionConfig.Override.Override:
+                case MergePhysBone.EndPointPositionConfigStruct.Override.Override:
                 {
                     var valueProperty = prop.ValueProperty;
 
@@ -670,7 +670,7 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             if (EndpointPosition.OverrideProperty.enumValueIndex ==
-                (int)MergePhysBone.EndPointPositionConfig.Override.Copy)
+                (int)MergePhysBone.EndPointPositionConfigStruct.Override.Copy)
             {
                 if (EndpointPosition.PhysBoneValue!.hasMultipleDifferentValues)
                     _differProps.Add("Endpoint Position");
@@ -716,7 +716,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             switch (prop.GetOverride(forceOverride))
             {
-                case MergePhysBone.LimitRotationConfig.CurveOverride.Copy:
+                case MergePhysBone.LimitRotationConfigStruct.Override.Copy:
                     if (prop.SourceValue!.hasMultipleDifferentValues
                         || prop.SourceCurveX!.hasMultipleDifferentValues
                         || prop.SourceCurveY!.hasMultipleDifferentValues
@@ -727,9 +727,9 @@ namespace Anatawa12.AvatarOptimizer
                     _usingCopyCurve |= prop.SourceCurveY!.animationCurveValue.length > 0;
                     _usingCopyCurve |= prop.SourceCurveZ!.animationCurveValue.length > 0;
                     break;
-                case MergePhysBone.LimitRotationConfig.CurveOverride.Override:
+                case MergePhysBone.LimitRotationConfigStruct.Override.Override:
                     break;
-                case MergePhysBone.LimitRotationConfig.CurveOverride.Fix:
+                case MergePhysBone.LimitRotationConfigStruct.Override.Fix:
                     if (SourcePhysBones.Any())
                     {
                         // skew scaling is disallowed
@@ -741,10 +741,10 @@ namespace Anatawa12.AvatarOptimizer
                             BuildLog.LogError("MergePhysBone:error:LimitRotationFix:DifferRotation");
 
                         // endpoint position must be zero
-                        switch ((MergePhysBone.EndPointPositionConfig.Override)EndpointPosition.OverrideProperty.enumValueIndex)
+                        switch ((MergePhysBone.EndPointPositionConfigStruct.Override)EndpointPosition.OverrideProperty.enumValueIndex)
                         {
-                            case MergePhysBone.EndPointPositionConfig.Override.Copy when EndpointPosition.PhysBoneValue!.vector3Value != Vector3.zero:
-                            case MergePhysBone.EndPointPositionConfig.Override.Override when EndpointPosition.ValueProperty.vector3Value != Vector3.zero:
+                            case MergePhysBone.EndPointPositionConfigStruct.Override.Copy when EndpointPosition.PhysBoneValue!.vector3Value != Vector3.zero:
+                            case MergePhysBone.EndPointPositionConfigStruct.Override.Override when EndpointPosition.ValueProperty.vector3Value != Vector3.zero:
                                 BuildLog.LogError("MergePhysBone:error:LimitRotationFix:NonZeroEndpointPosition");
                                 break;
                         }

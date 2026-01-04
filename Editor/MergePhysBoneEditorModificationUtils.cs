@@ -428,10 +428,10 @@ namespace Anatawa12.AvatarOptimizer
                 SourceCurveZ = sourcePb.FindProperty(PhysBoneCurveZName);
             }
 
-            public MergePhysBone.LimitRotationConfig.CurveOverride GetOverride(bool forceOverride) =>
+            public MergePhysBone.LimitRotationConfigStruct.Override GetOverride(bool forceOverride) =>
                 forceOverride
-                    ? MergePhysBone.LimitRotationConfig.CurveOverride.Override
-                    : (MergePhysBone.LimitRotationConfig.CurveOverride)OverrideProperty.enumValueIndex;
+                    ? MergePhysBone.LimitRotationConfigStruct.Override.Override
+                    : (MergePhysBone.LimitRotationConfigStruct.Override)OverrideProperty.enumValueIndex;
 
             public SerializedProperty GetValueProperty(bool @override) => @override ? OverrideValue : SourceValue!;
             public SerializedProperty GetCurveXProperty(bool @override) => @override ? OverrideCurveX : SourceCurveX!;
