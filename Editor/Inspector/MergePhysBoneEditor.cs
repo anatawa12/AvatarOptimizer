@@ -314,7 +314,7 @@ namespace Anatawa12.AvatarOptimizer
 
             switch (prop.GetOverride(forceOverride))
             {
-                case MergePhysBone.CurveVector3Config.CurveOverride.Copy:
+                case MergePhysBone.LimitRotationConfig.CurveOverride.Copy:
                 {
                     var valueProp = prop.SourceValue!;
                     var xCurveProp = prop.SourceCurveX!;
@@ -334,7 +334,7 @@ namespace Anatawa12.AvatarOptimizer
                     }
                 }
                     break;
-                case MergePhysBone.CurveVector3Config.CurveOverride.Override:
+                case MergePhysBone.LimitRotationConfig.CurveOverride.Override:
                 {
                     var valueProp = prop.OverrideValue;
                     var xCurveProp = prop.OverrideCurveX;
@@ -344,7 +344,7 @@ namespace Anatawa12.AvatarOptimizer
                     DrawProperties(rect, new GUIContent(label), valueProp, xCurveProp, yCurveProp, zCurveProp);
                 }
                     break;
-                case MergePhysBone.CurveVector3Config.CurveOverride.Fix:
+                case MergePhysBone.LimitRotationConfig.CurveOverride.Fix:
                 {
                     EditorGUI.LabelField(rect, label, AAOL10N.Tr("MergePhysBone:message:fix-yaw-pitch"));
                     
@@ -716,7 +716,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             switch (prop.GetOverride(forceOverride))
             {
-                case MergePhysBone.CurveVector3Config.CurveOverride.Copy:
+                case MergePhysBone.LimitRotationConfig.CurveOverride.Copy:
                     if (prop.SourceValue!.hasMultipleDifferentValues
                         || prop.SourceCurveX!.hasMultipleDifferentValues
                         || prop.SourceCurveY!.hasMultipleDifferentValues
@@ -727,9 +727,9 @@ namespace Anatawa12.AvatarOptimizer
                     _usingCopyCurve |= prop.SourceCurveY!.animationCurveValue.length > 0;
                     _usingCopyCurve |= prop.SourceCurveZ!.animationCurveValue.length > 0;
                     break;
-                case MergePhysBone.CurveVector3Config.CurveOverride.Override:
+                case MergePhysBone.LimitRotationConfig.CurveOverride.Override:
                     break;
-                case MergePhysBone.CurveVector3Config.CurveOverride.Fix:
+                case MergePhysBone.LimitRotationConfig.CurveOverride.Fix:
                     if (SourcePhysBones.Any())
                     {
                         // skew scaling is disallowed

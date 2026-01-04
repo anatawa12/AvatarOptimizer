@@ -24,54 +24,45 @@ namespace Anatawa12.AvatarOptimizer
 
         #region OverrideAndValue
 
-        [NotKeyable] public VersionConfig versionConfig;
-
-        #region == Transform ==
+        [NotKeyable, SerializeField] internal ValueWithOverride<VRCPhysBoneBase.Version> versionConfig;
+        // == Transform ==
         // rootTransform
         // ignoreTransforms
-        [NotKeyable] public EndPointPositionConfig endpointPositionConfig;
-        [NotKeyable] public BoolConfig ignoreOtherPhysBones;
+        [NotKeyable, SerializeField] internal EndPointPositionConfig endpointPositionConfig;
+        [NotKeyable, SerializeField] internal ValueWithOverride<bool> ignoreOtherPhysBones;
         // multiChildType
-        #endregion
-
-        #region == Forces ==
-        [NotKeyable] public IntegrationTypeConfig integrationTypeConfig;
-        [NotKeyable] public Curve0To1Config pullConfig;
+        // == Forces ==
+        [NotKeyable, SerializeField] internal ValueWithOverride<VRCPhysBoneBase.IntegrationType> integrationTypeConfig;
+        [NotKeyable, SerializeField] [Range(0f, 1f)] internal CurveFloatConfig pullConfig;
         // spring a.k.a. Momentum
-        [NotKeyable] public Curve0To1Config springConfig;
-        [NotKeyable] public Curve0To1Config stiffnessConfig;
-        [NotKeyable] public CurveM1To1Config gravityConfig;
-        [NotKeyable] public Curve0To1Config gravityFalloffConfig;
-        [NotKeyable] public ImmobileTypeConfig immobileTypeConfig;
-        [NotKeyable] public Curve0To1Config immobileConfig;
-        #endregion
-        #region == Limits ==
-        [NotKeyable] public LimitTypeConfig limitTypeConfig;
-        [NotKeyable] public Curve0To180Config maxAngleXConfig = new Curve0To180Config(45f);
-        [NotKeyable] public Curve0To90Config maxAngleZConfig = new Curve0To90Config(45f);
-        [NotKeyable] public CurveVector3Config limitRotationConfig;
-        #endregion
-        #region == Collision ==
-        [NotKeyable] public CurveNoLimitConfig radiusConfig;
-        [NotKeyable] public PermissionConfig allowCollisionConfig;
-        [NotKeyable] public CollidersConfig collidersConfig;
-        #endregion
-        #region == Stretch & Squish ==
-        [NotKeyable] public Curve0To1Config stretchMotionConfig;
-        [NotKeyable] public CurveNoLimitConfig maxStretchConfig;
-        [NotKeyable] public Curve0To1Config maxSquishConfig;
-        #endregion
-        #region == Grab & Pose ==
-        [NotKeyable] public PermissionConfig allowGrabbingConfig;
-        [NotKeyable] public PermissionConfig allowPosingConfig;
-        [NotKeyable] public Float0To1Config grabMovementConfig;
-        [NotKeyable] public BoolConfig snapToHandConfig;
-        #endregion
-        #region == Options ==
-        [NotKeyable] public ParameterConfig parameterConfig;
-        [NotKeyable] public IsAnimatedConfig isAnimatedConfig;
-        [NotKeyable] public BoolConfig resetWhenDisabledConfig;
-        #endregion
+        [NotKeyable, SerializeField] [Range(0f, 1f)] internal CurveFloatConfig springConfig;
+        [NotKeyable, SerializeField] [Range(0f, 1f)] internal CurveFloatConfig stiffnessConfig;
+        [NotKeyable, SerializeField] [Range(-1f, 1f)] internal CurveFloatConfig gravityConfig;
+        [NotKeyable, SerializeField] [Range(0f, 1f)] internal CurveFloatConfig gravityFalloffConfig;
+        [NotKeyable, SerializeField] internal ValueWithOverride<VRCPhysBoneBase.ImmobileType> immobileTypeConfig;
+        [NotKeyable, SerializeField] [Range(0f, 1f)] internal CurveFloatConfig immobileConfig;
+        // == Limits ==
+        [NotKeyable, SerializeField] internal ValueWithOverride<VRCPhysBoneBase.LimitType> limitTypeConfig;
+        [NotKeyable, SerializeField] [Range(0f, 180f)] internal CurveFloatConfig maxAngleXConfig = new(45f);
+        [NotKeyable, SerializeField] [Range(0f, 90f)] internal CurveFloatConfig maxAngleZConfig = new(45f);
+        [NotKeyable, SerializeField] internal LimitRotationConfig limitRotationConfig;
+        // == Collision ==
+        [NotKeyable, SerializeField] internal CurveFloatConfig radiusConfig;
+        [NotKeyable, SerializeField] internal PermissionConfig allowCollisionConfig;
+        [NotKeyable, SerializeField] internal CollidersConfig collidersConfig;
+        // == Stretch & Squish ==
+        [NotKeyable, SerializeField] [Range(0f, 1f)] internal CurveFloatConfig stretchMotionConfig;
+        [NotKeyable, SerializeField] internal CurveFloatConfig maxStretchConfig;
+        [NotKeyable, SerializeField] [Range(0f, 1f)] internal CurveFloatConfig maxSquishConfig;
+        // == Grab & Pose ==
+        [NotKeyable, SerializeField] internal PermissionConfig allowGrabbingConfig;
+        [NotKeyable, SerializeField] internal PermissionConfig allowPosingConfig;
+        [NotKeyable, SerializeField] [Range(0f, 1f)] internal ValueWithOverride<float> grabMovementConfig;
+        [NotKeyable, SerializeField] internal ValueWithOverride<bool> snapToHandConfig;
+        // == Options ==
+        [NotKeyable, SerializeField] internal ValueOnly<string> parameterConfig;
+        [NotKeyable, SerializeField] internal ValueOnly<bool> isAnimatedConfig;
+        [NotKeyable, SerializeField] internal ValueWithOverride<bool> resetWhenDisabledConfig;
 
         private void Reset()
         {
@@ -80,7 +71,7 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         [Serializable]
-        public struct EndPointPositionConfig
+        internal struct EndPointPositionConfig
         {
             public Override @override;
             public Vector3 value;
@@ -94,32 +85,14 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         [Serializable]
-        public struct Curve0To1Config
+        internal struct CurveFloatConfig
         {
             public bool @override;
-            [Range(0f, 1f)]
+            [DrawWithContainer]
             public float value;
             public AnimationCurve curve;
-        }
 
-        [Serializable]
-        public struct CurveM1To1Config
-        {
-            public bool @override;
-            [Range(-1f, 1f)]
-            public float value;
-            public AnimationCurve curve;
-        }
-
-        [Serializable]
-        public struct Curve0To180Config
-        {
-            public bool @override;
-            [Range(0f, 180f)]
-            public float value;
-            public AnimationCurve curve;
-            
-            public Curve0To180Config(float value) : this()
+            public CurveFloatConfig(float value) : this()
             {
                 this.value = value;
                 curve = new AnimationCurve();
@@ -127,30 +100,7 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         [Serializable]
-        public struct Curve0To90Config
-        {
-            public bool @override;
-            [Range(0f, 90f)]
-            public float value;
-            public AnimationCurve curve;
-
-            public Curve0To90Config(float value) : this()
-            {
-                this.value = value;
-                curve = new AnimationCurve();
-            }
-        }
-
-        [Serializable]
-        public struct CurveNoLimitConfig
-        {
-            public bool @override;
-            public float value;
-            public AnimationCurve curve;
-        }
-
-        [Serializable]
-        public struct CurveVector3Config
+        internal struct LimitRotationConfig
         {
             public CurveOverride @override;
             public Vector3 value;
@@ -168,58 +118,19 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         [Serializable]
-        public struct Float0To1Config
+        internal struct ValueWithOverride<TValue>
         {
-            public bool @override;
-            [Range(0f, 1f)]
-            public float value;
+            [SerializeField] public bool @override;
+            [SerializeField] [DrawWithContainer] public TValue value;
+
+            public ValueWithOverride(TValue value) : this()
+            {
+                this.value = value;
+            }
         }
 
         [Serializable]
-        public struct NewBoolConfig
-        {
-            public bool @override;
-            public bool errorConflictedSettings;
-            public bool value;
-        }
-
-        [Serializable]
-        public struct BoolConfig
-        {
-            public bool @override;
-            public bool value;
-        }
-
-        [Serializable]
-        public struct VersionConfig
-        {
-            public bool @override;
-            public VRCPhysBoneBase.Version value;
-        }
-
-        [Serializable]
-        public struct IntegrationTypeConfig
-        {
-            public bool @override;
-            public VRCPhysBoneBase.IntegrationType value;
-        }
-
-        [Serializable]
-        public struct ImmobileTypeConfig
-        {
-            public bool @override;
-            public VRCPhysBoneBase.ImmobileType value;
-        }
-
-        [Serializable]
-        public struct LimitTypeConfig
-        {
-            public bool @override;
-            public VRCPhysBoneBase.LimitType value;
-        }
-
-        [Serializable]
-        public struct PermissionConfig
+        internal struct PermissionConfig
         {
             public bool @override;
             public VRCPhysBoneBase.AdvancedBool value;
@@ -227,10 +138,10 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         [Serializable]
-        public struct CollidersConfig
+        internal struct CollidersConfig
         {
             public CollidersOverride @override;
-            [CanBeNull] public List<VRCPhysBoneColliderBase> value;
+            public List<VRCPhysBoneColliderBase>? value;
             
             public enum CollidersOverride
             {
@@ -241,17 +152,9 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         [Serializable]
-        public struct ParameterConfig
+        internal struct ValueOnly<TValue>
         {
-            //public bool @override; // always
-            public string value;
-        }
-
-        [Serializable]
-        public struct IsAnimatedConfig
-        {
-            //public bool @override; // always
-            public bool value;
+            public TValue? value;
         }
 
         #endregion

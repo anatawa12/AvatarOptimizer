@@ -135,7 +135,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // == Limits ==
             
             // yaw / pitch fix
-            if (merge.limitRotationConfig.@override == MergePhysBone.CurveVector3Config.CurveOverride.Fix)
+            if (merge.limitRotationConfig.@override == MergePhysBone.LimitRotationConfig.CurveOverride.Fix)
             {
                 if (context != null)
                 {
@@ -530,7 +530,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             {
                 switch (prop.GetOverride(forceOverride))
                 {
-                    case MergePhysBone.CurveVector3Config.CurveOverride.Copy:
+                    case MergePhysBone.LimitRotationConfig.CurveOverride.Copy:
                         _mergedPhysBone.FindProperty(prop.PhysBoneValueName).vector3Value =
                             prop.SourceValue!.vector3Value;
                         _mergedPhysBone.FindProperty(prop.PhysBoneCurveXName).animationCurveValue =
@@ -540,7 +540,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         _mergedPhysBone.FindProperty(prop.PhysBoneCurveZName).animationCurveValue =
                             FixCurve(prop.SourceCurveZ!.animationCurveValue);
                         break;
-                    case MergePhysBone.CurveVector3Config.CurveOverride.Override:
+                    case MergePhysBone.LimitRotationConfig.CurveOverride.Override:
                         _mergedPhysBone.FindProperty(prop.PhysBoneValueName).vector3Value =
                             prop.OverrideValue.vector3Value;
                         _mergedPhysBone.FindProperty(prop.PhysBoneCurveXName).animationCurveValue =
@@ -550,7 +550,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         _mergedPhysBone.FindProperty(prop.PhysBoneCurveZName).animationCurveValue =
                             prop.OverrideCurveZ.animationCurveValue;
                         break;
-                    case MergePhysBone.CurveVector3Config.CurveOverride.Fix:
+                    case MergePhysBone.LimitRotationConfig.CurveOverride.Fix:
                         // Fixing rotation is proceeded before.
                         // We just reset the value and curve.
                         _mergedPhysBone.FindProperty(prop.PhysBoneValueName).vector3Value = Vector3.zero;
