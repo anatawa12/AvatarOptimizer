@@ -15,6 +15,7 @@ Here is the list of components that are supported by Component API.
 - `RemoveMeshInBox` - Adding component and configuring for that is supported
 - `RemoveMeshByBlendShape` - Adding component and configuring for that is supported
 - `RemoveMeshByMask` - Adding component and configuring for that is supported
+- `MergePhysBone` - Adding component and configuring for that is supported
 - `TraceAndOptimize` - Adding with default configuration is supported but configuring is not supported
 
 For components that supports configuring, to keep compatibility with future features that enabled by default,
@@ -47,3 +48,33 @@ This is because some future functionality might be incompatible with the existin
 For example, enabling the inversion option of `AAO Remove Mesh By Box` component, added in v1.8.0, changes the meaning of box, which makes it incompatible with tools intended only for v1.7 and earlier.
 
 </blockquote>
+
+<blockquote class="book-hint info">
+
+The `MergePhysBone` component, made public API in v1.9.0, is special with semantic versioning.
+
+This component is deeply integrated with the PhysBone component of VRChat SDK.
+Therefore, changes in PhysBone component may require corresponding changes in `MergePhysBone` to maintain functionality.
+Therefore, we may add new properties, or change existing properties of `MergePhysBone` in accordance with changes in PhysBone component.
+
+The first is that we might add new properties to `MergePhysBone` that are backword compatible, when PhysBone gains new properties.
+This is typically done in bump[^vrcsdk-versioning] version of VRChat SDK, and corresponding patch version of Avatar Optimizer.
+We treat adding support for new PhysBone properties as "bugfix for unsupported PhysBone features", so this is done in patch version.
+
+The second is that we might change signature of existing properties (i.o.w. introduce breaking changes) of `MergePhysBone`,
+when PhysBone changes existing properties in a breaking way.
+Avatar Optimizer declares compatibility with specific range of breaking versions of VRChat SDK,
+so this change can only be done when Avatar Optimizer introduces support for new breaking[^vrcsdk-versioning]
+version of VRChat SDK.
+We work to minimize such breaking changes, but please be aware of this possibility when using `MergePhysBone`.
+
+To protect your code from such breaking changes, we recommend to check the VRChat SDK version in vpm dependency.
+As described above, such breaking changes only happen when Avatar Optimizer introduces support for new breaking version of VRChat SDK.
+Therefore, if you lock the VRChat SDK version in vpm dependency, your code will be safe from such breaking changes,
+as long as no conflict in package version happens.
+
+</blockquote>
+
+[^vrcsdk-versioning]: VRChat SDK uses 'Branding.Breaking.Bump' versioning scheme where Breaking will be incremented for breaking changes, and Bump will be incremented for backward compatible changes. See [Official Documentation][b.b.b-docs] for more details.
+
+[b.b.b-docs]: https://vcc.docs.vrchat.com/vpm/packages/#brandingbreakingbumps

@@ -15,6 +15,7 @@ Component APIが利用可能なコンポーネントの一覧は以下の通り�
 - `RemoveMeshInBox` - コンポーネントの追加と追加時の設定変更がサポートされています
 - `RemoveMeshByBlendShape` - コンポーネントの追加と追加時の設定変更がサポートされています
 - `RemoveMeshByMask` - コンポーネントの追加と追加時の設定変更がサポートされています
+- `MergePhysBone` - コンポーネントの追加と追加時の設定変更がサポートされています
 - `TraceAndOptimize` - デフォルト設定での追加はサポートされていますが、設定変更はサポートされていません
 
 将来のバージョンで追加されるデフォルトで有効な機能との互換性を保つために、コンポーネントの設定変更を行う場合には注意が必要です。
@@ -47,3 +48,30 @@ Avatar Optimizerはランタイムで動作しないため、ランタイムビ�
 例えば、v1.8.0で追加された`AAO Remove Mesh By Box`コンポーネントの反転オプションを有効にすると、設定される箱による効果が変わってしまい、v1.7以前のみを想定して作成されているツールと互換性がなくなってしまいます。
 
 </blockquote>
+
+<blockquote class="book-hint info">
+
+`MergePhysBone`コンポーネントは、v1.9.0で公開APIとなりましたが、セマンティックバージョニングにおいて特別な扱いとなります。
+
+このコンポーネントはVRChat SDKのPhysBoneコンポーネントと深く統合されています。
+そのため、PhysBoneコンポーネントの変更に伴い、`MergePhysBone`の対応する変更が必要になる場合があります。
+そのため、PhysBoneコンポーネントの変更に応じて、`MergePhysBone`の新しいプロパティの追加や既存プロパティの変更を行うことがあります。
+
+最初のケースは、PhysBoneに新しいプロパティが追加された場合に、後方互換性のある新しいプロパティを`MergePhysBone`に追加することです。
+これは通常、VRChat SDKのbump[^vrcsdk-versioning]バージョンで行われ、Avatar Optimizerの対応するパッチバージョンで行われます。
+新しいPhysBoneプロパティのサポート追加は「サポートされていないPhysBone機能のバグ修正」として扱われるため、パッチバージョンで行われます。
+
+二つ目のケースは、PhysBoneが既存のプロパティを破壊的に変更した場合に、`MergePhysBone`の既存プロパティのシグネチャ（つまり破壊的変更）を変更することです。
+Avatar OptimizerはVRChat SDKの特定の破壊的バージョンとの互換性を宣言しているため、
+この変更はAvatar Optimizerが新しい破壊的[^vrcsdk-versioning]バージョンのVRChat SDKのサポートを導入した場合にのみ行われます。
+私たちはそのような破壊的変更を最小限に抑えるよう努めていますが、`MergePhysBone`を使用する際にはこの可能性を認識しておいてください。
+
+あなたのコードをそのような破壊的変更から保護するために、vpm依存関係でVRChat SDKのバージョンを確認することをお勧めします。
+上記のように、そのような破壊的変更はAvatar Optimizerが新しい破壊的バージョンのVRChat SDKのサポートを導入した場合にのみ発生します。
+したがって、vpm依存関係でVRChat SDKのバージョンを固定すれば、パッケージバージョンの競合が発生しない限り、そのような破壊的変更からコードを保護することができます。
+
+</blockquote>
+
+[^vrcsdk-versioning]: VRChat SDKは「Branding.Breaking.Bump」バージョニングスキームを使用しており、Breakingは破壊的変更のためにインクリメントされ、Bumpは後方互換性のある変更のためにインクリメントされます。詳しくは[公式ドキュメント][b.b.b-docs]を参照してください。
+
+[b.b.b-docs]: https://vcc.docs.vrchat.com/vpm/packages/#brandingbreakingbumps
