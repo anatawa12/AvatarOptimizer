@@ -9,7 +9,7 @@ using UnityEngine;
 namespace Anatawa12.AvatarOptimizer;
 
 [CustomPropertyDrawer(typeof(DrawWithContainerAttribute))]
-public class DrawWithContainerDrawer : PropertyDrawer
+internal class DrawWithContainerDrawer : PropertyDrawer
 {
     private PropertyDrawer? _upstreamDrawer;
     private bool _initialized;
