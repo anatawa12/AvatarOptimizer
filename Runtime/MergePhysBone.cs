@@ -19,7 +19,7 @@ namespace Anatawa12.AvatarOptimizer
     /// <remarks>
     /// 
     /// <para>
-    /// This component is a have little special in public API compared to other components in Avatar Optimizer.
+    /// This component is a little special in the public API compared to other components in Avatar Optimizer.
     /// This is because this component is deeply related to VRCPhysBone component from VRCSDK, which has
     /// many breaking changes throughout VRCSDK versions.
     /// </para>
@@ -46,7 +46,7 @@ namespace Anatawa12.AvatarOptimizer
     /// <para>
     /// In addition, we might add new properties to this component on patch release as
     /// "bug fix to not supporting new property in VRCPhysBone".
-    /// Therefore, some properties might need to checked for patch version before accessing some of properties.
+    /// Therefore, some properties might need to be checked for patch version before accessing some of properties.
     /// All such properties will be documented in their xml doc.
     /// </para>
     /// 
@@ -224,7 +224,7 @@ namespace Anatawa12.AvatarOptimizer
         #region Public API
 
         /// <summary>
-        /// Initializes the MergeSkinnedMesh with the specified default behavior version.
+        /// Initializes the MergePhysBone with the specified default behavior version.
         ///
         /// As described in the documentation, you have to call this method after `AddComponent` to make sure
         /// the default configuration is what you want.
@@ -297,7 +297,8 @@ namespace Anatawa12.AvatarOptimizer
         /// Single struct is shared between multiple property of MergePhysBone to keep future API compatibility,
         /// with cost of no compile-time checking for which property this struct can be used.
         ///
-        /// This property is ref-
+        /// This struct is declared as a ref struct to allow potential use of ref fields and other
+        /// stack-only features in future versions of the API.
         ///
         /// Detailed explanation: We might add some new associated fields to some properties in the future, and
         /// we might want to add some new override status to some properties in the future. When we split structs
@@ -650,7 +651,7 @@ namespace Anatawa12.AvatarOptimizer
             /// <summary>
             /// The overridden value of PermissionFilter for AllowCollision, AllowGrabbing, or AllowPosing property.
             /// </summary>
-            /// <exception cref="InvalidOperationException">>Throws when this property is not AllowCollision, AllowGrabbing, or AllowPosing property.</exception>
+            /// <exception cref="InvalidOperationException">Throws when this property is not AllowCollision, AllowGrabbing, or AllowPosing property.</exception>
             [PublicAPI]
             public VRCPhysBoneBase.PermissionFilter PermissionFilterOverrideValue
             {

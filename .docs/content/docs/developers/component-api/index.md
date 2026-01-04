@@ -55,13 +55,13 @@ The `MergePhysBone` component, made public API in v1.9.0, is special with semant
 
 This component is deeply integrated with the PhysBone component of VRChat SDK.
 Therefore, changes in PhysBone component may require corresponding changes in `MergePhysBone` to maintain functionality.
-Therefore, we may add new properties, or change existing properties of `MergePhysBone` in accordance with changes in PhysBone component.
+Therefore, we may add new properties or change existing properties of `MergePhysBone` to align with changes in the PhysBone component.
 
-The first is that we might add new properties to `MergePhysBone` that are backword compatible, when PhysBone gains new properties.
+The first is that we might add new properties to `MergePhysBone` that are backward compatible, when PhysBone gains new properties.
 This is typically done in bump[^vrcsdk-versioning] version of VRChat SDK, and corresponding patch version of Avatar Optimizer.
 We treat adding support for new PhysBone properties as "bugfix for unsupported PhysBone features", so this is done in patch version.
 
-The second is that we might change signature of existing properties (i.o.w. introduce breaking changes) of `MergePhysBone`,
+The second is that we might change signature of existing properties (in other words, introduce breaking changes) of `MergePhysBone`,
 when PhysBone changes existing properties in a breaking way.
 Avatar Optimizer declares compatibility with specific range of breaking versions of VRChat SDK,
 so this change can only be done when Avatar Optimizer introduces support for new breaking[^vrcsdk-versioning]

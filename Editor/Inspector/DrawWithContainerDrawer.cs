@@ -49,7 +49,8 @@ internal class DrawWithContainerDrawer : PropertyDrawer
                      .Reverse())
             HandleDrawnType(property, propAttr.GetType(), propAttr);
 
-        // if we cannot find upstream PropertyDrawer, we find it using 
+        // if we cannot find an upstream PropertyDrawer from container attributes,
+        // fall back to resolving it by the field type (or element type for arrays/lists)
         if (_upstreamDrawer == null)
         {
             var type = fieldInfo.FieldType;
