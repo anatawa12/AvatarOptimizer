@@ -86,7 +86,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
 
             // clear endpoint position
-            if (merge.endpointPositionConfig.@override == MergePhysBone.EndPointPositionConfig.Override.Clear)
+            if (merge.endpointPositionConfig.@override == MergePhysBone.EndPointPositionConfigStruct.Override.Clear)
                 foreach (var physBone in sourceComponents)
                     ClearEndpointPositionProcessor.Process(physBone, context);
 
@@ -104,13 +104,13 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             switch (merge.endpointPositionConfig.@override)
             {
-                case MergePhysBone.EndPointPositionConfig.Override.Clear:
+                case MergePhysBone.EndPointPositionConfigStruct.Override.Clear:
                     merged.endpointPosition = Vector3.zero;
                     break;
-                case MergePhysBone.EndPointPositionConfig.Override.Copy:
+                case MergePhysBone.EndPointPositionConfigStruct.Override.Copy:
                     merged.endpointPosition = pb.endpointPosition;
                     break;
-                case MergePhysBone.EndPointPositionConfig.Override.Override:
+                case MergePhysBone.EndPointPositionConfigStruct.Override.Override:
                     merged.endpointPosition = merge.endpointPositionConfig.value;
                     break;
                 default:
@@ -120,13 +120,13 @@ namespace Anatawa12.AvatarOptimizer.Processors
             merged.multiChildType = VRCPhysBoneBase.MultiChildType.Ignore;
             switch (merge.collidersConfig.@override)
             {
-                case MergePhysBone.CollidersConfig.CollidersOverride.Copy:
+                case MergePhysBone.CollidersConfigStruct.Override.Copy:
                     merged.colliders = pb.colliders;
                     break;
-                case MergePhysBone.CollidersConfig.CollidersOverride.Merge:
+                case MergePhysBone.CollidersConfigStruct.Override.Merge:
                     merged.colliders = sourceComponents.SelectMany(x => x.colliders).Distinct().ToList();
                     break;
-                case MergePhysBone.CollidersConfig.CollidersOverride.Override:
+                case MergePhysBone.CollidersConfigStruct.Override.Override:
                     merged.colliders = merge.collidersConfig.value;
                     break;
                 default:
@@ -135,7 +135,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             // == Limits ==
             
             // yaw / pitch fix
-            if (merge.limitRotationConfig.@override == MergePhysBone.CurveVector3Config.CurveOverride.Fix)
+            if (merge.limitRotationConfig.@override == MergePhysBone.LimitRotationConfigStruct.Override.Fix)
             {
                 if (context != null)
                 {
@@ -530,7 +530,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             {
                 switch (prop.GetOverride(forceOverride))
                 {
-                    case MergePhysBone.CurveVector3Config.CurveOverride.Copy:
+                    case MergePhysBone.LimitRotationConfigStruct.Override.Copy:
                         _mergedPhysBone.FindProperty(prop.PhysBoneValueName).vector3Value =
                             prop.SourceValue!.vector3Value;
                         _mergedPhysBone.FindProperty(prop.PhysBoneCurveXName).animationCurveValue =
@@ -540,7 +540,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         _mergedPhysBone.FindProperty(prop.PhysBoneCurveZName).animationCurveValue =
                             FixCurve(prop.SourceCurveZ!.animationCurveValue);
                         break;
-                    case MergePhysBone.CurveVector3Config.CurveOverride.Override:
+                    case MergePhysBone.LimitRotationConfigStruct.Override.Override:
                         _mergedPhysBone.FindProperty(prop.PhysBoneValueName).vector3Value =
                             prop.OverrideValue.vector3Value;
                         _mergedPhysBone.FindProperty(prop.PhysBoneCurveXName).animationCurveValue =
@@ -550,7 +550,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         _mergedPhysBone.FindProperty(prop.PhysBoneCurveZName).animationCurveValue =
                             prop.OverrideCurveZ.animationCurveValue;
                         break;
-                    case MergePhysBone.CurveVector3Config.CurveOverride.Fix:
+                    case MergePhysBone.LimitRotationConfigStruct.Override.Fix:
                         // Fixing rotation is proceeded before.
                         // We just reset the value and curve.
                         _mergedPhysBone.FindProperty(prop.PhysBoneValueName).vector3Value = Vector3.zero;
