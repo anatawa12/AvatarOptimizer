@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- VRM: Improved robustness of parsing incompletely setup VRM0.x / VRM1.0 avatars `#1599`
 
 ### Security
 

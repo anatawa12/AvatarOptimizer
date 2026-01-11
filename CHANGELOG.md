@@ -102,6 +102,7 @@ The format is based on [Keep a Changelog].
   - Parameter drivers now use intermediate parameters to preserve original type semantics
 - Error in AutoFreezeBlendShape with broken viseme settings `#1575`
 - Error with Object as the animation target `#1586`
+- VRM: Improved robustness of parsing incompletely setup VRM0.x / VRM1.0 avatars `#1599`
 
 ### Security
 
