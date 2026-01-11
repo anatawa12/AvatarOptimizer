@@ -103,7 +103,7 @@ The format is based on [Keep a Changelog].
 - Error in AutoFreezeBlendShape with broken viseme settings `#1575`
 - Error with Object as the animation target `#1586`
 - VRM: Improved robustness of parsing incompletely setup VRM0.x / VRM1.0 avatars `#1599`
-- 
+
 ### Security
 
 ## [1.8.15] - 2025-11-24
