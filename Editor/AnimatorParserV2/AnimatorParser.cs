@@ -343,15 +343,20 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             var nodes = new ComponentNodeContainer();
 
-            var bindings = vrmBlendShapeProxy.BlendShapeAvatar.Clips.SelectMany(clip => clip.Values);
-            foreach (var binding in bindings.Select(binding => (binding.RelativePath, binding.Index)).Distinct())
+            if (vrmBlendShapeProxy is { BlendShapeAvatar.Clips: { } clips})
             {
-                var skinnedMeshRenderer =
-                    context.AvatarRootTransform.Find(binding.RelativePath).GetComponent<SkinnedMeshRenderer>();
-                var blendShapePropName =
-                    $"blendShape.{skinnedMeshRenderer.sharedMesh.GetBlendShapeName(binding.Index)}";
-                nodes.Add(skinnedMeshRenderer, blendShapePropName,
-                    new VariableComponentPropModNode(vrmBlendShapeProxy));
+                var bindings = clips.SelectMany(clip => clip.Values);
+                foreach (var binding in bindings.Select(binding => (binding.RelativePath, binding.Index)).Distinct())
+                {
+                    if (context.AvatarRootTransform.Find(binding.RelativePath) is { } transform
+                        && transform.TryGetComponent<SkinnedMeshRenderer>(out var skinnedMeshRenderer)
+                        && skinnedMeshRenderer.sharedMesh?.GetBlendShapeName(binding.Index) is { } blendShapeName)
+                    {
+                        var blendShapePropName = $"blendShape.{blendShapeName}";
+                        nodes.Add(skinnedMeshRenderer, blendShapePropName,
+                            new VariableComponentPropModNode(vrmBlendShapeProxy));
+                    }
+                }
             }
 
             // Currently, MaterialValueBindings are guaranteed to not change (MaterialName, in particular)
@@ -368,15 +373,20 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             var nodes = new ComponentNodeContainer();
 
-            var bindings = vrm10Instance.Vrm.Expression.Clips.SelectMany(clip => clip.Clip.MorphTargetBindings);
-            foreach (var binding in bindings.Select(binding => (binding.RelativePath, binding.Index)).Distinct())
+            if (vrm10Instance is { Vrm.Expression.Clips: { } clips })
             {
-                var skinnedMeshRenderer =
-                    context.AvatarRootTransform.Find(binding.RelativePath).GetComponent<SkinnedMeshRenderer>();
-                var blendShapePropName =
-                    $"blendShape.{skinnedMeshRenderer.sharedMesh.GetBlendShapeName(binding.Index)}";
-                nodes.Add(skinnedMeshRenderer, blendShapePropName,
-                    new VariableComponentPropModNode(vrm10Instance));
+                var bindings = clips.SelectMany(clip => clip.Clip.MorphTargetBindings);
+                foreach (var binding in bindings.Select(binding => (binding.RelativePath, binding.Index)).Distinct())
+                {
+                    if (context.AvatarRootTransform.Find(binding.RelativePath) is { } transform
+                        && transform.TryGetComponent<SkinnedMeshRenderer>(out var skinnedMeshRenderer)
+                        && skinnedMeshRenderer.sharedMesh.GetBlendShapeName(binding.Index) is { } blendShapeName)
+                    {
+                        var blendShapePropName = $"blendShape.{blendShapeName}";
+                        nodes.Add(skinnedMeshRenderer, blendShapePropName,
+                            new VariableComponentPropModNode(vrm10Instance));
+                    }
+                }
             }
 
             // Currently, MaterialValueBindings are guaranteed to not change (MaterialName, in particular)

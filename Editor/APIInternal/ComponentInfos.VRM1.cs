@@ -38,7 +38,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             // NOTE: these dependencies are satisfied by either Animator or Humanoid 
             // collector.AddDependency(GetBoneTransformForVrm10(component, HumanBodyBones.Head));
 
-            // if (component.Vrm.LookAt.LookAtType == LookAtType.bone)
+            // if (component is { Vrm.LookAt.LookAtType: LookAtType.bone })
             // {
             //     if (GetBoneTransformForVrm10(component, HumanBodyBones.LeftEye) is Transform leftEye)
             //     {
@@ -63,7 +63,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             // BlendShape / Material mutations are collected through AnimatorParser, once we start tracking material changes
 
             // First Person and LookAt
-            if (component.Vrm.LookAt.LookAtType == LookAtType.bone)
+            if (component is { Vrm.LookAt.LookAtType: LookAtType.bone })
             {
                 if (GetBoneTransformForVrm10(component, HumanBodyBones.LeftEye) is Transform leftEye)
                 {
