@@ -27,7 +27,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         protected override void CollectDependency(VRMSpringBone component, ComponentDependencyCollector collector)
         {
             collector.MarkHeavyBehaviour();
-            foreach (var rootBone in component.RootBones)
+            foreach (var rootBone in component.RootBones.Where(rootBone => rootBone))
             {
                 foreach (var transform in rootBone.GetComponentsInChildren<Transform>())
                 {
@@ -38,7 +38,10 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
 
             if (component.ColliderGroups != null)
             {
-                foreach (var collider in component.ColliderGroups) collector.AddDependency(collider);
+                foreach (var collider in component.ColliderGroups.Where(collider => collider))
+                {
+                    collector.AddDependency(collider);
+                }
             }
         }
 

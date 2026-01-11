@@ -345,7 +345,9 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             if (vrmBlendShapeProxy is { BlendShapeAvatar.Clips: { } clips})
             {
-                var bindings = clips.SelectMany(clip => clip.Values);
+                var bindings = clips
+                    .Where(clip => clip)
+                    .SelectMany(clip => clip.Values);
                 foreach (var binding in bindings.Select(binding => (binding.RelativePath, binding.Index)).Distinct())
                 {
                     if (context.AvatarRootTransform.Find(binding.RelativePath) is { } transform
@@ -375,7 +377,9 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
             if (vrm10Instance is { Vrm.Expression.Clips: { } clips })
             {
-                var bindings = clips.SelectMany(clip => clip.Clip.MorphTargetBindings);
+                var bindings = clips.Select(clip => clip.Clip)
+                    .Where(clip => clip)
+                    .SelectMany(clip => clip.MorphTargetBindings);
                 foreach (var binding in bindings.Select(binding => (binding.RelativePath, binding.Index)).Distinct())
                 {
                     if (context.AvatarRootTransform.Find(binding.RelativePath) is { } transform

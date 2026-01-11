@@ -59,14 +59,17 @@ namespace Anatawa12.AvatarOptimizer
             {
                 foreach (var renderer in vrmRenderers)
                 {
-                    GetComponentInfo(renderer.Renderer).VrmFirstPersonFlag = renderer.FirstPersonFlag switch
+                    if (renderer.Renderer is { } rendererComponent)
                     {
-                        FirstPersonFlag.Auto => VrmFirstPersonFlag.Auto,
-                        FirstPersonFlag.Both => VrmFirstPersonFlag.Both,
-                        FirstPersonFlag.ThirdPersonOnly => VrmFirstPersonFlag.ThirdPersonOnly,
-                        FirstPersonFlag.FirstPersonOnly => VrmFirstPersonFlag.FirstPersonOnly,
-                        _ => throw new ArgumentOutOfRangeException()
-                    };
+                        GetComponentInfo(rendererComponent).VrmFirstPersonFlag = renderer.FirstPersonFlag switch
+                        {
+                            FirstPersonFlag.Auto => VrmFirstPersonFlag.Auto,
+                            FirstPersonFlag.Both => VrmFirstPersonFlag.Both,
+                            FirstPersonFlag.ThirdPersonOnly => VrmFirstPersonFlag.ThirdPersonOnly,
+                            FirstPersonFlag.FirstPersonOnly => VrmFirstPersonFlag.FirstPersonOnly,
+                            _ => throw new ArgumentOutOfRangeException()
+                        };
+                    }
                 }
             }
 #endif
@@ -77,14 +80,17 @@ namespace Anatawa12.AvatarOptimizer
             {
                 foreach (var renderer in vrm10Renderers)
                 {
-                    GetComponentInfo(renderer.GetRenderer(rootObject.transform)).VrmFirstPersonFlag = renderer.FirstPersonFlag switch
+                    if (renderer.GetRenderer(rootObject.transform) is { } rendererComponent)
                     {
-                        FirstPersonType.auto => VrmFirstPersonFlag.Auto,
-                        FirstPersonType.both => VrmFirstPersonFlag.Both,
-                        FirstPersonType.thirdPersonOnly => VrmFirstPersonFlag.ThirdPersonOnly,
-                        FirstPersonType.firstPersonOnly => VrmFirstPersonFlag.FirstPersonOnly,
-                        _ => throw new ArgumentOutOfRangeException()
-                    };
+                        GetComponentInfo(rendererComponent).VrmFirstPersonFlag = renderer.FirstPersonFlag switch
+                        {
+                            FirstPersonType.auto => VrmFirstPersonFlag.Auto,
+                            FirstPersonType.both => VrmFirstPersonFlag.Both,
+                            FirstPersonType.thirdPersonOnly => VrmFirstPersonFlag.ThirdPersonOnly,
+                            FirstPersonType.firstPersonOnly => VrmFirstPersonFlag.FirstPersonOnly,
+                            _ => throw new ArgumentOutOfRangeException()
+                        };
+                    }
                 }
             }
 #endif
