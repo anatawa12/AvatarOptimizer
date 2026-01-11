@@ -384,7 +384,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 {
                     if (context.AvatarRootTransform.Find(binding.RelativePath) is { } transform
                         && transform.TryGetComponent<SkinnedMeshRenderer>(out var skinnedMeshRenderer)
-                        && skinnedMeshRenderer.sharedMesh.GetBlendShapeName(binding.Index) is { } blendShapeName)
+                        && skinnedMeshRenderer.sharedMesh?.GetBlendShapeName(binding.Index) is { } blendShapeName)
                     {
                         var blendShapePropName = $"blendShape.{blendShapeName}";
                         nodes.Add(skinnedMeshRenderer, blendShapePropName,
