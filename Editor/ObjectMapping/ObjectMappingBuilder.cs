@@ -54,9 +54,10 @@ namespace Anatawa12.AvatarOptimizer
             _beforeGameObjectInfos[rootObject.GetInstanceID()].InitializeRecursive();
             
 #if AAO_VRM0
-            if (rootObject.TryGetComponent<VRMFirstPerson>(out var firstPerson))
+            if (rootObject.TryGetComponent<VRMFirstPerson>(out var firstPerson)
+                && firstPerson is { Renderers: { } vrmRenderers} )
             {
-                foreach (var renderer in firstPerson.Renderers)
+                foreach (var renderer in vrmRenderers)
                 {
                     GetComponentInfo(renderer.Renderer).VrmFirstPersonFlag = renderer.FirstPersonFlag switch
                     {
@@ -71,9 +72,10 @@ namespace Anatawa12.AvatarOptimizer
 #endif
 
 #if AAO_VRM1
-            if (rootObject.TryGetComponent<Vrm10Instance>(out var vrm10Instance))
+            if (rootObject.TryGetComponent<Vrm10Instance>(out var vrm10Instance)
+                && vrm10Instance is { Vrm.FirstPerson.Renderers: { } vrm10Renderers })
             {
-                foreach (var renderer in vrm10Instance.Vrm.FirstPerson.Renderers)
+                foreach (var renderer in vrm10Renderers)
                 {
                     GetComponentInfo(renderer.GetRenderer(rootObject.transform)).VrmFirstPersonFlag = renderer.FirstPersonFlag switch
                     {
