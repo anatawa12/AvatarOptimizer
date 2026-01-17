@@ -51,24 +51,23 @@ Avatar Optimizerはランタイムで動作しないため、ランタイムビ�
 
 <blockquote class="book-hint info">
 
-`MergePhysBone`コンポーネントは、v1.9.0で公開APIとなりましたが、セマンティックバージョニングにおいて特別な扱いとなります。
+v1.9.0以降、`MergePhysBone`コンポーネントのComponent APIを提供していますが、そのセマンティックバージョニング上の取り扱いは特殊なものになっています。
 
-このコンポーネントはVRChat SDKのPhysBoneコンポーネントと深く統合されています。
-そのため、PhysBoneコンポーネントの変更に伴い、`MergePhysBone`の対応する変更が必要になる場合があります。
-そのため、PhysBoneコンポーネントの変更に応じて、`MergePhysBone`の新しいプロパティの追加や既存プロパティの変更を行うことがあります。
+このコンポーネントはVRChat SDKのPhysBoneコンポーネントと密接に結びついているため、PhysBoneコンポーネントの仕様変更に伴って、`MergePhysBone`にも対応する変更が必要になる場合があります。
+その場合、新しいプロパティの追加や既存プロパティの変更は、セマンティックバージョニングの規定に従わずに行われる可能性があります。
 
-最初のケースは、PhysBoneに新しいプロパティが追加された場合に、後方互換性のある新しいプロパティを`MergePhysBone`に追加することです。
-これは通常、VRChat SDKのbump[^vrcsdk-versioning]バージョンで行われ、Avatar Optimizerの対応するパッチバージョンで行われます。
-新しいPhysBoneプロパティのサポート追加は「サポートされていないPhysBone機能のバグ修正」として扱われるため、パッチバージョンで行われます。
+1. PhysBoneに新しいプロパティが追加され、後方互換性のある新しいプロパティを`MergePhysBone`に追加する場合\
+これは通常、VRChat SDKのbump[^vrcsdk-versioning]バージョンで行われ得る変更の1つです。\
+新しいPhysBoneプロパティに対するサポート追加は「サポートされていないPhysBoneの機能があるというバグの修正」として扱われるため、Avatar Optimizerの更新はパッチバージョンで行われます。
 
-二つ目のケースは、PhysBoneが既存のプロパティを破壊的に変更した場合に、`MergePhysBone`の既存プロパティのシグネチャ（つまり破壊的変更）を変更することです。
-Avatar OptimizerはVRChat SDKの特定の破壊的バージョンとの互換性を宣言しているため、
-この変更はAvatar Optimizerが新しい破壊的[^vrcsdk-versioning]バージョンのVRChat SDKのサポートを導入した場合にのみ行われます。
-私たちはそのような破壊的変更を最小限に抑えるよう努めていますが、`MergePhysBone`を使用する際にはこの可能性を認識しておいてください。
+2. PhysBoneの既存のプロパティが破壊的に変更され、`MergePhysBone`の既存プロパティのシグネチャを変更する(破壊的変更を行う)場合\
+Avatar OptimizerはVRChat SDKの特定のbreaking[^vrcsdk-versioning]バージョンとの互換性を宣言しているため、この変更はAvatar Optimizerが新しいbreakingバージョンのVRChat SDKに対するサポートを追加した場合にのみ行われます。\
+私たちはそのような破壊的変更を最小限に抑えるよう努めていますが、`MergePhysBone`のComponent APIを使用する際にはこのような変更の可能性を認識しておいてください。\
+また、場合により、Avatar Optimizerのバージョンが同一であっても、使用するVRCSDKのバージョンに応じてプロパティの型などが異なる可能性があります。
 
-あなたのコードをそのような破壊的変更から保護するために、vpm依存関係でVRChat SDKのバージョンを確認することをお勧めします。
-上記のように、そのような破壊的変更はAvatar Optimizerが新しい破壊的バージョンのVRChat SDKのサポートを導入した場合にのみ発生します。
-したがって、vpm依存関係でVRChat SDKのバージョンを固定すれば、パッケージバージョンの競合が発生しない限り、そのような破壊的変更からコードを保護することができます。
+あなたのコードをそのような破壊的変更から保護するために、vpmDependenciesでVRChat SDKのバージョン範囲を指定することをお勧めします。\
+上記のように、このような破壊的変更はAvatar Optimizerが新しいbreakingバージョンのVRChat SDKに対するサポートを追加した場合にのみ発生します。\
+したがって、vpmDependenciesを用いてVRChat SDKのバージョン範囲を指定すれば、バージョンの競合が発生しない限り、このような破壊的変更からコードを保護することができます。
 
 </blockquote>
 
