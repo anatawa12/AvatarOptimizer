@@ -41,6 +41,8 @@ The format is based on [Keep a Changelog].
   - Trace and Optimize now automatically replaces PhysBone's EndBone with Endpoint Position if possible.
 - Experimental support for NDMF Platform Support `#1579` `#1577` `#1576`
   - This is an experimental feature that does not follow semantic versioning.
+- Public API of `MergePhysBone` component
+  - `MergePhysBone` component is now part of public component API.
 
 ### Changed
 - Avatar Optimizer will run as late as possible in NDMF Pipeline by default `#1493`

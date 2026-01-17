@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Public API of `MergePhysBone` component
+  - `MergePhysBone` component is now part of public component API.
 
 ### Changed
 
