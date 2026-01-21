@@ -90,11 +90,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
                 foreach (var transition in child.transitions)
                 {
-                    if (transition.isExit) continue; // exit transition
+                    if (transition.isExit) return false; // exit transition; unsupported
                     if (transition.destinationState == null && transition.destinationStateMachine == null) return false; // bad transition
                     if (transition.destinationState != null && transition.destinationStateMachine != null) return false; // bad transition
-                    if (transition.solo) continue; // unsupported
-                    if (transition.mute) continue; // unsupported
+                    if (transition.solo) return false; // unsupported
+                    if (transition.mute) return false; // unsupported
                     if (transition.destinationState == null) return false; // has state machine transition
                     if (transition.destinationState == child) continue; // self-transition, allowed
 
