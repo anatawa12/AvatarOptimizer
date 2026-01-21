@@ -33,6 +33,7 @@ namespace Anatawa12.AvatarOptimizer.Test
 
         public void CheckPublicApi(Type type)
         {
+            var exceptionAttrs = type.GetCustomAttributes<ApiExceptionTypeAttribute>().ToArray();
             var parsed = new TypeInfo(type);
 
             if (!parsed.PubliclyAccessible)
@@ -51,7 +52,7 @@ namespace Anatawa12.AvatarOptimizer.Test
 
             if (type.IsInterface)
             {
-                Assert.That(type.GetInterfaces().All(IsAAOApi),
+                Assert.That(type.GetInterfaces().All(t => IsAAOApi(t, exceptionAttrs)),
                     $"{type} is publicly accessible but not all interfaces are AAO api");
                 Assert.That(allowInherit, Is.True, $"{type} is public interface but not allowed to inherit");
                 return;
@@ -60,7 +61,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             Debug.Assert(type.IsClass);
 
             // check base type
-            Assert.That(IsAAOApi(type.BaseType), "base type must be AAO api");
+            Assert.That(IsAAOApi(type.BaseType, exceptionAttrs), "base type must be AAO api");
 
             // check inherit ability
             if (type.IsSealed)
@@ -113,9 +114,9 @@ namespace Anatawa12.AvatarOptimizer.Test
                     Assert.That(attribute != null || publicMethods.Contains(methodInfo), Is.True,
                         $"{methodInfo} is publicly accessible but not marked as PublicAPIAttribute");
 
-                    Assert.That(IsAAOApi(methodInfo.ReturnType), Is.True,
+                    Assert.That(IsAAOApi(methodInfo.ReturnType, exceptionAttrs), Is.True,
                         $"{methodInfo} is publicly accessible but return type is not AAO api");
-                    Assert.That(methodInfo.GetParameters().All(x => IsAAOApi(x.ParameterType)), Is.True,
+                    Assert.That(methodInfo.GetParameters().All(x => IsAAOApi(x.ParameterType, exceptionAttrs)), Is.True,
                         $"{methodInfo} is publicly accessible but parameter type is not AAO api");
                 }
             }
@@ -129,7 +130,7 @@ namespace Anatawa12.AvatarOptimizer.Test
                     Assert.That(attribute != null, Is.True,
                         $"{constructorInfo} of {type} is publicly accessible but not marked as PublicAPIAttribute");
 
-                    Assert.That(constructorInfo.GetParameters().All(x => IsAAOApi(x.ParameterType)), Is.True,
+                    Assert.That(constructorInfo.GetParameters().All(x => IsAAOApi(x.ParameterType, exceptionAttrs)), Is.True,
                         $"{constructorInfo} of {type} is publicly accessible but parameter type is not AAO api");
                 }
             }
@@ -199,8 +200,30 @@ namespace Anatawa12.AvatarOptimizer.Test
             return false;
         }
 
-        static bool IsAAOApi(Type type) => IsAAOApiAssembly(type.Assembly);
-        
+        static bool IsAAOApiThin(Type type, IEnumerable<ApiExceptionTypeAttribute> exceptions)
+        {
+            // byref => element and array -> element
+            while (type != null && (type.IsByRef || type.IsArray)) type = type.GetElementType();
+            if (type == null) throw new InvalidOperationException("type is null after unwrapping");
+            return IsAAOApiAssembly(type.Assembly) || exceptions
+                .SelectMany(x => x?.ExceptionTypes ?? Array.Empty<Type>())
+                .Contains(type);
+        }
+
+        static bool IsAAOApi(Type type, IEnumerable<ApiExceptionTypeAttribute> exceptions)
+        {
+            var erasedType = type.IsConstructedGenericType ? type.GetGenericTypeDefinition() : type;
+            if (!IsAAOApiThin(erasedType, exceptions)) return false;
+            if (type.IsGenericType)
+            {
+                foreach (var arg in type.GetGenericArguments())
+                {
+                    if (!IsAAOApi(arg, exceptions)) return false;
+                }
+            }
+            return true;
+        }
+
         bool IsInternalNamespaceInApiModule(Type type) =>
             type.Namespace == "Anatawa12.AvatarOptimizer.APIInternal" &&
             type.Assembly.GetName().Name == "com.anatawa12.avatar-optimizer.api.editor";

@@ -15,6 +15,7 @@ Component APIが利用可能なコンポーネントの一覧は以下の通り�
 - `RemoveMeshInBox` - コンポーネントの追加と追加時の設定変更がサポートされています
 - `RemoveMeshByBlendShape` - コンポーネントの追加と追加時の設定変更がサポートされています
 - `RemoveMeshByMask` - コンポーネントの追加と追加時の設定変更がサポートされています
+- `MergePhysBone` - コンポーネントの追加と追加時の設定変更がサポートされています
 - `TraceAndOptimize` - デフォルト設定での追加はサポートされていますが、設定変更はサポートされていません
 
 将来のバージョンで追加されるデフォルトで有効な機能との互換性を保つために、コンポーネントの設定変更を行う場合には注意が必要です。
@@ -47,3 +48,29 @@ Avatar Optimizerはランタイムで動作しないため、ランタイムビ�
 例えば、v1.8.0で追加された`AAO Remove Mesh By Box`コンポーネントの反転オプションを有効にすると、設定される箱による効果が変わってしまい、v1.7以前のみを想定して作成されているツールと互換性がなくなってしまいます。
 
 </blockquote>
+
+<blockquote class="book-hint info">
+
+v1.9.0以降、`MergePhysBone`コンポーネントのComponent APIを提供していますが、そのセマンティックバージョニング上の取り扱いは特殊なものになっています。
+
+このコンポーネントはVRChat SDKのPhysBoneコンポーネントと密接に結びついているため、PhysBoneコンポーネントの仕様変更に伴って、`MergePhysBone`にも対応する変更が必要になる場合があります。
+その場合、新しいプロパティの追加や既存プロパティの変更は、セマンティックバージョニングの規定に従わずに行われる可能性があります。
+
+1. PhysBoneに新しいプロパティが追加され、後方互換性のある新しいプロパティを`MergePhysBone`に追加する場合\
+これは通常、VRChat SDKのbumps[^vrcsdk-versioning]バージョンで行われ得る変更の1つです。\
+新しいPhysBoneプロパティに対するサポート追加は「サポートされていないPhysBoneの機能があるというバグの修正」として扱われるため、Avatar Optimizerの更新はパッチバージョンで行われます。
+
+2. PhysBoneの既存のプロパティが破壊的に変更され、`MergePhysBone`の既存プロパティのシグネチャを変更する(破壊的変更を行う)場合\
+Avatar OptimizerはVRChat SDKの特定のbreaking[^vrcsdk-versioning]バージョンとの互換性を宣言しているため、この変更はAvatar Optimizerが新しいbreakingバージョンのVRChat SDKに対するサポートを追加した場合にのみ行われます。\
+私たちはそのような破壊的変更を最小限に抑えるよう努めていますが、`MergePhysBone`のComponent APIを使用する際にはこのような変更の可能性を認識しておいてください。\
+また、場合により、Avatar Optimizerのバージョンが同一であっても、使用するVRCSDKのバージョンに応じてプロパティの型などが異なる可能性があります。
+
+あなたのコードを上記のような破壊的変更から保護するために、vpmDependenciesでVRChat SDKのバージョン範囲を指定することをお勧めします。\
+上記のような`MergePhysBone`に関する破壊的変更は、Avatar Optimizerが新しいbreakingバージョンのVRChat SDKに対するサポートを追加した場合にのみ発生します。\
+したがって、vpmDependenciesを用いてVRChat SDKのバージョン範囲を指定すれば、バージョンの競合が発生しない限り、そのような破壊的変更からコードを保護することができます。
+
+</blockquote>
+
+[^vrcsdk-versioning]: VRChat SDKは「Branding.Breaking.Bumps」バージョニングスキームを使用しており、Breakingは破壊的変更のためにインクリメントされ、Bumpsは後方互換性のある変更のためにインクリメントされます。詳しくは[公式ドキュメント][b.b.b-docs]を参照してください。
+
+[b.b.b-docs]: https://vcc.docs.vrchat.com/vpm/packages/#brandingbreakingbumps

@@ -57,7 +57,7 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
             var mergePBGameObject = new GameObject($"$$$$$AutoMergedPhysBone_{index++}$$$$");
             mergePBGameObject.transform.SetParent(parent.transform, worldPositionStays: false);
             var mergePB = mergePBGameObject.AddComponent<MergePhysBone>();
-            mergePB.endpointPositionConfig.@override = MergePhysBone.EndPointPositionConfig.Override.Copy;
+            mergePB.endpointPositionConfig.@override = MergePhysBone.EndPointPositionConfigStruct.Override.Copy;
             mergePB.componentsSet.AddRange(list);
             context.Extension<GCComponentInfoContext>().NewComponent(mergePBGameObject.transform);
             context.Extension<GCComponentInfoContext>().NewComponent(mergePB);
