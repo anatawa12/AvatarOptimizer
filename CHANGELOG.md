@@ -19,7 +19,7 @@ The format is based on [Keep a Changelog].
 - Automatic Merge BlendTree support for WriteDefaults off BlendTree `#1283`
 - Component API for Remove Mesh By Mask `#XXXX`
   - External tools can now programmatically add and configure RemoveMeshByMask components.
-- Complete Graph to Entry Exit optimization `#1544` `#1588`
+- Complete Graph to Entry Exit optimization `#1544` `#1588` `#1601`
   - New optimization in the Animator Optimizer, which is part of Trace and Optimize.
   - It's expected that this optimization will reduce the number of transitions computed every frame. 
   - After this optimization, Entry Exit to BlendTree optimization may be applied.
