@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- NRE with exit transitions on complete graph-like layer `#1601`
 
 ### Security
 
