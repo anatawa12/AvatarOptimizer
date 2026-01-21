@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- NRE with exit transitions on complete graph-like layer `#1601`
 
 ### Security
+
+## [1.9.0-rc.6] - 2026-01-21
+### Fixed
+- NRE with exit transitions on complete graph-like layer [`#1601`](https://github.com/anatawa12/AvatarOptimizer/pull/1601)
 
 ## [1.9.0-rc.5] - 2026-01-21
 ### Added
@@ -2095,7 +2098,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.5...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.6...HEAD
+[1.9.0-rc.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.5...v1.9.0-rc.6
 [1.9.0-rc.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.4...v1.9.0-rc.5
 [1.9.0-rc.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.3...v1.9.0-rc.4
 [1.9.0-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.2...v1.9.0-rc.3
