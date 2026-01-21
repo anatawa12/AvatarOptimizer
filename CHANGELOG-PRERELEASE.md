@@ -8,8 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Public API of `MergePhysBone` component
-  - `MergePhysBone` component is now part of public component API.
 
 ### Changed
 
@@ -18,9 +16,16 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- VRM: Improved robustness of parsing incompletely setup VRM0.x / VRM1.0 avatars `#1599`
 
 ### Security
+
+## [1.9.0-rc.5] - 2026-01-21
+### Added
+- Public API of `MergePhysBone` component
+  - `MergePhysBone` component is now part of public component API.
+
+### Fixed
+- VRM: Improved robustness of parsing incompletely setup VRM0.x / VRM1.0 avatars [`#1599`](https://github.com/anatawa12/AvatarOptimizer/pull/1599)
 
 ## [1.9.0-rc.4] - 2026-01-01
 ### Changed
@@ -2089,7 +2094,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.5...HEAD
+[1.9.0-rc.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.4...v1.9.0-rc.5
 [1.9.0-rc.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.3...v1.9.0-rc.4
 [1.9.0-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.2...v1.9.0-rc.3
 [1.9.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.1...v1.9.0-rc.2
