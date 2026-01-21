@@ -58,7 +58,7 @@ If the implementation of the PhysBone component is changed, corresponding change
 In that case, we may add new properties or change existing properties of `MergePhysBone` without following semantic versioning.
 
 1. When we add that new backward-compatible properties to `MergePhysBone` for following new PhysBone properties.\
-This is typically done in bump[^vrcsdk-versioning] version of VRChat SDK.\
+This is typically done in bumps[^vrcsdk-versioning] version of VRChat SDK.\
 We treat adding support for new PhysBone properties as "bugfix for unsupported PhysBone features", so this is done in patch version of Avatar Optimizer.
 
 2. When we change signature of existing properties (in other words, introduce breaking changes) of `MergePhysBone` for following breaking changes of existing PhysBone properties.\
@@ -73,6 +73,6 @@ Therefore, if you lock the VRChat SDK version with vpmDependencies, your code wi
 
 </blockquote>
 
-[^vrcsdk-versioning]: VRChat SDK uses 'Branding.Breaking.Bump' versioning scheme where Breaking will be incremented for breaking changes, and Bump will be incremented for backward compatible changes. See [Official Documentation][b.b.b-docs] for more details.
+[^vrcsdk-versioning]: VRChat SDK uses 'Branding.Breaking.Bumps' versioning scheme where Breaking will be incremented for breaking changes, and Bumps will be incremented for backward compatible changes. See [Official Documentation][b.b.b-docs] for more details.
 
 [b.b.b-docs]: https://vcc.docs.vrchat.com/vpm/packages/#brandingbreakingbumps

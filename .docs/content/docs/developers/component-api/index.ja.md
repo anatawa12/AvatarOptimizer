@@ -57,7 +57,7 @@ v1.9.0以降、`MergePhysBone`コンポーネントのComponent APIを提供し�
 その場合、新しいプロパティの追加や既存プロパティの変更は、セマンティックバージョニングの規定に従わずに行われる可能性があります。
 
 1. PhysBoneに新しいプロパティが追加され、後方互換性のある新しいプロパティを`MergePhysBone`に追加する場合\
-これは通常、VRChat SDKのbump[^vrcsdk-versioning]バージョンで行われ得る変更の1つです。\
+これは通常、VRChat SDKのbumps[^vrcsdk-versioning]バージョンで行われ得る変更の1つです。\
 新しいPhysBoneプロパティに対するサポート追加は「サポートされていないPhysBoneの機能があるというバグの修正」として扱われるため、Avatar Optimizerの更新はパッチバージョンで行われます。
 
 2. PhysBoneの既存のプロパティが破壊的に変更され、`MergePhysBone`の既存プロパティのシグネチャを変更する(破壊的変更を行う)場合\
@@ -71,6 +71,6 @@ Avatar OptimizerはVRChat SDKの特定のbreaking[^vrcsdk-versioning]バージ�
 
 </blockquote>
 
-[^vrcsdk-versioning]: VRChat SDKは「Branding.Breaking.Bump」バージョニングスキームを使用しており、Breakingは破壊的変更のためにインクリメントされ、Bumpは後方互換性のある変更のためにインクリメントされます。詳しくは[公式ドキュメント][b.b.b-docs]を参照してください。
+[^vrcsdk-versioning]: VRChat SDKは「Branding.Breaking.Bumps」バージョニングスキームを使用しており、Breakingは破壊的変更のためにインクリメントされ、Bumpsは後方互換性のある変更のためにインクリメントされます。詳しくは[公式ドキュメント][b.b.b-docs]を参照してください。
 
 [b.b.b-docs]: https://vcc.docs.vrchat.com/vpm/packages/#brandingbreakingbumps
