@@ -220,15 +220,16 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var allPhysBones = context.GetComponents<VRCPhysBoneBase>();
             if (allPhysBones.Length == 0) return;
 
-            var overlappedPhysBones = ReplaceEndBoneWithEndpointPositionProcessor.GetOverlappedPhysBones(allPhysBones);
-            var validPhysBones = allPhysBones.Where(physbone => !overlappedPhysBones.Contains(physbone));
 
             var componentInfos = context.Extension<GCComponentInfoContext>();
             var entrypointMap = DependantMap.CreateEntrypointsMap(context);
 
             // ReplaceEndBoneWithEndpointPosition component affects all physbones attached to the gameobject it is attached to.
-            var physbonesByGameObjects = validPhysBones
+            // Therefore, we must group all physbones by gameobject first, and then check if all physbones on the gameobject are valid.
+            var overlappedPhysBones = ReplaceEndBoneWithEndpointPositionProcessor.GetOverlappedPhysBones(allPhysBones);
+            var physbonesByGameObjects = allPhysBones
                 .GroupBy(physbone => physbone.gameObject)
+                .Where(group => group.All(physbone => !overlappedPhysBones.Contains(physbone)))
                 .ToArray();
 
             foreach (var physbonesByGameObject in physbonesByGameObjects)
