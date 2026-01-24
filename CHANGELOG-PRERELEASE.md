@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Fixed an issue where Trace and Optimize would incorrectly perform Endbone replacement even when unsafe, causing warnings [`#1604`](https://github.com/anatawa12/AvatarOptimizer/pull/1604)
 
 ### Security
 
