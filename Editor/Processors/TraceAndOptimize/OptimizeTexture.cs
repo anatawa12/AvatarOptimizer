@@ -430,8 +430,8 @@ internal struct OptimizeTextureImpl {
         // all material slot / uv must be known
         if (info.SubMeshUvs.Any(x => !x.CanBeUsedForAtlas))
             return EmptyAtlasConnectedResult;
-        // non-identity UV Transform is allowed
-        if (info.Textures.SelectMany(x => x.Users).SelectMany(x => x.Value).All(x => x.UVMatrix == Matrix2x3.Identity))
+        // non-identity UV Transform is not allowed
+        if (info.Textures.SelectMany(x => x.Users).SelectMany(x => x.Value).Any(x => x.UVMatrix != Matrix2x3.Identity))
             return EmptyAtlasConnectedResult;
 
         // the material should not be used by other renderers.
