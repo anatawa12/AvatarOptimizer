@@ -17,7 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Fixed an issue where Trace and Optimize would incorrectly perform Endbone replacement even when unsafe, causing warnings [`#1604`](https://github.com/anatawa12/AvatarOptimizer/pull/1604)
-- Fixed an issue where optimize texture may be applied for textures with UV Transform [`#1606`](https://github.com/anatawa12/AvatarOptimizer/pull/1606)
+- Fixed inverted logic in optimize texture that incorrectly processed textures with UV transforms and skipped those without [`#1606`](https://github.com/anatawa12/AvatarOptimizer/pull/1606)
 
 ### Security
 
