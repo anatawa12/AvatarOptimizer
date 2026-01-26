@@ -444,16 +444,6 @@ internal struct OptimizeTextureImpl {
 
         var uvids = info.SubMeshUvs.Select(x => x.UVId).ToEqualsHashSet();
 
-        // Check if texture to uvid graph is complete bipartite graph.
-        // If it's not a complete bipartite graph, it's unlikely to atlas would result in better packing.
-        // TODO: consider removing checking complete bipartite graph
-        foreach (var texture in info.Textures)
-        {
-            var textureUVIds = texture.UserSubMeshUVs.Select(x => x.UVId).ToEqualsHashSet();
-            if (!textureUVIds.Equals(uvids))
-                return EmptyAtlasConnectedResult;
-        }
-
         // only Texture2D can be atlased. Any other (especially RenderTexture) cannot be atlased.
         if (info.Textures.Any(x => x.Texture is not Texture2D))
             return EmptyAtlasConnectedResult;
