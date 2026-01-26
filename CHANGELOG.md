@@ -58,6 +58,7 @@ The format is based on [Keep a Changelog].
   - Orphan vertices are likely to be used to control the bounds of the mesh so they will be kept.
 - Allow Shuffle Material Slots is now enabled by default `#1533`
 - Descriptive localized messages are shown in Play Mode when animation keys are removed `#1461`
+- Optimize Texture now attempts texture atlasing even when textures are not uniformly used across all submeshes [`#1608`](https://github.com/anatawa12/AvatarOptimizer/pull/1608)
   - When AAO removes animation keys because target objects are absent, descriptive messages in the user's language are now shown in Play Mode to help understand what happened.
   - These messages explain that the target object is absent, keys were removed by AAO, and suggest reporting if this is incorrect.
   - In Edit Mode (upload builds), the behavior remains unchanged with a terse internal identifier to minimize avatar size.
