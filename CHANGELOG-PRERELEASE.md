@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Optimize Texture now attempts texture atlasing even when textures are not uniformly used across all submeshes [`#1608`](https://github.com/anatawa12/AvatarOptimizer/pull/1608)
 
 ### Deprecated
 
