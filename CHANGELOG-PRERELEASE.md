@@ -10,17 +10,22 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Optimize Texture now attempts texture atlasing even when textures are not uniformly used across all submeshes [`#1608`](https://github.com/anatawa12/AvatarOptimizer/pull/1608)
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Fixed an issue where Trace and Optimize would incorrectly perform Endbone replacement even when unsafe, causing warnings [`#1604`](https://github.com/anatawa12/AvatarOptimizer/pull/1604)
-- Fixed inverted logic in optimize texture that incorrectly processed textures with UV transforms and skipped those without [`#1606`](https://github.com/anatawa12/AvatarOptimizer/pull/1606)
 
 ### Security
+
+## [1.9.0-rc.7] - 2026-01-26
+### Changed
+- Optimize Texture now attempts texture atlasing even when textures are not uniformly used across all submeshes [`#1608`](https://github.com/anatawa12/AvatarOptimizer/pull/1608)
+
+### Fixed
+- Fixed an issue where Trace and Optimize would incorrectly perform Endbone replacement even when unsafe, causing warnings [`#1604`](https://github.com/anatawa12/AvatarOptimizer/pull/1604)
+- Fixed inverted logic in optimize texture that incorrectly processed textures with UV transforms and skipped those without [`#1606`](https://github.com/anatawa12/AvatarOptimizer/pull/1606)
 
 ## [1.9.0-rc.6] - 2026-01-21
 ### Fixed
@@ -2101,7 +2106,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.6...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.7...HEAD
+[1.9.0-rc.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.6...v1.9.0-rc.7
 [1.9.0-rc.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.5...v1.9.0-rc.6
 [1.9.0-rc.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.4...v1.9.0-rc.5
 [1.9.0-rc.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.3...v1.9.0-rc.4
