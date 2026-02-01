@@ -504,9 +504,6 @@ msgstr "已完成遷移至 Trace and Optimize！"
 
 # region TraceAndOptimize
 
-msgid "TraceAndOptimize:description"
-msgstr "當你將這個元件添加至你的 Avatar 時，AvatarOptimizer 將自動追蹤和優化你的 Avatar。"
-
 msgid "TraceAndOptimize:prop:freezeBlendShape"
 msgstr "自動凍結和移除 BlendShape"
 
