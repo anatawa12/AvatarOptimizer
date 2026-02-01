@@ -13,7 +13,7 @@ I'm usually use Japanese, but you can ask me with English.
 
 If the behavior or appearance of the avatar is changed when using `AAO Trace and Optimize` component, it is always a bug unless you depend on bugs in other components of Avatar Optimizer.
 
-Please report it on [GitHub Issues], [Fediverse (Misskey / Mastodon)][Fediverse], [Twitter], etc.
+Please report it on [GitHub Issues], [NDMF Discord], [Fediverse (Misskey / Mastodon)][Fediverse], [Twitter], etc.
 
 ## Mesh is invisible even though it is in the field of view {#mesh-is-invisible-even-though-it-is-in-the-field-of-view}
 

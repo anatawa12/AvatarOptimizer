@@ -11,7 +11,7 @@ Avatar Optimizerに関するよくある質問のリストです。
 ## `AAO Trace and Optimize`コンポーネントを使用すると、アバターの振る舞いや見た目が変わる {#avatar-behavior-or-appearance-changed-when-using-aao-trace-and-optimize-component}
 
 `AAO Trace and Optimize`コンポーネントを使用して、アバターの振る舞いや見た目が変わってしまった場合は、(アバターがAvatar Optimizerの他のコンポーネントのバグ挙動に依存していない限り、)全てバグです。
-[GitHub Issues]や[Fediverse (Misskey / Mastodon)][Fediverse]、[Twitter]などから報告をお願いします。
+[GitHub Issues]や[NDMF Discord]、[Fediverse (Misskey / Mastodon)][Fediverse]、[Twitter]などから報告をお願いします。
 
 ## メッシュが視界の中にあるのに非表示になってしまう {#mesh-is-invisible-even-though-it-is-in-the-field-of-view}
 

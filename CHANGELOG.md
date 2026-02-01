@@ -76,6 +76,8 @@ The format is based on [Keep a Changelog].
 - Added button to ignore specified components when unknown `IEditorOnly` component is detected `#1592`
   - As a part of this feature, we added Project-level settings to store a list of ignored components.
   - You can access this setting in `Project/Avatar Optimizer` of `Project settings` and stored at `ProjectSettings/AvatarOptimizerSettings.asset` file.
+- Changed message shown on Trace and Optimize inspector `#1609`
+  - This message shows "Behavior changes are bugs of AAO: Avatar Optimizer" and suggests reporting issues.
 
 [`AfterPlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_AfterPlugin_System_String_System_String_System_Int32_
 [`BeforePlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_BeforePlugin_System_String_System_String_System_Int32_

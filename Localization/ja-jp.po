@@ -710,10 +710,17 @@ msgstr "Trace and Optimizeへの移行が完了しました！"
 
 # region TraceAndOptimize
 
-msgid "TraceAndOptimize:description"
-msgstr "このコンポーネントをアバターにつけると、アバターを走査して自動的にできる限りの最適化を行います。\n"
-"Trace and Optimizeはほとんどのユーザーにとって設定変更が不要なように設計されています。\n"
-"設定を変更する必要がある場合、Avatar Optimizerのバグに遭遇している可能性があります。"
+msgid "TraceAndOptimize:report-bugs"
+msgstr ""
+"このコンポーネントを付けたことにより何らかの問題や動作の変化が発生し、外すと解消される場合、それらは<b>すべて</b>AAO: Avatar Optimizerのバグとして扱われます。\n"
+"そのような場合は、Avatar Optimizerの作者に報告していただきますようお願いいたします。\n"
+"問題の報告方法については、 https://an12.net/aao/ja/tao-bug をご覧ください。"
+
+msgid "TraceAndOptimize:report-bug"
+msgstr "バグを報告する"
+
+msgid "TraceAndOptimize:tao-bug-link"
+msgstr "https://an12.net/aao/ja/tao-bug"
 
 msgid "TraceAndOptimize:warn:changeFeaturesNotNecessary"
 msgstr ""

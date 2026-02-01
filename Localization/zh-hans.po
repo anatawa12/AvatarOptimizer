@@ -467,9 +467,6 @@ msgstr "已成功迁移到Trace and Optimize！"
 
 # region TraceAndOptimize
 
-msgid "TraceAndOptimize:description"
-msgstr "将此组件添加到模型上，它就会自动扫描模型并进行尽可能的优化。"
-
 msgid "TraceAndOptimize:prop:freezeBlendShape"
 msgstr "自动冻结和移除BlendShape"
 
