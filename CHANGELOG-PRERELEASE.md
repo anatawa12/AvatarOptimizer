@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Changed message shown on Trace and Optimize inspector `#1609`
+  - This message shows "Behavior changes are bugs of AAO: Avatar Optimizer" and suggests reporting issues.
 
 ### Security
 
