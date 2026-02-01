@@ -812,7 +812,7 @@ msgid "TraceAndOptimize:report-bugs"
 msgstr ""
 "<b>Any</b> problems (behavioral changes) caused by adding this component are bugs of AAO: Avatar Optimizer.\n"
 "In that case, please report to the author of Avatar Optimizer.\n"
-"For how to report issues, please see https://an12.net/aao/en/tao-bug ."
+"For how to report issues, please see https://an12.net/aao/en/tao-bug."
 
 msgid "TraceAndOptimize:report-bug"
 msgstr "Report a Bug"

@@ -712,8 +712,8 @@ msgstr "Trace and Optimizeへの移行が完了しました！"
 
 msgid "TraceAndOptimize:report-bugs"
 msgstr ""
-"このコンポーネントをつけたことでおきた<b>いかなる</b>問題(動作の変化)も、 AAO: Avatar Optimizer のバグです。"
-"その場合、 Avatar Optimizer の作者に報告していただきますようお願いいたします。\n"
+"このコンポーネントを付けたことにより何らかの問題や動作の変化が発生し、外すと解消される場合、それらは<b>すべて</b>AAO: Avatar Optimizerのバグとして扱われます。\n"
+"そのような場合は、Avatar Optimizerの作者に報告していただきますようお願いいたします。\n"
 "問題の報告方法については、 https://an12.net/aao/ja/tao-bug をご覧ください。"
 
 msgid "TraceAndOptimize:report-bug"
