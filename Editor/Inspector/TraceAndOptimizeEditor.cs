@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+
 using nadena.dev.ndmf;
 using nadena.dev.ndmf.platform;
 using UnityEditor;
@@ -44,7 +44,7 @@ namespace Anatawa12.AvatarOptimizer
 
         private static class Styles
         {
-            public static GUIStyle bigHelpBox;
+            public static readonly GUIStyle bigHelpBox;
 
             static Styles()
             {
