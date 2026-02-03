@@ -58,6 +58,17 @@ namespace Anatawa12.AvatarOptimizer.ndmf
 
             // Run everything else in the optimize phase
             var mainSequence = InPhase(BuildPhase.Optimizing);
+
+            mainSequence
+                .Run("Initial Step for Avatar Optimizer", ctx =>
+                {
+                    ctx.GetState<AAOEnabled>().Enabled =
+                        ctx.AvatarRootObject.GetComponentInChildren<AvatarTagComponent>(true);
+                    // invalidate ComponentInfoRegistry cache to support newly added assets
+                    AssetDescription.Reload();
+                })
+                .Then.Run(Processors.OptimizationMetrics.CaptureOptimizationMetricsBefore.Instance);
+
             mainSequence
                 .WithRequiredExtensions(new[]
                 {
@@ -66,16 +77,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                     typeof(DestroyTracker.ExtensionContext),
                 }, seq =>
                 {
-                    seq.Run("Initial Step for Avatar Optimizer",
-                            ctx =>
-                            {
-                                ctx.GetState<AAOEnabled>().Enabled =
-                                    ctx.AvatarRootObject.GetComponentInChildren<AvatarTagComponent>(true);
-                                // invalidate ComponentInfoRegistry cache to support newly added assets
-                                AssetDescription.Reload();
-                            })
-                        .Then.Run(Processors.OptimizationMetrics.CaptureOptimizationMetricsBefore.Instance)
-                        .Then.Run("Validation", (ctx) => ComponentValidation.ValidateAll(ctx.AvatarRootObject))
+                    seq.Run("Validation", (ctx) => ComponentValidation.ValidateAll(ctx.AvatarRootObject))
                         .Then.Run(Processors.TraceAndOptimizes.LoadTraceAndOptimizeConfiguration.Instance)
                         .Then.Run(Processors.TraceAndOptimizes.OptimizationWarnings.Instance)
                         .Then.Run(Processors.DupliacteAssets.Instance)
@@ -138,8 +140,9 @@ namespace Anatawa12.AvatarOptimizer.ndmf
 #endif
                 .Then.Run(Processors.AnimatorOptimizer.MergeBlendTreeLayer.Instance)
                 .Then.Run(Processors.AnimatorOptimizer.RemoveMeaninglessLayer.Instance)
-                .Then.Run(Processors.OptimizationMetrics.LogOptimizationMetricsAfter.Instance)
                 ;
+            
+            mainSequence.Run(Processors.OptimizationMetrics.LogOptimizationMetricsAfter.Instance);
         }
 
         protected override void OnUnhandledException(Exception e)
