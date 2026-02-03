@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Anatawa12.AvatarOptimizer;
 using Anatawa12.AvatarOptimizer.ndmf;
 using nadena.dev.ndmf;
 using UnityEngine;
@@ -52,8 +53,8 @@ internal class LogOptimizationMetricsAfter : Pass<LogOptimizationMetricsAfter>
             // Skip if both values are identical, as we only want to show differences.
             if (string.Equals(value, aStr, StringComparison.Ordinal)) continue;
 
-            // Todo: Localize CategoryName
-            lines.Add($"{key}: {value} → {aStr}");
+            var categoryName = AAOL10N.TryTr($"OptimizationMetrics:{key}") ?? key;
+            lines.Add($"{categoryName}: {value} → {aStr}");
         }
         return lines;
     }

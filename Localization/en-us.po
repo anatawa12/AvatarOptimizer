@@ -8,6 +8,114 @@ msgstr "Newer release of Avatar Optimizer, {0} is available! (Current: {1})"
 msgid "OptimizationMetrics:result"
 msgstr "Optimization result (before → after):\n{0}"
 
+msgid "OptimizationMetrics:DownloadSize"
+msgstr "Download Size"
+
+msgid "OptimizationMetrics:UncompressedSize"
+msgstr "Uncompressed Size"
+
+msgid "OptimizationMetrics:PolyCount"
+msgstr "Triangles"
+
+msgid "OptimizationMetrics:AABB"
+msgstr "Bounds Size"
+
+msgid "OptimizationMetrics:SkinnedMeshCount"
+msgstr "Skinned Meshes"
+
+msgid "OptimizationMetrics:MeshCount"
+msgstr "Basic Meshes"
+
+msgid "OptimizationMetrics:MaterialCount"
+msgstr "Material Slots"
+
+msgid "OptimizationMetrics:DynamicBoneComponentCount"
+msgstr "Dynamic Bone Component Count"
+
+msgid "OptimizationMetrics:DynamicBoneSimulatedBoneCount"
+msgstr "Dynamic Bone Simulated Bone Count"
+
+msgid "OptimizationMetrics:DynamicBoneColliderCount"
+msgstr "Dynamic Bone Collider Count"
+
+msgid "OptimizationMetrics:DynamicBoneCollisionCheckCount"
+msgstr "Dynamic Bone Collision Check Count"
+
+msgid "OptimizationMetrics:PhysBoneComponentCount"
+msgstr "PhysBones Components"
+
+msgid "OptimizationMetrics:PhysBoneTransformCount"
+msgstr "PhysBones Affected Transforms"
+
+msgid "OptimizationMetrics:PhysBoneColliderCount"
+msgstr "PhysBones Colliders"
+
+msgid "OptimizationMetrics:PhysBoneCollisionCheckCount"
+msgstr "PhysBones Collision Check Count"
+
+msgid "OptimizationMetrics:ContactCount"
+msgstr "Contacts"
+
+msgid "OptimizationMetrics:AnimatorCount"
+msgstr "Animators"
+
+msgid "OptimizationMetrics:BoneCount"
+msgstr "Bones"
+
+msgid "OptimizationMetrics:LightCount"
+msgstr "Lights"
+
+msgid "OptimizationMetrics:ParticleSystemCount"
+msgstr "Particle Systems"
+
+msgid "OptimizationMetrics:ParticleTotalCount"
+msgstr "Total Particles Active"
+
+msgid "OptimizationMetrics:ParticleMaxMeshPolyCount"
+msgstr "Mesh Particle Active Polys"
+
+msgid "OptimizationMetrics:ParticleTrailsEnabled"
+msgstr "Particle Trails Enabled"
+
+msgid "OptimizationMetrics:ParticleCollisionEnabled"
+msgstr "Particle Collision Enabled"
+
+msgid "OptimizationMetrics:TrailRendererCount"
+msgstr "Trail Renderers"
+
+msgid "OptimizationMetrics:LineRendererCount"
+msgstr "Line Renderers"
+
+msgid "OptimizationMetrics:ClothCount"
+msgstr "Cloths"
+
+msgid "OptimizationMetrics:ClothMaxVertices"
+msgstr "Total Cloth Vertices"
+
+msgid "OptimizationMetrics:PhysicsColliderCount"
+msgstr "Physics Colliders"
+
+msgid "OptimizationMetrics:PhysicsRigidbodyCount"
+msgstr "Physics Rigidbodies"
+
+msgid "OptimizationMetrics:AudioSourceCount"
+msgstr "Audio Sources"
+
+msgid "OptimizationMetrics:TextureMegabytes"
+msgstr "Texture Memory"
+
+msgid "OptimizationMetrics:ConstraintsCount"
+msgstr "Constraint Count"
+
+msgid "OptimizationMetrics:ConstraintDepth"
+msgstr "Constraint Depth"
+
+msgid "OptimizationMetrics:BlendShapeCount"
+msgstr "Blend Shape Count"
+
+msgid "OptimizationMetrics:GameObjectCount"
+msgstr "Game Object Count"
+
 msgid "LegacyModularAvatarWarning:message"
 msgstr ""
 "We found Modular Avatar 1.7.x or older is installed!\n"

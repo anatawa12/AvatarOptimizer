@@ -8,6 +8,114 @@ msgstr "Avatar Optimizerの新しいバージョン、{0}が公開されてい�
 msgid "OptimizationMetrics:result"
 msgstr "軽量化結果 (前 → 後):\n{0}"
 
+msgid "OptimizationMetrics:DownloadSize"
+msgstr "ダウンロードサイズ"
+
+msgid "OptimizationMetrics:UncompressedSize"
+msgstr "非圧縮サイズ"
+
+msgid "OptimizationMetrics:PolyCount"
+msgstr "ポリゴンの数"
+
+msgid "OptimizationMetrics:AABB"
+msgstr "バウンズサイズ"
+
+msgid "OptimizationMetrics:SkinnedMeshCount"
+msgstr "SkinnedMeshRendererの数"
+
+msgid "OptimizationMetrics:MeshCount"
+msgstr "MeshRendererの数"
+
+msgid "OptimizationMetrics:MaterialCount"
+msgstr "マテリアルスロットの数"
+
+msgid "OptimizationMetrics:DynamicBoneComponentCount"
+msgstr "Dynamic Boneの数"
+
+msgid "OptimizationMetrics:DynamicBoneSimulatedBoneCount"
+msgstr "Dynamic Boneのボーン数"
+
+msgid "OptimizationMetrics:DynamicBoneColliderCount"
+msgstr "Dynamic Boneのコライダー数"
+
+msgid "OptimizationMetrics:DynamicBoneCollisionCheckCount"
+msgstr "Dynamic Boneの衝突数"
+
+msgid "OptimizationMetrics:PhysBoneComponentCount"
+msgstr "PhysBoneの数"
+
+msgid "OptimizationMetrics:PhysBoneTransformCount"
+msgstr "PhysBoneのボーン数"
+
+msgid "OptimizationMetrics:PhysBoneColliderCount"
+msgstr "PhysBone Colliderの数"
+
+msgid "OptimizationMetrics:PhysBoneCollisionCheckCount"
+msgstr "PhysBoneの衝突数"
+
+msgid "OptimizationMetrics:ContactCount"
+msgstr "Contactの数"
+
+msgid "OptimizationMetrics:AnimatorCount"
+msgstr "Animatorの数"
+
+msgid "OptimizationMetrics:BoneCount"
+msgstr "Boneの数"
+
+msgid "OptimizationMetrics:LightCount"
+msgstr "Lightの数"
+
+msgid "OptimizationMetrics:ParticleSystemCount"
+msgstr "ParticleSystemの数"
+
+msgid "OptimizationMetrics:ParticleTotalCount"
+msgstr "Particleの総数"
+
+msgid "OptimizationMetrics:ParticleMaxMeshPolyCount"
+msgstr "Particleの最大ポリゴン数"
+
+msgid "OptimizationMetrics:ParticleTrailsEnabled"
+msgstr "Particle Trailsの有効数"
+
+msgid "OptimizationMetrics:ParticleCollisionEnabled"
+msgstr "Particle Collisionの有効数"
+
+msgid "OptimizationMetrics:TrailRendererCount"
+msgstr "TrailRendererの数"
+
+msgid "OptimizationMetrics:LineRendererCount"
+msgstr "LineRendererの数"
+
+msgid "OptimizationMetrics:ClothCount"
+msgstr "Clothの数"
+
+msgid "OptimizationMetrics:ClothMaxVertices"
+msgstr "Clothの最大頂点数"
+
+msgid "OptimizationMetrics:PhysicsColliderCount"
+msgstr "Physics Colliderの数"
+
+msgid "OptimizationMetrics:PhysicsRigidbodyCount"
+msgstr "Physics Rigidbodyの数"
+
+msgid "OptimizationMetrics:AudioSourceCount"
+msgstr "AudioSourceの数"
+
+msgid "OptimizationMetrics:TextureMegabytes"
+msgstr "テクスチャメモリ"
+
+msgid "OptimizationMetrics:ConstraintsCount"
+msgstr "Constraintの数"
+
+msgid "OptimizationMetrics:ConstraintDepth"
+msgstr "Constraintの深度"
+
+msgid "OptimizationMetrics:BlendShapeCount"
+msgstr "BlendShapeの数"
+
+msgid "OptimizationMetrics:GameObjectCount"
+msgstr "GameObjectの数"
+
 msgid "locale:ja"
 msgstr "日本語"
 
