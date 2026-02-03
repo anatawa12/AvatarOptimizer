@@ -65,8 +65,6 @@ internal class OptimizationMetricsState
     public OptimizationMetricsSnapshot? Before { get; set; }
 }
 
-internal readonly record struct MetricCategory(string Key, string DisplayName);
-
 internal sealed class OptimizationMetricsSnapshot
 {
     public Dictionary<string, string> ResultsByKey { get; } = new();
@@ -77,13 +75,6 @@ internal static class OptimizationMetricsImpl
     public static OptimizationMetricsSnapshot Capture(GameObject avatarRoot)
     {
         return MetricsSourceRegistry.Capture(avatarRoot);
-    }
-
-    enum CustomMetricKeys
-    {
-        BlendShapeCount,
-        AnimatorLayerCount,
-        GameObjectCount,
     }
 
     interface IMetricsSource
@@ -127,6 +118,13 @@ internal static class OptimizationMetricsImpl
     class CustomMetricsSource : IMetricsSource
     {
         public int Priority => 0;
+
+        enum CustomMetricKeys
+        {
+            BlendShapeCount,
+            AnimatorLayerCount,
+            GameObjectCount,
+        }
 
         public IReadOnlyDictionary<string, string> Capture(GameObject avatarRoot)
         {
