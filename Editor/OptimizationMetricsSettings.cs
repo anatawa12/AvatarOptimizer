@@ -1,38 +1,28 @@
 
 using UnityEditor;
-using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer;
 
-[FilePath("ProjectSettings/AvatarOptimizer/OptimizationMetricsSettings.asset", FilePathAttribute.Location.ProjectFolder)]
-internal class OptimizationMetricsSettings : ScriptableSingleton<OptimizationMetricsSettings>
+internal static class OptimizationMetricsSettings
 {
-    [SerializeField]
-    private bool enableOptimizationMetrics = true;
+    private const string PrefsKey = "com.anatawa12.avatar-optimizer.optimization-metrics";
+    private const string OptimizationMetricsMenuName = "Tools/Avatar Optimizer/Optimization Metrics";
+
     public static bool EnableOptimizationMetrics
     {
-        get => instance.enableOptimizationMetrics;
-        set
-        {
-            if (instance.enableOptimizationMetrics == value) return;
-            instance.enableOptimizationMetrics = value;
-            Save();
-        }
+        get => EditorPrefs.GetBool(PrefsKey, true);
+        set => EditorPrefs.SetBool(PrefsKey, value);
     }
 
-    private static void Save() => instance.Save(false);
-    
-    private const string OptimizationMetricsMenuName = "Tools/Avatar Optimizer/Optimization Metrics";
-    
     [MenuItem(OptimizationMetricsMenuName, true)]
-    private static bool validateOptimizationMetrics()
+    private static bool ValidateOptimizationMetrics()
     {
         Menu.SetChecked(OptimizationMetricsMenuName, EnableOptimizationMetrics);
         return true;
     }
 
     [MenuItem(OptimizationMetricsMenuName, false)]
-    private static void toggleOptimizationMetrics()
+    private static void ToggleOptimizationMetrics()
     {
         EnableOptimizationMetrics = !EnableOptimizationMetrics;
     }
