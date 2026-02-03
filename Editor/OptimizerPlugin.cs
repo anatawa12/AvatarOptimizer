@@ -74,6 +74,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                                 // invalidate ComponentInfoRegistry cache to support newly added assets
                                 AssetDescription.Reload();
                             })
+                        .Then.Run(Processors.OptimizationMetrics.CaptureOptimizationMetricsBefore.Instance)
                         .Then.Run("Validation", (ctx) => ComponentValidation.ValidateAll(ctx.AvatarRootObject))
                         .Then.Run(Processors.TraceAndOptimizes.LoadTraceAndOptimizeConfiguration.Instance)
                         .Then.Run(Processors.TraceAndOptimizes.OptimizationWarnings.Instance)
@@ -137,6 +138,7 @@ namespace Anatawa12.AvatarOptimizer.ndmf
 #endif
                 .Then.Run(Processors.AnimatorOptimizer.MergeBlendTreeLayer.Instance)
                 .Then.Run(Processors.AnimatorOptimizer.RemoveMeaninglessLayer.Instance)
+                .Then.Run(Processors.OptimizationMetrics.LogOptimizationMetricsAfter.Instance)
                 ;
         }
 

@@ -5,6 +5,9 @@ msgstr ""
 msgid "CheckForUpdate:out-of-date"
 msgstr "Newer release of Avatar Optimizer, {0} is available! (Current: {1})"
 
+msgid "OptimizationMetrics:result"
+msgstr "Optimization result (before → after):\n{0}"
+
 msgid "LegacyModularAvatarWarning:message"
 msgstr ""
 "We found Modular Avatar 1.7.x or older is installed!\n"

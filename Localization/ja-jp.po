@@ -5,6 +5,9 @@ msgstr ""
 msgid "CheckForUpdate:out-of-date"
 msgstr "Avatar Optimizerの新しいバージョン、{0}が公開されています！(現在 {1})"
 
+msgid "OptimizationMetrics:result"
+msgstr "軽量化結果 (前 → 後):\n{0}"
+
 msgid "locale:ja"
 msgstr "日本語"
 
