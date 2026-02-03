@@ -21,4 +21,19 @@ internal class OptimizationMetricsSettings : ScriptableSingleton<OptimizationMet
     }
 
     private static void Save() => instance.Save(false);
+    
+    private const string OptimizationMetricsMenuName = "Tools/Avatar Optimizer/Optimization Metrics";
+    
+    [MenuItem(OptimizationMetricsMenuName, true)]
+    private static bool validateOptimizationMetrics()
+    {
+        Menu.SetChecked(OptimizationMetricsMenuName, EnableOptimizationMetrics);
+        return true;
+    }
+
+    [MenuItem(OptimizationMetricsMenuName, false)]
+    private static void toggleOptimizationMetrics()
+    {
+        EnableOptimizationMetrics = !EnableOptimizationMetrics;
+    }
 }
