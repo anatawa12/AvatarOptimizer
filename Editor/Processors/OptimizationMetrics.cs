@@ -19,7 +19,7 @@ internal class CaptureOptimizationMetricsBefore : Pass<CaptureOptimizationMetric
 
     protected override void Execute(BuildContext context)
     {
-        if (!context.GetState<AAOEnabled>().Enabled) return;
+        if (!context.GetState<AAOEnabled>().Enabled || !OptimizationMetricsSettings.EnableOptimizationMetrics) return;
         context.GetState<OptimizationMetricsState>().Before = OptimizationMetricsImpl.Capture(context.AvatarRootObject);
     }
 }
@@ -30,7 +30,7 @@ internal class LogOptimizationMetricsAfter : Pass<LogOptimizationMetricsAfter>
 
     protected override void Execute(BuildContext context)
     {
-        if (!context.GetState<AAOEnabled>().Enabled) return;
+        if (!context.GetState<AAOEnabled>().Enabled || !OptimizationMetricsSettings.EnableOptimizationMetrics) return;
 
         var before = context.GetState<OptimizationMetricsState>().Before;
         if (before == null) return;
