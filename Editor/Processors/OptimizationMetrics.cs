@@ -12,6 +12,55 @@ using VRC.SDKBase.Validation.Performance.Stats;
 
 namespace Anatawa12.AvatarOptimizer.Processors.OptimizationMetrics;
 
+internal class CaptureOptimizationMetricsBefore : Pass<CaptureOptimizationMetricsBefore>
+{
+    public override string DisplayName => "Optimization Metrics: Capture Before";
+
+    protected override void Execute(BuildContext context)
+    {
+        if (!context.GetState<AAOEnabled>().Enabled) return;
+        context.GetState<OptimizationMetricsState>().Before = OptimizationMetricsImpl.Capture(context.AvatarRootObject);
+    }
+}
+
+internal class LogOptimizationMetricsAfter : Pass<LogOptimizationMetricsAfter>
+{
+    public override string DisplayName => "Optimization Metrics: Log Result";
+
+    protected override void Execute(BuildContext context)
+    {
+        if (!context.GetState<AAOEnabled>().Enabled) return;
+
+        var before = context.GetState<OptimizationMetricsState>().Before;
+        if (before == null) return;
+
+        var after = OptimizationMetricsImpl.Capture(context.AvatarRootObject);
+        var lines = BuildDiffLines(before, after);
+        if (lines.Count == 0) return;
+
+        BuildLog.LogInfo("OptimizationMetrics:result", string.Join("\n", lines));
+    }
+
+    private static List<string> BuildDiffLines(OptimizationMetricsSnapshot before, OptimizationMetricsSnapshot after)
+    {
+        var lines = new List<string>();
+        foreach (var cat in OptimizationMetricsImpl.MetricCategories)
+        {
+            if (!before.ResultsByKey.TryGetValue(cat.Key, out var bStr)) continue;
+            if (!after.ResultsByKey.TryGetValue(cat.Key, out var aStr)) continue;
+            if (string.Equals(bStr, aStr, StringComparison.Ordinal)) continue;
+
+            lines.Add($"{cat.DisplayName}: {bStr} → {aStr}");
+        }
+        return lines;
+    }
+}
+
+internal class OptimizationMetricsState
+{
+    public OptimizationMetricsSnapshot? Before { get; set; }
+}
+
 internal readonly record struct MetricCategory(string Key, string DisplayName);
 
 internal sealed class OptimizationMetricsSnapshot
@@ -220,53 +269,4 @@ internal static class OptimizationMetricsImpl
         }
     }
 #endif
-}
-
-internal class OptimizationMetricsState
-{
-    public OptimizationMetricsSnapshot? Before { get; set; }
-}
-
-internal class CaptureOptimizationMetricsBefore : Pass<CaptureOptimizationMetricsBefore>
-{
-    public override string DisplayName => "Optimization Metrics: Capture Before";
-
-    protected override void Execute(BuildContext context)
-    {
-        if (!context.GetState<AAOEnabled>().Enabled) return;
-        context.GetState<OptimizationMetricsState>().Before = OptimizationMetricsImpl.Capture(context.AvatarRootObject);
-    }
-}
-
-internal class LogOptimizationMetricsAfter : Pass<LogOptimizationMetricsAfter>
-{
-    public override string DisplayName => "Optimization Metrics: Log Result";
-
-    protected override void Execute(BuildContext context)
-    {
-        if (!context.GetState<AAOEnabled>().Enabled) return;
-
-        var before = context.GetState<OptimizationMetricsState>().Before;
-        if (before == null) return;
-
-        var after = OptimizationMetricsImpl.Capture(context.AvatarRootObject);
-        var lines = BuildDiffLines(before, after);
-        if (lines.Count == 0) return;
-
-        BuildLog.LogInfo("OptimizationMetrics:result", string.Join("\n", lines));
-    }
-
-    private static List<string> BuildDiffLines(OptimizationMetricsSnapshot before, OptimizationMetricsSnapshot after)
-    {
-        var lines = new List<string>();
-        foreach (var cat in OptimizationMetricsImpl.MetricCategories)
-        {
-            if (!before.ResultsByKey.TryGetValue(cat.Key, out var bStr)) continue;
-            if (!after.ResultsByKey.TryGetValue(cat.Key, out var aStr)) continue;
-            if (string.Equals(bStr, aStr, StringComparison.Ordinal)) continue;
-
-            lines.Add($"{cat.DisplayName}: {bStr} → {aStr}");
-        }
-        return lines;
-    }
 }
