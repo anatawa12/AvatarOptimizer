@@ -63,6 +63,10 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Error with Object as the animation target [`#1586`](https://github.com/anatawa12/AvatarOptimizer/pull/1586)
 
+## [1.8.16] - 2025-12-03
+### Changed
+- Streaming mipmap settings are copied when processing textures [`#1558`](https://github.com/anatawa12/AvatarOptimizer/pull/1558) (backport)
+
 ## [1.9.0-rc.1] - 2025-12-01
 ### Added
 - Experimental support for NDMF Platform Support [`#1577`](https://github.com/anatawa12/AvatarOptimizer/pull/1577) [`#1576`](https://github.com/anatawa12/AvatarOptimizer/pull/1576)
@@ -2115,9 +2119,10 @@ This release is mistake.
 [1.9.0-rc.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.3...v1.9.0-rc.4
 [1.9.0-rc.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.2...v1.9.0-rc.3
 [1.9.0-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.1...v1.9.0-rc.2
+[1.8.16]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.15...v1.8.16
 [1.9.0-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.6...v1.9.0-rc.1
 [1.9.0-beta.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.15...v1.9.0-beta.6
-[1.8.15]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.5...v1.8.15
+[1.8.15]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.14...v1.8.15
 [1.9.0-beta.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.4...v1.9.0-beta.5
 [1.9.0-beta.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-beta.3...v1.9.0-beta.4
 [1.9.0-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.14...v1.9.0-beta.3
