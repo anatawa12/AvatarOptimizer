@@ -45,13 +45,15 @@ internal class LogOptimizationMetricsAfter : Pass<LogOptimizationMetricsAfter>
     private static List<string> BuildDiffLines(OptimizationMetricsSnapshot before, OptimizationMetricsSnapshot after)
     {
         var lines = new List<string>();
-        foreach (var cat in OptimizationMetricsImpl.MetricCategories)
+        foreach (var (key, value) in before.ResultsByKey)
         {
-            if (!before.ResultsByKey.TryGetValue(cat.Key, out var bStr)) continue;
-            if (!after.ResultsByKey.TryGetValue(cat.Key, out var aStr)) continue;
-            if (string.Equals(bStr, aStr, StringComparison.Ordinal)) continue;
+            // This should not happen.
+            if (!after.ResultsByKey.TryGetValue(key, out var aStr)) continue;
+            // Skip if both values are identical, as we only want to show differences.
+            if (string.Equals(value, aStr, StringComparison.Ordinal)) continue;
 
-            lines.Add($"{cat.DisplayName}: {bStr} → {aStr}");
+            // Todo: Localize CategoryName
+            lines.Add($"{key}: {value} → {aStr}");
         }
         return lines;
     }
@@ -71,8 +73,6 @@ internal sealed class OptimizationMetricsSnapshot
 
 internal static class OptimizationMetricsImpl
 {
-    public static IReadOnlyList<MetricCategory> MetricCategories => MetricCategoryRegistry.All;
-
     public static OptimizationMetricsSnapshot Capture(GameObject avatarRoot)
     {
         return MetricsSourceRegistry.Capture(avatarRoot);
@@ -82,28 +82,6 @@ internal static class OptimizationMetricsImpl
     {
         BlendShapeCount,
         GameObjectCount,
-    }
-
-    static class MetricCategoryRegistry
-    {
-        private static IReadOnlyList<MetricCategory>? _all;
-        public static IReadOnlyList<MetricCategory> All => _all ??= Build();
-
-        private static IReadOnlyList<MetricCategory> Build()
-        {
-            var list = new List<MetricCategory>();
-#if AAO_VRCSDK3_AVATARS
-            foreach (AvatarPerformanceCategory category in Enum.GetValues(typeof(AvatarPerformanceCategory)))
-            {
-                var displayName = VrcMetricsSource.TryGetCategoryDisplayName(category);
-                if (displayName != null)
-                    list.Add(new MetricCategory(category.ToString(), displayName));
-            }
-#endif
-            list.Add(new MetricCategory(CustomMetricKeys.BlendShapeCount.ToString(), "Blend Shapes"));
-            list.Add(new MetricCategory(CustomMetricKeys.GameObjectCount.ToString(), "Game Objects"));
-            return list;
-        }
     }
 
     interface IMetricsSource
