@@ -36,8 +36,8 @@ internal static class MetricCategoryRegistry
                 list.Add(new MetricCategory(category.ToString(), displayName));
         }
 #endif
-        list.Add(new MetricCategory(CustomMetricKeys.BlendShapeCount.ToString(), "Blend Shape Count"));
-        list.Add(new MetricCategory(CustomMetricKeys.GameObjectCount.ToString(), "Game Object Count"));
+        list.Add(new MetricCategory(CustomMetricKeys.BlendShapeCount.ToString(), "Blend Shapes"));
+        list.Add(new MetricCategory(CustomMetricKeys.GameObjectCount.ToString(), "Game Objects"));
         return list;
     }
 }
