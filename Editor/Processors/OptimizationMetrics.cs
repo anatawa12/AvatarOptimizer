@@ -198,11 +198,11 @@ internal static class OptimizationMetricsImpl
         private static Dictionary<AvatarPerformanceCategory, Func<dynamic, string?>> BuildComputers()
         {
             var dict = new Dictionary<AvatarPerformanceCategory, Func<dynamic, string?>>();
-            string? ToStringBytes(int? bytes) => bytes is int i ? $"{i / 1024.0 / 1024.0:F2}MB" : null;
-            string? ToStringMegabytes(float? mb) => mb is float f ? $"{f:F2}MB" : null;
-            string? ToStringCount(int? v) => v?.ToString();
-            string? ToStringCountZero(int? v) => v?.ToString() ?? "0";
-            string? ToStringEnabled(bool? v) => v is bool b ? (b ? "Enabled" : "Disabled") : null;
+            string? ToStringBytes(int? bytes) => bytes is { } i ? $"{i / 1024.0 / 1024.0:F2}MB" : null;
+            string? ToStringMegabytes(float? mb) => mb is { } f ? $"{f:F2}MB" : null;
+            string? ToStringCount(int? v) => v is { } ? v.ToString() : null;
+            string? ToStringCountZero(int? v) => v is { } ? v.ToString() : "0";
+            string? ToStringEnabled(bool? v) => v is { } b ? (b ? "Enabled" : "Disabled") : null;
 
             void Add(AvatarPerformanceCategory category, params Func<dynamic, string?>[] computers)
             {
