@@ -204,7 +204,6 @@ internal static class OptimizationMetricsImpl
             string? ToStringBytes(int? bytes) => bytes is { } i ? $"{i / 1024.0 / 1024.0:F2}MB" : null;
             string? ToStringMegabytes(float? mb) => mb is { } f ? $"{f:F2}MB" : null;
             string? ToStringCount(int? v) => v is { } ? v.ToString() : null;
-            string? ToStringCountZero(int? v) => v is { } ? v.ToString() : "0";
             string? ToStringEnabled(bool? v) => v is { } b ? (b ? "Enabled" : "Disabled") : null;
 
             T? GetVal<T>(object obj, string name)
@@ -262,7 +261,7 @@ internal static class OptimizationMetricsImpl
             {
                 var db = GetVal<object>(s, "dynamicBone");
                 if (db == null) return "0";
-                return ToStringCountZero(GetVal<int>(db, fieldName));
+                return ToStringCount(GetVal<int>(db, fieldName));
             }
             
             Add("DynamicBoneComponentCount", s => GetDynamicBoneStat(s, "componentCount"));
@@ -274,7 +273,7 @@ internal static class OptimizationMetricsImpl
             {
                 var pb = GetVal<object>(s, "physBone"); // PhysBoneStats
                 if (pb == null) return "0";
-                return ToStringCountZero(GetVal<int>(pb, fieldName));
+                return ToStringCount(GetVal<int>(pb, fieldName));
             }
 
             Add("PhysBoneComponentCount", s => GetPhysBoneStat(s, "componentCount"));
