@@ -82,6 +82,7 @@ internal static class OptimizationMetricsImpl
     enum CustomMetricKeys
     {
         BlendShapeCount,
+        AnimatorLayerCount,
         GameObjectCount,
     }
 
@@ -135,7 +136,27 @@ internal static class OptimizationMetricsImpl
                 [CustomMetricKeys.BlendShapeCount.ToString()] = avatarRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true)
                     .Where(smr => smr.sharedMesh != null)
                     .Sum(smr => smr.sharedMesh.blendShapeCount).ToString(),
+                [CustomMetricKeys.AnimatorLayerCount.ToString()] = CountAnimatorLayers(avatarRoot).ToString(),
             };
+        }
+
+        private int CountAnimatorLayers(GameObject avatarRoot)
+        {
+            List<RuntimeAnimatorController> controllers = new();
+
+            var animator = avatarRoot.GetComponent<Animator>();
+            if (animator != null && animator.runtimeAnimatorController != null)
+                controllers.Add(animator.runtimeAnimatorController);
+
+#if AAO_VRCSDK3_AVATARS
+            var descriptor = avatarRoot.GetComponent<VRC.SDK3.Avatars.Components.VRCAvatarDescriptor>();
+            if (descriptor != null && descriptor.customizeAnimationLayers)
+                controllers.AddRange(descriptor.baseAnimationLayers.Concat(descriptor.specialAnimationLayers)
+                    .Where(customLayer => customLayer.animatorController != null)
+                    .Select(customLayer => customLayer.animatorController));
+#endif
+
+            return controllers.Sum(c => ACUtils.ComputeLayerCount(c));
         }
     }
 
