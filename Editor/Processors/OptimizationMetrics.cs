@@ -146,12 +146,18 @@ internal static class OptimizationMetricsImpl
             if (animator != null && animator.runtimeAnimatorController != null)
                 controllers.Add(animator.runtimeAnimatorController);
 
-#if AAO_VRCSDK3_AVATARS
+﻿#if AAO_VRCSDK3_AVATARS
             var descriptor = avatarRoot.GetComponent<VRC.SDK3.Avatars.Components.VRCAvatarDescriptor>();
-            if (descriptor != null && descriptor.customizeAnimationLayers)
-                controllers.AddRange(descriptor.baseAnimationLayers.Concat(descriptor.specialAnimationLayers)
-                    .Where(customLayer => customLayer.animatorController != null)
-                    .Select(customLayer => customLayer.animatorController));
+            if (descriptor != null)
+            {
+                var layerControllers = VRCSDKUtils.GetAvatarLayerControllers(descriptor);
+                foreach (var layer in AnimatorLayerMap<object>.ValidLayerTypes)
+                {
+                    var c = layerControllers[layer];
+                    if (c != null)
+                        controllers.Add(c);
+                }
+            }
 #endif
 
             return controllers.Sum(c => ACUtils.ComputeLayerCount(c));
