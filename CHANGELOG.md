@@ -43,6 +43,9 @@ The format is based on [Keep a Changelog].
   - This is an experimental feature that does not follow semantic versioning.
 - Public API of `MergePhysBone` component
   - `MergePhysBone` component is now part of public component API.
+- A summary of optimizations to the console `#1611`
+  - This feature is enabled by default.
+  - You can disable it from Tools/Avatar Optimizer/Optimization Metrics.
 
 ### Changed
 - Avatar Optimizer will run as late as possible in NDMF Pipeline by default `#1493`
