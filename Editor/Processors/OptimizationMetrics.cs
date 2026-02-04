@@ -208,32 +208,11 @@ internal static class OptimizationMetricsImpl
             string? ToStringBytes(int? bytes) => bytes is { } i ? $"{i / 1024.0 / 1024.0:F2}MB" : null;
             string? ToStringMegabytes(float? mb) => mb is { } f ? $"{f:F2}MB" : null;
             string? ToStringCount(int? v) => v is { } ? v.ToString() : null;
+            string? ToStringCountZero(int? v) => v is { } ? v.ToString() : "0";
             string? ToStringEnabled(bool? v) => v is { } b ? (b ? "Enabled" : "Disabled") : null;
 
-            T? GetVal<T>(object obj, string name)
+            void Add(AvatarPerformanceCategory category, params Func<AvatarPerformanceStats, string?>[] computers)
             {
-                var type = obj.GetType();
-                
-                var field = type.GetField(name, BindingFlags.Instance | BindingFlags.Public);
-                if (field != null)
-                {
-                    var val = field.GetValue(obj);
-                    if (val is T tVal) return tVal;
-                }
-
-                var prop = type.GetProperty(name, BindingFlags.Instance | BindingFlags.Public);
-                if (prop != null && prop.CanRead)
-                {
-                    var val = prop.GetValue(obj);
-                    if (val is T tVal) return tVal;
-                }
-
-                return default(T);
-            }
-
-            void Add(string categoryName, params Func<AvatarPerformanceStats, string?>[] computers)
-            {
-                if (!Enum.TryParse(categoryName, out AvatarPerformanceCategory category)) return;
                 dict[category] = s =>
                 {
                     foreach (var c in computers)
@@ -253,57 +232,36 @@ internal static class OptimizationMetricsImpl
                 };
             }
 
-            Add("DownloadSize", s => ToStringBytes(GetVal<int>(s, "downloadSizeBytes")  ));
-            Add("UncompressedSize", s => ToStringBytes(GetVal<int>(s, "uncompressedSizeBytes")));
-            Add("PolyCount", s => ToStringCount(GetVal<int>(s, "polyCount")));
-            Add("AABB", s => GetVal<Bounds>(s, "aabb") is { } b ? b.ToString() : null);
-            Add("SkinnedMeshCount", s => ToStringCount(GetVal<int>(s, "skinnedMeshCount")));
-            Add("MeshCount", s => ToStringCount(GetVal<int>(s, "meshCount")));
-            Add("MaterialCount", s => ToStringCount(GetVal<int>(s, "materialCount")));
-
-            string? GetDynamicBoneStat(AvatarPerformanceStats s, string fieldName)
-            {
-                var db = GetVal<object>(s, "dynamicBone");
-                if (db == null) return "0";
-                return ToStringCount(GetVal<int>(db, fieldName));
-            }
-            
-            Add("DynamicBoneComponentCount", s => GetDynamicBoneStat(s, "componentCount"));
-            Add("DynamicBoneSimulatedBoneCount", s => GetDynamicBoneStat(s, "transformCount"));
-            Add("DynamicBoneColliderCount", s => GetDynamicBoneStat(s, "colliderCount"));
-            Add("DynamicBoneCollisionCheckCount", s => GetDynamicBoneStat(s, "collisionCheckCount"));
-
-            string? GetPhysBoneStat(AvatarPerformanceStats s, string fieldName)
-            {
-                var pb = GetVal<object>(s, "physBone"); // PhysBoneStats
-                if (pb == null) return "0";
-                return ToStringCount(GetVal<int>(pb, fieldName));
-            }
-
-            Add("PhysBoneComponentCount", s => GetPhysBoneStat(s, "componentCount"));
-            Add("PhysBoneTransformCount", s => GetPhysBoneStat(s, "transformCount"));
-            Add("PhysBoneColliderCount", s => GetPhysBoneStat(s, "colliderCount"));
-            Add("PhysBoneCollisionCheckCount", s => GetPhysBoneStat(s, "collisionCheckCount"));
-
-            Add("ContactCount", s => ToStringCount(GetVal<int>(s, "contactCount")));
-            Add("AnimatorCount", s => ToStringCount(GetVal<int>(s, "animatorCount")));
-            Add("BoneCount", s => ToStringCount(GetVal<int>(s, "boneCount")));
-            Add("LightCount", s => ToStringCount(GetVal<int>(s, "lightCount")));
-            Add("ParticleSystemCount", s => ToStringCount(GetVal<int>(s, "particleSystemCount")));
-            Add("ParticleTotalCount", s => ToStringCount(GetVal<int>(s, "particleTotalCount")));
-            Add("ParticleMaxMeshPolyCount", s => ToStringCount(GetVal<int>(s, "particleMaxMeshPolyCount")));
-            Add("ParticleTrailsEnabled", s => ToStringEnabled(GetVal<bool>(s, "particleTrailsEnabled")));
-            Add("ParticleCollisionEnabled", s => ToStringEnabled(GetVal<bool>(s, "particleCollisionEnabled")));
-            Add("TrailRendererCount", s => ToStringCount(GetVal<int>(s, "trailRendererCount")));
-            Add("LineRendererCount", s => ToStringCount(GetVal<int>(s, "lineRendererCount")));
-            Add("ClothCount", s => ToStringCount(GetVal<int>(s, "clothCount")));
-            Add("ClothMaxVertices", s => ToStringCount(GetVal<int>(s, "clothMaxVertices")));
-            Add("PhysicsColliderCount", s => ToStringCount(GetVal<int>(s, "physicsColliderCount")));
-            Add("PhysicsRigidbodyCount", s => ToStringCount(GetVal<int>(s, "physicsRigidbodyCount")));
-            Add("AudioSourceCount", s => ToStringCount(GetVal<int>(s, "audioSourceCount")));
-            Add("TextureMegabytes", s => ToStringMegabytes(GetVal<float>(s, "textureMegabytes")));
-            Add("ConstraintsCount", s => ToStringCount(GetVal<int>(s, "constraintsCount")));
-            Add("ConstraintDepth", s => ToStringCount(GetVal<int>(s, "constraintDepth")));
+            Add(AvatarPerformanceCategory.DownloadSize, s => ToStringBytes(s.downloadSizeBytes));
+            Add(AvatarPerformanceCategory.UncompressedSize, s => ToStringBytes(s.uncompressedSizeBytes));
+            Add(AvatarPerformanceCategory.PolyCount, s => ToStringCount(s.polyCount));
+            Add(AvatarPerformanceCategory.AABB, s => s.aabb is { } b ? b.ToString() : null);
+            Add(AvatarPerformanceCategory.SkinnedMeshCount, s => ToStringCount(s.skinnedMeshCount));
+            Add(AvatarPerformanceCategory.MeshCount, s => ToStringCount(s.meshCount));
+            Add(AvatarPerformanceCategory.MaterialCount, s => ToStringCount(s.materialCount));
+            Add(AvatarPerformanceCategory.PhysBoneComponentCount, s => ToStringCountZero(s.physBone?.componentCount));
+            Add(AvatarPerformanceCategory.PhysBoneTransformCount, s => ToStringCountZero(s.physBone?.transformCount));
+            Add(AvatarPerformanceCategory.PhysBoneColliderCount, s => ToStringCountZero(s.physBone?.colliderCount));
+            Add(AvatarPerformanceCategory.PhysBoneCollisionCheckCount, s => ToStringCountZero(s.physBone?.collisionCheckCount));
+            Add(AvatarPerformanceCategory.ContactCount, s => ToStringCount(s.contactCount));
+            Add(AvatarPerformanceCategory.AnimatorCount, s => ToStringCount(s.animatorCount));
+            Add(AvatarPerformanceCategory.BoneCount, s => ToStringCount(s.boneCount));
+            Add(AvatarPerformanceCategory.LightCount, s => ToStringCount(s.lightCount));
+            Add(AvatarPerformanceCategory.ParticleSystemCount, s => ToStringCount(s.particleSystemCount));
+            Add(AvatarPerformanceCategory.ParticleTotalCount, s => ToStringCount(s.particleTotalCount));
+            Add(AvatarPerformanceCategory.ParticleMaxMeshPolyCount, s => ToStringCount(s.particleMaxMeshPolyCount));
+            Add(AvatarPerformanceCategory.ParticleTrailsEnabled, s => ToStringEnabled(s.particleTrailsEnabled));
+            Add(AvatarPerformanceCategory.ParticleCollisionEnabled, s => ToStringEnabled(s.particleCollisionEnabled));
+            Add(AvatarPerformanceCategory.TrailRendererCount, s => ToStringCount(s.trailRendererCount));
+            Add(AvatarPerformanceCategory.LineRendererCount, s => ToStringCount(s.lineRendererCount));
+            Add(AvatarPerformanceCategory.ClothCount, s => ToStringCount(s.clothCount));
+            Add(AvatarPerformanceCategory.ClothMaxVertices, s => ToStringCount(s.clothMaxVertices));
+            Add(AvatarPerformanceCategory.PhysicsColliderCount, s => ToStringCount(s.physicsColliderCount));
+            Add(AvatarPerformanceCategory.PhysicsRigidbodyCount, s => ToStringCount(s.physicsRigidbodyCount));
+            Add(AvatarPerformanceCategory.AudioSourceCount, s => ToStringCount(s.audioSourceCount));
+            Add(AvatarPerformanceCategory.TextureMegabytes, s => ToStringMegabytes(s.textureMegabytes));
+            Add(AvatarPerformanceCategory.ConstraintsCount, s => ToStringCount(s.constraintsCount));
+            Add(AvatarPerformanceCategory.ConstraintDepth, s => ToStringCount(s.constraintDepth));
             return dict;
         }
     }
