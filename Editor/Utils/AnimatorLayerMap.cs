@@ -28,6 +28,18 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
+        public static readonly VRCAvatarDescriptor.AnimLayerType[] ValidLayerTypes =
+        {
+            VRCAvatarDescriptor.AnimLayerType.Base,
+            VRCAvatarDescriptor.AnimLayerType.Additive,
+            VRCAvatarDescriptor.AnimLayerType.Gesture,
+            VRCAvatarDescriptor.AnimLayerType.Action,
+            VRCAvatarDescriptor.AnimLayerType.FX,
+            VRCAvatarDescriptor.AnimLayerType.Sitting,
+            VRCAvatarDescriptor.AnimLayerType.TPose,
+            VRCAvatarDescriptor.AnimLayerType.IKPose,
+        };
+
         public ref T this[VRCAvatarDescriptor.AnimLayerType type]
         {
             get

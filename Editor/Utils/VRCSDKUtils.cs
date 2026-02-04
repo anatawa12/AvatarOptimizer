@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Animations;
 using UnityEngine;
 using VRC.Dynamics;
 using VRC.SDK3.Avatars.Components;
@@ -98,6 +99,64 @@ namespace Anatawa12.AvatarOptimizer
                     return null;
             }
         }
+
+        public static AnimatorLayerMap<RuntimeAnimatorController> GetAvatarLayerControllers(
+            VRCAvatarDescriptor descriptor)
+        {
+            var useDefaultLayers = !descriptor.customizeAnimationLayers;
+            var controllers = new AnimatorLayerMap<RuntimeAnimatorController>();
+
+            foreach (var layer in AnimatorLayerMap<object>.ValidLayerTypes)
+            {
+                ref var loader = ref DefaultLayers[layer];
+                var controller = loader.Value;
+                if (controller == null)
+                    throw new InvalidOperationException($"default controller for {layer} not found");
+                controllers[layer] = controller;
+            }
+
+            foreach (var layer in descriptor.specialAnimationLayers.Concat(descriptor.baseAnimationLayers))
+                controllers[layer.type] = GetPlayableLayerController(layer, useDefaultLayers)!;
+
+            return controllers;
+        }
+
+        public static RuntimeAnimatorController? GetPlayableLayerController(VRCAvatarDescriptor.CustomAnimLayer layer,
+            bool useDefault = false)
+        {
+            if (!useDefault && !layer.isDefault && layer.animatorController)
+            {
+                return layer.animatorController;
+            }
+
+            if (!AnimatorLayerMap<object>.IsValid(layer.type)) return null;
+            ref var loader = ref DefaultLayers[layer.type];
+            var controller = loader.Value;
+            if (controller == null)
+                throw new InvalidOperationException($"default controller for {layer.type} not found");
+            return controller;
+        }
+
+        private static readonly AnimatorLayerMap<CachedGuidLoader<AnimatorController>> DefaultLayers =
+            new AnimatorLayerMap<CachedGuidLoader<AnimatorController>>
+            {
+                // vrc_AvatarV3LocomotionLayer
+                [VRCAvatarDescriptor.AnimLayerType.Base] = "4e4e1a372a526074884b7311d6fc686b",
+                // vrc_AvatarV3IdleLayer
+                [VRCAvatarDescriptor.AnimLayerType.Additive] = "573a1373059632b4d820876efe2d277f",
+                // vrc_AvatarV3HandsLayer
+                [VRCAvatarDescriptor.AnimLayerType.Gesture] = "404d228aeae421f4590305bc4cdaba16",
+                // vrc_AvatarV3ActionLayer
+                [VRCAvatarDescriptor.AnimLayerType.Action] = "3e479eeb9db24704a828bffb15406520",
+                // vrc_AvatarV3FaceLayer
+                [VRCAvatarDescriptor.AnimLayerType.FX] = "d40be620cf6c698439a2f0a5144919fe",
+                // vrc_AvatarV3SittingLayer
+                [VRCAvatarDescriptor.AnimLayerType.Sitting] = "1268460c14f873240981bf15aa88b21a",
+                // vrc_AvatarV3UtilityTPose
+                [VRCAvatarDescriptor.AnimLayerType.TPose] = "00121b5812372b74f9012473856d8acf",
+                // vrc_AvatarV3UtilityIKPose
+                [VRCAvatarDescriptor.AnimLayerType.IKPose] = "a9b90a833b3486e4b82834c9d1f7c4ee"
+            };
     }
 }
 
