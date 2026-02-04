@@ -119,22 +119,22 @@ internal static class OptimizationMetricsImpl
     {
         public int Priority => 0;
 
-        enum CustomMetricKeys
+        static class CustomMetricKeys
         {
-            BlendShapeCount,
-            AnimatorLayerCount,
-            GameObjectCount,
+            public const string BlendShapeCount = "BlendShapeCount";
+            public const string AnimatorLayerCount = "AnimatorLayerCount";
+            public const string GameObjectCount = "GameObjectCount";
         }
 
         public IReadOnlyDictionary<string, string> Capture(GameObject avatarRoot)
         {
             return new Dictionary<string, string>
             {
-                [CustomMetricKeys.GameObjectCount.ToString()] = avatarRoot.GetComponentsInChildren<Transform>(true).Length.ToString(),
-                [CustomMetricKeys.BlendShapeCount.ToString()] = avatarRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true)
+                [CustomMetricKeys.GameObjectCount] = avatarRoot.GetComponentsInChildren<Transform>(true).Length.ToString(),
+                [CustomMetricKeys.BlendShapeCount] = avatarRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true)
                     .Where(smr => smr.sharedMesh != null)
                     .Sum(smr => smr.sharedMesh.blendShapeCount).ToString(),
-                [CustomMetricKeys.AnimatorLayerCount.ToString()] = CountAnimatorLayers(avatarRoot).ToString(),
+                [CustomMetricKeys.AnimatorLayerCount] = CountAnimatorLayers(avatarRoot).ToString(),
             };
         }
 
