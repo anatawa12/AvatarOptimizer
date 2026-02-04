@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using Anatawa12.AvatarOptimizer;
 using Anatawa12.AvatarOptimizer.ndmf;
 using nadena.dev.ndmf;
 using UnityEngine;
@@ -172,12 +170,6 @@ internal static class OptimizationMetricsImpl
         private static Dictionary<AvatarPerformanceCategory, Func<AvatarPerformanceStats, string?>>? _computers;
         private static Dictionary<AvatarPerformanceCategory, Func<AvatarPerformanceStats, string?>> Computers => _computers ??= BuildComputers();
 
-        public static string? TryGetCategoryDisplayName(AvatarPerformanceCategory category)
-        {
-            try { return AvatarPerformanceStats.GetPerformanceCategoryDisplayName(category); }
-            catch { return null; }
-        }
-
         public IReadOnlyDictionary<string, string> Capture(GameObject avatarRoot)
         {
             try
@@ -187,7 +179,6 @@ internal static class OptimizationMetricsImpl
                 var result = new Dictionary<string, string>();
                 foreach (AvatarPerformanceCategory category in Enum.GetValues(typeof(AvatarPerformanceCategory)))
                 {
-                    if (TryGetCategoryDisplayName(category) == null) continue;
                     if (!Computers.TryGetValue(category, out var computer)) continue;
                     try
                     {
