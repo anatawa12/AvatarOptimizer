@@ -5,8 +5,11 @@ msgstr ""
 msgid "CheckForUpdate:out-of-date"
 msgstr "Newer release of Avatar Optimizer, {0} is available! (Current: {1})"
 
-msgid "OptimizationMetrics:result"
-msgstr "Optimization result:\n{0}"
+msgid "OptimizationMetrics:OptimizationResults"
+msgstr "Optimization Results:\n{0}"
+
+msgid "OptimizationMetrics:WeightReductionResults"
+msgstr "Weight Reduction Results:\n{0}"
 
 msgid "OptimizationMetrics:DownloadSize"
 msgstr "Download Size"

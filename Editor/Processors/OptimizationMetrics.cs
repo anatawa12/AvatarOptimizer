@@ -19,7 +19,11 @@ internal class CaptureOptimizationMetricsBefore : Pass<CaptureOptimizationMetric
     protected override void Execute(BuildContext context)
     {
         if (!context.GetState<AAOEnabled>().Enabled || !OptimizationMetricsSettings.EnableOptimizationMetrics) return;
-        context.GetState<OptimizationMetricsState>().Before = OptimizationMetricsImpl.Capture(context.AvatarRootObject);
+        var state = context.GetState<OptimizationMetricsState>();
+        state.Before = OptimizationMetricsImpl.Capture(context.AvatarRootObject);
+        state.IsTraceAndOptimizeOnly = context.AvatarRootObject
+            .GetComponentsInChildren<AvatarTagComponent>(true)
+            .All(c => c is TraceAndOptimize);
     }
 }
 
@@ -31,14 +35,19 @@ internal class LogOptimizationMetricsAfter : Pass<LogOptimizationMetricsAfter>
     {
         if (!context.GetState<AAOEnabled>().Enabled || !OptimizationMetricsSettings.EnableOptimizationMetrics) return;
 
-        var before = context.GetState<OptimizationMetricsState>().Before;
+        var state = context.GetState<OptimizationMetricsState>();
+
+        var before = state.Before;
         if (before == null) return;
 
         var after = OptimizationMetricsImpl.Capture(context.AvatarRootObject);
         var lines = BuildDiffLines(before, after);
         if (lines.Count == 0) return;
 
-        BuildLog.LogInfo("OptimizationMetrics:result", string.Join("\n", lines));
+        var labelKey = state.IsTraceAndOptimizeOnly
+            ? "OptimizationMetrics:OptimizationResults"
+            : "OptimizationMetrics:WeightReductionResults";
+        BuildLog.LogInfo(labelKey, string.Join("\n", lines));
     }
 
     private static List<string> BuildDiffLines(OptimizationMetricsSnapshot before, OptimizationMetricsSnapshot after)
@@ -60,6 +69,7 @@ internal class LogOptimizationMetricsAfter : Pass<LogOptimizationMetricsAfter>
 
 internal class OptimizationMetricsState
 {
+    public bool IsTraceAndOptimizeOnly { get; set; } = false;
     public OptimizationMetricsSnapshot? Before { get; set; }
 }
 
