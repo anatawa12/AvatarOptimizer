@@ -6,9 +6,9 @@ msgid "CheckForUpdate:out-of-date"
 msgstr "Newer release of Avatar Optimizer, {0} is available! (Current: {1})"
 
 msgid "OptimizationMetrics:Results"
-msgstr "Optimization Results:\n{0}\n\n{1}"
+msgstr "Optimization Results:\n{0}"
 
-msgid "OptimizationMetrics:description"
+msgid "OptimizationMetrics:Results:description"
 msgstr "You can disable this logging in the top menu under 'Tools/Avatar Optimizer/Optimization Metrics'."
 
 msgid "OptimizationMetrics:DownloadSize"

@@ -40,7 +40,7 @@ internal class LogOptimizationMetricsAfter : Pass<LogOptimizationMetricsAfter>
         var lines = BuildDiffLines(before, after);
         if (lines.Count == 0) return;
 
-        BuildLog.LogInfo("OptimizationMetrics:Results", string.Join("\n", lines), AAOL10N.Tr("OptimizationMetrics:description"));
+        BuildLog.LogInfo("OptimizationMetrics:Results", string.Join("\n", lines));
     }
 
     private static List<string> BuildDiffLines(OptimizationMetricsSnapshot before, OptimizationMetricsSnapshot after)
