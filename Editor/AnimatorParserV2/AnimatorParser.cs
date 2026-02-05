@@ -219,33 +219,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 return;
             }
 
-            var useDefaultLayers = !descriptor.customizeAnimationLayers;
-
-            // load controllers
-            var controllers = new AnimatorLayerMap<RuntimeAnimatorController>();
-
-            // load default layers to not cause error
-            foreach (var layer in stackalloc[]
-                     {
-                         VRCAvatarDescriptor.AnimLayerType.Base,
-                         VRCAvatarDescriptor.AnimLayerType.Additive,
-                         VRCAvatarDescriptor.AnimLayerType.Gesture,
-                         VRCAvatarDescriptor.AnimLayerType.Action,
-                         VRCAvatarDescriptor.AnimLayerType.FX,
-                         VRCAvatarDescriptor.AnimLayerType.Sitting,
-                         VRCAvatarDescriptor.AnimLayerType.TPose,
-                         VRCAvatarDescriptor.AnimLayerType.IKPose,
-                     })
-            {
-                ref var loader = ref DefaultLayers[layer];
-                var controller = loader.Value;
-                if (controller == null)
-                    throw new InvalidOperationException($"default controller for {layer} not found");
-                controllers[layer] = controller;
-            }
-
-            foreach (var layer in descriptor.specialAnimationLayers.Concat(descriptor.baseAnimationLayers))
-                controllers[layer.type] = GetPlayableLayerController(layer, useDefaultLayers)!;
+            var controllers = VRCSDKUtils.GetAvatarLayerControllers(descriptor);
 
             // parse weight changes
             var animatorLayerWeightChanged = new AnimatorLayerMap<AnimatorWeightChangesList>();
@@ -320,21 +294,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
         }
 
-        private static RuntimeAnimatorController? GetPlayableLayerController(VRCAvatarDescriptor.CustomAnimLayer layer,
-            bool useDefault = false)
-        {
-            if (!useDefault && !layer.isDefault && layer.animatorController)
-            {
-                return layer.animatorController;
-            }
-
-            if (!AnimatorLayerMap<object>.IsValid(layer.type)) return null;
-            ref var loader = ref DefaultLayers[layer.type];
-            var controller = loader.Value;
-            if (controller == null)
-                throw new InvalidOperationException($"default controller for {layer.type} not found");
-            return controller;
-        }
 #endif
 
 #if AAO_VRM0
@@ -726,29 +685,6 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         private static readonly string[] TransformScaleAnimationKeys =
             { "m_LocalScale.x", "m_LocalScale.y", "m_LocalScale.z" };
-
-#if AAO_VRCSDK3_AVATARS
-        private static readonly AnimatorLayerMap<CachedGuidLoader<AnimatorController>> DefaultLayers =
-            new AnimatorLayerMap<CachedGuidLoader<AnimatorController>>
-            {
-                // vrc_AvatarV3LocomotionLayer
-                [VRCAvatarDescriptor.AnimLayerType.Base] = "4e4e1a372a526074884b7311d6fc686b",
-                // vrc_AvatarV3IdleLayer
-                [VRCAvatarDescriptor.AnimLayerType.Additive] = "573a1373059632b4d820876efe2d277f",
-                // vrc_AvatarV3HandsLayer
-                [VRCAvatarDescriptor.AnimLayerType.Gesture] = "404d228aeae421f4590305bc4cdaba16",
-                // vrc_AvatarV3ActionLayer
-                [VRCAvatarDescriptor.AnimLayerType.Action] = "3e479eeb9db24704a828bffb15406520",
-                // vrc_AvatarV3FaceLayer
-                [VRCAvatarDescriptor.AnimLayerType.FX] = "d40be620cf6c698439a2f0a5144919fe",
-                // vrc_AvatarV3SittingLayer
-                [VRCAvatarDescriptor.AnimLayerType.Sitting] = "1268460c14f873240981bf15aa88b21a",
-                // vrc_AvatarV3UtilityTPose
-                [VRCAvatarDescriptor.AnimLayerType.TPose] = "00121b5812372b74f9012473856d8acf",
-                // vrc_AvatarV3UtilityIKPose
-                [VRCAvatarDescriptor.AnimLayerType.IKPose] = "a9b90a833b3486e4b82834c9d1f7c4ee"
-            };
-#endif
 
         // @formatter:off
         private static readonly string[] MmdBlendShapeNames = new[]
