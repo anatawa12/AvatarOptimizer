@@ -130,10 +130,10 @@ internal static class OptimizationMetricsImpl
         {
             return new Dictionary<string, string>
             {
-                [CustomMetricKeys.GameObjectCount] = avatarRoot.GetComponentsInChildren<Transform>(true).Length.ToString(),
                 [CustomMetricKeys.BlendShapeCount] = avatarRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true)
                     .Where(smr => smr.sharedMesh != null)
                     .Sum(smr => smr.sharedMesh.blendShapeCount).ToString(),
+                [CustomMetricKeys.GameObjectCount] = avatarRoot.GetComponentsInChildren<Transform>(true).Length.ToString(),
                 [CustomMetricKeys.AnimatorLayerCount] = CountAnimatorLayers(avatarRoot).ToString(),
             };
         }
