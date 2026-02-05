@@ -32,18 +32,6 @@ msgstr "MeshRendererの数"
 msgid "OptimizationMetrics:MaterialCount"
 msgstr "マテリアルスロットの数"
 
-msgid "OptimizationMetrics:DynamicBoneComponentCount"
-msgstr "Dynamic Boneの数"
-
-msgid "OptimizationMetrics:DynamicBoneSimulatedBoneCount"
-msgstr "Dynamic Boneのボーン数"
-
-msgid "OptimizationMetrics:DynamicBoneColliderCount"
-msgstr "Dynamic Boneのコライダー数"
-
-msgid "OptimizationMetrics:DynamicBoneCollisionCheckCount"
-msgstr "Dynamic Boneの衝突数"
-
 msgid "OptimizationMetrics:PhysBoneComponentCount"
 msgstr "PhysBoneの数"
 

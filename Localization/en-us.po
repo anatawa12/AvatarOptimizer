@@ -32,18 +32,6 @@ msgstr "Basic Meshes"
 msgid "OptimizationMetrics:MaterialCount"
 msgstr "Material Slots"
 
-msgid "OptimizationMetrics:DynamicBoneComponentCount"
-msgstr "Dynamic Bone Component Count"
-
-msgid "OptimizationMetrics:DynamicBoneSimulatedBoneCount"
-msgstr "Dynamic Bone Simulated Bone Count"
-
-msgid "OptimizationMetrics:DynamicBoneColliderCount"
-msgstr "Dynamic Bone Collider Count"
-
-msgid "OptimizationMetrics:DynamicBoneCollisionCheckCount"
-msgstr "Dynamic Bone Collision Check Count"
-
 msgid "OptimizationMetrics:PhysBoneComponentCount"
 msgstr "PhysBones Components"
 
