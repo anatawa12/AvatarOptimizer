@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 - A summary of optimizations to the console `#1611`
   - This feature is enabled by default.
-  - You can disable it from Tools/Avatar Optimizer/Optimization Metrics.
+  - You can disable it from  `Tools/Avatar Optimizer/Optimization Metrics`.
 
 ### Changed
 
