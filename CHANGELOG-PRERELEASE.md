@@ -8,10 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- A summary of optimizations to the console `#1611`
-  - This feature is enabled by default.
-  - You can disable it from  `Tools/Avatar Optimizer/Optimization Metrics`.
-- A window to collect data for bug reports `#1615`
 
 ### Changed
 
@@ -20,10 +16,19 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Changed message shown on Trace and Optimize inspector `#1609`
-  - This message shows "Behavior changes are bugs of AAO: Avatar Optimizer" and suggests reporting issues.
 
 ### Security
+
+## [1.9.0-rc.8] - 2026-02-05
+### Added
+- A summary of optimizations to the console [`#1611`](https://github.com/anatawa12/AvatarOptimizer/pull/1611)
+  - This feature is enabled by default.
+  - You can disable it from  `Tools/Avatar Optimizer/Optimization Metrics`.
+- A window to collect data for bug reports [`#1615`](https://github.com/anatawa12/AvatarOptimizer/pull/1615)
+
+### Fixed
+- Changed message shown on Trace and Optimize inspector [`#1609`](https://github.com/anatawa12/AvatarOptimizer/pull/1609)
+  - This message shows "Behavior changes are bugs of AAO: Avatar Optimizer" and suggests reporting issues.
 
 ## [1.9.0-rc.7] - 2026-01-26
 ### Changed
@@ -2116,7 +2121,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.7...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.8...HEAD
+[1.9.0-rc.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.7...v1.9.0-rc.8
 [1.9.0-rc.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.6...v1.9.0-rc.7
 [1.9.0-rc.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.5...v1.9.0-rc.6
 [1.9.0-rc.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.4...v1.9.0-rc.5
