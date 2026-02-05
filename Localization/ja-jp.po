@@ -6,7 +6,7 @@ msgid "CheckForUpdate:out-of-date"
 msgstr "Avatar Optimizerの新しいバージョン、{0}が公開されています！(現在 {1})"
 
 msgid "OptimizationMetrics:result"
-msgstr "軽量化結果 (前 → 後):\n{0}"
+msgstr "軽量化結果:\n{0}"
 
 msgid "OptimizationMetrics:DownloadSize"
 msgstr "ダウンロードサイズ"
@@ -18,7 +18,7 @@ msgid "OptimizationMetrics:PolyCount"
 msgstr "ポリゴンの数"
 
 msgid "OptimizationMetrics:AABB"
-msgstr "バウンズサイズ"
+msgstr "バウンズの大きさ"
 
 msgid "OptimizationMetrics:SkinnedMeshCount"
 msgstr "SkinnedMeshRendererの数"
@@ -60,7 +60,7 @@ msgid "OptimizationMetrics:AnimatorCount"
 msgstr "Animatorの数"
 
 msgid "OptimizationMetrics:BoneCount"
-msgstr "Boneの数"
+msgstr "ボーンの数"
 
 msgid "OptimizationMetrics:LightCount"
 msgstr "Lightの数"
@@ -112,6 +112,9 @@ msgstr "Constraintの深度"
 
 msgid "OptimizationMetrics:BlendShapeCount"
 msgstr "BlendShapeの数"
+
+msgid "OptimizationMetrics:AnimatorLayerCount"
+msgstr "Animatorのレイヤー数"
 
 msgid "OptimizationMetrics:GameObjectCount"
 msgstr "GameObjectの数"

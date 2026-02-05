@@ -6,7 +6,7 @@ msgid "CheckForUpdate:out-of-date"
 msgstr "Newer release of Avatar Optimizer, {0} is available! (Current: {1})"
 
 msgid "OptimizationMetrics:result"
-msgstr "Optimization result (before → after):\n{0}"
+msgstr "Optimization result:\n{0}"
 
 msgid "OptimizationMetrics:DownloadSize"
 msgstr "Download Size"
@@ -111,10 +111,13 @@ msgid "OptimizationMetrics:ConstraintDepth"
 msgstr "Constraint Depth"
 
 msgid "OptimizationMetrics:BlendShapeCount"
-msgstr "Blend Shape Count"
+msgstr "Blend Shapes"
+
+msgid "OptimizationMetrics:AnimatorLayerCount"
+msgstr "Animator Layers"
 
 msgid "OptimizationMetrics:GameObjectCount"
-msgstr "Game Object Count"
+msgstr "Game Objects"
 
 msgid "LegacyModularAvatarWarning:message"
 msgstr ""
