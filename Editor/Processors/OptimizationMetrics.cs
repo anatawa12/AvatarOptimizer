@@ -149,7 +149,7 @@ internal static class OptimizationMetricsImpl
             if (descriptor != null)
             {
                 var layerControllers = VRCSDKUtils.GetAvatarLayerControllers(descriptor);
-                foreach (var layer in AnimatorLayerMap<object>.ValidLayerTypes)
+                foreach (var layer in AnimatorLayerMap.ValidLayerTypes)
                 {
                     var c = layerControllers[layer];
                     if (c != null)

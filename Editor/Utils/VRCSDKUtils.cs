@@ -106,7 +106,7 @@ namespace Anatawa12.AvatarOptimizer
             var useDefaultLayers = !descriptor.customizeAnimationLayers;
             var controllers = new AnimatorLayerMap<RuntimeAnimatorController>();
 
-            foreach (var layer in AnimatorLayerMap<object>.ValidLayerTypes)
+            foreach (var layer in AnimatorLayerMap.ValidLayerTypes)
             {
                 ref var loader = ref DefaultLayers[layer];
                 var controller = loader.Value;
@@ -129,7 +129,7 @@ namespace Anatawa12.AvatarOptimizer
                 return layer.animatorController;
             }
 
-            if (!AnimatorLayerMap<object>.IsValid(layer.type)) return null;
+            if (!AnimatorLayerMap.IsValid(layer.type)) return null;
             ref var loader = ref DefaultLayers[layer.type];
             var controller = loader.Value;
             if (controller == null)

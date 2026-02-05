@@ -9,6 +9,20 @@ namespace Anatawa12.AvatarOptimizer
     {
         private T[] _values = new T[(int)(VRCAvatarDescriptor.AnimLayerType.IKPose + 1)];
 
+        public ref T this[VRCAvatarDescriptor.AnimLayerType type]
+        {
+            get
+            {
+                if (!AnimatorLayerMap.IsValid(type))
+                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
+
+                return ref _values[(int)type];
+            }
+        }
+    }
+
+    static class AnimatorLayerMap
+    {
         public static bool IsValid(VRCAvatarDescriptor.AnimLayerType type)
         {
             switch (type)
@@ -39,17 +53,6 @@ namespace Anatawa12.AvatarOptimizer
             VRCAvatarDescriptor.AnimLayerType.TPose,
             VRCAvatarDescriptor.AnimLayerType.IKPose,
         };
-
-        public ref T this[VRCAvatarDescriptor.AnimLayerType type]
-        {
-            get
-            {
-                if (!IsValid(type))
-                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
-
-                return ref _values[(int)type];
-            }
-        }
     }
 }
 
