@@ -9,7 +9,7 @@ msgid "OptimizationMetrics:Results"
 msgstr "最適化結果:\n{0}"
 
 msgid "OptimizationMetrics:Results:description"
-msgstr "このログの出力は上部メニューの'Tools/Avatar Optimizer/Optimization Metrics'から無効にできます。"
+msgstr "このログの出力は、上部メニューの'Tools/Avatar Optimizer/Optimization Metrics'から無効化できます。"
 
 msgid "OptimizationMetrics:DownloadSize"
 msgstr "ダウンロードサイズ"
