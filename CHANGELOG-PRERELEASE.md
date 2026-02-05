@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog].
 - A summary of optimizations to the console `#1611`
   - This feature is enabled by default.
   - You can disable it from  `Tools/Avatar Optimizer/Optimization Metrics`.
+- A window to collect data for bug reports `#1615`
 
 ### Changed
 
