@@ -20,6 +20,7 @@
     "com.vrchat.avatars": ">=3.7.0 <3.11.0"
   },
   "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.2.1",
     "com.unity.burst": "1.8.7"
   }
 }

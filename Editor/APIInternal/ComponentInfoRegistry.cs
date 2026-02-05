@@ -156,6 +156,16 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             {
             }
         }
+
+        public static string GetAsText()
+        {
+            var builder = new System.Text.StringBuilder();
+            foreach (var kv in InformationByType)
+            {
+                builder.AppendLine($"{kv.Key.FullName}: {kv.Value.GetType().FullName}");
+            }
+            return builder.ToString();
+        }
     }
 }
 
