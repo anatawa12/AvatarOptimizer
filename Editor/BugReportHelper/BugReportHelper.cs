@@ -133,8 +133,8 @@ internal class BugReportHelper : EditorWindow
                 reportFile.AddField("Vpm-Dependency", $"{package}@{version}");
 
             // collect environment information.
-            reportFile.AddFile("ComponentInfoRegistry.tree.txt", APIInternal.ComponentInfoRegistry.GetAsText());
-            reportFile.AddFile("ShaderInformationRegistry.tree.txt", API.ShaderInformationRegistry.GetAsText());
+            reportFile.AddFile("ComponentInfoRegistry.txt", APIInternal.ComponentInfoRegistry.GetAsText());
+            reportFile.AddFile("ShaderInformationRegistry.txt", API.ShaderInformationRegistry.GetAsText());
 
             // Collect pre-build avatar information
             var preBuildAvatarInfo = CollectAvatarInfo(clonedAvatar);
