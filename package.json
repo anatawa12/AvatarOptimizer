@@ -16,6 +16,7 @@
   "changelogUrl": "https://vpm.anatawa12.com/avatar-optimizer/en/docs/changelog/",
   "license": "MIT",
   "vpmDependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.2.1",
     "nadena.dev.ndmf": ">=1.8.0 <2.0.0",
     "com.vrchat.avatars": ">=3.7.0 <3.11.0"
   },

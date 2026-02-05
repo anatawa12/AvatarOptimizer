@@ -23,6 +23,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
             context.Extension<ObjectMappingContext>()
                 .MappingBuilder!
                 .ImportModifications(modifications);
+            BugReportHelper.Context.Current?.AnimatorParserResult(context, modifications);
         }
     }
 }

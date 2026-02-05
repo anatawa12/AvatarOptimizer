@@ -120,6 +120,20 @@ namespace Anatawa12.AvatarOptimizer.API
             if (shaderInformationWithGUID.TryGetValue(guid, out var infoWithGUID)) return infoWithGUID;
             return null;
         }
+
+        internal static string GetAsText()
+        {
+            var text = new System.Text.StringBuilder();
+            foreach (var kv in shaderInformation)
+            {
+                text.AppendLine($"Shader: {kv.Key.name}, {kv.Value.GetType().FullName}, Information: {kv.Value.SupportedInformationKind}");
+            }
+            foreach (var kv in shaderInformationWithGUID)
+            {
+                text.AppendLine($"Shader GUID: {kv.Key}, {kv.Value.GetType().FullName}, Information: {kv.Value.SupportedInformationKind}");
+            }
+            return text.ToString();
+        }
     }
 
     /// <summary>

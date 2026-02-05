@@ -32,6 +32,7 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
+        "Newtonsoft.Json.dll",
         "VRC.Dynamics.dll",
         "VRC.SDK3.Dynamics.PhysBone.dll",
         "VRC.SDK3.Dynamics.Contact.dll",

@@ -33,9 +33,23 @@ namespace Anatawa12.AvatarOptimizer.Processors
             {
                 AddGCDebugInfo(context);
             }
+
+            if (BugReportHelper.Context.Current is { } reportCtx)
+            {
+                var place = new GameObject();
+                try
+                {
+                    var gcDebugRoot = AddGCDebugInfo(context, place);
+                    reportCtx.AddGcDebugInfo(_position, gcDebugRoot.CollectDataToString());
+                }
+                finally
+                {
+                    GameObject.DestroyImmediate(place);
+                }
+            }
         }
 
-        public static void AddGCDebugInfo(BuildContext context)
+        private static GCDebugRoot AddGCDebugInfo(BuildContext context, GameObject? componentsPlace = null)
         {
             var componentInfos = context.Extension<GCComponentInfoContext>();
             var avatarRootObject = context.AvatarRootObject;
@@ -44,7 +58,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             foreach (var componentInfo in componentInfos.AllInformation)
             {
-                var gcDebugInfo = componentInfo.Component.gameObject.AddComponent<GCDebugInfo>();
+                var gcDebugInfo = (componentsPlace ?? componentInfo.Component.gameObject).AddComponent<GCDebugInfo>();
                 gcDebugInfo.component = componentInfo.Component;
                 gcDebugInfo.activeness = GCDebugInfo.ActivenessFromBool(componentInfo.Activeness);
                 gcDebugInfo.isEntryPoint = componentInfo.EntrypointComponent;
@@ -53,47 +67,42 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
 
             // Register all GCDebugInfo components
-            foreach (var gcDebugInfo in avatarRootObject.GetComponents<GCDebugInfo>())
+            if (componentsPlace == null)
             {
-                componentInfos.NewComponent(gcDebugInfo);
-                rootObjectGcInfo.AddDependency(gcDebugInfo);
-                rootObjectGcInfo.AddDependency(gcDebugInfo.component);
+                foreach (var gcDebugInfo in avatarRootObject.GetComponents<GCDebugInfo>())
+                {
+                    componentInfos.NewComponent(gcDebugInfo);
+                    rootObjectGcInfo.AddDependency(gcDebugInfo);
+                    rootObjectGcInfo.AddDependency(gcDebugInfo.component);
+                }
             }
 
-            var debugRoot = avatarRootObject.AddComponent<GCDebugRoot>();
-            componentInfos.NewComponent(debugRoot);
-            rootObjectGcInfo.AddDependency(debugRoot);
+            var debugRoot = (componentsPlace ?? avatarRootObject).AddComponent<GCDebugRoot>();
+            debugRoot.root = avatarRootObject;
+            if (componentsPlace == null)
+            {
+                componentInfos.NewComponent(debugRoot);
+                rootObjectGcInfo.AddDependency(debugRoot);
+            }
+
+            return debugRoot;
         }
 
-        class GCDebugRoot : MonoBehaviour { }
-
-        [CustomEditor(typeof(GCDebugRoot))]
-        class GCDebugRootEditor : Editor
+        class GCDebugRoot : MonoBehaviour
         {
-            public override void OnInspectorGUI()
-            {
-                if (GUILayout.Button("Copy All Data"))
-                {
-                    GUIUtility.systemCopyBuffer = CreateData();
-                }
+            public GameObject root;
 
-                if (GUILayout.Button("Save All Data"))
-                {
-                    var path = EditorUtility.SaveFilePanel("DebugGCData", "", "data.txt", "txt");
-                    if (!string.IsNullOrEmpty(path))
-                    {
-                        System.IO.File.WriteAllText(path, CreateData());
-                    }
-                }
+            public string CollectDataToString()
+            {
+                return CreateData();
 
                 string CreateData()
                 {
-                    var root = ((Component)target).gameObject;
                     var collect = new StringBuilder();
-                    foreach (var gcData in root.GetComponentsInChildren<GCDebugInfo>(true))
+                    foreach (var gcData in gameObject.GetComponentsInChildren<GCDebugInfo>(true))
                     {
                         if (gcData.component is null) continue; // use is instead of null to get type information of missing component
-                        collect.Append(RuntimeUtil.RelativePath(root, gcData.gameObject))
+                        collect.Append(RuntimeUtil.RelativePath(root, gcData.component.gameObject))
                             .Append("(").Append(gcData.component.GetType().Name).Append("):\n");
                         collect.Append("  IsEntryPoint: ").Append(gcData.isEntryPoint).Append('\n');
                         collect.Append("  ActiveNess: ").Append(gcData.activeness).Append('\n');
@@ -117,6 +126,27 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     let processing = $"{path}({type}): {pair.type}"
                     orderby processing
                     select processing;
+            }
+        }
+
+        [CustomEditor(typeof(GCDebugRoot))]
+        class GCDebugRootEditor : Editor
+        {
+            public override void OnInspectorGUI()
+            {
+                if (GUILayout.Button("Copy All Data"))
+                {
+                    GUIUtility.systemCopyBuffer = ((GCDebugRoot)target).CollectDataToString();
+                }
+
+                if (GUILayout.Button("Save All Data"))
+                {
+                    var path = EditorUtility.SaveFilePanel("DebugGCData", "", "data.txt", "txt");
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        System.IO.File.WriteAllText(path, ((GCDebugRoot)target).CollectDataToString());
+                    }
+                }
             }
         }
 

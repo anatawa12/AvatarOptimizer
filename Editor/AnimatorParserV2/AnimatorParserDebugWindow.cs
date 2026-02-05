@@ -31,9 +31,9 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             using (new EditorGUI.DisabledScope(!parsedRootObject))
             {
                 if (GUILayout.Button("Copy Parsed Text"))
-                    GUIUtility.systemCopyBuffer = CreateText();
+                    GUIUtility.systemCopyBuffer = CreateText(Container!, parsedRootObject!, detailed: false);
                 if (GUILayout.Button("Copy Detailed Parsed Text"))
-                    GUIUtility.systemCopyBuffer = CreateText(true);
+                    GUIUtility.systemCopyBuffer = CreateText(Container!, parsedRootObject!, detailed: true);
             }
 
             if (Container == null) return;
@@ -61,12 +61,15 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             GUILayout.EndScrollView();
         }
 
-        private string CreateText(bool detailed = false)
-        {
-            var root = parsedRootObject!.transform;
+        public static string CreateText(
+            INodeContainer container,
+            GameObject parsedRootObject,
+            bool detailed = false
+        ) {
+            var root = parsedRootObject.transform;
             var resultText = new StringBuilder();
             
-            foreach (var group in Container!.FloatNodes.GroupBy(x => x.Key.target))
+            foreach (var group in container!.FloatNodes.GroupBy(x => x.Key.target))
             {
                 var gameObject = group.Key.transform;
                 resultText.Append(Utils.RelativePath(root, gameObject)).Append(": ")
@@ -82,7 +85,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 resultText.Append('\n');
             }
 
-            foreach (var group in Container.ObjectNodes.GroupBy(x => x.Key.target))
+            foreach (var group in container.ObjectNodes.GroupBy(x => x.Key.target))
             {
                 var gameObject = group.Key.transform;
                 resultText.Append(Utils.RelativePath(root, gameObject)).Append(": ")
@@ -100,7 +103,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             return resultText.ToString();
         }
 
-        private void AppendNodeRecursive<TValueInfo>(PropModNode<TValueInfo> propState, StringBuilder resultText, string indent)
+        private static void AppendNodeRecursive<TValueInfo>(PropModNode<TValueInfo> propState, StringBuilder resultText, string indent)
             where TValueInfo : struct, IValueInfo<TValueInfo>
         {
             switch (propState)
@@ -168,7 +171,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
         }
 
-        private string ToShortDescription(PropModNode<FloatValueInfo> propState)
+        private static string ToShortDescription(PropModNode<FloatValueInfo> propState)
         {
             string propStateInfo = "";
 
@@ -182,7 +185,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             return propStateInfo;
         }
 
-        private string ToShortDescription(PropModNode<ObjectValueInfo> propState) =>
+        private static string ToShortDescription(PropModNode<ObjectValueInfo> propState) =>
             $"{propState.ApplyState}:Const:{string.Join(",", propState.Value.PossibleValues.Select(x => x.name))}";
 
         private static void NarrowValueLabelField(string label0, string value)
