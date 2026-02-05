@@ -133,12 +133,12 @@ internal class BugReportHelper : EditorWindow
                 reportFile.AddField("Vpm-Dependency", $"{package}@{version}");
 
             // collect environment information.
-            reportFile.AddFile("ComponentInfoRegistry.txt", APIInternal.ComponentInfoRegistry.GetAsText());
-            reportFile.AddFile("ShaderInformationRegistry.txt", API.ShaderInformationRegistry.GetAsText());
+            reportFile.AddFile("ComponentInfoRegistry.tree.txt", APIInternal.ComponentInfoRegistry.GetAsText());
+            reportFile.AddFile("ShaderInformationRegistry.tree.txt", API.ShaderInformationRegistry.GetAsText());
 
             // Collect pre-build avatar information
             var preBuildAvatarInfo = CollectAvatarInfo(clonedAvatar);
-            reportFile.AddFile("AvatarInfo.PreBuild.txt", preBuildAvatarInfo);
+            reportFile.AddFile("AvatarInfo.PreBuild.tree.txt", preBuildAvatarInfo);
 
             var bugReporterLogHandler = new BugReporterLogHandler(Debug.unityLogger.logHandler);
             // NDMF Build. few information are collected during the build using Context.Current
@@ -161,11 +161,11 @@ internal class BugReportHelper : EditorWindow
                 Context.Current = null;
             }
 
-            reportFile.AddFile("BuildLog.txt", bugReporterLogHandler.GetLog());
+            reportFile.AddFile("BuildLog.log.txt", bugReporterLogHandler.GetLog());
 
             // Collect post-build avatar information
             var postBuildAvatarInfo = CollectAvatarInfo(clonedAvatar);
-            reportFile.AddFile("AvatarInfo.PostBuild.txt", postBuildAvatarInfo);
+            reportFile.AddFile("AvatarInfo.PostBuild.tree.txt", postBuildAvatarInfo);
 
             return reportFile;
         }
@@ -419,12 +419,12 @@ internal class Context
 
     public void AnimatorParserResult(BuildContext context, RootPropModNodeContainer modifications)
     {
-        ReportFile.AddFile("AnimatorParser.txt", AnimatorParserDebugWindow.CreateText(modifications, context.AvatarRootObject, detailed: true));
+        ReportFile.AddFile("AnimatorParser.tree.txt", AnimatorParserDebugWindow.CreateText(modifications, context.AvatarRootObject, detailed: true));
     }
 
     public void AddGcDebugInfo(InternalGcDebugPosition position, string collectDataToString)
     {
-        ReportFile.AddFile($"GCDebug.{position}.txt", collectDataToString);
+        ReportFile.AddFile($"GCDebug.{position}.tree.txt", collectDataToString);
     }
 }
 
