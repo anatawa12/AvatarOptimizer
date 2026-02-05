@@ -19,11 +19,7 @@ internal class CaptureOptimizationMetricsBefore : Pass<CaptureOptimizationMetric
     protected override void Execute(BuildContext context)
     {
         if (!context.GetState<AAOEnabled>().Enabled || !OptimizationMetricsSettings.EnableOptimizationMetrics) return;
-        var state = context.GetState<OptimizationMetricsState>();
-        state.Before = OptimizationMetricsImpl.Capture(context.AvatarRootObject);
-        state.IsTraceAndOptimizeOnly = context.AvatarRootObject
-            .GetComponentsInChildren<AvatarTagComponent>(true)
-            .All(c => c is TraceAndOptimize);
+        context.GetState<OptimizationMetricsState>().Before = OptimizationMetricsImpl.Capture(context.AvatarRootObject);
     }
 }
 
@@ -44,10 +40,7 @@ internal class LogOptimizationMetricsAfter : Pass<LogOptimizationMetricsAfter>
         var lines = BuildDiffLines(before, after);
         if (lines.Count == 0) return;
 
-        var labelKey = state.IsTraceAndOptimizeOnly
-            ? "OptimizationMetrics:OptimizationResults"
-            : "OptimizationMetrics:WeightReductionResults";
-        BuildLog.LogInfo(labelKey, string.Join("\n", lines));
+        BuildLog.LogInfo("OptimizationMetrics:Results", string.Join("\n", lines), AAOL10N.Tr("OptimizationMetrics:description"));
     }
 
     private static List<string> BuildDiffLines(OptimizationMetricsSnapshot before, OptimizationMetricsSnapshot after)
@@ -69,7 +62,6 @@ internal class LogOptimizationMetricsAfter : Pass<LogOptimizationMetricsAfter>
 
 internal class OptimizationMetricsState
 {
-    public bool IsTraceAndOptimizeOnly { get; set; } = false;
     public OptimizationMetricsSnapshot? Before { get; set; }
 }
 

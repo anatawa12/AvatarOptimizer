@@ -5,11 +5,11 @@ msgstr ""
 msgid "CheckForUpdate:out-of-date"
 msgstr "Avatar Optimizerの新しいバージョン、{0}が公開されています！(現在 {1})"
 
-msgid "OptimizationMetrics:OptimizationResults"
-msgstr "最適化結果:\n{0}"
+msgid "OptimizationMetrics:Results"
+msgstr "最適化結果:\n{0}\n\n{1}"
 
-msgid "OptimizationMetrics:WeightReductionResults"
-msgstr "軽量化結果:\n{0}"
+msgid "OptimizationMetrics:description"
+msgstr "このログの出力は上部メニューの'Tools/Avatar Optimizer/Optimization Metrics'から無効にできます。"
 
 msgid "OptimizationMetrics:DownloadSize"
 msgstr "ダウンロードサイズ"
