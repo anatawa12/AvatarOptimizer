@@ -747,22 +747,18 @@
             }
         }
 
-        // Gzip decompression using pako
+        // Gzip decompression using browser's native DecompressionStream
         async function decompressGzip(arrayBuffer) {
-            // Load pako library dynamically
-            if (typeof pako === 'undefined') {
-                const script = document.createElement('script');
-                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js';
-                document.head.appendChild(script);
-                await new Promise((resolve) => {
-                    script.onload = resolve;
-                });
+            // Use browser's native DecompressionStream API
+            if (typeof DecompressionStream === 'undefined') {
+                throw new Error('DecompressionStream is not supported in this browser. Please use a modern browser (Chrome 80+, Edge 80+, Safari 16.4+, or Firefox 113+).');
             }
             
-            const uint8Array = new Uint8Array(arrayBuffer);
-            const decompressed = pako.inflate(uint8Array);
-            const decoder = new TextDecoder('utf-8');
-            return decoder.decode(decompressed);
+            const ds = new DecompressionStream('gzip');
+            const blob = new Blob([arrayBuffer]);
+            const stream = blob.stream().pipeThrough(ds);
+            const response = new Response(stream);
+            return await response.text();
         }
 
         // File handling
