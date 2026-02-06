@@ -47,3 +47,9 @@ AAO のバグに関連するアバターを設定してください。
   - 他にインストールされているパッケージのバージョン
 - ビルド情報
   - ビルドプロセスのログ（警告やエラーを含む）
+
+## Other contents
+
+生成されたファイルを見るためのツールが{{% static-link "/aao-bugreport-viewer.html" %}}こちら{{% /static-link %}}にあります。
+
+[viewer]: /aao-bugreport-viewer.html

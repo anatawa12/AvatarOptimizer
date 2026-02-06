@@ -51,3 +51,7 @@ The bug report contains the following information (non-exhaustive):
   - Other installed package versions
 - Build information
   - Logs from the build process, including warnings and errors
+
+## Other contents
+
+There is viewer for the generated report file {{% static-link "/aao-bugreport-viewer.html" %}}here{{% /static-link %}}.

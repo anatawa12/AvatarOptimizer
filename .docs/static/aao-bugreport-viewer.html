@@ -1,0 +1,1848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AAO-BugReport-File Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #input-container.hidden {
+            display: none;
+        }
+
+        .input-card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        #drop-zone {
+            border: 3px dashed #667eea;
+            border-radius: 8px;
+            padding: 60px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9ff;
+        }
+
+        #drop-zone:hover, #drop-zone.dragover {
+            background: #e8ebff;
+            border-color: #764ba2;
+        }
+
+        #drop-zone p {
+            color: #667eea;
+            font-size: 18px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        #drop-zone small {
+            color: #999;
+            font-size: 14px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        #viewer-container {
+            display: none;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        #viewer-container.visible {
+            display: flex;
+        }
+
+        #toolbar {
+            background: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #toolbar h2 {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        #toolbar button {
+            background: #34495e;
+            padding: 8px 16px;
+            font-size: 14px;
+            margin-top: 0;
+        }
+
+        #toolbar button:hover {
+            background: #4a5f7f;
+        }
+
+        #main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        #file-list-panel {
+            width: 300px;
+            background: #f5f7fa;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            background: #34495e;
+            color: white;
+            padding: 12px 15px;
+            font-weight: 500;
+            font-size: 14px;
+            border-bottom: 1px solid #2c3e50;
+        }
+
+        #global-headers-view {
+            padding: 20px;
+            background: #fff;
+            overflow-y: auto;
+        }
+
+        #global-headers-view h2 {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .headers-grid {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .header-item {
+            margin-bottom: 8px;
+            color: #333;
+            padding: 4px 0;
+        }
+
+        .header-key {
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        #file-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #e9ecef;
+            transition: background 0.2s;
+        }
+
+        .file-item:hover {
+            background: #e9ecef;
+        }
+
+        .file-item.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .file-name {
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 4px;
+            word-break: break-all;
+        }
+
+        .file-info {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .file-item.active .file-info {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        #show-global-headers-btn {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #e9ecef;
+            background: #f8f9fa;
+            transition: background 0.2s;
+            font-weight: 500;
+            font-size: 14px;
+            color: #667eea;
+            text-align: center;
+        }
+
+        #show-global-headers-btn:hover {
+            background: #e9ecef;
+        }
+
+        #show-global-headers-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        #content-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #content-header {
+            background: #fff;
+            padding: 15px 20px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #content-filename {
+            font-weight: 500;
+            font-size: 16px;
+            color: #333;
+            flex: 1;
+        }
+
+        #header-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #tree-view-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #tree-search-input {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            width: 180px;
+            height: 30px;
+        }
+
+        #file-headers-toggle {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        #file-headers-toggle:hover {
+            background: #5568d3;
+        }
+
+        #file-headers {
+            display: none;
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #ddd;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        #file-headers.visible {
+            display: block;
+        }
+
+        #content-viewer {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+            background: #fff;
+        }
+
+        #content-text {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #333;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            background: #fef5f5;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .empty-state-text {
+            font-size: 16px;
+        }
+
+        /* Tree view styles */
+        .view-mode-selector {
+            display: inline-flex;
+            gap: 3px;
+        }
+
+        .view-mode-btn {
+            background: #e9ecef;
+            color: #333;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .view-mode-btn:hover {
+            background: #dee2e6;
+        }
+
+        .view-mode-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .expand-all-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .expand-all-btn:hover {
+            background: #5568d3;
+        }
+
+        .tree-search-highlight {
+            background-color: yellow;
+            font-weight: bold;
+        }
+
+        /* Loading spinner */
+        .loading-spinner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 14px;
+        }
+
+        .loading-spinner::before {
+            content: '';
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            margin-right: 10px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .tree-node {
+            margin-left: 0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .tree-node details {
+            margin-left: 20px;
+        }
+
+        .tree-node summary {
+            cursor: pointer;
+            padding: 2px 0;
+            user-select: none;
+        }
+
+        .tree-node summary:hover {
+            background: #f8f9fa;
+        }
+
+        .tree-node-content {
+            display: inline;
+            color: #333;
+        }
+
+        .tree-node-path {
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .tree-node-type {
+            color: #999;
+            margin-left: 5px;
+        }
+
+        /* Root node styling - distinguishes actual tree roots from hierarchy path nodes */
+        .tree-node-root > summary {
+            font-weight: 600;
+            background: #f0f4ff;
+            padding: 3px 5px;
+            border-radius: 3px;
+            margin: 2px 0;
+        }
+
+        .tree-node-root > summary:hover {
+            background: #e0ebff;
+        }
+
+        /* Intermediate node styling - hierarchy nodes under root nodes */
+        .tree-node-intermediate > summary {
+            font-weight: 500;
+            background: #f8f9ff;
+            padding: 2px 4px;
+            border-radius: 2px;
+            margin: 1px 0;
+        }
+
+        .tree-node-intermediate > summary:hover {
+            background: #eef0ff;
+        }
+
+        .tree-view-container {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .tree-view-node {
+            display: flex;
+            align-items: flex-start;
+            padding: 2px 0;
+        }
+
+        .tree-view-lines {
+            flex-shrink: 0;
+            color: #999;
+            margin-right: 8px;
+        }
+
+        .tree-view-content {
+            flex: 1;
+        }
+
+        .tree-view-name {
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .tree-view-type {
+            color: #999;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Input Container -->
+    <div id="input-container">
+        <div class="input-card">
+            <h1>AAO-BugReport-File Viewer</h1>
+            <p class="subtitle">Parse and view files in AAO-BugReport-File/1.0 format</p>
+            
+            <div id="drop-zone">
+                <p>📁 Drop a file here</p>
+                <small>Supports .gz (gzip) and plain text files</small>
+            </div>
+            
+            <div style="text-align: center; margin: 20px 0; color: #999;">— OR —</div>
+            
+            <textarea id="text-input" placeholder="Paste AAO-BugReport-File content here..."></textarea>
+            
+            <div style="text-align: center;">
+                <button id="parse-button">Parse Content</button>
+            </div>
+            
+            <div id="error-container"></div>
+        </div>
+    </div>
+
+    <!-- Viewer Container -->
+    <div id="viewer-container">
+        <div id="toolbar">
+            <h2>AAO-BugReport-File Viewer</h2>
+            <button id="back-button">← Back to Input</button>
+        </div>
+        
+        <div id="main-content">
+            <div id="file-list-panel">
+                <div class="panel-header">Files</div>
+                <div id="show-global-headers-btn">📋 Global Headers</div>
+                <div id="file-list"></div>
+            </div>
+            
+            <div id="content-panel">
+                <div id="content-header">
+                    <span id="content-filename">Select a file to view</span>
+                    <div id="header-controls">
+                        <div id="tree-view-controls" style="display: none;">
+                            <input type="text" id="tree-search-input" placeholder="Find and expand...">
+                            <button id="tree-search-btn" class="expand-all-btn">Search</button>
+                            <button id="tree-clear-btn" class="expand-all-btn" style="display: none;">Clear</button>
+                            <div class="view-mode-selector">
+                                <button class="view-mode-btn active" data-mode="simple">Simple</button>
+                                <button class="view-mode-btn" data-mode="tree">Tree</button>
+                                <button class="view-mode-btn" data-mode="raw">Raw</button>
+                            </div>
+                        </div>
+                        <button id="file-headers-toggle" style="display: none;">Show File Headers</button>
+                    </div>
+                </div>
+                <div id="file-headers"></div>
+                <div id="content-viewer">
+                    <div id="global-headers-view">
+                        <h2>Global Headers</h2>
+                        <div id="global-headers" class="headers-grid"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="file-input" style="display: none;" accept=".gz,.txt">
+
+    <script>
+        // State
+        let parsedData = null;
+        let currentFileIndex = -1;
+        let lastViewMode = 'simple'; // Track last used view mode for persistence
+
+        // DOM Elements
+        const inputContainer = document.getElementById('input-container');
+        const viewerContainer = document.getElementById('viewer-container');
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const textInput = document.getElementById('text-input');
+        const parseButton = document.getElementById('parse-button');
+        const backButton = document.getElementById('back-button');
+        const errorContainer = document.getElementById('error-container');
+        const fileList = document.getElementById('file-list');
+        const contentFilename = document.getElementById('content-filename');
+        const fileHeadersToggle = document.getElementById('file-headers-toggle');
+        const fileHeaders = document.getElementById('file-headers');
+        const contentViewer = document.getElementById('content-viewer');
+
+        // Parser
+        class AAOBugReportParser {
+            parse(content) {
+                const lines = content.split('\n');
+                
+                // Check format header
+                if (lines.length === 0 || !lines[0].trim().startsWith('AAO-BugReport-File/1.0')) {
+                    throw new Error('Invalid file format. Expected AAO-BugReport-File/1.0');
+                }
+
+                let lineIndex = 1;
+                const globalHeaders = [];
+                let boundary = null;
+
+                // Parse global headers
+                while (lineIndex < lines.length && lines[lineIndex].trim() !== '') {
+                    const line = lines[lineIndex].trim();
+                    const colonIndex = line.indexOf(':');
+                    if (colonIndex > 0) {
+                        const key = line.substring(0, colonIndex).trim();
+                        const value = line.substring(colonIndex + 1).trim();
+                        globalHeaders.push({ key, value });
+                        
+                        if (key.toLowerCase() === 'boundary') {
+                            boundary = value;
+                        }
+                    }
+                    lineIndex++;
+                }
+
+                if (!boundary) {
+                    throw new Error('No boundary found in global headers');
+                }
+
+                // Skip empty line after headers
+                lineIndex++;
+
+                // Parse blobs/files
+                const files = [];
+                while (lineIndex < lines.length) {
+                    const line = lines[lineIndex].trim();
+                    
+                    // Check for boundary
+                    if (line === `--${boundary}`) {
+                        lineIndex++;
+                        
+                        // Parse blob headers
+                        const blobHeaders = [];
+                        while (lineIndex < lines.length && lines[lineIndex].trim() !== '') {
+                            const headerLine = lines[lineIndex].trim();
+                            const colonIndex = headerLine.indexOf(':');
+                            if (colonIndex > 0) {
+                                const key = headerLine.substring(0, colonIndex).trim();
+                                const value = headerLine.substring(colonIndex + 1).trim();
+                                blobHeaders.push({ key, value });
+                            }
+                            lineIndex++;
+                        }
+                        
+                        // Skip empty line after blob headers
+                        lineIndex++;
+                        
+                        // Extract filename from Content-Disposition
+                        let filename = 'Unknown';
+                        const contentDisposition = blobHeaders.find(h => 
+                            h.key.toLowerCase() === 'content-disposition'
+                        );
+                        if (contentDisposition) {
+                            const match = contentDisposition.value.match(/filename="([^"]+)"/);
+                            if (match) {
+                                filename = match[1];
+                            }
+                        }
+                        
+                        // Read content until next boundary or end
+                        const contentLines = [];
+                        while (lineIndex < lines.length && 
+                               !lines[lineIndex].trim().startsWith(`--${boundary}`)) {
+                            contentLines.push(lines[lineIndex]);
+                            lineIndex++;
+                        }
+                        
+                        // Remove last empty line if present (from ToString() method)
+                        if (contentLines.length > 0 && contentLines[contentLines.length - 1] === '') {
+                            contentLines.pop();
+                        }
+                        
+                        files.push({
+                            filename,
+                            headers: blobHeaders,
+                            content: contentLines.join('\n')
+                        });
+                    } else {
+                        lineIndex++;
+                    }
+                }
+
+                return {
+                    globalHeaders,
+                    boundary,
+                    files
+                };
+            }
+        }
+
+        // Gzip decompression using pako
+        async function decompressGzip(arrayBuffer) {
+            // Load pako library dynamically
+            if (typeof pako === 'undefined') {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js';
+                document.head.appendChild(script);
+                await new Promise((resolve) => {
+                    script.onload = resolve;
+                });
+            }
+            
+            const uint8Array = new Uint8Array(arrayBuffer);
+            const decompressed = pako.inflate(uint8Array);
+            const decoder = new TextDecoder('utf-8');
+            return decoder.decode(decompressed);
+        }
+
+        // File handling
+        async function handleFile(file) {
+            try {
+                showError('');
+                const arrayBuffer = await file.arrayBuffer();
+                
+                let content;
+                if (file.name.endsWith('.gz')) {
+                    content = await decompressGzip(arrayBuffer);
+                } else {
+                    const decoder = new TextDecoder('utf-8');
+                    content = decoder.decode(arrayBuffer);
+                }
+                
+                parseAndDisplay(content);
+            } catch (error) {
+                showError('Error reading file: ' + error.message);
+            }
+        }
+
+        // Parse and display
+        function parseAndDisplay(content) {
+            try {
+                showError('');
+                const parser = new AAOBugReportParser();
+                parsedData = parser.parse(content);
+                
+                displayViewer();
+            } catch (error) {
+                showError('Error parsing content: ' + error.message);
+            }
+        }
+
+
+        function displayFileList() {
+            fileList.innerHTML = '';
+            parsedData.files.forEach((file, index) => {
+                const div = document.createElement('div');
+                div.className = 'file-item';
+                div.innerHTML = `
+                    <div class="file-name">${escapeHtml(file.filename)}</div>
+                    <div class="file-info">${formatFileSize(file.content.length)}</div>
+                `;
+                div.addEventListener('click', () => selectFile(index));
+                fileList.appendChild(div);
+            });
+        }
+
+        function selectFile(index, updateHistory = true) {
+            currentFileIndex = index;
+            const file = parsedData.files[index];
+            
+            // Update active state
+            const items = fileList.querySelectorAll('.file-item');
+            items.forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+            document.getElementById('show-global-headers-btn').classList.remove('active');
+            
+            // Update content header
+            contentFilename.textContent = file.filename;
+            fileHeadersToggle.style.display = 'inline-block';
+            
+            // Display file headers
+            displayFileHeaders(file.headers);
+            fileHeaders.classList.remove('visible');
+            fileHeadersToggle.textContent = 'Show File Headers';
+            
+            // Check file type and display appropriately
+            if (file.filename.endsWith('.tree.txt')) {
+                displayTreeFile(file);
+            } else if (file.filename.endsWith('.log.txt')) {
+                displayLogFile(file);
+            } else {
+                // Hide tree view controls for regular files
+                document.getElementById('tree-view-controls').style.display = 'none';
+                // Display regular content
+                contentViewer.innerHTML = `<pre id="content-text">${escapeHtml(file.content)}</pre>`;
+                // Reset view mode to simple for regular files
+                lastViewMode = 'simple';
+            }
+            
+            // Update browser history if requested
+            if (updateHistory && window.navigation) {
+                window.navigation.navigate('#file-' + index, { history: 'push' });
+            } else if (updateHistory) {
+                // Fallback for browsers without Navigation API
+                history.pushState({ fileIndex: index }, '', '#file-' + index);
+            }
+        }
+
+        function displayFileHeaders(headers) {
+            fileHeaders.innerHTML = '';
+            headers.forEach(header => {
+                const div = document.createElement('div');
+                div.className = 'header-item';
+                div.innerHTML = `<span class="header-key">${escapeHtml(header.key)}:</span> ${escapeHtml(header.value)}`;
+                fileHeaders.appendChild(div);
+            });
+        }
+
+        function showGlobalHeadersView(updateHistory = true) {
+            contentFilename.textContent = 'Global Headers';
+            fileHeadersToggle.style.display = 'none';
+            fileHeaders.classList.remove('visible');
+            document.getElementById('tree-view-controls').style.display = 'none';
+            document.getElementById('show-global-headers-btn').classList.add('active');
+            
+            // Update active state in file list
+            const items = fileList.querySelectorAll('.file-item');
+            items.forEach((item) => {
+                item.classList.remove('active');
+            });
+            
+            contentViewer.innerHTML = `
+                <div id="global-headers-view">
+                    <h2>Global Headers</h2>
+                    <div id="global-headers" class="headers-grid"></div>
+                </div>
+            `;
+            // Re-populate global headers after recreating the container
+            const globalHeadersContainer = document.getElementById('global-headers');
+            parsedData.globalHeaders.forEach(header => {
+                const div = document.createElement('div');
+                div.className = 'header-item';
+                div.innerHTML = `<span class="header-key">${escapeHtml(header.key)}:</span> ${escapeHtml(header.value)}`;
+                globalHeadersContainer.appendChild(div);
+            });
+            
+            // Update browser history if requested
+            if (updateHistory && window.navigation) {
+                window.navigation.navigate('#global-headers', { history: 'push' });
+            } else if (updateHistory) {
+                // Fallback for browsers without Navigation API
+                history.pushState({ showGlobal: true }, '', '#global-headers');
+            }
+        }
+
+        function showError(message) {
+            if (message) {
+                errorContainer.innerHTML = `<div class="error-message">${escapeHtml(message)}</div>`;
+            } else {
+                errorContainer.innerHTML = '';
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' bytes';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        // Tree file handling
+        function displayTreeFile(file) {
+            try {
+                const lines = file.content.split('\n');
+                
+                // Show tree view controls in header
+                document.getElementById('tree-view-controls').style.display = 'flex';
+                
+                // Show loading spinner first
+                contentViewer.innerHTML = '<div class="loading-spinner">Loading tree view...</div>';
+                
+                // Use setTimeout to let the spinner render before heavy computation
+                setTimeout(() => {
+                    try {
+                        const nodes = parseTreeStructure(lines);
+                        
+                        // Create view containers
+                        contentViewer.innerHTML = `
+                            <div>
+                                <div id="tree-simple-view"></div>
+                                <div id="tree-tree-view" style="display: none;"></div>
+                                <div id="tree-raw-view" style="display: none;"><pre id="content-text">${escapeHtml(file.content)}</pre></div>
+                            </div>
+                        `;
+                        
+                        // Determine which mode to use (try to preserve last mode if available for tree files)
+                        let initialMode = 'simple'; // default
+                        if (lastViewMode === 'raw' || lastViewMode === 'simple' || lastViewMode === 'tree') {
+                            // All these modes are available for tree files
+                            initialMode = lastViewMode;
+                        }
+                        
+                        // Reset button states - activate the initial mode, show all buttons
+                        document.querySelectorAll('.view-mode-btn').forEach(btn => {
+                            // Remove any inline styles that might hide buttons
+                            btn.style.removeProperty('display');
+                            if (btn.dataset.mode === initialMode) {
+                                btn.classList.add('active');
+                            } else {
+                                btn.classList.remove('active');
+                            }
+                        });
+                        
+                        // Add event listeners to header mode buttons (remove old ones first by cloning)
+                        const viewBtns = document.querySelectorAll('.view-mode-btn');
+                        viewBtns.forEach(btn => {
+                            const newBtn = btn.cloneNode(true);
+                            btn.parentNode.replaceChild(newBtn, btn);
+                        });
+                        
+                        document.querySelectorAll('.view-mode-btn').forEach(btn => {
+                            btn.addEventListener('click', (e) => {
+                                switchTreeView(e.currentTarget.dataset.mode);
+                            });
+                        });
+                        
+                        // Add search functionality
+                        const searchInput = document.getElementById('tree-search-input');
+                        const searchBtn = document.getElementById('tree-search-btn');
+                        const clearBtn = document.getElementById('tree-clear-btn');
+                        
+                        // Remove old listeners by cloning
+                        const newSearchBtn = searchBtn.cloneNode(true);
+                        searchBtn.parentNode.replaceChild(newSearchBtn, searchBtn);
+                        
+                        document.getElementById('tree-search-btn').addEventListener('click', () => findAndExpandNodes());
+                        
+                        searchInput.addEventListener('keypress', (e) => {
+                            if (e.key === 'Enter') {
+                                findAndExpandNodes();
+                            }
+                        });
+                        
+                        const newClearBtn = clearBtn.cloneNode(true);
+                        clearBtn.parentNode.replaceChild(newClearBtn, clearBtn);
+                        
+                        document.getElementById('tree-clear-btn').addEventListener('click', () => clearSearch());
+                        
+                        // Render both views
+                        renderSimpleTreeView(nodes);
+                        renderTreeView(nodes);
+                        
+                        // Apply the initial mode (show correct view based on saved preference)
+                        if (initialMode !== 'simple') {
+                            // Need to switch to the saved mode
+                            switchTreeView(initialMode);
+                        }
+                    } catch (error) {
+                        // Fallback to simple text view on error
+                        console.error('Error parsing tree file:', error);
+                        document.getElementById('tree-view-controls').style.display = 'none';
+                        contentViewer.innerHTML = `<pre id="content-text">${escapeHtml(file.content)}</pre>`;
+                    }
+                }, 10);
+            } catch (error) {
+                // Fallback to simple text view on error
+                console.error('Error parsing tree file:', error);
+                document.getElementById('tree-view-controls').style.display = 'none';
+                contentViewer.innerHTML = `<pre id="content-text">${escapeHtml(file.content)}</pre>`;
+            }
+        }
+
+        function displayLogFile(file) {
+            // Show tree view controls (reuse for log files)
+            document.getElementById('tree-view-controls').style.display = 'flex';
+            
+            // Show loading spinner first
+            contentViewer.innerHTML = '<div class="loading-spinner">Loading log view...</div>';
+            
+            // Use setTimeout to let the spinner render before heavy computation
+            setTimeout(() => {
+                // Create view containers - Simple and Raw modes for log files
+                contentViewer.innerHTML = `
+                    <div>
+                        <div id="tree-simple-view"></div>
+                        <div id="tree-raw-view" style="display: none;"><pre id="content-text">${escapeHtml(file.content)}</pre></div>
+                    </div>
+                `;
+                
+                // Add event listeners to header mode buttons (remove old ones first)
+                const viewBtns = document.querySelectorAll('.view-mode-btn');
+                viewBtns.forEach(btn => {
+                    const newBtn = btn.cloneNode(true);
+                    btn.parentNode.replaceChild(newBtn, btn);
+                });
+                
+                // Determine which mode to use (try to preserve last mode if available for log files)
+                // Log files only support 'simple' and 'raw', not 'tree'
+                let initialMode = 'simple'; // default
+                if (lastViewMode === 'raw' || lastViewMode === 'simple') {
+                    // These modes are available for log files
+                    initialMode = lastViewMode;
+                }
+                // If lastViewMode was 'tree', fall back to 'simple' since logs don't support tree view
+                
+                // Reset button states - activate initial mode, hide Tree button, show Raw
+                document.querySelectorAll('.view-mode-btn').forEach(btn => {
+                    if (btn.dataset.mode === 'tree') {
+                        btn.style.display = 'none';
+                    } else {
+                        btn.style.display = 'inline-block';
+                        if (btn.dataset.mode === initialMode) {
+                            btn.classList.add('active');
+                        } else {
+                            btn.classList.remove('active');
+                        }
+                    }
+                    btn.addEventListener('click', (e) => {
+                        switchLogView(e.currentTarget.dataset.mode);
+                    });
+                });
+                
+                // Render collapsible log view
+                renderCollapsibleLogView(file.content);
+                
+                // Apply the initial mode if it's not simple (show correct view based on saved preference)
+                if (initialMode === 'raw') {
+                    switchLogView('raw');
+                }
+            }, 10);
+        }
+
+        function switchLogView(mode) {
+            const simpleView = document.getElementById('tree-simple-view');
+            const rawView = document.getElementById('tree-raw-view');
+            const buttons = document.querySelectorAll('.view-mode-btn');
+            
+            // Save the current view mode for persistence
+            lastViewMode = mode;
+            
+            if (mode === 'simple' && simpleView) {
+                simpleView.style.display = 'block';
+                rawView.style.display = 'none';
+            } else if (mode === 'raw' && rawView) {
+                simpleView.style.display = 'none';
+                rawView.style.display = 'block';
+            }
+            
+            // Update button states
+            buttons.forEach(btn => {
+                if (btn.dataset.mode === mode) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        function renderCollapsibleLogView(content) {
+            const container = document.getElementById('tree-simple-view');
+            container.innerHTML = '';
+            container.style.fontFamily = "'Consolas', 'Monaco', 'Courier New', monospace";
+            container.style.fontSize = '13px';
+            container.style.lineHeight = '1.6';
+            
+            const lines = content.split('\n');
+            let currentGroup = [];
+            let currentLevel = '';
+            
+            lines.forEach((line, index) => {
+                // Detect log level - matches patterns like:
+                // [timestamp] [LogLevel] message
+                // [timestamp] LogLevel: message  
+                // LogLevel: message
+                const levelMatch = line.match(/\[.*?\]\s*\[(ERROR|WARNING|WARN|INFO|LOG|DEBUG|TRACE)\]/i) ||
+                                  line.match(/\[.*?\]\s+(ERROR|WARNING|WARN|INFO|LOG|DEBUG|TRACE):/i) ||
+                                  line.match(/^(ERROR|WARNING|WARN|INFO|LOG|DEBUG|TRACE):/i);
+                
+                if (levelMatch) {
+                    // Save previous group
+                    if (currentGroup.length > 0) {
+                        renderLogGroup(container, currentLevel, currentGroup);
+                    }
+                    // Start new group
+                    currentLevel = levelMatch[1].toUpperCase();
+                    if (currentLevel === 'LOG') currentLevel = 'INFO';  // Treat LOG as INFO
+                    currentGroup = [line];
+                } else if (currentGroup.length > 0) {
+                    // Add to current group
+                    currentGroup.push(line);
+                } else {
+                    // Standalone line
+                    const lineDiv = document.createElement('div');
+                    lineDiv.style.padding = '2px 0';
+                    lineDiv.style.color = '#666';
+                    lineDiv.textContent = line;
+                    container.appendChild(lineDiv);
+                }
+            });
+            
+            // Don't forget the last group
+            if (currentGroup.length > 0) {
+                renderLogGroup(container, currentLevel, currentGroup);
+            }
+        }
+
+        function renderLogGroup(container, level, lines) {
+            const details = document.createElement('details');
+            const summary = document.createElement('summary');
+            summary.style.cursor = 'pointer';
+            summary.style.padding = '4px 0';
+            summary.style.userSelect = 'none';
+            summary.style.display = 'block';
+            
+            // Color code by log level
+            let color = '#333';
+            if (level === 'ERROR') color = '#dc3545';
+            else if (level === 'WARNING' || level === 'WARN') color = '#ffc107';
+            else if (level === 'INFO') color = '#17a2b8';
+            else if (level === 'DEBUG' || level === 'TRACE') color = '#6c757d';
+            
+            summary.style.color = color;
+            summary.style.fontWeight = '500';
+            
+            // Show first line in summary
+            const summaryText = document.createElement('div');
+            summaryText.textContent = lines[0];
+            summary.appendChild(summaryText);
+            
+            // Show second line as preview (if exists) when collapsed
+            if (lines.length > 1) {
+                const previewDiv = document.createElement('div');
+                previewDiv.style.color = '#666';
+                previewDiv.style.fontWeight = 'normal';
+                previewDiv.style.paddingLeft = '20px';
+                previewDiv.style.marginTop = '2px';
+                previewDiv.className = 'log-preview';
+                previewDiv.textContent = lines[1];
+                summary.appendChild(previewDiv);
+            }
+            
+            details.appendChild(summary);
+            
+            // Add all remaining lines in details content
+            if (lines.length > 1) {
+                const contentDiv = document.createElement('div');
+                contentDiv.style.paddingLeft = '20px';
+                contentDiv.style.color = '#666';
+                contentDiv.style.marginTop = '4px';
+                lines.slice(1).forEach(line => {
+                    const lineDiv = document.createElement('div');
+                    lineDiv.textContent = line;
+                    contentDiv.appendChild(lineDiv);
+                });
+                details.appendChild(contentDiv);
+            }
+            
+            // Hide preview when details is opened
+            details.addEventListener('toggle', () => {
+                const preview = summary.querySelector('.log-preview');
+                if (preview) {
+                    preview.style.display = details.open ? 'none' : 'block';
+                }
+            });
+            
+            container.appendChild(details);
+        }
+
+        function findAndExpandNodes() {
+            const searchTerm = document.getElementById('tree-search-input').value.trim();
+            if (!searchTerm) return;
+            
+            const simpleView = document.getElementById('tree-simple-view');
+            const treeView = document.getElementById('tree-tree-view');
+            
+            // Determine which view is active
+            const activeView = (simpleView && simpleView.style.display !== 'none') ? simpleView : 
+                               (treeView && treeView.style.display !== 'none') ? treeView : null;
+            
+            if (!activeView) return;
+            
+            // Clear previous highlights
+            clearSearch();
+            
+            // Find all text nodes and highlight matches
+            const allTextNodes = activeView.querySelectorAll('.tree-node-path, .tree-node-type');
+            let foundMatch = false;
+            
+            allTextNodes.forEach(node => {
+                const text = node.textContent;
+                if (text.toLowerCase().includes(searchTerm.toLowerCase())) {
+                    foundMatch = true;
+                    
+                    // Highlight the match
+                    const regex = new RegExp(`(${escapeRegex(searchTerm)})`, 'gi');
+                    const highlightedText = text.replace(regex, '<span class="tree-search-highlight">$1</span>');
+                    node.innerHTML = highlightedText;
+                    
+                    // Expand all parent details elements
+                    let parent = node.closest('details');
+                    while (parent) {
+                        parent.open = true;
+                        parent = parent.parentElement.closest('details');
+                    }
+                }
+            });
+            
+            if (foundMatch) {
+                document.getElementById('tree-clear-btn').style.display = 'inline-block';
+            }
+        }
+
+        function clearSearch() {
+            const simpleView = document.getElementById('tree-simple-view');
+            const treeView = document.getElementById('tree-tree-view');
+            
+            // Clear highlights and collapse in both views
+            [simpleView, treeView].forEach(view => {
+                if (!view) return;
+                
+                // Remove all highlights
+                const highlights = view.querySelectorAll('.tree-search-highlight');
+                highlights.forEach(highlight => {
+                    const parent = highlight.parentNode;
+                    parent.textContent = parent.textContent; // This removes all HTML tags
+                });
+                
+                // Collapse all details
+                const allDetails = view.querySelectorAll('details');
+                allDetails.forEach(details => {
+                    details.open = false;
+                });
+            });
+            
+            // Clear search input
+            document.getElementById('tree-search-input').value = '';
+            document.getElementById('tree-clear-btn').style.display = 'none';
+            
+            // Re-render to restore original content
+            const currentFile = parsedData.files[currentFileIndex];
+            if (currentFile && currentFile.filename.endsWith('.tree.txt')) {
+                const lines = currentFile.content.split('\n');
+                const nodes = parseTreeStructure(lines);
+                renderSimpleTreeView(nodes);
+                renderTreeView(nodes);
+            }
+        }
+
+        function escapeRegex(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function parseTreeStructure(lines) {
+            const nodes = [];
+            const stack = [{ indent: -1, children: nodes }];
+            
+            for (const line of lines) {
+                if (!line.trim()) continue;
+                
+                const indent = line.search(/\S/);
+                const content = line.trim();
+                
+                // Parse node: path (type) or path: type
+                let path = '';
+                let type = '';
+                
+                const parenMatch = content.match(/^(.+?)\s*\(([^)]+)\)$/);
+                const colonMatch = content.match(/^(.+?):\s*(.+)$/);
+                
+                if (parenMatch) {
+                    path = parenMatch[1];
+                    type = parenMatch[2];
+                } else if (colonMatch) {
+                    path = colonMatch[1];
+                    type = colonMatch[2];
+                } else {
+                    path = content;
+                }
+                
+                const node = { indent, path, type, children: [], originalLine: line };
+                
+                // Find parent
+                while (stack.length > 0 && stack[stack.length - 1].indent >= indent) {
+                    stack.pop();
+                }
+                
+                if (stack.length > 0) {
+                    stack[stack.length - 1].children.push(node);
+                }
+                
+                stack.push(node);
+            }
+            
+            return nodes;
+        }
+
+        function renderSimpleTreeView(nodes) {
+            const container = document.getElementById('tree-simple-view');
+            container.innerHTML = '';
+            
+            function renderSimpleNode(node, container) {
+                const hasChildren = node.children && node.children.length > 0;
+                
+                if (hasChildren) {
+                    // Use details/summary for nodes with children
+                    const details = document.createElement('details');
+                    const summary = document.createElement('summary');
+                    
+                    const content = document.createElement('span');
+                    content.className = 'tree-node-content';
+                    content.innerHTML = `<span class="tree-node-path">${escapeHtml(node.path)}</span>`;
+                    if (node.type) {
+                        content.innerHTML += `<span class="tree-node-type">(${escapeHtml(node.type)})</span>`;
+                    }
+                    
+                    summary.appendChild(content);
+                    details.appendChild(summary);
+                    
+                    const nodeDiv = document.createElement('div');
+                    nodeDiv.className = 'tree-node';
+                    
+                    node.children.forEach(child => {
+                        renderSimpleNode(child, nodeDiv);
+                    });
+                    
+                    details.appendChild(nodeDiv);
+                    container.appendChild(details);
+                } else {
+                    // Leaf nodes without details/summary
+                    const nodeDiv = document.createElement('div');
+                    nodeDiv.className = 'tree-node';
+                    
+                    const leafDiv = document.createElement('div');
+                    leafDiv.style.padding = '2px 0';
+                    leafDiv.style.paddingLeft = '20px';
+                    
+                    const content = document.createElement('span');
+                    content.className = 'tree-node-content';
+                    content.innerHTML = `<span class="tree-node-path">${escapeHtml(node.path)}</span>`;
+                    if (node.type) {
+                        content.innerHTML += `<span class="tree-node-type">(${escapeHtml(node.type)})</span>`;
+                    }
+                    
+                    leafDiv.appendChild(content);
+                    nodeDiv.appendChild(leafDiv);
+                    container.appendChild(nodeDiv);
+                }
+            }
+            
+            nodes.forEach(node => renderSimpleNode(node, container));
+        }
+
+        function renderTreeView(nodes) {
+            const container = document.getElementById('tree-tree-view');
+            container.innerHTML = '';
+            container.className = 'tree-view-container';
+            
+            // Build hierarchy from root node paths
+            const rootHierarchy = buildRootHierarchy(nodes);
+            
+            function renderHierarchyNode(hierNode, parentElement, isUnderRoot = false) {
+                const hasChildren = (hierNode.pathChildren && hierNode.pathChildren.length > 0) || 
+                                  (hierNode.treeChildren && hierNode.treeChildren.length > 0);
+                
+                if (hasChildren) {
+                    // Use details/summary for collapsible hierarchy
+                    const details = document.createElement('details');
+                    // Mark hierarchy nodes with tree children as root nodes
+                    const hasTreeChildren = hierNode.treeChildren && hierNode.treeChildren.length > 0;
+                    if (hasTreeChildren) {
+                        details.className = 'tree-node-root';
+                    } else if (isUnderRoot) {
+                        // Intermediate node under a root node
+                        details.className = 'tree-node-intermediate';
+                    }
+                    const summary = document.createElement('summary');
+                    
+                    const content = document.createElement('span');
+                    content.className = 'tree-node-content';
+                    content.innerHTML = `<span class="tree-node-path">${escapeHtml(hierNode.name)}</span>`;
+                    if (hierNode.type) {
+                        content.innerHTML += `<span class="tree-node-type">(${escapeHtml(hierNode.type)})</span>`;
+                    }
+                    
+                    summary.appendChild(content);
+                    details.appendChild(summary);
+                    
+                    const childContainer = document.createElement('div');
+                    childContainer.className = 'tree-node';
+                    
+                    // Determine if children should be marked as under root
+                    const childIsUnderRoot = hasTreeChildren || isUnderRoot;
+                    
+                    // Render path hierarchy children first
+                    if (hierNode.pathChildren && hierNode.pathChildren.length > 0) {
+                        hierNode.pathChildren.forEach(child => {
+                            renderHierarchyNode(child, childContainer, childIsUnderRoot);
+                        });
+                    }
+                    
+                    // Then render tree structure children
+                    if (hierNode.treeChildren && hierNode.treeChildren.length > 0) {
+                        hierNode.treeChildren.forEach(child => {
+                            renderTreeNode(child, childContainer, false); // Children of hierarchy node
+                        });
+                    }
+                    
+                    details.appendChild(childContainer);
+                    parentElement.appendChild(details);
+                } else {
+                    // Leaf node without children
+                    const leafDiv = document.createElement('div');
+                    leafDiv.style.padding = '2px 0';
+                    leafDiv.style.paddingLeft = '20px';
+                    
+                    const content = document.createElement('span');
+                    content.className = 'tree-node-content';
+                    content.innerHTML = `<span class="tree-node-path">${escapeHtml(hierNode.name)}</span>`;
+                    if (hierNode.type) {
+                        content.innerHTML += `<span class="tree-node-type">(${escapeHtml(hierNode.type)})</span>`;
+                    }
+                    
+                    leafDiv.appendChild(content);
+                    parentElement.appendChild(leafDiv);
+                }
+            }
+            
+            function renderTreeNode(node, parentElement, isRoot = false) {
+                const hasChildren = node.children && node.children.length > 0;
+                
+                if (hasChildren) {
+                    const details = document.createElement('details');
+                    // Mark actual tree root nodes as distinguishable
+                    if (isRoot) {
+                        details.className = 'tree-node-root';
+                    }
+                    const summary = document.createElement('summary');
+                    
+                    const content = document.createElement('span');
+                    content.className = 'tree-node-content';
+                    content.innerHTML = `<span class="tree-node-path">${escapeHtml(node.path)}</span>`;
+                    if (node.type) {
+                        content.innerHTML += `<span class="tree-node-type">(${escapeHtml(node.type)})</span>`;
+                    }
+                    
+                    summary.appendChild(content);
+                    details.appendChild(summary);
+                    
+                    const childContainer = document.createElement('div');
+                    childContainer.className = 'tree-node';
+                    
+                    node.children.forEach(child => {
+                        renderTreeNode(child, childContainer, false);
+                    });
+                    
+                    details.appendChild(childContainer);
+                    parentElement.appendChild(details);
+                } else {
+                    // Leaf node
+                    const leafDiv = document.createElement('div');
+                    leafDiv.style.padding = '2px 0';
+                    leafDiv.style.paddingLeft = '20px';
+                    
+                    const content = document.createElement('span');
+                    content.className = 'tree-node-content';
+                    content.innerHTML = `<span class="tree-node-path">${escapeHtml(node.path)}</span>`;
+                    if (node.type) {
+                        content.innerHTML += `<span class="tree-node-type">(${escapeHtml(node.type)})</span>`;
+                    }
+                    
+                    leafDiv.appendChild(content);
+                    parentElement.appendChild(leafDiv);
+                }
+            }
+            
+            // Render root hierarchy
+            rootHierarchy.forEach(hierNode => {
+                renderHierarchyNode(hierNode, container);
+            });
+        }
+        
+        function buildRootHierarchy(nodes) {
+            const roots = [];
+            
+            for (const node of nodes) {
+                // Check if this node has a path with slashes (hierarchy)
+                if (node.path.includes('/')) {
+                    const parts = node.path.split('/');
+                    
+                    // Build hierarchy from path
+                    let current = roots;
+                    for (let i = 0; i < parts.length; i++) {
+                        const part = parts[i];
+                        let existing = current.find(n => n.name === part && !n.isLeaf);
+                        
+                        if (!existing) {
+                            existing = {
+                                name: part,
+                                type: i === parts.length - 1 ? node.type : null,
+                                pathChildren: [],
+                                treeChildren: i === parts.length - 1 ? node.children : [],
+                                isLeaf: i === parts.length - 1
+                            };
+                            current.push(existing);
+                        } else if (i === parts.length - 1) {
+                            // Last part - add tree children
+                            existing.type = node.type;
+                            existing.treeChildren = node.children;
+                        }
+                        
+                        current = existing.pathChildren;
+                    }
+                } else {
+                    // No hierarchy in path, add directly
+                    roots.push({
+                        name: node.path,
+                        type: node.type,
+                        pathChildren: [],
+                        treeChildren: node.children,
+                        isLeaf: true
+                    });
+                }
+            }
+            
+            // Merge sibling intermediate and root nodes with same name
+            // Then arrange them so same-named nodes are close while preserving order within categories
+            function mergeSiblingsAndArrange(hierNodes) {
+                // First, recursively process children
+                for (const hierNode of hierNodes) {
+                    if (hierNode.pathChildren.length > 0) {
+                        mergeSiblingsAndArrange(hierNode.pathChildren);
+                    }
+                }
+                
+                // Identify intermediate nodes (no tree children) and root nodes (has tree children)
+                const intermediates = [];
+                const roots = [];
+                
+                for (const node of hierNodes) {
+                    if (node.treeChildren && node.treeChildren.length > 0) {
+                        roots.push(node);
+                    } else {
+                        intermediates.push(node);
+                    }
+                }
+                
+                // Try to merge siblings with same name
+                // Don't merge if root node has a type (value part after colon)
+                const merged = new Set();
+                for (let i = 0; i < intermediates.length; i++) {
+                    if (merged.has(i)) continue;
+                    
+                    const intermediate = intermediates[i];
+                    
+                    // Find root node with same name
+                    const matchingRoot = roots.find(r => r.name === intermediate.name);
+                    
+                    if (matchingRoot) {
+                        // Don't merge if root node has a type value (after colon)
+                        if (matchingRoot.type) continue;
+                        
+                        // Merge intermediate into root
+                        // Add intermediate's path children to root's path children
+                        if (intermediate.pathChildren.length > 0) {
+                            matchingRoot.pathChildren = [
+                                ...matchingRoot.pathChildren,
+                                ...intermediate.pathChildren
+                            ];
+                        }
+                        merged.add(i);
+                    }
+                }
+                
+                // Remove merged intermediates
+                const remainingIntermediates = intermediates.filter((_, idx) => !merged.has(idx));
+                
+                // Rearrange to place same-named nodes close while preserving order
+                // Strategy: go through intermediates, and for each one, if there's a matching root, place root right after
+                hierNodes.length = 0; // Clear array
+                
+                const usedRoots = new Set();
+                for (const intermediate of remainingIntermediates) {
+                    hierNodes.push(intermediate);
+                    
+                    // If there's a root with same name, place it immediately after
+                    const matchingRoot = roots.find(r => r.name === intermediate.name && !usedRoots.has(r));
+                    if (matchingRoot) {
+                        hierNodes.push(matchingRoot);
+                        usedRoots.add(matchingRoot);
+                    }
+                }
+                
+                // Add remaining roots that weren't placed next to intermediates
+                for (const root of roots) {
+                    if (!usedRoots.has(root)) {
+                        hierNodes.push(root);
+                    }
+                }
+            }
+            
+            mergeSiblingsAndArrange(roots);
+            
+            return roots;
+        }
+
+        // Function for view switching
+        function switchTreeView(mode) {
+            const simpleView = document.getElementById('tree-simple-view');
+            const treeView = document.getElementById('tree-tree-view');
+            const rawView = document.getElementById('tree-raw-view');
+            const buttons = document.querySelectorAll('.view-mode-btn');
+            
+            // Save the current view mode for persistence
+            lastViewMode = mode;
+            
+            // For raw view, switch immediately (no heavy computation)
+            if (mode === 'raw') {
+                if (simpleView) simpleView.style.display = 'none';
+                if (treeView) treeView.style.display = 'none';
+                if (rawView) rawView.style.display = 'block';
+                
+                buttons.forEach(btn => {
+                    if (btn.dataset.mode === mode) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                return;
+            }
+            
+            // For simple/tree views, show loading spinner first
+            const loadingMessage = mode === 'tree' ? 'Switching to tree view...' : 'Switching to simple view...';
+            
+            // Hide all views and show loading
+            if (simpleView) simpleView.style.display = 'none';
+            if (treeView) treeView.style.display = 'none';
+            if (rawView) rawView.style.display = 'none';
+            
+            // Create temporary loading div
+            const contentViewer = document.getElementById('content-viewer');
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'loading-spinner';
+            loadingDiv.textContent = loadingMessage;
+            loadingDiv.id = 'view-switch-loading';
+            contentViewer.appendChild(loadingDiv);
+            
+            // Use setTimeout to let the spinner render before switching views
+            setTimeout(() => {
+                // Remove loading spinner
+                const spinner = document.getElementById('view-switch-loading');
+                if (spinner) spinner.remove();
+                
+                // Show selected view
+                if (mode === 'simple' && simpleView) {
+                    simpleView.style.display = 'block';
+                } else if (mode === 'tree' && treeView) {
+                    treeView.style.display = 'block';
+                }
+                
+                // Update button states
+                buttons.forEach(btn => {
+                    if (btn.dataset.mode === mode) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }, 10);
+        }
+
+        // Event listeners
+        dropZone.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            
+            if (e.dataTransfer.files.length > 0) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        parseButton.addEventListener('click', () => {
+            const content = textInput.value.trim();
+            if (content) {
+                parseAndDisplay(content);
+            } else {
+                showError('Please enter some content to parse');
+            }
+        });
+
+        backButton.addEventListener('click', () => {
+            // Navigate back using browser history
+            if (window.navigation) {
+                window.navigation.back();
+            } else {
+                history.back();
+            }
+        });
+
+        document.getElementById('show-global-headers-btn').addEventListener('click', () => {
+            showGlobalHeadersView();
+            currentFileIndex = -1;
+        });
+
+        fileHeadersToggle.addEventListener('click', () => {
+            const isVisible = fileHeaders.classList.toggle('visible');
+            fileHeadersToggle.textContent = isVisible ? 'Hide File Headers' : 'Show File Headers';
+        });
+
+        // Handle browser back/forward navigation
+        function handleNavigation() {
+            const hash = window.location.hash;
+            
+            if (!hash || hash === '') {
+                // No hash - show input screen
+                viewerContainer.classList.remove('visible');
+                inputContainer.classList.remove('hidden');
+                parsedData = null;
+                currentFileIndex = -1;
+            } else if (parsedData) {
+                // Only handle these if we have parsed data
+                if (hash === '#global-headers') {
+                    // Show global headers without updating history
+                    showGlobalHeadersView(false);
+                    currentFileIndex = -1;
+                } else if (hash.startsWith('#file-')) {
+                    // Show specific file without updating history
+                    const fileIndex = parseInt(hash.substring(6));
+                    if (fileIndex >= 0 && fileIndex < parsedData.files.length) {
+                        selectFile(fileIndex, false);
+                    }
+                }
+            }
+        }
+
+        // Listen to navigation events (Navigation API)
+        if (window.navigation) {
+            window.navigation.addEventListener('navigate', (event) => {
+                // Let the browser handle the navigation, then update our UI
+                event.intercept({
+                    handler: async () => {
+                        handleNavigation();
+                    }
+                });
+            });
+        } else {
+            // Fallback for browsers without Navigation API
+            window.addEventListener('popstate', (event) => {
+                handleNavigation();
+            });
+        }
+
+        // Set initial history state when viewer is displayed
+        function displayViewer() {
+            inputContainer.classList.add('hidden');
+            viewerContainer.classList.add('visible');
+            
+            // Display file list
+            displayFileList();
+            
+            // Reset content view - show global headers
+            currentFileIndex = -1;
+            
+            // Set initial URL hash and show global headers
+            if (window.navigation) {
+                window.navigation.navigate('#global-headers', { history: 'replace' });
+            } else {
+                history.replaceState({ showGlobal: true }, '', '#global-headers');
+            }
+            showGlobalHeadersView(false);
+        }
+    </script>
+</body>
+</html>
