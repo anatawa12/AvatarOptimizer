@@ -99,6 +99,12 @@ internal class BugReportHelper : EditorWindow
 
         if (GUILayout.Button("Copy Bug Report to Clipboard"))
         {
+            // confirm large data warning
+            if (!EditorUtility.DisplayDialog("Copy Bug Report to Clipboard",
+                    AAOL10N.Tr("BugReportHelper:copy-warning"),
+                    "Yes", "No"))
+                return;
+
             try
             {
                 var reportFile = RunBuild(targetAvatar);
