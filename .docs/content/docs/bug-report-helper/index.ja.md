@@ -51,5 +51,3 @@ AAO のバグに関連するアバターを設定してください。
 ## Other contents
 
 生成されたファイルを見るためのツールが{{% static-link "/aao-bugreport-viewer.html" %}}こちら{{% /static-link %}}にあります。
-
-[viewer]: /aao-bugreport-viewer.html
