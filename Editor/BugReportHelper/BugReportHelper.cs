@@ -53,7 +53,7 @@ internal class BugReportHelper : EditorWindow
         AAOL10N.DrawLanguagePicker();
 
         GUILayout.Label("Bug Report Helper", EditorStyles.boldLabel);
-        targetAvatar = (GameObject)EditorGUILayout.ObjectField("Target Avatar", targetAvatar, typeof(GameObject), allowSceneObjects: false);
+        targetAvatar = (GameObject)EditorGUILayout.ObjectField("Target Avatar", targetAvatar, typeof(GameObject), allowSceneObjects: true);
 
         GUILayout.Space(10);
 
@@ -410,7 +410,7 @@ internal class BugReportHelper : EditorWindow
 internal class Context
 {
     public static Context? Current = null;
-    public ReportFile ReportFile;
+    public readonly ReportFile ReportFile;
 
     public Context(ReportFile reportFile)
     {
@@ -435,21 +435,21 @@ internal class Context
 // - The file begins with a fixed header line: "AAO-BugReport-File/1.0"
 // - The file will have 'header' fields before the first part. two newlines separate the header and the first part, similar to HTTP/1.1
 // - The boundary will be stored in the header as "Boundary: <boundary-string>", since there is no external place to store it.
-// - Each field's key-value paris cannot be concatenated into single line like Set-Cookie in HTTP, as opposed to most HTTP headers that can be concatenated with commas.
+// - Each field's key-value pairs cannot be concatenated into single line like Set-Cookie in HTTP, as opposed to most HTTP headers that can be concatenated with commas.
 //   You must store header fields as `List<KeyValuePair<string, string>>`, rather than `Dictionary<string, string>`.
 internal class ReportFile
 {
-    private string boundary;
+    private readonly string _boundary;
 
     // fields
-    public List<KeyValuePair<string, string>> Fields = new();
+    public readonly List<KeyValuePair<string, string>> Fields = new();
     // blobs
-    public List<ReportBlob> Blobs = new();
+    public readonly List<ReportBlob> Blobs = new();
 
     public ReportFile()
     {
-        boundary = Guid.NewGuid().ToString("N");
-        AddField("boundary", boundary, @internal: true);
+        _boundary = Guid.NewGuid().ToString("N");
+        AddField("boundary", _boundary, @internal: true);
     }
 
     public void AddField(string key, string value) => AddField(key, value, @internal: false);
@@ -489,7 +489,7 @@ internal class ReportFile
         // write parts
         foreach (var blob in Blobs)
         {
-            sw.WriteLine($"--{boundary}");
+            sw.WriteLine($"--{_boundary}");
             foreach (var header in blob.Headers)
             {
                 sw.WriteLine($"{header.Key}: {header.Value}");

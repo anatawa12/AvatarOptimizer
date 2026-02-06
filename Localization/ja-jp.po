@@ -1210,6 +1210,7 @@ msgstr "クリア"
 msgid "AvatarOptimizerSettings:ClearAll:Confirm:Cancel"
 msgstr "キャンセル"
 
+msgid "BugReportHelper:description"
 msgstr ""
 "このウィンドウは、Avatar Optimizerのバグを報告するのに使用するための情報を収集します。\n"
 "Avatar Optimizerのバグを報告する際に、このウィンドウで収集したアバター情報を提供してください。\n"
