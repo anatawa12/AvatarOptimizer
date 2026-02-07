@@ -76,20 +76,24 @@ namespace Anatawa12.AvatarOptimizer.Test
                 $"Expected {(transform ? transform.name : "null")} but was {resolvedName}");
         }
 
-        [UnityTest]
-        public IEnumerator ValidPathResolutionWithSlash()
+        [Test]
+        public void ValidPathResolutionWithSlash()
         {
             var root = Utils.NewGameObject("root");
             var childWithSlash = Utils.NewGameObject("child/with/slash", root.transform);
             var son = Utils.NewGameObject("son", childWithSlash.transform);
 
-            var builder = new ObjectMappingBuilder<DummyPropInfo>(root).BuildObjectMapping().GetBeforeGameObjectTree(root);
+            var builder = new ObjectMappingBuilder<DummyPropInfo>(root).BuildObjectMapping()
+                .GetBeforeGameObjectTree(root);
 
-            Assert.That(builder.ResolvePath("child/with/slash")?.InstanceId, Is.EqualTo(childWithSlash.GetInstanceID()));
+            Assert.That(builder.ResolvePath("child/with/slash")?.InstanceId,
+                Is.EqualTo(childWithSlash.GetInstanceID()));
             Assert.That(builder.ResolvePath("child/with/slash/son")?.InstanceId, Is.EqualTo(son.GetInstanceID()));
 
-            Assert.That(Utils.ResolveAnimationPath(root.transform, "child/with/slash")?.GetInstanceID(), Is.EqualTo(childWithSlash.transform.GetInstanceID()));
-            Assert.That(Utils.ResolveAnimationPath(root.transform, "child/with/slash/son")?.GetInstanceID(), Is.EqualTo(son.transform.GetInstanceID()));
+            Assert.That(Utils.ResolveAnimationPath(root.transform, "child/with/slash")?.GetInstanceID(),
+                Is.EqualTo(childWithSlash.transform.GetInstanceID()));
+            Assert.That(Utils.ResolveAnimationPath(root.transform, "child/with/slash/son")?.GetInstanceID(),
+                Is.EqualTo(son.transform.GetInstanceID()));
 
             // tests for Unity's problem
             Assert.That(root.transform.Find("child/with/slash"), Is.Null);
@@ -98,8 +102,19 @@ namespace Anatawa12.AvatarOptimizer.Test
             Assert.That(AnimationUtility.GetAnimatedObject(root, MakeBinding("child/with/slash")), Is.Null);
             Assert.That(AnimationUtility.GetAnimatedObject(root, MakeBinding("child/with/slash/son")), Is.Null);
 
+            EditorCurveBinding MakeBinding(string path) =>
+                EditorCurveBinding.FloatCurve(path, typeof(GameObject), "m_IsActive");
+        }
+
+        [UnityTest]
+        public IEnumerator ValidPathResolutionWithSlashRuntimeBehavior()
+        {
             // Tests unity Animator behavior in play mode
             yield return new EnterPlayMode();
+
+            var root = Utils.NewGameObject("root");
+            var childWithSlash = Utils.NewGameObject("child/with/slash", root.transform);
+            var son = Utils.NewGameObject("son", childWithSlash.transform);
 
             var animator = root.AddComponent<Animator>();
 
@@ -138,8 +153,8 @@ namespace Anatawa12.AvatarOptimizer.Test
             }
         }
 
-        [UnityTest]
-        public IEnumerator ConflictingPathWithSlash()
+        [Test]
+        public void ConflictingPathWithSlash()
         {
             var root = Utils.NewGameObject("root");
             var firstSon = Utils.NewGameObject("child/with/slash/son", root.transform);
@@ -161,8 +176,20 @@ namespace Anatawa12.AvatarOptimizer.Test
             Assert.That(AnimationUtility.GetAnimatedObject(root, MakeBinding("child/with/slash")), Is.Null);
             Assert.That(AnimationUtility.GetAnimatedObject(root, MakeBinding("child/with/slash/son")), Is.Null);
 
+            EditorCurveBinding MakeBinding(string path) =>
+                EditorCurveBinding.FloatCurve(path, typeof(GameObject), "m_IsActive");
+        }
+
+        [UnityTest]
+        public IEnumerator ConflictingPathWithSlashRuntimeBehavior()
+        {
             // Tests unity Animator behavior in play mode
             yield return new EnterPlayMode();
+
+            var root = Utils.NewGameObject("root");
+            var firstSon = Utils.NewGameObject("child/with/slash/son", root.transform);
+            var childWithSlash = Utils.NewGameObject("child/with/slash", root.transform);
+            var son = Utils.NewGameObject("son", childWithSlash.transform);
 
             var animator = root.AddComponent<Animator>();
 
