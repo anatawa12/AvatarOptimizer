@@ -107,7 +107,6 @@ namespace Anatawa12.AvatarOptimizer.Test
             Assert.That(childWithSlash.activeSelf, Is.True);
             var controller = NewController(MakeBinding("child/with/slash"), 0f);
             animator.runtimeAnimatorController = controller;
-            yield return null; // wait for few frames
             yield return null;
             Assert.That(childWithSlash.activeSelf, Is.False);
 
@@ -115,7 +114,6 @@ namespace Anatawa12.AvatarOptimizer.Test
             Assert.That(son.activeSelf, Is.True);
             controller = NewController(MakeBinding("child/with/slash/son"), 0f);
             animator.runtimeAnimatorController = controller;
-            yield return null; // wait for few frames
             yield return null;
             Assert.That(son.activeSelf, Is.False);
 
@@ -172,7 +170,6 @@ namespace Anatawa12.AvatarOptimizer.Test
             Assert.That(childWithSlash.activeSelf, Is.True);
             var controller = NewController(MakeBinding("child/with/slash"), 0f);
             animator.runtimeAnimatorController = controller;
-            yield return null; // wait for few frames
             yield return null;
             Assert.That(childWithSlash.activeSelf, Is.False);
 
@@ -180,7 +177,6 @@ namespace Anatawa12.AvatarOptimizer.Test
             Assert.That(firstSon.activeSelf, Is.True);
             controller = NewController(MakeBinding("child/with/slash/son"), 0f);
             animator.runtimeAnimatorController = controller;
-            yield return null; // wait for few frames
             yield return null;
             Assert.That(firstSon.activeSelf, Is.False);
 
