@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- AAO recognizes animation incorrectly in extremely rare cases with path conflict `#1619`
 
 ### Security
 

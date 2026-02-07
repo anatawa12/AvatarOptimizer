@@ -117,7 +117,7 @@ namespace Anatawa12.AvatarOptimizer
             relative == "" ? this : ResolvePathAll(relative).FirstOrDefault();
 
         private IEnumerable<BeforeGameObjectTree> ResolvePathAll(string relative) =>
-            Utils.ResolveAnimationPath(this, relative, (tree, path) => tree.Children.Where(x => x.Name == path));
+            Utils.ResolveAnimationPath(this, relative, tree => tree.Children, tree => tree.Name);
     }
 
     class ComponentInfo
