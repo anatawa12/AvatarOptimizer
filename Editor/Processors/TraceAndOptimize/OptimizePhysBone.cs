@@ -115,11 +115,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             // nothing to be merged
             if (mergedColliders.Count == 0) return;
 
+            var gcContext = context.Extension<GCComponentInfoContext>();
             foreach (var physBone in context.GetComponents<VRCPhysBoneBase>())
+            {
+                var pbInfo = gcContext.GetInfo(physBone);
                 for (var i = 0; i < physBone.colliders.Count; i++)
+                {
                     if (physBone.colliders[i])
+                    {
                         if (mergedColliders.TryGetValue(physBone.colliders[i], out var mergedTo))
+                        {
                             physBone.colliders[i] = mergedTo;
+                            var mergedToInfo = gcContext.GetInfo(mergedTo);
+                            if (mergedToInfo.Activeness != false)
+                                pbInfo.AddDependency(mergedTo);
+                        }
+                    }
+                }
+            }
 
             foreach (var colliderBase in mergedColliders.Keys.ToList())
                 DestroyTracker.DestroyImmediate(colliderBase);
