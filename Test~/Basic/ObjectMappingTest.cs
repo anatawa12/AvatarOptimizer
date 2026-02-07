@@ -109,6 +109,7 @@ namespace Anatawa12.AvatarOptimizer.Test
         [UnityTest]
         public IEnumerator ValidPathResolutionWithSlashRuntimeBehavior()
         {
+            if (Application.isBatchMode) yield break; // it looks like Unity Test Runner in batch mode cannot handle this test well.
             EditorSettings.enterPlayModeOptions |= EnterPlayModeOptions.DisableDomainReload;
             // Tests unity Animator behavior in play mode
             yield return new EnterPlayMode();
@@ -186,6 +187,7 @@ namespace Anatawa12.AvatarOptimizer.Test
         [UnityTest]
         public IEnumerator ConflictingPathWithSlashRuntimeBehavior()
         {
+            if (Application.isBatchMode) yield break; // it looks like Unity Test Runner in batch mode cannot handle this test well.
             EditorSettings.enterPlayModeOptions |= EnterPlayModeOptions.DisableDomainReload;
             // Tests unity Animator behavior in play mode
             yield return new EnterPlayMode();
