@@ -462,42 +462,29 @@ namespace Anatawa12.AvatarOptimizer
         public static IEnumerable<T> ResolveAnimationPath<T>(
             T root,
             string relative,
-            Func<T, string, IEnumerable<T>> findChild
+            Func<T, IEnumerable<T>> getChildren,
+            Func<T, string> getName
         ) {
             // if relative path is empty, return itself
             if (relative == "")
                 return new[] { root };
             // otherwise, match as possible from start
 
-            // simplest pattern: the relative is entire path
-            var slashIndex = relative.IndexOf('/');
-            if (slashIndex == -1)
-                return findChild(root, relative);
-
-            // other patterns: the relative path has slash, so we tries to match from start
-            for (;slashIndex != -1; slashIndex = relative.IndexOf('/', slashIndex + 1))
-            {
-                var name = relative[..slashIndex];
-
-                var childrenMatched = findChild(root, name);
-                // ReSharper disable once PossibleMultipleEnumeration : single element is proceed
-                if (childrenMatched.Any())
+            return getChildren(root)
+                .Select(child => (child, name: getName(child)))
+                .Where(t => t.name == relative || relative.StartsWith(t.name + "/"))
+                .SelectMany(t =>
                 {
-                    var remaining = relative[(slashIndex + 1)..];
-                    // ReSharper disable once PossibleMultipleEnumeration
-                    return childrenMatched.SelectMany(x => ResolveAnimationPath(x, remaining, findChild));
-                }
-            }
-
-            // no subpath matched, so we try to match the entire path
-            return findChild(root, relative);
+                    var remaining = relative.Length == t.name.Length ? "" : relative[(t.name.Length + 1)..];
+                    return ResolveAnimationPath(t.child, remaining, getChildren, getName);
+                });
         }
 
         public static Transform? ResolveAnimationPath(Transform root, string path) =>
-            ResolveAnimationPath(root, path, (transform, name) => 
+            ResolveAnimationPath(root, path, (transform) => 
                 Enumerable.Range(0, transform.childCount)
-                    .Select(transform.GetChild)
-                    .Where(x => x.name == name))
+                    .Select(transform.GetChild),
+                transform => transform.name)
                 .FirstOrDefault();
 
         public static Object? GetAnimatedObject(GameObject obj, EditorCurveBinding binding, Object? context = null)
