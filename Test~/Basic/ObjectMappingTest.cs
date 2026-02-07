@@ -109,6 +109,7 @@ namespace Anatawa12.AvatarOptimizer.Test
         [UnityTest]
         public IEnumerator ValidPathResolutionWithSlashRuntimeBehavior()
         {
+            EditorSettings.enterPlayModeOptions |= EnterPlayModeOptions.DisableDomainReload;
             // Tests unity Animator behavior in play mode
             yield return new EnterPlayMode();
 
@@ -123,12 +124,14 @@ namespace Anatawa12.AvatarOptimizer.Test
             var controller = NewController(MakeBinding("child/with/slash"), 0f);
             animator.runtimeAnimatorController = controller;
             yield return null;
+            yield return null;
             Assert.That(childWithSlash.activeSelf, Is.False);
 
             // check for son
             Assert.That(son.activeSelf, Is.True);
             controller = NewController(MakeBinding("child/with/slash/son"), 0f);
             animator.runtimeAnimatorController = controller;
+            yield return null;
             yield return null;
             Assert.That(son.activeSelf, Is.False);
 
@@ -183,6 +186,7 @@ namespace Anatawa12.AvatarOptimizer.Test
         [UnityTest]
         public IEnumerator ConflictingPathWithSlashRuntimeBehavior()
         {
+            EditorSettings.enterPlayModeOptions |= EnterPlayModeOptions.DisableDomainReload;
             // Tests unity Animator behavior in play mode
             yield return new EnterPlayMode();
 
@@ -198,12 +202,14 @@ namespace Anatawa12.AvatarOptimizer.Test
             var controller = NewController(MakeBinding("child/with/slash"), 0f);
             animator.runtimeAnimatorController = controller;
             yield return null;
+            yield return null;
             Assert.That(childWithSlash.activeSelf, Is.False);
 
             // check for son
             Assert.That(firstSon.activeSelf, Is.True);
             controller = NewController(MakeBinding("child/with/slash/son"), 0f);
             animator.runtimeAnimatorController = controller;
+            yield return null;
             yield return null;
             Assert.That(firstSon.activeSelf, Is.False);
 
