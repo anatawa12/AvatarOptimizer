@@ -1,8 +1,11 @@
 using System;
+using System.Collections;
 using System.Linq;
 using NUnit.Framework;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEngine;
+using UnityEngine.TestTools;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Test
@@ -73,8 +76,8 @@ namespace Anatawa12.AvatarOptimizer.Test
                 $"Expected {(transform ? transform.name : "null")} but was {resolvedName}");
         }
 
-        [Test]
-        public void ValidPathResolutionWithSlash()
+        [UnityTest]
+        public IEnumerator ValidPathResolutionWithSlash()
         {
             var root = Utils.NewGameObject("root");
             var childWithSlash = Utils.NewGameObject("child/with/slash", root.transform);
@@ -94,10 +97,47 @@ namespace Anatawa12.AvatarOptimizer.Test
 
             Assert.That(AnimationUtility.GetAnimatedObject(root, MakeBinding("child/with/slash")), Is.Null);
             Assert.That(AnimationUtility.GetAnimatedObject(root, MakeBinding("child/with/slash/son")), Is.Null);
-            return;
+
+            // Tests unity Animator behavior in play mode
+            yield return new EnterPlayMode(expectDomainReload: false);
+
+            var animator = root.AddComponent<Animator>();
+
+            // check for childWithSlash
+            Assert.That(childWithSlash.activeSelf, Is.True);
+            var controller = NewController(MakeBinding("child/with/slash"), 0f);
+            animator.runtimeAnimatorController = controller;
+            yield return null; // wait for few frames
+            yield return null;
+            Assert.That(childWithSlash.activeSelf, Is.False);
+
+            // check for son
+            Assert.That(son.activeSelf, Is.True);
+            controller = NewController(MakeBinding("child/with/slash/son"), 0f);
+            animator.runtimeAnimatorController = controller;
+            yield return null; // wait for few frames
+            yield return null;
+            Assert.That(son.activeSelf, Is.False);
+
+            yield return new ExitPlayMode();
+
+            yield break;
 
             EditorCurveBinding MakeBinding(string path) =>
                 EditorCurveBinding.FloatCurve(path, typeof(GameObject), "m_IsActive");
+
+            AnimatorController NewController(EditorCurveBinding binding, float value)
+            {
+                var controller = new AnimatorController();
+                controller.AddLayer("Base Layer");
+                var stateMachine = controller.layers[0].stateMachine;
+                var state = stateMachine.AddState("State");
+                var clip = new AnimationClip();
+                clip.SetCurve(binding.path, binding.type, binding.propertyName,
+                    AnimationCurve.Constant(0, 1, value));
+                state.motion = clip;
+                return controller;
+            }
         }
 
         [Test]
