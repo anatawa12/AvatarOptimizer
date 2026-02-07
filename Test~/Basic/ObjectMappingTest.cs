@@ -26,11 +26,11 @@ namespace Anatawa12.AvatarOptimizer.Test
         [TestCase("")]
         [TestCase("child1")]
         [TestCase("child1/child11")]
-        [TestCase("child2/child21")]
+        //[TestCase("child2/child21")] AnimationUtility.GetAnimatedObject is broken
         [TestCase("child2/child21/child211")]
-        [TestCase("child2/child21/inWithPathOnly")]
+        //[TestCase("child2/child21/inWithPathOnly")] AnimationUtility.GetAnimatedObject is broken
         [TestCase("child2/child21/child211-2")]
-        [TestCase("child2/child21-2/inWithPathOnly-2-21-2")]
+        //[TestCase("child2/child21-2/inWithPathOnly-2-21-2")] AnimationUtility.GetAnimatedObject is broken
         [Test]
         public void PathResolution(string testPath)
         {
