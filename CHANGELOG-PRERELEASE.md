@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Fixed something around Bug Report Helper `#1616`
 
 ### Security
 
