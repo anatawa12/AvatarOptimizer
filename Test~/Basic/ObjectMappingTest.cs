@@ -140,6 +140,71 @@ namespace Anatawa12.AvatarOptimizer.Test
             }
         }
 
+        [UnityTest]
+        public IEnumerator ConflictingPathWithSlash()
+        {
+            var root = Utils.NewGameObject("root");
+            var firstSon = Utils.NewGameObject("child/with/slash/son", root.transform);
+            var childWithSlash = Utils.NewGameObject("child/with/slash", root.transform);
+            var son = Utils.NewGameObject("son", childWithSlash.transform);
+
+            var builder = new ObjectMappingBuilder<DummyPropInfo>(root).BuildObjectMapping().GetBeforeGameObjectTree(root);
+
+            Assert.That(builder.ResolvePath("child/with/slash")?.InstanceId, Is.EqualTo(childWithSlash.GetInstanceID()));
+            Assert.That(builder.ResolvePath("child/with/slash/son")?.InstanceId, Is.EqualTo(firstSon.GetInstanceID()));
+
+            Assert.That(Utils.ResolveAnimationPath(root.transform, "child/with/slash")?.GetInstanceID(), Is.EqualTo(childWithSlash.transform.GetInstanceID()));
+            Assert.That(Utils.ResolveAnimationPath(root.transform, "child/with/slash/son")?.GetInstanceID(), Is.EqualTo(firstSon.transform.GetInstanceID()));
+
+            // tests for Unity's problem
+            Assert.That(root.transform.Find("child/with/slash"), Is.Null);
+            Assert.That(root.transform.Find("child/with/slash/son"), Is.Null);
+
+            Assert.That(AnimationUtility.GetAnimatedObject(root, MakeBinding("child/with/slash")), Is.Null);
+            Assert.That(AnimationUtility.GetAnimatedObject(root, MakeBinding("child/with/slash/son")), Is.Null);
+
+            // Tests unity Animator behavior in play mode
+            yield return new EnterPlayMode(expectDomainReload: false);
+
+            var animator = root.AddComponent<Animator>();
+
+            // check for childWithSlash
+            Assert.That(childWithSlash.activeSelf, Is.True);
+            var controller = NewController(MakeBinding("child/with/slash"), 0f);
+            animator.runtimeAnimatorController = controller;
+            yield return null; // wait for few frames
+            yield return null;
+            Assert.That(childWithSlash.activeSelf, Is.False);
+
+            // check for son
+            Assert.That(firstSon.activeSelf, Is.True);
+            controller = NewController(MakeBinding("child/with/slash/son"), 0f);
+            animator.runtimeAnimatorController = controller;
+            yield return null; // wait for few frames
+            yield return null;
+            Assert.That(firstSon.activeSelf, Is.False);
+
+            yield return new ExitPlayMode();
+
+            yield break;
+
+            EditorCurveBinding MakeBinding(string path) =>
+                EditorCurveBinding.FloatCurve(path, typeof(GameObject), "m_IsActive");
+
+            AnimatorController NewController(EditorCurveBinding binding, float value)
+            {
+                var controller = new AnimatorController();
+                controller.AddLayer("Base Layer");
+                var stateMachine = controller.layers[0].stateMachine;
+                var state = stateMachine.AddState("State");
+                var clip = new AnimationClip();
+                clip.SetCurve(binding.path, binding.type, binding.propertyName,
+                    AnimationCurve.Constant(0, 1, value));
+                state.motion = clip;
+                return controller;
+            }
+        }
+
         [Test]
         public void MoveObjectTest()
         {
