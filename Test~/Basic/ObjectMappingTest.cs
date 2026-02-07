@@ -99,7 +99,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             Assert.That(AnimationUtility.GetAnimatedObject(root, MakeBinding("child/with/slash/son")), Is.Null);
 
             // Tests unity Animator behavior in play mode
-            yield return new EnterPlayMode(expectDomainReload: false);
+            yield return new EnterPlayMode();
 
             var animator = root.AddComponent<Animator>();
 
@@ -162,7 +162,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             Assert.That(AnimationUtility.GetAnimatedObject(root, MakeBinding("child/with/slash/son")), Is.Null);
 
             // Tests unity Animator behavior in play mode
-            yield return new EnterPlayMode(expectDomainReload: false);
+            yield return new EnterPlayMode();
 
             var animator = root.AddComponent<Animator>();
 
