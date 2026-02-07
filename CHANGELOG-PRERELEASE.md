@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - AAO recognizes animation incorrectly in extremely rare cases with path conflict `#1619`
+- Unexpectedly some PhysBone colliders are removed `#1620`
 
 ### Security
 
