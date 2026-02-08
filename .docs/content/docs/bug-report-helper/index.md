@@ -12,7 +12,7 @@ To help you provide such information, AAO: Avatar Optimizer includes a Bug Repor
 which collects information about your avatar and environment into a report file.
 
 Please note that the tool does not collect all information but only general basic information about your avatar,
-to prevent license violations and privacy issues.
+to prevent license violations and privacy issues.\
 Therefore, you may be asked to provide more information about avatar.
 
 ## How to use {#how-to-use}
@@ -30,9 +30,10 @@ This is the recommended way to submit bug reports as it's efficient.
 Clicking `Copy Bug Report to Clipboard` will copy the bug report text to your clipboard.
 Please note that the text may be too large for some applications to paste.
 
-With either button, you can create bug report file.
-To generate bug report file, Avatar Optimizer will build the avatar once.
-Please attach the file or upload to some file sharing service and share the link when you create a bug report.
+Whichever button you use, you can create a report file with the same content.\
+To generate a report file, Avatar Optimizer will build the avatar once.
+
+When you provide a bug report to us, please attach the file or upload to some file sharing service and share the link.
 
 ![Window Screenshot](./window.png)
 
@@ -43,12 +44,12 @@ The bug report contains the following information (non-exhaustive):
   - Avatar name
   - Avatar Unity version
   - List of GameObjects and Components
-  - Configuration of some components, including Mesh information
+  - Configuration of some components, including some Mesh information
 - Environment information
   - Unity version
   - Operating System
   - Avatar Optimizer version
-  - Other installed package versions
+  - Other installed VPM package versions
 - Build information
   - Logs from the build process, including warnings and errors
 
