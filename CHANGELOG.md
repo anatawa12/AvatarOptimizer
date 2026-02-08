@@ -112,6 +112,8 @@ The format is based on [Keep a Changelog].
 - Error in AutoFreezeBlendShape with broken viseme settings `#1575`
 - Error with Object as the animation target `#1586`
 - VRM: Improved robustness of parsing incompletely setup VRM0.x / VRM1.0 avatars `#1599`
+- AAO recognizes animation incorrectly in extremely rare cases with path conflict `#1619`
+- Unexpectedly some PhysBone colliders are removed `#1620`
 
 ### Security
 
