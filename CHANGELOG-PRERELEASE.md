@@ -16,11 +16,14 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- AAO recognizes animation incorrectly in extremely rare cases with path conflict `#1619`
-- Unexpectedly some PhysBone colliders are removed `#1620`
-- Fixed something around Bug Report Helper `#1616`
 
 ### Security
+
+## [1.9.0-rc.9] - 2026-02-08
+### Fixed
+- AAO recognizes animation incorrectly in extremely rare cases with path conflict [`#1619`](https://github.com/anatawa12/AvatarOptimizer/pull/1619)
+- Unexpectedly some PhysBone colliders are removed [`#1620`](https://github.com/anatawa12/AvatarOptimizer/pull/1620)
+- Fixed something around Bug Report Helper [`#1616`](https://github.com/anatawa12/AvatarOptimizer/pull/1616)
 
 ## [1.9.0-rc.8] - 2026-02-05
 ### Added
@@ -2124,7 +2127,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.8...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.9...HEAD
+[1.9.0-rc.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.8...v1.9.0-rc.9
 [1.9.0-rc.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.7...v1.9.0-rc.8
 [1.9.0-rc.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.6...v1.9.0-rc.7
 [1.9.0-rc.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.5...v1.9.0-rc.6
