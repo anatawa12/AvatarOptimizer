@@ -1,0 +1,36 @@
+{{ $url := "https://api.github.com/repos/anatawa12/AvatarOptimizer/contributors" }}
+{{ $opts := dict
+    "method" "get"
+    "headers" (dict  "Content-Type" "application/json")
+}}
+{{ $resource := resources.GetRemote $url $opts }}
+{{ $known := dict
+    "22656849" "anatawa12"
+    "61457993" "Sayamame-beans"
+}}
+{{ with try (resources.GetRemote $url $opts) }}
+  {{ with .Err }}
+    {{ errorf "%s" . }}
+  {{ else with .Value }}
+    {{ $contributors := . | transform.Unmarshal }}
+      <ul class="contributors">
+        {{ range $contributor := $contributors }}
+        {{ if not (isset $known (string $contributor.id)) }}
+        <li>
+          <a
+                  class="contributor-icon contributor"
+                  aria-describedby="contributor-tooltip-{{ string $contributor.id }}"
+                  href="{{ $contributor.html_url }}"
+                  target="_blank"
+          >
+              <span class="contributor-tooltip" role="tooltip" id="contributor-tooltip-{{ string $contributor.id }}">{{ .login }}</span>
+              <img class="contributor-icon" src="{{ $contributor.avatar_url }}" alt="{{ $contributor.login }}" />
+          </a>
+        </li>
+        {{ end }}
+        {{ end }}
+      </ul>
+  {{ else }}
+    {{ errorf "Unable to get remote resource %q" $url }}
+  {{ end }}
+{{ end }}

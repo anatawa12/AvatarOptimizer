@@ -86,6 +86,27 @@ cd /path/to/your-unity-project
 vpm add package com.anatawa12.avatar-optimizer
 ```
 
+## Developers {#developers}
+
+This project is mainly developed by two core developers:
+
+{{< main-dev username="anatawa12" >}}
+The initiator of the project and the main maintainer.\
+Primarily responsible for implementing new features, fixing bugs, and writing draft documentation.
+{{< /main-dev >}}
+
+{{< main-dev username="Sayamame-beans" >}}
+The main documentation editor.\
+They also contribute to feature planning, collecting user feedback, and promoting the project.
+{{< /main-dev >}}
+
+In addition, many contributors have helped improve this project.
+Here are some of them.
+
+Thank you all for your contributions!
+
+{{< contributors >}}
+
 [ALCOM]: https://vrc-get.anatawa12.com/alcom/
 [VPAI]: https://github.com/anatawa12/VPMPackageAutoInstaller
 [vpm]: https://vcc.docs.vrchat.com/vpm/
