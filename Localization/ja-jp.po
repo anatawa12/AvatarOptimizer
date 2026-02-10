@@ -1227,7 +1227,7 @@ msgstr ""
 "- アニメーターの一部情報\n"  
 
 msgid "BugReportHelper:play-mode"
-msgstr "レポート生成はPlay Modeでは実行できません。Play Modeを終了して、もう一度お試しください。"
+msgstr "Play Mode中はレポートを生成できません。Play Modeを終了してからもう一度お試しください。"
 
 msgid "BugReportHelper:copy-warning"
 msgstr ""
