@@ -67,6 +67,13 @@ internal class BugReportHelper : EditorWindow
             return;
         }
 
+        if (EditorApplication.isPlaying)
+        {
+            EditorGUILayout.HelpBox(AAOL10N.Tr("BugReportHelper:play-mode"), MessageType.Warning);
+        }
+
+        EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
+
         if (GUILayout.Button("Save Bug Report"))
         {
             try
@@ -117,6 +124,8 @@ internal class BugReportHelper : EditorWindow
                 EditorUtility.DisplayDialog("Error", $"An error occurred while generating the bug report. See console for details.", "OK");
             }
         }
+
+        EditorGUI.EndDisabledGroup();
     }
 
     public static ReportFile RunBuild(GameObject avatar)
