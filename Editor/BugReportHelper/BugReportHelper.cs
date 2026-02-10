@@ -67,12 +67,12 @@ internal class BugReportHelper : EditorWindow
             return;
         }
 
-        if (EditorApplication.isPlaying)
+        if (EditorApplication.isPlayingOrWillChangePlaymode)
         {
             EditorGUILayout.HelpBox(AAOL10N.Tr("BugReportHelper:play-mode"), MessageType.Warning);
         }
 
-        EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
+        EditorGUI.BeginDisabledGroup(EditorApplication.isPlayingOrWillChangePlaymode);
 
         if (GUILayout.Button("Save Bug Report"))
         {
