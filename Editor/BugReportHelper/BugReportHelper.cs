@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
+using Anatawa12.AvatarOptimizer.PatchApplier;
 using nadena.dev.ndmf;
 using nadena.dev.ndmf.platform;
 using Newtonsoft.Json;
@@ -143,6 +144,14 @@ internal class BugReportHelper : EditorWindow
             reportFile.AddField("Operating-System", SystemInfo.operatingSystem);
             reportFile.AddField("NDMF-Platform", AmbientPlatform.CurrentPlatform.QualifiedName);
             reportFile.AddField("Avatar-Name", avatar.name);
+
+            // Add patch information if patches are applied
+            if (VersionInfo.HasPatches())
+            {
+                var patchCommitHash = VersionInfo.GetPatchCommitHash();
+                if (patchCommitHash != null)
+                    reportFile.AddField("AAO-Patch-Applied", patchCommitHash);
+            }
 
             foreach (var (package, version) in PackageManagerInfoCollector.UpmLockedPackages())
                 reportFile.AddField("Upm-Dependency", $"{package}@{version}");
