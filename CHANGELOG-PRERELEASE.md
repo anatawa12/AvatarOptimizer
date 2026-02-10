@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Improved behavior of Bug Report Helper to prevent mistakes `#1623`
-- Disabled merging PhysBones when constraints are affected `#1624`
 
 ### Deprecated
 
@@ -20,6 +18,11 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.9.0-rc.10] - 2026-02-10
+### Changed
+- Improved behavior of Bug Report Helper to prevent mistakes [`#1623`](https://github.com/anatawa12/AvatarOptimizer/pull/1623)
+- Disabled merging PhysBones when constraints are affected [`#1624`](https://github.com/anatawa12/AvatarOptimizer/pull/1624)
 
 ## [1.9.0-rc.9] - 2026-02-08
 ### Fixed
@@ -2129,7 +2132,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.9...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.10...HEAD
+[1.9.0-rc.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.9...v1.9.0-rc.10
 [1.9.0-rc.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.8...v1.9.0-rc.9
 [1.9.0-rc.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.7...v1.9.0-rc.8
 [1.9.0-rc.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.6...v1.9.0-rc.7
