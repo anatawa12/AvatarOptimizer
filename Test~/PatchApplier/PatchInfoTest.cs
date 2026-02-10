@@ -183,9 +183,7 @@ namespace Anatawa12.AvatarOptimizer.Test.PatchApplier
             }
 
             if (currentPatch != null)
-                typeof(PatchRegistry)
-                    .GetMethod("AddPatch")
-                    .Invoke(registry, new object[] { currentPatch });
+                registry.AddPatch(currentPatch);
 
             return registry;
         }

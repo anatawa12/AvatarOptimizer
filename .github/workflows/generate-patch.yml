@@ -60,8 +60,8 @@ jobs:
           # Check if it's a commit range
           elif [[ "$TARGET" =~ \.\.\. ]]; then
             echo "type=range" >> $GITHUB_OUTPUT
-            HEAD=$(echo "$TARGET" | cut -d'.' -f1)
-            BASE=$(echo "$TARGET" | cut -d'.' -f4-)
+            HEAD=$(echo "$TARGET" | sed 's/^.*\.\.\.//')
+            BASE=$(echo "$TARGET" | sed 's/\.\.\..*$//')
             echo "head=$HEAD" >> $GITHUB_OUTPUT
             echo "base=$BASE" >> $GITHUB_OUTPUT
           # Otherwise, treat as single commit

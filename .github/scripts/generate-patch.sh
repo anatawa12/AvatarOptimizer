@@ -178,8 +178,8 @@ elif echo "$TARGET" | grep -q '\.\.\.'; then
     # It's a range
     echo "Applying commit range..."
     
-    BASE_REF=$(echo "$TARGET" | cut -d'.' -f1)
-    HEAD_REF=$(echo "$TARGET" | cut -d'.' -f4-)
+    BASE_REF=$(echo "$TARGET" | sed 's/\.\.\..*$//')
+    HEAD_REF=$(echo "$TARGET" | sed 's/^.*\.\.\.//')
     
     # Get commits in range
     git cherry-pick "${BASE_REF}..${HEAD_REF}" || {
@@ -239,8 +239,8 @@ if [ "$TARGET" != "working" ]; then
 Commit-Range: ${TARGET}"
         
         # Add co-authors
-        BASE_REF=$(echo "$TARGET" | cut -d'.' -f1)
-        HEAD_REF=$(echo "$TARGET" | cut -d'.' -f4-)
+        BASE_REF=$(echo "$TARGET" | sed 's/\.\.\..*$//')
+        HEAD_REF=$(echo "$TARGET" | sed 's/^.*\.\.\.//')
         git log --format="%an <%ae>" "${BASE_REF}..${HEAD_REF}" | sort -u | while read -r author; do
             FULL_MSG="$FULL_MSG
 Co-authored-by: ${author}"
