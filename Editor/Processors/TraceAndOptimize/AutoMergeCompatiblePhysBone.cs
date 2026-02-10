@@ -1,3 +1,4 @@
+#if AAO_VRCSDK3_AVATARS
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -9,6 +10,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
+using UnityEngine.Animations;
 using UnityEngine.Profiling;
 using VRC.Dynamics;
 using VRC.SDK3.Dynamics.PhysBone.Components;
@@ -40,6 +42,12 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
 
             // Merge is prohibited due to settings
             if (!key.CanMergePhysBone())
+                continue;
+
+            // VRCConstraints and VRCPhysBones placement effects execution order, so
+            // we cannot merge PhysBones that affect Transforms with Constraints.
+            if (physBone.GetAffectedTransforms()
+                .Any(t => (Component)t.GetComponent<IConstraint>() || t.GetComponent<VRCConstraintBase>()))
                 continue;
 
             if (!physBonesByKey.TryGetValue(key, out var list))
@@ -392,3 +400,5 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
         public static bool operator !=(PbInfo left, PbInfo right) => !left.Equals(right);
     }
 }
+
+#endif
