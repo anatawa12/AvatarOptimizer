@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog].
 
 ### Changed
 - Improved behavior of Bug Report Helper to prevent mistakes `#1623`
+- Disabled merging PhysBones when constraints are affected `#1624`
 
 ### Deprecated
 
