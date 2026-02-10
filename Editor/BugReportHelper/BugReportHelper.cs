@@ -110,7 +110,7 @@ internal class BugReportHelper : EditorWindow
             if (!EditorUtility.DisplayDialog("Copy Bug Report to Clipboard",
                     AAOL10N.Tr("BugReportHelper:copy-warning"),
                     "Yes", "No"))
-                return;
+                goto end_of_button;
 
             try
             {
@@ -123,6 +123,8 @@ internal class BugReportHelper : EditorWindow
                 Debug.LogException(ex);
                 EditorUtility.DisplayDialog("Error", $"An error occurred while generating the bug report. See console for details.", "OK");
             }
+
+            end_of_button:;
         }
 
         EditorGUI.EndDisabledGroup();
