@@ -25,8 +25,10 @@ Please set the avatar that bug of AAO is related to.
 At the bottom of the window, there are two buttons: `Save Bug Report` `Copy Bug Report to Clipboard`.
 
 <blockquote class="book-hint info">
+
 If you're in Play Mode (Top ▶ button is blue), those buttons will be disabled.\
 Please exit Play Mode (click Top ▶ button to turn it gray) before using the Bug Report Helper.
+
 </blockquote>
 
 Clicking `Save Bug Report` will open a file save dialog to save the bug report as a compressed (gz) file.
