@@ -1,0 +1,188 @@
+name: Auto Generate PR Patches
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - master
+      - 'master-**'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  generate-patches:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          # Generate patch for latest stable and prerelease
+          # These will be determined dynamically
+          - type: stable
+          - type: prerelease
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get latest release version
+        id: get_version
+        run: |
+          if [ "${{ matrix.type }}" = "stable" ]; then
+            # Get latest non-prerelease tag
+            VERSION=$(git tag -l 'v*' --sort=-version:refname | grep -v '-' | head -n1 | sed 's/^v//')
+          else
+            # Get latest prerelease tag
+            VERSION=$(git tag -l 'v*' --sort=-version:refname | grep '-' | head -n1 | sed 's/^v//')
+          fi
+          
+          if [ -z "$VERSION" ]; then
+            echo "No ${{ matrix.type }} version found"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Found ${{ matrix.type }} version: $VERSION"
+
+      - name: Setup Git
+        if: steps.get_version.outputs.skip != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Generate patch
+        if: steps.get_version.outputs.skip != 'true'
+        id: generate
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          BASE_COMMIT=$(git rev-list -n 1 "v${VERSION}")
+          PR_HEAD="${{ github.event.pull_request.head.sha }}"
+          PR_BASE="${{ github.event.pull_request.base.ref }}"
+          
+          # Create temporary branch
+          PATCH_BRANCH="temp-patch-pr${{ github.event.pull_request.number }}-${VERSION}-$(date +%s)"
+          git checkout -b "$PATCH_BRANCH" "$BASE_COMMIT"
+          
+          # Try to apply changes
+          if ! git cherry-pick "$PR_HEAD" 2>&1; then
+            # Handle conflicts in documentation and Unity excluded files
+            git status --short | grep '^UU' | awk '{print $2}' | while read file; do
+              if [[ "$file" =~ ^\.docs/ ]] || [[ "$file" =~ ^CHANGELOG ]] || [[ "$file" =~ ^\. ]] || [[ "$file" =~ ~$ ]]; then
+                git rm "$file" 2>/dev/null || git add "$file"
+              fi
+            done
+            
+            # Check if conflicts remain
+            if git status | grep -q "both modified\|Unmerged paths"; then
+              echo "has_conflicts=true" >> $GITHUB_OUTPUT
+              git cherry-pick --abort || true
+              git checkout "$PR_BASE"
+              git branch -D "$PATCH_BRANCH"
+              exit 0
+            else
+              git commit --no-edit --allow-empty
+            fi
+          fi
+          
+          # Remove documentation and Unity excluded files
+          git rm -rf .docs CHANGELOG*.md 2>/dev/null || true
+          find . -name ".*" -not -name ".gitignore" -not -path "./.git/*" -type f -delete 2>/dev/null || true
+          find . -name "*~" -type d -exec rm -rf {} + 2>/dev/null || true
+          find . -name "*~" -type f -delete 2>/dev/null || true
+          
+          # Amend commit if there were deletions
+          if ! git diff --cached --quiet 2>/dev/null; then
+            git commit --amend --no-edit --allow-empty
+          fi
+          
+          # Create proper commit message
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          PR_AUTHOR="${{ github.event.pull_request.user.login }}"
+          
+          COMMIT_MSG="patch: ${PR_TITLE}
+
+Base-Version: ${VERSION}
+Base-Commit: ${BASE_COMMIT}
+Pull-Request: ${PR_URL}
+Commit-Range: ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}
+
+Co-authored-by: ${PR_AUTHOR} <${PR_AUTHOR}@users.noreply.github.com>"
+          
+          echo -e "$COMMIT_MSG" | git commit --amend -F -
+          
+          # Get patch commit hash
+          PATCH_COMMIT=$(git rev-parse HEAD)
+          echo "patch_commit=$PATCH_COMMIT" >> $GITHUB_OUTPUT
+          
+          # Generate patch file
+          git format-patch -1 HEAD --stdout > "/tmp/patch-${VERSION}.patch"
+          
+          # Cleanup
+          git checkout "$PR_BASE"
+          git branch -D "$PATCH_BRANCH"
+          
+          echo "Patch generated successfully"
+
+      - name: Upload patch artifact
+        if: steps.get_version.outputs.skip != 'true' && steps.generate.outputs.has_conflicts != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: patch-${{ matrix.type }}-${{ steps.get_version.outputs.version }}
+          path: /tmp/patch-${{ steps.get_version.outputs.version }}.patch
+          retention-days: 30
+
+      - name: Post comment marker
+        if: steps.get_version.outputs.skip != 'true'
+        id: find_comment
+        uses: peter-evans/find-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '<!-- patch-generation-comment -->'
+
+      - name: Create or update PR comment (success)
+        if: steps.get_version.outputs.skip != 'true' && steps.generate.outputs.has_conflicts != 'true'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find_comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            <!-- patch-generation-comment -->
+            ## :package: Test Patches Generated
+            
+            Patches have been automatically generated for testing this PR:
+            
+            | Base Version | Status | Patch |
+            |--------------|--------|-------|
+            | `${{ steps.get_version.outputs.version }}` (${{ matrix.type }}) | :white_check_mark: Success | [Download](https://github.com/${{ github.repository }}/commit/${{ steps.generate.outputs.patch_commit }}.patch) |
+            
+            ### How to Apply
+            1. Open Unity with your project
+            2. Go to `Tools > Avatar Optimizer > Apply Patch`
+            3. Enter patch URL or download and select the file
+            4. Click `Apply Patch`
+            
+            **Note:** Patches are for testing purposes only and should not be used in production.
+
+      - name: Create or update PR comment (conflicts)
+        if: steps.get_version.outputs.skip != 'true' && steps.generate.outputs.has_conflicts == 'true'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find_comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            <!-- patch-generation-comment -->
+            ## :package: Test Patches
+            
+            | Base Version | Status | Note |
+            |--------------|--------|------|
+            | `${{ steps.get_version.outputs.version }}` (${{ matrix.type }}) | :x: Conflicts | Cannot generate patch due to merge conflicts |
+            
+            Please resolve conflicts manually or the patch will be unavailable for this base version.

@@ -1,0 +1,242 @@
+name: Generate Patch
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Target commit range (PR number, commit SHA, or commit range like head...base)'
+        required: true
+        type: string
+      base_version:
+        description: 'Base version number (e.g., 1.9.0-rc.10)'
+        required: true
+        type: string
+      base_patch:
+        description: 'Base patch commit SHA (leave empty if based on release)'
+        required: false
+        type: string
+      custom_message:
+        description: 'Custom message to include in commit message (for local changes)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  generate-patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Parse target input
+        id: parse_target
+        run: |
+          TARGET="${{ inputs.target }}"
+          
+          # Check if it's a PR number
+          if [[ "$TARGET" =~ ^[0-9]+$ ]]; then
+            echo "type=pr" >> $GITHUB_OUTPUT
+            echo "pr_number=$TARGET" >> $GITHUB_OUTPUT
+            
+            # Fetch PR information
+            PR_HEAD=$(gh pr view "$TARGET" --json headRefOid --jq .headRefOid)
+            PR_BASE=$(gh pr view "$TARGET" --json baseRefName --jq .baseRefName)
+            PR_URL=$(gh pr view "$TARGET" --json url --jq .url)
+            
+            echo "head=$PR_HEAD" >> $GITHUB_OUTPUT
+            echo "base=$PR_BASE" >> $GITHUB_OUTPUT
+            echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
+          # Check if it's a commit range
+          elif [[ "$TARGET" =~ \.\.\. ]]; then
+            echo "type=range" >> $GITHUB_OUTPUT
+            HEAD=$(echo "$TARGET" | cut -d'.' -f1)
+            BASE=$(echo "$TARGET" | cut -d'.' -f4-)
+            echo "head=$HEAD" >> $GITHUB_OUTPUT
+            echo "base=$BASE" >> $GITHUB_OUTPUT
+          # Otherwise, treat as single commit
+          else
+            echo "type=commit" >> $GITHUB_OUTPUT
+            echo "head=$TARGET" >> $GITHUB_OUTPUT
+            echo "base=HEAD~1" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create patch branch
+        id: create_patch
+        run: |
+          # Generate unique branch name
+          PATCH_BRANCH="patch-generation-$(date +%s)"
+          echo "patch_branch=$PATCH_BRANCH" >> $GITHUB_OUTPUT
+          
+          # Get base commit (use base_version tag if base_patch is empty)
+          if [ -z "${{ inputs.base_patch }}" ]; then
+            BASE_COMMIT=$(git rev-list -n 1 "v${{ inputs.base_version }}")
+          else
+            BASE_COMMIT="${{ inputs.base_patch }}"
+          fi
+          echo "base_commit=$BASE_COMMIT" >> $GITHUB_OUTPUT
+          
+          # Create and checkout patch branch from base
+          git checkout -b "$PATCH_BRANCH" "$BASE_COMMIT"
+          
+          # Get the changes to apply
+          HEAD="${{ steps.parse_target.outputs.head }}"
+          BASE="${{ steps.parse_target.outputs.base }}"
+          
+          # Try to cherry-pick or apply the changes
+          if [ "${{ steps.parse_target.outputs.type }}" = "range" ]; then
+            # For range, we need to get all commits
+            git cherry-pick "${BASE}..${HEAD}" || true
+          else
+            # For single commit or PR
+            git cherry-pick "$HEAD" || true
+          fi
+          
+          # Check if there are conflicts
+          if git status | grep -q "both modified\|Unmerged paths"; then
+            # Remove documentation and Unity excluded files from conflicts
+            git status --short | grep '^UU' | awk '{print $2}' | while read file; do
+              if [[ "$file" =~ ^\.docs/ ]] || [[ "$file" =~ ^CHANGELOG ]] || [[ "$file" =~ ^\. ]] || [[ "$file" =~ ~$ ]]; then
+                git rm "$file" || git add "$file"
+              fi
+            done
+            
+            # Check if conflicts remain
+            if git status | grep -q "both modified\|Unmerged paths"; then
+              echo "has_conflicts=true" >> $GITHUB_OUTPUT
+              git cherry-pick --abort || true
+              exit 0
+            else
+              git commit --no-edit --allow-empty
+            fi
+          fi
+          
+          # Remove documentation and Unity excluded files
+          git rm -rf .docs CHANGELOG*.md || true
+          find . -name ".*" -not -name ".gitignore" -not -path "./.git/*" -type f -delete || true
+          find . -name "*~" -type d -exec rm -rf {} + || true
+          find . -name "*~" -type f -delete || true
+          
+          # Amend commit if there were deletions
+          if ! git diff --cached --quiet; then
+            git commit --amend --no-edit --allow-empty
+          fi
+
+      - name: Create patch commit
+        if: steps.create_patch.outputs.has_conflicts != 'true'
+        run: |
+          # Get the current commit
+          CURRENT_COMMIT=$(git rev-parse HEAD)
+          
+          # Create commit message
+          COMMIT_MSG="patch: Apply changes"
+          if [ "${{ steps.parse_target.outputs.type }}" = "pr" ]; then
+            COMMIT_MSG="patch: Apply PR #${{ steps.parse_target.outputs.pr_number }}"
+          fi
+          
+          if [ -n "${{ inputs.custom_message }}" ]; then
+            COMMIT_MSG="${COMMIT_MSG}\n\n${{ inputs.custom_message }}"
+          fi
+          
+          # Add metadata to commit message
+          COMMIT_MSG="${COMMIT_MSG}\n\nBase-Version: ${{ inputs.base_version }}"
+          COMMIT_MSG="${COMMIT_MSG}\nBase-Commit: ${{ steps.create_patch.outputs.base_commit }}"
+          
+          if [ -n "${{ inputs.base_patch }}" ]; then
+            COMMIT_MSG="${COMMIT_MSG}\nBase-Patch: ${{ inputs.base_patch }}"
+          fi
+          
+          if [ -n "${{ steps.parse_target.outputs.pr_url }}" ]; then
+            COMMIT_MSG="${COMMIT_MSG}\nPull-Request: ${{ steps.parse_target.outputs.pr_url }}"
+          fi
+          
+          if [ "${{ steps.parse_target.outputs.type }}" = "range" ]; then
+            COMMIT_MSG="${COMMIT_MSG}\nCommit-Range: ${{ inputs.target }}"
+          fi
+          
+          # Get original authors and add as co-authored-by
+          if [ "${{ steps.parse_target.outputs.type }}" = "range" ]; then
+            git log --format="%an <%ae>" "${{ steps.parse_target.outputs.base }}..${{ steps.parse_target.outputs.head }}" | sort -u | while read author; do
+              COMMIT_MSG="${COMMIT_MSG}\nCo-authored-by: ${author}"
+            done
+          else
+            AUTHOR=$(git log --format="%an <%ae>" -1 "${{ steps.parse_target.outputs.head }}")
+            COMMIT_MSG="${COMMIT_MSG}\nCo-authored-by: ${AUTHOR}"
+          fi
+          
+          # Amend the commit with proper message
+          echo -e "$COMMIT_MSG" | git commit --amend -F -
+          
+          # Get the final commit hash
+          PATCH_COMMIT=$(git rev-parse HEAD)
+          echo "patch_commit=$PATCH_COMMIT" >> $GITHUB_ENV
+
+      - name: Generate patch file
+        if: steps.create_patch.outputs.has_conflicts != 'true'
+        run: |
+          git format-patch -1 HEAD --stdout > /tmp/generated.patch
+          
+          # Show the patch
+          echo "Generated patch:"
+          cat /tmp/generated.patch
+
+      - name: Upload patch artifact
+        if: steps.create_patch.outputs.has_conflicts != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: patch-${{ env.patch_commit }}
+          path: /tmp/generated.patch
+          retention-days: 90
+
+      - name: Comment on PR (if applicable)
+        if: steps.parse_target.outputs.type == 'pr' && steps.create_patch.outputs.has_conflicts != 'true'
+        run: |
+          PATCH_URL="https://github.com/${{ github.repository }}/commit/${patch_commit}.patch"
+          gh pr comment "${{ steps.parse_target.outputs.pr_number }}" --body \
+            "**Patch Generated** :package:
+            
+            A patch has been generated for testing this PR against version \`${{ inputs.base_version }}\`.
+            
+            **Patch Commit:** \`${patch_commit}\`
+            **Download:** [${patch_commit}.patch](${PATCH_URL})
+            
+            To apply this patch:
+            1. Open Unity with your project
+            2. Go to \`Tools > Avatar Optimizer > Apply Patch\`
+            3. Enter the patch URL: \`${PATCH_URL}\`
+            4. Click \`Apply Patch\`
+            
+            Or download the artifact from this workflow run."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment on PR (conflicts)
+        if: steps.parse_target.outputs.type == 'pr' && steps.create_patch.outputs.has_conflicts == 'true'
+        run: |
+          gh pr comment "${{ steps.parse_target.outputs.pr_number }}" --body \
+            "**Patch Generation Failed** :x:
+            
+            Failed to generate patch for version \`${{ inputs.base_version }}\` due to conflicts.
+            
+            Please resolve conflicts manually or use a different base version."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cleanup
+        if: always()
+        run: |
+          # Delete the patch branch
+          git checkout main || git checkout master || true
+          git branch -D "${{ steps.create_patch.outputs.patch_branch }}" || true
