@@ -21,9 +21,12 @@ Bug Report Helperウィンドウはメニューの `Tools > Avatar Optimizer > B
 ウィンドウ上部には、報告対象のアバターを指定するためのフィールドがあります。\
 発生している問題に関連するアバターをセットしてください。
 
-ウィンドウ下部には、`Save Bug Report`と`Copy Bug Report to Clipboard`という2つのボタンがあります。\
+ウィンドウ下部には、`Save Bug Report`と`Copy Bug Report to Clipboard`という2つのボタンがあります。
+
+<blockquote class="book-hint info">
 Play Mode中(上部の▶ボタンが青色)の場合、これらのボタンは無効化されます。\
 Bug Report Helperを使用する前にPlay Modeを終了してください。(▶ボタンをクリックして灰色にします)。
+</blockquote>
 
 `Save Bug Report`ボタンをクリックすると、レポートファイルを圧縮(gz)ファイルとして保存するためのダイアログが開きます。\
 圧縮効率が良いため、この方法を推奨します。
