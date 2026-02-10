@@ -1297,6 +1297,9 @@ msgstr ""
 "- Some information of mesh\n"
 "- Some animator information\n"
 
+msgid "BugReportHelper:play-mode"
+msgstr "Report generation cannot be run in Play Mode. Please exit Play Mode and try again."
+
 msgid "BugReportHelper:copy-warning"
 msgstr ""
 "Copying bug report to clipboard may copy large amount of data (several MBs depending on your avatar complexity).\n"

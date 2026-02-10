@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Improved behavior of Bug Report Helper to prevent mistakes `#1623`
 
 ### Deprecated
 

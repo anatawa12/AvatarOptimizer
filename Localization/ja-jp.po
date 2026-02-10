@@ -1226,6 +1226,9 @@ msgstr ""
 "- メッシュの一部情報\n"  
 "- アニメーターの一部情報\n"  
 
+msgid "BugReportHelper:play-mode"
+msgstr "Play Mode中はレポートを生成できません。Play Modeを終了してからもう一度お試しください。"
+
 msgid "BugReportHelper:copy-warning"
 msgstr ""
 "バグ報告用の情報をクリップボードにコピーすると、大量のデータがコピーされる可能性があります。(アバターの複雑さによっては数MB程度)\n"  

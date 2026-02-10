@@ -67,6 +67,13 @@ internal class BugReportHelper : EditorWindow
             return;
         }
 
+        if (EditorApplication.isPlayingOrWillChangePlaymode)
+        {
+            EditorGUILayout.HelpBox(AAOL10N.Tr("BugReportHelper:play-mode"), MessageType.Warning);
+        }
+
+        EditorGUI.BeginDisabledGroup(EditorApplication.isPlayingOrWillChangePlaymode);
+
         if (GUILayout.Button("Save Bug Report"))
         {
             try
@@ -103,7 +110,7 @@ internal class BugReportHelper : EditorWindow
             if (!EditorUtility.DisplayDialog("Copy Bug Report to Clipboard",
                     AAOL10N.Tr("BugReportHelper:copy-warning"),
                     "Yes", "No"))
-                return;
+                goto end_of_button;
 
             try
             {
@@ -116,7 +123,11 @@ internal class BugReportHelper : EditorWindow
                 Debug.LogException(ex);
                 EditorUtility.DisplayDialog("Error", $"An error occurred while generating the bug report. See console for details.", "OK");
             }
+
+            end_of_button:;
         }
+
+        EditorGUI.EndDisabledGroup();
     }
 
     public static ReportFile RunBuild(GameObject avatar)
@@ -237,12 +248,50 @@ internal class BugReportHelper : EditorWindow
 
 #if AAO_VRCSDK3_AVATARS
                     case VRCPhysBoneBase physBone:
+                        builder.AppendLine($"    version: {physBone.version}");
+                        builder.AppendLine($"    integrationType: {physBone.integrationType}");
                         builder.AppendLine($"    rootTransform: {ComponentPath(physBone.rootTransform)}");
+                        for (var i = 0; i < physBone.ignoreTransforms.Count; i++)
+                        {
+                            var t = physBone.ignoreTransforms[i];
+                            builder.AppendLine($"    ignoreTransform[{i}]: {ComponentPath(t)}");
+                        }
+                        builder.AppendLine($"    endpointPosition: {physBone.endpointPosition}");
+                        builder.AppendLine($"    multiChildType: {physBone.multiChildType}");
+                        builder.AppendLine($"    pull: {physBone.pull:G9}, curve: {physBone.pullCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    spring: {physBone.spring:G9}, curve: {physBone.springCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    stiffness: {physBone.stiffness:G9}, curve: {physBone.stiffnessCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    gravity: {physBone.gravity:G9}, curve: {physBone.gravityCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    immobileType: {physBone.immobileType}");
+                        builder.AppendLine($"    immobile: {physBone.immobile:G9}, curve: {physBone.immobileCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    allowCollision: {physBone.allowCollision}");
+                        builder.AppendLine($"    collisionFilter.allowSelf: {physBone.collisionFilter.allowSelf}");
+                        builder.AppendLine($"    collisionFilter.allowOthers: {physBone.collisionFilter.allowOthers}");
+                        builder.AppendLine($"    radius: {physBone.radius}, curve: {physBone.radiusCurve?.keys?.Length ?? 0}");
                         for (var i = 0; i < physBone.colliders.Count; i++)
                         {
                             var collider = physBone.colliders[i];
                             builder.AppendLine($"    collider[{i}]: {ComponentPath(collider)}");
                         }
+                        builder.AppendLine($"    limitType: {physBone.limitType}");
+                        builder.AppendLine($"    maxAngleX: {physBone.maxAngleX:G9}, curve: {physBone.maxAngleXCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    maxAngleZ: {physBone.maxAngleZ:G9}, curve: {physBone.maxAngleZCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    limitRotation.x: {physBone.limitRotation.x:G9}, curve: {physBone.limitRotationXCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    limitRotation.y: {physBone.limitRotation.y:G9}, curve: {physBone.limitRotationYCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    limitRotation.z: {physBone.limitRotation.z:G9}, curve: {physBone.limitRotationZCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    allowGrabbing: {physBone.allowGrabbing}");
+                        builder.AppendLine($"    grabFilter.allowSelf: {physBone.grabFilter.allowSelf}");
+                        builder.AppendLine($"    grabFilter.allowOthers: {physBone.grabFilter.allowOthers}");
+                        builder.AppendLine($"    allowPosing: {physBone.allowPosing}");
+                        builder.AppendLine($"    poseFilter.allowSelf: {physBone.poseFilter.allowSelf}");
+                        builder.AppendLine($"    poseFilter.allowOthers: {physBone.poseFilter.allowOthers}");
+                        builder.AppendLine($"    snapToHand: {physBone.snapToHand}");
+                        builder.AppendLine($"    grabMovement: {physBone.grabMovement:G9}");
+                        builder.AppendLine($"    maxStretch: {physBone.maxStretch:G9}, curve: {physBone.maxStretchCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    maxSquish: {physBone.maxSquish:G9}, curve: {physBone.maxSquishCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    stretchMotion: {physBone.stretchMotion:G9}, curve: {physBone.stretchMotionCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    isAnimated: {physBone.isAnimated}");
+                        builder.AppendLine($"    resetWhenDisabled: {physBone.resetWhenDisabled}");
                         builder.AppendLine($"    parameter: '{physBone.parameter}'");
                         break;
 #endif
