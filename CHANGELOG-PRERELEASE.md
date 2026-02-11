@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Auto Merge PB will never exceed hard limit `#1627`
 
 ### Deprecated
 
