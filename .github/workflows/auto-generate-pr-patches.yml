@@ -18,7 +18,6 @@ jobs:
       matrix:
         include:
           # Generate patch for latest stable and prerelease
-          # These will be determined dynamically
           - type: stable
           - type: prerelease
     steps:
@@ -54,86 +53,34 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Generate patch
+      - name: Generate patch using script
         if: steps.get_version.outputs.skip != 'true'
         id: generate
         run: |
           VERSION="${{ steps.get_version.outputs.version }}"
-          BASE_COMMIT=$(git rev-list -n 1 "v${VERSION}")
           PR_HEAD="${{ github.event.pull_request.head.sha }}"
-          PR_BASE="${{ github.event.pull_request.base.ref }}"
-          
-          # Create temporary branch
-          PATCH_BRANCH="temp-patch-pr${{ github.event.pull_request.number }}-${VERSION}-$(date +%s)"
-          git checkout -b "$PATCH_BRANCH" "$BASE_COMMIT"
-          
-          # Try to apply changes
-          if ! git cherry-pick "$PR_HEAD" 2>&1; then
-            # Handle conflicts in documentation and Unity excluded files
-            git status --short | grep '^UU' | awk '{print $2}' | while read file; do
-              if [[ "$file" =~ ^\.docs/ ]] || [[ "$file" =~ ^CHANGELOG ]] || [[ "$file" =~ ^\. ]] || [[ "$file" =~ ~$ ]]; then
-                git rm "$file" 2>/dev/null || git add "$file"
-              fi
-            done
-            
-            # Check if conflicts remain
-            if git status | grep -q "both modified\|Unmerged paths"; then
-              echo "has_conflicts=true" >> $GITHUB_OUTPUT
-              git cherry-pick --abort || true
-              git checkout "$PR_BASE"
-              git branch -D "$PATCH_BRANCH"
-              exit 0
-            else
-              git commit --no-edit --allow-empty
-            fi
-          fi
-          
-          # Remove documentation and Unity excluded files
-          git rm -rf .docs CHANGELOG*.md 2>/dev/null || true
-          find . -name ".*" -not -name ".gitignore" -not -path "./.git/*" -type f -delete 2>/dev/null || true
-          find . -name "*~" -type d -exec rm -rf {} + 2>/dev/null || true
-          find . -name "*~" -type f -delete 2>/dev/null || true
-          
-          # Amend commit if there were deletions
-          if ! git diff --cached --quiet 2>/dev/null; then
-            git commit --amend --no-edit --allow-empty
-          fi
-          
-          # Create proper commit message
           PR_TITLE="${{ github.event.pull_request.title }}"
-          PR_URL="${{ github.event.pull_request.html_url }}"
-          PR_AUTHOR="${{ github.event.pull_request.user.login }}"
+          OUTPUT_FILE="patch-${VERSION}.patch"
           
-          COMMIT_MSG="patch: ${PR_TITLE}
-
-Base-Version: ${VERSION}
-Base-Commit: ${BASE_COMMIT}
-Pull-Request: ${PR_URL}
-Commit-Range: ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}
-
-Co-authored-by: ${PR_AUTHOR} <${PR_AUTHOR}@users.noreply.github.com>"
-          
-          echo -e "$COMMIT_MSG" | git commit --amend -F -
-          
-          # Get patch commit hash
-          PATCH_COMMIT=$(git rev-parse HEAD)
-          echo "patch_commit=$PATCH_COMMIT" >> $GITHUB_OUTPUT
-          
-          # Generate patch file
-          git format-patch -1 HEAD --stdout > "/tmp/patch-${VERSION}.patch"
-          
-          # Cleanup
-          git checkout "$PR_BASE"
-          git branch -D "$PATCH_BRANCH"
-          
-          echo "Patch generated successfully"
+          # Run the script
+          if ./.github/scripts/generate-patch.sh \
+              -t "$PR_HEAD" \
+              -v "$VERSION" \
+              -m "From PR #${{ github.event.pull_request.number }}: $PR_TITLE" \
+              -o "$OUTPUT_FILE"; then
+            PATCH_COMMIT=$(git log -1 --format=%H 2>/dev/null || echo "unknown")
+            echo "patch_commit=$PATCH_COMMIT" >> $GITHUB_OUTPUT
+            echo "success=true" >> $GITHUB_OUTPUT
+          else
+            echo "success=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Upload patch artifact
-        if: steps.get_version.outputs.skip != 'true' && steps.generate.outputs.has_conflicts != 'true'
+        if: steps.get_version.outputs.skip != 'true' && steps.generate.outputs.success == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: patch-${{ matrix.type }}-${{ steps.get_version.outputs.version }}
-          path: /tmp/patch-${{ steps.get_version.outputs.version }}.patch
+          path: patch-${{ steps.get_version.outputs.version }}.patch
           retention-days: 30
 
       - name: Post comment marker
@@ -143,24 +90,22 @@ Co-authored-by: ${PR_AUTHOR} <${PR_AUTHOR}@users.noreply.github.com>"
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-author: 'github-actions[bot]'
-          body-includes: '<!-- patch-generation-comment -->'
+          body-includes: '<!-- patch-generation-comment-${{ matrix.type }} -->'
 
       - name: Create or update PR comment (success)
-        if: steps.get_version.outputs.skip != 'true' && steps.generate.outputs.has_conflicts != 'true'
+        if: steps.get_version.outputs.skip != 'true' && steps.generate.outputs.success == 'true'
         uses: peter-evans/create-or-update-comment@v4
         with:
           comment-id: ${{ steps.find_comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           edit-mode: replace
           body: |
-            <!-- patch-generation-comment -->
-            ## :package: Test Patches Generated
+            <!-- patch-generation-comment-${{ matrix.type }} -->
+            ## :package: Test Patch for ${{ matrix.type }} version
             
-            Patches have been automatically generated for testing this PR:
-            
-            | Base Version | Status | Patch |
-            |--------------|--------|-------|
-            | `${{ steps.get_version.outputs.version }}` (${{ matrix.type }}) | :white_check_mark: Success | [Download](https://github.com/${{ github.repository }}/commit/${{ steps.generate.outputs.patch_commit }}.patch) |
+            **Base Version:** `${{ steps.get_version.outputs.version }}` (${{ matrix.type }})
+            **Status:** :white_check_mark: Success
+            **Patch:** [Download](https://github.com/${{ github.repository }}/commit/${{ steps.generate.outputs.patch_commit }}.patch)
             
             ### How to Apply
             1. Open Unity with your project
@@ -168,21 +113,20 @@ Co-authored-by: ${PR_AUTHOR} <${PR_AUTHOR}@users.noreply.github.com>"
             3. Enter patch URL or download and select the file
             4. Click `Apply Patch`
             
-            **Note:** Patches are for testing purposes only and should not be used in production.
+            **Note:** Patches are for testing purposes only.
 
-      - name: Create or update PR comment (conflicts)
-        if: steps.get_version.outputs.skip != 'true' && steps.generate.outputs.has_conflicts == 'true'
+      - name: Create or update PR comment (failure)
+        if: steps.get_version.outputs.skip != 'true' && steps.generate.outputs.success != 'true'
         uses: peter-evans/create-or-update-comment@v4
         with:
           comment-id: ${{ steps.find_comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           edit-mode: replace
           body: |
-            <!-- patch-generation-comment -->
-            ## :package: Test Patches
+            <!-- patch-generation-comment-${{ matrix.type }} -->
+            ## :package: Test Patch for ${{ matrix.type }} version
             
-            | Base Version | Status | Note |
-            |--------------|--------|------|
-            | `${{ steps.get_version.outputs.version }}` (${{ matrix.type }}) | :x: Conflicts | Cannot generate patch due to merge conflicts |
+            **Base Version:** `${{ steps.get_version.outputs.version }}` (${{ matrix.type }})
+            **Status:** :x: Failed - Could not generate patch (likely due to conflicts)
             
-            Please resolve conflicts manually or the patch will be unavailable for this base version.
+            Please check the workflow logs for details or try manually resolving conflicts.

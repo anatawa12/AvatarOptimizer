@@ -120,6 +120,20 @@ if ! git rev-parse --git-dir > /dev/null 2>&1; then
     exit 1
 fi
 
+# Check if worktree and index are clean (unless target is 'working')
+if [ "$TARGET" != "working" ]; then
+    if ! git diff-index --quiet HEAD --; then
+        echo "${RED}Error: Working tree is not clean. Please commit or stash your changes.${NC}" >&2
+        git status --short
+        exit 1
+    fi
+    if ! git diff --cached --quiet; then
+        echo "${RED}Error: Index is not clean. Please commit or reset staged changes.${NC}" >&2
+        git status --short
+        exit 1
+    fi
+fi
+
 # Determine base commit
 if [ -n "$BASE_PATCH" ]; then
     BASE_COMMIT="$BASE_PATCH"
@@ -135,9 +149,10 @@ else
     fi
 fi
 
-# Create temporary branch for patch generation
+# Temporary files
+TEMP_PATCH="/tmp/aao-patch-temp-$$.patch"
+FILTERED_PATCH="/tmp/aao-patch-filtered-$$.patch"
 TEMP_BRANCH="temp-patch-gen-$(date +%s)"
-echo "Creating temporary branch: $TEMP_BRANCH"
 
 # Save current branch
 ORIGINAL_BRANCH=$(git rev-parse --abbrev-ref HEAD)
@@ -147,82 +162,121 @@ ORIGINAL_COMMIT=$(git rev-parse HEAD)
 cleanup() {
     echo ""
     echo "Cleaning up..."
+    rm -f "$TEMP_PATCH" "$FILTERED_PATCH" 2>/dev/null || true
     git checkout "$ORIGINAL_BRANCH" 2>/dev/null || git checkout "$ORIGINAL_COMMIT" 2>/dev/null || true
     git branch -D "$TEMP_BRANCH" 2>/dev/null || true
 }
 
 trap cleanup EXIT INT TERM
 
-# Create and checkout temporary branch
-git checkout -b "$TEMP_BRANCH" "$BASE_COMMIT"
-
-# Handle different target types
+# Determine source and target commits for diff
 if [ "$TARGET" = "working" ]; then
-    echo "Applying working directory changes..."
+    echo "Using working directory changes..."
+    SOURCE_COMMIT="$BASE_COMMIT"
+    # For working directory, we'll create a temporary commit
+    git checkout -b "$TEMP_BRANCH" "$BASE_COMMIT"
     
-    # Checkout the original commit to get working changes
+    # Copy working directory changes
     git checkout "$ORIGINAL_COMMIT" -- . 2>/dev/null || true
-    
-    # Add all changes
     git add -A
     
-    if ! git diff --cached --quiet; then
-        COMMIT_MSG="patch: Working directory changes"
-        [ -n "$CUSTOM_MESSAGE" ] && COMMIT_MSG="$COMMIT_MSG\n\n$CUSTOM_MESSAGE"
-    else
+    if git diff --cached --quiet; then
         echo "${YELLOW}Warning: No changes in working directory${NC}"
         exit 1
     fi
     
+    # Create temporary commit
+    git commit -m "temp: working directory changes"
+    TARGET_COMMIT=$(git rev-parse HEAD)
+    
+    COMMIT_MSG="patch: Working directory changes"
+    [ -n "$CUSTOM_MESSAGE" ] && COMMIT_MSG="${COMMIT_MSG}\n\n${CUSTOM_MESSAGE}"
+    
 elif echo "$TARGET" | grep -q '\.\.\.'; then
     # It's a range
-    echo "Applying commit range..."
+    echo "Using commit range..."
     
     BASE_REF=$(echo "$TARGET" | sed 's/\.\.\..*$//')
     HEAD_REF=$(echo "$TARGET" | sed 's/^.*\.\.\.//')
     
-    # Get commits in range
-    git cherry-pick "${BASE_REF}..${HEAD_REF}" || {
-        echo "${RED}Error: Failed to apply commit range${NC}" >&2
-        echo "Please resolve conflicts manually"
-        exit 1
-    }
+    SOURCE_COMMIT="$BASE_COMMIT"
+    TARGET_COMMIT="$HEAD_REF"
     
     COMMIT_MSG="patch: Applied commit range"
-    [ -n "$CUSTOM_MESSAGE" ] && COMMIT_MSG="$COMMIT_MSG\n\n$CUSTOM_MESSAGE"
+    [ -n "$CUSTOM_MESSAGE" ] && COMMIT_MSG="${COMMIT_MSG}\n\n${CUSTOM_MESSAGE}"
     
 else
-    # It's a single commit
-    echo "Applying single commit..."
+    # Single commit
+    echo "Using single commit..."
     
-    git cherry-pick "$TARGET" || {
-        echo "${RED}Error: Failed to cherry-pick commit${NC}" >&2
-        echo "Please resolve conflicts manually"
-        exit 1
-    }
+    SOURCE_COMMIT="$BASE_COMMIT"
+    TARGET_COMMIT="$TARGET"
     
     # Get original commit message
-    ORIGINAL_MSG=$(git log -1 --format=%B "$TARGET")
+    ORIGINAL_MSG=$(git log -1 --format=%B "$TARGET" | head -n1)
     COMMIT_MSG="patch: $ORIGINAL_MSG"
-    [ -n "$CUSTOM_MESSAGE" ] && COMMIT_MSG="$COMMIT_MSG\n\n$CUSTOM_MESSAGE"
+    [ -n "$CUSTOM_MESSAGE" ] && COMMIT_MSG="${COMMIT_MSG}\n\n${CUSTOM_MESSAGE}"
 fi
 
-# Remove documentation and Unity excluded files
-echo "Removing documentation and excluded files..."
-git rm -rf .docs CHANGELOG*.md 2>/dev/null || true
-find . -path ./.git -prune -o -name ".*" -not -name ".gitignore" -type f -exec git rm -f {} \; 2>/dev/null || true
-find . -name "*~" -type d -exec git rm -rf {} + 2>/dev/null || true  
-find . -name "*~" -type f -exec git rm -f {} \; 2>/dev/null || true
+# Generate diff between base and target
+echo "Generating diff..."
+git diff "$SOURCE_COMMIT" "$TARGET_COMMIT" > "$TEMP_PATCH"
 
-# Commit or amend with proper metadata
-if git diff --cached --quiet; then
-    # Nothing to commit after removals, amend previous commit
-    AMEND=true
-else
-    # Stage the removals
-    git add -A
-    AMEND=true
+# Filter out documentation and excluded files from the patch
+echo "Filtering documentation and excluded files..."
+
+# Use awk to filter out unwanted file changes from the patch
+awk '
+BEGIN {
+    skip = 0
+    in_hunk = 0
+}
+
+# Detect file header
+/^diff --git/ {
+    # Extract file path
+    match($0, /^diff --git a\/(.*) b\/.*/, arr)
+    file = arr[1]
+    
+    # Check if file should be excluded
+    if (file ~ /^\.docs\// || 
+        file ~ /^CHANGELOG/ || 
+        file ~ /^\./ || 
+        file ~ /~$/ ||
+        file ~ /\/\.[^\/]+$/ ||
+        file ~ /\/[^\/]+~$/) {
+        skip = 1
+    } else {
+        skip = 0
+    }
+}
+
+# Print non-skipped lines
+{
+    if (!skip) {
+        print $0
+    }
+}
+' "$TEMP_PATCH" > "$FILTERED_PATCH"
+
+# Check if filtered patch is empty
+if [ ! -s "$FILTERED_PATCH" ] || ! grep -q "^diff --git" "$FILTERED_PATCH" 2>/dev/null; then
+    echo "${YELLOW}Warning: No changes after filtering documentation and excluded files${NC}"
+    exit 1
 fi
+
+# Create patch branch and apply the filtered patch
+echo "Applying filtered patch..."
+git checkout -b "$TEMP_BRANCH" "$BASE_COMMIT" 2>/dev/null || git checkout "$TEMP_BRANCH"
+
+if ! git apply --check "$FILTERED_PATCH" 2>/dev/null; then
+    echo "${RED}Error: Failed to apply patch cleanly${NC}" >&2
+    echo "This may indicate conflicts that need to be resolved manually"
+    exit 1
+fi
+
+git apply "$FILTERED_PATCH"
+git add -A
 
 # Build full commit message with metadata
 FULL_MSG="${COMMIT_MSG}
@@ -230,36 +284,32 @@ FULL_MSG="${COMMIT_MSG}
 Base-Version: ${BASE_VERSION}
 Base-Commit: ${BASE_COMMIT}"
 
-[ -n "$BASE_PATCH" ] && FULL_MSG="$FULL_MSG
+[ -n "$BASE_PATCH" ] && FULL_MSG="${FULL_MSG}
 Base-Patch: ${BASE_PATCH}"
 
 if [ "$TARGET" != "working" ]; then
     if echo "$TARGET" | grep -q '\.\.\.'; then
-        FULL_MSG="$FULL_MSG
+        FULL_MSG="${FULL_MSG}
 Commit-Range: ${TARGET}"
         
         # Add co-authors
         BASE_REF=$(echo "$TARGET" | sed 's/\.\.\..*$//')
         HEAD_REF=$(echo "$TARGET" | sed 's/^.*\.\.\.//')
         git log --format="%an <%ae>" "${BASE_REF}..${HEAD_REF}" | sort -u | while read -r author; do
-            FULL_MSG="$FULL_MSG
+            FULL_MSG="${FULL_MSG}
 Co-authored-by: ${author}"
         done
     else
         AUTHOR=$(git log --format="%an <%ae>" -1 "$TARGET")
-        FULL_MSG="$FULL_MSG
+        FULL_MSG="${FULL_MSG}
 Co-authored-by: ${AUTHOR}"
     fi
 fi
 
-# Create or amend commit
-if [ "$AMEND" = true ]; then
-    printf "%s" "$FULL_MSG" | git commit --amend -F -
-else
-    printf "%s" "$FULL_MSG" | git commit -F -
-fi
+# Commit the changes
+printf "%s" "$FULL_MSG" | git commit -F -
 
-# Generate patch file
+# Generate final patch file
 echo "Generating patch file..."
 git format-patch -1 HEAD --stdout > "$OUTPUT_FILE"
 
