@@ -15,7 +15,7 @@ The format is based on [Keep a Changelog].
   - AAO can now freeze BlendShapes that are animated in animator layers with weights between 0 and 1.
 - Remove unused textures in Remove Unused Objects `#1502` `#1566`
 - Invert option of Remove Mesh by BlendShape `#1535`
-- Automatically merge PhysBone when no grabbing PhysBone is detected `#1539` `#1624`
+- Automatically merge PhysBone when no grabbing PhysBone is detected `#1539` `#1624` `#1627`
 - Automatic Merge BlendTree support for WriteDefaults off BlendTree `#1283`
 - Component API for Remove Mesh By Mask `#XXXX`
   - External tools can now programmatically add and configure RemoveMeshByMask components.
