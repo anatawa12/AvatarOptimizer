@@ -1123,9 +1123,9 @@
                 // [timestamp] [LogLevel] message
                 // [timestamp] LogLevel: message  
                 // LogLevel: message
-                const levelMatch = line.match(/\[.*?\]\s*\[(ERROR|WARNING|WARN|INFO|LOG|DEBUG|TRACE)\]/i) ||
-                                  line.match(/\[.*?\]\s+(ERROR|WARNING|WARN|INFO|LOG|DEBUG|TRACE):/i) ||
-                                  line.match(/^(ERROR|WARNING|WARN|INFO|LOG|DEBUG|TRACE):/i);
+                const levelMatch = line.match(/\[.*?\]\s*\[(ERROR|EXCEPTION|ASSERT|WARNING|WARN|INFO|LOG|DEBUG|TRACE)\]/i) ||
+                                  line.match(/\[.*?\]\s+(ERROR|EXCEPTION|ASSERT|WARNING|WARN|INFO|LOG|DEBUG|TRACE):/i) ||
+                                  line.match(/^(ERROR|EXCEPTION|ASSERT|WARNING|WARN|INFO|LOG|DEBUG|TRACE):/i);
                 
                 if (levelMatch) {
                     // Save previous group
@@ -1165,7 +1165,7 @@
             
             // Color code by log level
             let color = '#333';
-            if (level === 'ERROR') color = '#dc3545';
+            if (level === 'ERROR' || level === 'EXCEPTION' || level === 'ASSERT') color = '#dc3545';
             else if (level === 'WARNING' || level === 'WARN') color = '#ffc107';
             else if (level === 'INFO') color = '#17a2b8';
             else if (level === 'DEBUG' || level === 'TRACE') color = '#6c757d';
