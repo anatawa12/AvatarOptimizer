@@ -1,3 +1,4 @@
+#if AAO_VRCSDK3_AVATARS
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -9,6 +10,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
+using UnityEngine.Animations;
 using UnityEngine.Profiling;
 using VRC.Dynamics;
 using VRC.SDK3.Dynamics.PhysBone.Components;
@@ -42,6 +44,17 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
             if (!key.CanMergePhysBone())
                 continue;
 
+            // VRCConstraints and VRCPhysBones placement effects execution order, so
+            // we cannot merge PhysBones that affect Transforms with Constraints.
+            if (physBone.GetAffectedTransforms()
+                .Any(t => (Component)t.GetComponent<IConstraint>() || t.GetComponent<VRCConstraintBase>()))
+                continue;
+
+            // large physBones should not be merged.
+            // VRCSDK recommends keeping affected bones under 128.
+            if (physBone.GetAffectedTransforms().Count() >= 100)
+                continue;
+
             if (!physBonesByKey.TryGetValue(key, out var list))
                 physBonesByKey.Add(key, list = new List<VRCPhysBone>());
 
@@ -54,13 +67,17 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
             if (list.Count < 2) continue;
 
             var parent = pbInfo.ToggleRoot ?? context.AvatarRootObject;
-            var mergePBGameObject = new GameObject($"$$$$$AutoMergedPhysBone_{index++}$$$$");
-            mergePBGameObject.transform.SetParent(parent.transform, worldPositionStays: false);
-            var mergePB = mergePBGameObject.AddComponent<MergePhysBone>();
-            mergePB.endpointPositionConfig.@override = MergePhysBone.EndPointPositionConfigStruct.Override.Copy;
-            mergePB.componentsSet.AddRange(list);
-            context.Extension<GCComponentInfoContext>().NewComponent(mergePBGameObject.transform);
-            context.Extension<GCComponentInfoContext>().NewComponent(mergePB);
+
+            foreach (var groups in Utils.Partition(list.Select(pb => (pb.GetAffectedTransforms().Count(), pb)), 128))
+            {
+                var mergePBGameObject = new GameObject($"$$$$$AutoMergedPhysBone_{index++}$$$$");
+                mergePBGameObject.transform.SetParent(parent.transform, worldPositionStays: false);
+                var mergePB = mergePBGameObject.AddComponent<MergePhysBone>();
+                mergePB.endpointPositionConfig.@override = MergePhysBone.EndPointPositionConfigStruct.Override.Copy;
+                mergePB.componentsSet.AddRange(groups.Select(g => g.data));
+                context.Extension<GCComponentInfoContext>().NewComponent(mergePBGameObject.transform);
+                context.Extension<GCComponentInfoContext>().NewComponent(mergePB);
+            }
         }
     }
 
@@ -392,3 +409,5 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
         public static bool operator !=(PbInfo left, PbInfo right) => !left.Equals(right);
     }
 }
+
+#endif

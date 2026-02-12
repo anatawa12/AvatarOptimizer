@@ -1,0 +1,12 @@
+{{ $id := .Get "username" }}
+<div class="main-dev-card">
+    <a class="main-dev-icon-wrapper" href="https://github.com/{{ $id }}" target="_blank">
+        <img class="main-dev-icon" src="https://avatars.githubusercontent.com/{{ $id }}?v=4" alt="anatawa12" />
+    </a>
+    <div class="main-dev-info">
+        <h3><a class="main-dev-name" href="https://github.com/{{ $id }}" target="_blank">{{ $id }}</a></h3>
+        <p>
+            {{ .Inner | .Page.RenderString }}
+        </p>
+    </div>
+</div>
