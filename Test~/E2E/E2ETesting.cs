@@ -133,6 +133,101 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
                 Has.Exactly(1).Not.Null);
         }
 
+
+        [Test]
+        public void Pr1631BasicWithIntermediate()
+        {
+            // create avatar with following tree
+            // Root
+            //  +- a
+            //  |  `- b
+            //  |     `- c
+            //  |        `- Renderer0
+            //  `- d
+            //     `- e
+            //        `- f
+            //           `- Renderer1
+            // and animations that toggles:
+            // - a and d
+            // - b and e
+            // - c and f
+            // in each different layers
+
+            var avatar = TestUtils.NewAvatar();
+            avatar.AddComponent<TraceAndOptimize>();
+            var a = Utils.NewGameObject("a", avatar.transform);
+            var b = Utils.NewGameObject("b", a.transform);
+            var c = Utils.NewGameObject("c", b.transform);
+            var d = Utils.NewGameObject("d", avatar.transform);
+            var e = Utils.NewGameObject("e", d.transform);
+            var f = Utils.NewGameObject("f", e.transform);
+            var renderer0GameObject = Utils.NewGameObject("Renderer0", c.transform);
+            var renderer1GameObject = Utils.NewGameObject("Renderer1", f.transform);
+            var renderer0 = renderer0GameObject.AddComponent<SkinnedMeshRenderer>();
+            var renderer1 = renderer1GameObject.AddComponent<SkinnedMeshRenderer>();
+            var rootBone = Utils.NewGameObject("RootBone", avatar.transform);
+            renderer0.rootBone = rootBone.transform;
+            renderer1.rootBone = rootBone.transform;
+            renderer0.probeAnchor = rootBone.transform;
+            renderer1.probeAnchor = rootBone.transform;
+            renderer0.sharedMesh = TestUtils.NewCubeMeshWithBone();
+            renderer1.sharedMesh = TestUtils.NewCubeMeshWithBone();
+            renderer0.bones = new[] { rootBone.transform };
+            renderer1.bones = new[] { rootBone.transform };
+
+            TestUtils.SetFxLayer(avatar, new AnimatorControllerBuilder("")
+                .AddLayer("LayerA", sm =>
+                {
+                    sm.NewClipState("StateAD on", clip => clip
+                        .AddPropertyBinding("a", typeof(GameObject), "m_IsActive",
+                            new Keyframe(0, 0), new Keyframe(1, 1))
+                        .AddPropertyBinding("d", typeof(GameObject), "m_IsActive",
+                            new Keyframe(0, 0), new Keyframe(1, 1)));
+                    sm.NewClipState("StateAD off", clip => clip
+                        .AddPropertyBinding("a", typeof(GameObject), "m_IsActive",
+                            new Keyframe(0, 1), new Keyframe(1, 0))
+                        .AddPropertyBinding("d", typeof(GameObject), "m_IsActive",
+                            new Keyframe(0, 1), new Keyframe(1, 0)));
+                })
+                .AddLayer("LayerB", sm =>
+                {
+                    sm.NewClipState("StateBE on", clip => clip
+                        .AddPropertyBinding("a/b", typeof(GameObject), "m_IsActive",
+                            new Keyframe(0, 0), new Keyframe(1, 1))
+                        .AddPropertyBinding("d/e", typeof(GameObject), "m_IsActive",
+                            new Keyframe(0, 0), new Keyframe(1, 1)));
+                })
+                .AddLayer("LayerC", sm =>
+                {
+                    sm.NewClipState("StateC", clip => clip
+                        .AddPropertyBinding("a/b/c", typeof(GameObject), "m_IsActive",
+                            new Keyframe(0, 0), new Keyframe(1, 1))
+                        .AddPropertyBinding("d/e/f", typeof(GameObject), "m_IsActive",
+                            new Keyframe(0, 0), new Keyframe(1, 1)));
+                })
+                .Build());
+
+            // Run NDMF.
+            // The issue is exception is thrown here.
+            AvatarProcessor.ProcessAvatar(avatar);
+
+            // assert that meshes are merged as expected, to verify test runs correctly
+            // $$AAO_AUTO_MERGE_SMR_INTERMEDIATE_0 should be at root and $$AAO_AUTO_MERGE_SKINNED_MESH_1 in child
+            var intermediate = avatar.transform.Find("$$AAO_AUTO_MERGE_SMR_INTERMEDIATE_0");
+            Assert.That(intermediate, Is.Not.Null, "Intermediate merged GameObject should exist");
+            var mergedMesh = intermediate.Find("$$AAO_AUTO_MERGE_SKINNED_MESH_1");
+            Assert.That(mergedMesh, Is.Not.Null, "Merged SkinnedMeshRenderer should exist");
+            Assert.That(mergedMesh.GetComponent<SkinnedMeshRenderer>(), Is.Not.Null, "Merged SkinnedMeshRenderer component should exist");
+            Assert.That(a == null, "GameObject 'a' should be removed");
+            Assert.That(b == null, "GameObject 'b' should be removed");
+            Assert.That(c == null, "GameObject 'c' should be removed");
+            Assert.That(d == null, "GameObject 'd' should be removed");
+            Assert.That(e == null, "GameObject 'e' should be removed");
+            Assert.That(f == null, "GameObject 'f' should be removed");
+            Assert.That(renderer0GameObject == null, "GameObject 'renderer0' should be removed");
+            Assert.That(renderer1GameObject == null, "GameObject 'renderer1' should be removed");
+        }
+
         #endregion
     }
 }
