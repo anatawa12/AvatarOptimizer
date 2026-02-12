@@ -141,7 +141,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                                 .ToEqualsHashSet())
                         .ToArray();
 
-                    if (locations.Distinct().LongCount() >= 1)
+                    if (locations.Distinct().LongCount() > 1)
                     {
                         BuildLog.LogError("MergeSkinnedMesh:error:blendShape-animated-by-multiple-renderers",
                             name, renderers);
