@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- KeyNotFoundException with MergeSMR in some cases `#1631`
 
 ### Security
 

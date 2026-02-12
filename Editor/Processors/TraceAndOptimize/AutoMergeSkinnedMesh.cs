@@ -174,7 +174,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             Profiler.BeginSample("Merge Meshes");
 
             var index = 0;
-            Func<GameObject> gameObjectFactory = () => new GameObject($"$$AAO_AUTO_MERGE_SKINNED_MESH_{index++}");
+            Func<bool, GameObject> gameObjectFactory = (intermediate) => new GameObject(intermediate ? $"$$AAO_AUTO_MERGE_SMR_INTERMEDIATE_{index++}" : $"$$AAO_AUTO_MERGE_SKINNED_MESH_{index++}");
 
             var mappingBuilder = context.GetMappingBuilder();
 
@@ -205,7 +205,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         private static void MergeStaticSkinnedMesh(
             BuildContext context,
-            Func<GameObject> gameObjectFactory,
+            Func<bool, GameObject> gameObjectFactory,
             CategorizationKey key,
             List<MeshInfo2> meshInfos,
             Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes
@@ -232,7 +232,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         private static void MergeAnimatingSkinnedMesh(
             BuildContext context,
-            Func<GameObject> gameObjectFactory,
+            Func<bool, GameObject> gameObjectFactory,
             CategorizationKey key,
             List<MeshInfo2> meshInfos,
             Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes,
@@ -345,18 +345,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private static Transform CreateIntermediateGameObjects(
             BuildContext context,
             IList<(bool, ComponentOrGameObject, string)> activenessAnimatingProperties,
-            Func<GameObject> gameObjectFactory,
+            Func<bool, GameObject> gameObjectFactory,
             Transform commonParent,
             int keepPropertyCount)
         {
             while (activenessAnimatingProperties.Count > keepPropertyCount)
             {
-                var newIntermediateGameObject = gameObjectFactory();
+                var newIntermediateGameObject = gameObjectFactory(true);
                 newIntermediateGameObject.transform.SetParent(commonParent);
                 newIntermediateGameObject.transform.localPosition = Vector3.zero;
                 newIntermediateGameObject.transform.localRotation = Quaternion.identity;
                 newIntermediateGameObject.transform.localScale = Vector3.one;
 
+                context.Extension<GCComponentInfoContext>().NewComponent(newIntermediateGameObject.transform);
                 var (initial, sourceComponent, property) = activenessAnimatingProperties.RemoveLast();
                 context.GetMappingBuilder().RecordCopyProperty(
                     sourceComponent, property,
@@ -460,12 +461,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         private static SkinnedMeshRenderer CreateNewRenderer(
-            Func<GameObject> gameObjectFactory,
+            Func<bool, GameObject> gameObjectFactory,
             Transform parent,
             CategorizationKey key
         )
         {
-            var newRenderer = gameObjectFactory();
+            var newRenderer = gameObjectFactory(false);
             newRenderer.transform.SetParent(parent);
             newRenderer.transform.localPosition = Vector3.zero;
             newRenderer.transform.localRotation = Quaternion.identity;
