@@ -228,6 +228,49 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             Assert.That(renderer1GameObject == null, "GameObject 'renderer1' should be removed");
         }
 
+        [Test]
+        public void Issue1630MergeSmrMergeSameNameBlendShape()
+        {
+            // mesh A and B has blendShape named "BlendShape" and merged to single mesh with manually configured MergeSMR
+            // Animation targeting A.BlendShape and B.BlendShape should be remapped correctly without error
+            var avatar = TestUtils.NewAvatar();
+            var meshA = TestUtils.NewCubeMesh();
+            meshA.AddBlendShapeFrame("BlendShape", 100f, TestUtils.NewCubeBlendShapeFrame((0, Vector3.up)), null, null);
+            var meshB = TestUtils.NewCubeMesh();
+            meshB.AddBlendShapeFrame("BlendShape", 100f, TestUtils.NewCubeBlendShapeFrame((0, Vector3.up)), null, null);
+            var goA = Utils.NewGameObject("MeshA", avatar.transform);
+            var goB = Utils.NewGameObject("MeshB", avatar.transform);
+            var smrA = goA.AddComponent<SkinnedMeshRenderer>();
+            var smrB = goB.AddComponent<SkinnedMeshRenderer>();
+            smrA.sharedMesh = meshA;
+            smrB.sharedMesh = meshB;
+            var mergeSMRGO = Utils.NewGameObject("MergeSMR", avatar.transform);
+            var mergeSMRRenderer = mergeSMRGO.AddComponent<SkinnedMeshRenderer>();
+            var mergeSMR = mergeSMRGO.AddComponent<MergeSkinnedMesh>();
+            mergeSMR.blendShapeMode = MergeSkinnedMesh.BlendShapeMode.MergeSameName;
+            mergeSMR.renderersSet.SetValueNonPrefab(new[] { smrA, smrB });
+            mergeSMRRenderer.probeAnchor = mergeSMR.transform;
+            mergeSMRRenderer.rootBone = mergeSMR.transform;
+
+            TestUtils.SetFxLayer(avatar, new AnimatorControllerBuilder("")
+                .AddLayer("Base Layer", sm =>
+                {
+                    sm.NewClipState("AnimateBlendShapes", clip => clip
+                        .AddPropertyBinding("MeshA", typeof(SkinnedMeshRenderer), "blendShape.BlendShape",
+                            new Keyframe(0, 0), new Keyframe(1, 100))
+                        .AddPropertyBinding("MeshB", typeof(SkinnedMeshRenderer), "blendShape.BlendShape",
+                            new Keyframe(0, 0), new Keyframe(1, 100)));
+                })
+                .Build());
+
+            LogTestUtility.Test(_ =>
+            {
+                AvatarProcessor.ProcessAvatar(avatar);
+            });
+
+            // if no error is reported, test is passed
+        }
+
         #endregion
     }
 }

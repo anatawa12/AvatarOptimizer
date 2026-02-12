@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - KeyNotFoundException with MergeSMR in some cases `#1631`
+- False positive Differently animated BlendShape error `#1632`
 
 ### Security
 
