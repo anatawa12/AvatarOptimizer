@@ -10,7 +10,6 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Auto Merge PB will never exceed hard limit `#1627`
 
 ### Deprecated
 
@@ -19,6 +18,10 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.9.0] - 2026-02-12
+### Changed
+- Auto Merge PB will never exceed hard limit [`#1627`](https://github.com/anatawa12/AvatarOptimizer/pull/1627)
 
 ## [1.9.0-rc.10] - 2026-02-10
 ### Changed
@@ -2133,7 +2136,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.10...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0...HEAD
+[1.9.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.10...v1.9.0
 [1.9.0-rc.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.9...v1.9.0-rc.10
 [1.9.0-rc.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.8...v1.9.0-rc.9
 [1.9.0-rc.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.7...v1.9.0-rc.8

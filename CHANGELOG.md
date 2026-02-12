@@ -8,114 +8,121 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Declare compatibility with non-VRCSDK platforms [`#1433`](https://github.com/anatawa12/AvatarOptimizer/pull/1433)
-- Linear Entry-Exit support for Entry-Exit to 1D BlendTree Optimization `#1498` `#1506`
-  - Since this version, Entry => State1 => State2 => Exit pattern is now supported.
-- More cases are supported by Automatically Freeze BlendShape `#1510`
-  - AAO can now freeze BlendShapes that are animated in animator layers with weights between 0 and 1.
-- Remove unused textures in Remove Unused Objects `#1502` `#1566`
-- Invert option of Remove Mesh by BlendShape `#1535`
-- Automatically merge PhysBone when no grabbing PhysBone is detected `#1539` `#1624` `#1627`
-- Automatic Merge BlendTree support for WriteDefaults off BlendTree `#1283`
-- Component API for Remove Mesh By Mask `#XXXX`
-  - External tools can now programmatically add and configure RemoveMeshByMask components.
-- Complete Graph to Entry Exit optimization `#1544` `#1588` `#1601`
-  - New optimization in the Animator Optimizer, which is part of Trace and Optimize.
-  - It's expected that this optimization will reduce the number of transitions computed every frame. 
-  - After this optimization, Entry Exit to BlendTree optimization may be applied.
-- Minimum linting for some mistakes that reduces the avatar performance `#1549`
-  - AAO now performs basic linting to identify common mistakes that can negatively impact avatar performance.
-  - Currently, multi-pass rendering with exactly the same material is detected since it's likely a mistake that clicks '+' button on the inspector by mistake.
-- Basic mesh support for remove mesh components `#1530`
-  - You now can remove some portion of basic meshes with Remove Mesh components!
-  - This does not includes remove mesh by blendshape because basic mesh does not support blendshape.
-- Max Texture Size component to limit texture sizes `#1536`
-- Merge Material component which is successor of Merge ToonLit Material `#1516`
-  - This component merges multiple materials into one material.
-  - This component supports many shader includes lilToon, ToonStandard and others.
-  - Merge ToonLit Material is now deprecated. Please use this new component instead.
-  - Merge ToonLit Material will be removed in next major version.
-  - This component will support both Skinned Mesh Renderer and Mesh Renderer.
-- Replace EndBone With Endpoint Position component which replaces the end bone in the vrc physbone with the Endpoint Position [`#1423`](https://github.com/anatawa12/AvatarOptimizer/pull/1423)
-- Automatic Replace EndBone With Endpoint Position `#1423` `#1604`
-  - Trace and Optimize now automatically replaces PhysBone's EndBone with Endpoint Position if possible.
-- Experimental support for NDMF Platform Support `#1579` `#1577` `#1576`
-  - This is an experimental feature that does not follow semantic versioning.
-- Public API of `MergePhysBone` component
-  - `MergePhysBone` component is now part of public component API.
-- A summary of optimizations to the console `#1611`
-  - This feature is enabled by default.
-  - You can disable it from `Tools/Avatar Optimizer/Optimization Metrics`.
-- A window to collect data for bug reports `#1615` `#1616` `#1623`
 
 ### Changed
-- Avatar Optimizer will run as late as possible in NDMF Pipeline by default `#1493`
-  - To achieve this, I changed the name of plugin class, which is internal API, to contain non-ASCII character (with escape sequence).
-  - It's not recommended but when you actually want to run after Avatar Optimizer, you can use [`AfterPlugin`] api with `"com.anatawa12.avatar-optimizer"` as the plugin name in NDMF.
-    - In such cases, it might be necessary to register your components to Avatar Optimizer with API. For more details about registering components, see [Make your components compatible with Avatar Optimizer] in the documentation.
-  - This changes order of default plugin order, but when your plugin depending on running Avatar Optimizer after your plugin, it's better to use [`BeforePlugin`] api with `"com.anatawa12.avatar-optimizer"` as the plugin name in NDMF.
-- Moved removing submeshes with no materials assigned to the early process of AAO `#1495`
-  - This should let other process like freezing blendshapes ignore such submeshes.
-- Replace Mask Texture Editor ['#1470'](https://github.com/anatawa12/AvatarOptimizer/pull/1470)
-- Orphan Vertices will be kept `#1515`
-  - Vertices that are not part of any triangle will be kept.
-  - Orphan vertices are likely to be used to control the bounds of the mesh so they will be kept.
-- Allow Shuffle Material Slots is now enabled by default `#1533`
-- Descriptive localized messages are shown in Play Mode when animation keys are removed `#1461`
-- Optimize Texture now attempts texture atlasing even when textures are not uniformly used across all submeshes [`#1608`](https://github.com/anatawa12/AvatarOptimizer/pull/1608)
-  - When AAO removes animation keys because target objects are absent, descriptive messages in the user's language are now shown in Play Mode to help understand what happened.
-  - These messages explain that the target object is absent, keys were removed by AAO, and suggest reporting if this is incorrect.
-  - In Edit Mode (upload builds), the behavior remains unchanged with a terse internal identifier to minimize avatar size.
-- Motion time state is now supported in EntryExit to BlendTree optimization `#1552`
-  - Motion time state is safe to convert to BlendTree since it does not affect parameter evaluation.
-  - This change may increase the number of states converted to BlendTree.
-- Greater / Less and Float conditions support for Entry-Exit to BlendTree optimization `#1554` `#1571`
-  - Equals / NotEquals conditions for Ints or Bool operators are only supported in previous versions of Animator Optimizer.
-  - Please note that creating animator controllers that can optimized with this optimization is difficult with Float operators because we need to use BitIncrement/Decrement-ed condition threshold for exiting parameters.
-  - For example, when we use `> 0` condition for entry transition, we need to use `< 1e-45 (BitIncrement(0))`, which is equivalent to `<= 0`, for exit transition.
-- Streaming mipmap settings are copied when processing textures `#1558`
-- Useful error message will be shown when known unity bug that prevents you from building your avatar `#1563`
-  - Actually I cannot reproduce the bug so I hope this works but nothing certify this works. 
-- Improved preserving VRCSDK required BlendShapes `#1585`
-- Added button to ignore specified components when unknown `IEditorOnly` component is detected `#1592`
-  - As a part of this feature, we added Project-level settings to store a list of ignored components.
-  - You can access this setting in `Project/Avatar Optimizer` of `Project settings` and stored at `ProjectSettings/AvatarOptimizerSettings.asset` file.
-- Changed message shown on Trace and Optimize inspector `#1609`
-  - This message shows "Behavior changes are bugs of AAO: Avatar Optimizer" and suggests reporting issues.
-
-[`AfterPlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_AfterPlugin_System_String_System_String_System_Int32_
-[`BeforePlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_BeforePlugin_System_String_System_String_System_Int32_
-[Make your components compatible with Avatar Optimizer]: https://vpm.anatawa12.com/avatar-optimizer/en/docs/developers/make-your-components-compatible-with-aao/
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Padding used in OptimizeTexture is too small that can cause problems with masks `#1478`
-- Merging SubMeshes may not work for some meshes `#1501`
-- EnsureRunningOnMainThread can only be called from the main thread error in some cases `#1503`
-- Error from optimize texture when remove unused objects is disabled `#1504`
-- Unity error when SkinnedMesh has no blend shapes after optimization `#1402`
-- Mesh can be disappeared when BlendShapes with infinity in their delta are frozen with AAO `#1518`
-  - Freezing them would result Infinity in vertex position, which results NaN or Infinity in bounds, which makes Unity to clear the mesh.
-- VRM: A NullReferenceException or MissingReferenceException may occur when parsing incomplete VRM components `#1524`
-- MeshCompression settings is not preserved after AvatarOptimizer process `#1529`
-  - This bug increases size of some avatars unexpectedly. This is fixed now.
-- Missing `Ignore Other Phys Bone` support for Merge Phys Bone `#1532` `#1561`
-  - Ignore Other Phys Bone property is not supported by Merge Phys Bone. This was a bug.
-  - This version fixes this bug.
-- Fixed Optimize Texture may throw error in rare cases `#1538`
-- VRChat parameter drivers now work correctly when parameters are converted from bool/int to float during Entry-Exit to BlendTree optimization `#1547`
-  - Based on fix from NDMF (bdunderscore/ndmf#693)
-  - Parameter drivers now use intermediate parameters to preserve original type semantics
-- Error in AutoFreezeBlendShape with broken viseme settings `#1575`
-- Error with Object as the animation target `#1586`
-- VRM: Improved robustness of parsing incompletely setup VRM0.x / VRM1.0 avatars `#1599`
-- AAO recognizes animation incorrectly in extremely rare cases with path conflict `#1619`
-- Unexpectedly some PhysBone colliders are removed `#1620`
 
 ### Security
+
+## [1.9.0] - 2026-02-12
+### Added
+- Declare compatibility with non-VRCSDK platforms [`#1433`](https://github.com/anatawa12/AvatarOptimizer/pull/1433)
+- Linear Entry-Exit support for Entry-Exit to 1D BlendTree Optimization [`#1498`](https://github.com/anatawa12/AvatarOptimizer/pull/1498) [`#1506`](https://github.com/anatawa12/AvatarOptimizer/pull/1506)
+  - Since this version, Entry => State1 => State2 => Exit pattern is now supported.
+- More cases are supported by Automatically Freeze BlendShape [`#1510`](https://github.com/anatawa12/AvatarOptimizer/pull/1510)
+  - AAO can now freeze BlendShapes that are animated in animator layers with weights between 0 and 1.
+- Remove unused textures in Remove Unused Objects [`#1502`](https://github.com/anatawa12/AvatarOptimizer/pull/1502) [`#1566`](https://github.com/anatawa12/AvatarOptimizer/pull/1566)
+- Invert option of Remove Mesh by BlendShape [`#1535`](https://github.com/anatawa12/AvatarOptimizer/pull/1535)
+- Automatically merge PhysBone when no grabbing PhysBone is detected [`#1539`](https://github.com/anatawa12/AvatarOptimizer/pull/1539) [`#1624`](https://github.com/anatawa12/AvatarOptimizer/pull/1624) [`#1627`](https://github.com/anatawa12/AvatarOptimizer/pull/1627)
+- Automatic Merge BlendTree support for WriteDefaults off BlendTree [`#1283`](https://github.com/anatawa12/AvatarOptimizer/pull/1283)
+- Component API for Remove Mesh By Mask `#XXXX`
+  - External tools can now programmatically add and configure RemoveMeshByMask components.
+- Complete Graph to Entry Exit optimization [`#1544`](https://github.com/anatawa12/AvatarOptimizer/pull/1544) [`#1588`](https://github.com/anatawa12/AvatarOptimizer/pull/1588) [`#1601`](https://github.com/anatawa12/AvatarOptimizer/pull/1601)
+  - New optimization in the Animator Optimizer, which is part of Trace and Optimize.
+  - It's expected that this optimization will reduce the number of transitions computed every frame. 
+  - After this optimization, Entry Exit to BlendTree optimization may be applied.
+- Minimum linting for some mistakes that reduces the avatar performance [`#1549`](https://github.com/anatawa12/AvatarOptimizer/pull/1549)
+  - AAO now performs basic linting to identify common mistakes that can negatively impact avatar performance.
+  - Currently, multi-pass rendering with exactly the same material is detected since it's likely a mistake that clicks '+' button on the inspector by mistake.
+- Basic mesh support for remove mesh components [`#1530`](https://github.com/anatawa12/AvatarOptimizer/pull/1530)
+  - You now can remove some portion of basic meshes with Remove Mesh components!
+  - This does not includes remove mesh by blendshape because basic mesh does not support blendshape.
+- Max Texture Size component to limit texture sizes [`#1536`](https://github.com/anatawa12/AvatarOptimizer/pull/1536)
+- Merge Material component which is successor of Merge ToonLit Material [`#1516`](https://github.com/anatawa12/AvatarOptimizer/pull/1516)
+  - This component merges multiple materials into one material.
+  - This component supports many shader includes lilToon, ToonStandard and others.
+  - Merge ToonLit Material is now deprecated. Please use this new component instead.
+  - Merge ToonLit Material will be removed in next major version.
+  - This component will support both Skinned Mesh Renderer and Mesh Renderer.
+- Replace EndBone With Endpoint Position component which replaces the end bone in the vrc physbone with the Endpoint Position [`#1423`](https://github.com/anatawa12/AvatarOptimizer/pull/1423)
+- Automatic Replace EndBone With Endpoint Position [`#1423`](https://github.com/anatawa12/AvatarOptimizer/pull/1423) [`#1604`](https://github.com/anatawa12/AvatarOptimizer/pull/1604)
+  - Trace and Optimize now automatically replaces PhysBone's EndBone with Endpoint Position if possible.
+- Experimental support for NDMF Platform Support [`#1579`](https://github.com/anatawa12/AvatarOptimizer/pull/1579) [`#1577`](https://github.com/anatawa12/AvatarOptimizer/pull/1577) [`#1576`](https://github.com/anatawa12/AvatarOptimizer/pull/1576)
+  - This is an experimental feature that does not follow semantic versioning.
+- Public API of `MergePhysBone` component
+  - `MergePhysBone` component is now part of public component API.
+- A summary of optimizations to the console [`#1611`](https://github.com/anatawa12/AvatarOptimizer/pull/1611)
+  - This feature is enabled by default.
+  - You can disable it from `Tools/Avatar Optimizer/Optimization Metrics`.
+- A window to collect data for bug reports [`#1615`](https://github.com/anatawa12/AvatarOptimizer/pull/1615) [`#1616`](https://github.com/anatawa12/AvatarOptimizer/pull/1616) [`#1623`](https://github.com/anatawa12/AvatarOptimizer/pull/1623)
+
+### Changed
+- Avatar Optimizer will run as late as possible in NDMF Pipeline by default [`#1493`](https://github.com/anatawa12/AvatarOptimizer/pull/1493)
+  - To achieve this, I changed the name of plugin class, which is internal API, to contain non-ASCII character (with escape sequence).
+  - It's not recommended but when you actually want to run after Avatar Optimizer, you can use [`AfterPlugin`] api with `"com.anatawa12.avatar-optimizer"` as the plugin name in NDMF.
+    - In such cases, it might be necessary to register your components to Avatar Optimizer with API. For more details about registering components, see [Make your components compatible with Avatar Optimizer] in the documentation.
+  - This changes order of default plugin order, but when your plugin depending on running Avatar Optimizer after your plugin, it's better to use [`BeforePlugin`] api with `"com.anatawa12.avatar-optimizer"` as the plugin name in NDMF.
+- Moved removing submeshes with no materials assigned to the early process of AAO [`#1495`](https://github.com/anatawa12/AvatarOptimizer/pull/1495)
+  - This should let other process like freezing blendshapes ignore such submeshes.
+- Replace Mask Texture Editor ['#1470'](https://github.com/anatawa12/AvatarOptimizer/pull/1470)
+- Orphan Vertices will be kept [`#1515`](https://github.com/anatawa12/AvatarOptimizer/pull/1515)
+  - Vertices that are not part of any triangle will be kept.
+  - Orphan vertices are likely to be used to control the bounds of the mesh so they will be kept.
+- Allow Shuffle Material Slots is now enabled by default [`#1533`](https://github.com/anatawa12/AvatarOptimizer/pull/1533)
+- Descriptive localized messages are shown in Play Mode when animation keys are removed [`#1461`](https://github.com/anatawa12/AvatarOptimizer/pull/1461)
+- Optimize Texture now attempts texture atlasing even when textures are not uniformly used across all submeshes [`#1608`](https://github.com/anatawa12/AvatarOptimizer/pull/1608)
+  - When AAO removes animation keys because target objects are absent, descriptive messages in the user's language are now shown in Play Mode to help understand what happened.
+  - These messages explain that the target object is absent, keys were removed by AAO, and suggest reporting if this is incorrect.
+  - In Edit Mode (upload builds), the behavior remains unchanged with a terse internal identifier to minimize avatar size.
+- Motion time state is now supported in EntryExit to BlendTree optimization [`#1552`](https://github.com/anatawa12/AvatarOptimizer/pull/1552)
+  - Motion time state is safe to convert to BlendTree since it does not affect parameter evaluation.
+  - This change may increase the number of states converted to BlendTree.
+- Greater / Less and Float conditions support for Entry-Exit to BlendTree optimization [`#1554`](https://github.com/anatawa12/AvatarOptimizer/pull/1554) [`#1571`](https://github.com/anatawa12/AvatarOptimizer/pull/1571)
+  - Equals / NotEquals conditions for Ints or Bool operators are only supported in previous versions of Animator Optimizer.
+  - Please note that creating animator controllers that can optimized with this optimization is difficult with Float operators because we need to use BitIncrement/Decrement-ed condition threshold for exiting parameters.
+  - For example, when we use `> 0` condition for entry transition, we need to use `< 1e-45 (BitIncrement(0))`, which is equivalent to `<= 0`, for exit transition.
+- Streaming mipmap settings are copied when processing textures [`#1558`](https://github.com/anatawa12/AvatarOptimizer/pull/1558)
+- Useful error message will be shown when known unity bug that prevents you from building your avatar [`#1563`](https://github.com/anatawa12/AvatarOptimizer/pull/1563)
+  - Actually I cannot reproduce the bug so I hope this works but nothing certify this works. 
+- Improved preserving VRCSDK required BlendShapes [`#1585`](https://github.com/anatawa12/AvatarOptimizer/pull/1585)
+- Added button to ignore specified components when unknown `IEditorOnly` component is detected [`#1592`](https://github.com/anatawa12/AvatarOptimizer/pull/1592)
+  - As a part of this feature, we added Project-level settings to store a list of ignored components.
+  - You can access this setting in `Project/Avatar Optimizer` of `Project settings` and stored at `ProjectSettings/AvatarOptimizerSettings.asset` file.
+- Changed message shown on Trace and Optimize inspector [`#1609`](https://github.com/anatawa12/AvatarOptimizer/pull/1609)
+  - This message shows "Behavior changes are bugs of AAO: Avatar Optimizer" and suggests reporting issues.
+
+[`AfterPlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_AfterPlugin_System_String_System_String_System_Int32_
+[`BeforePlugin`]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_BeforePlugin_System_String_System_String_System_Int32_
+[Make your components compatible with Avatar Optimizer]: https://vpm.anatawa12.com/avatar-optimizer/en/docs/developers/make-your-components-compatible-with-aao/
+
+### Fixed
+- Padding used in OptimizeTexture is too small that can cause problems with masks [`#1478`](https://github.com/anatawa12/AvatarOptimizer/pull/1478)
+- Merging SubMeshes may not work for some meshes [`#1501`](https://github.com/anatawa12/AvatarOptimizer/pull/1501)
+- EnsureRunningOnMainThread can only be called from the main thread error in some cases [`#1503`](https://github.com/anatawa12/AvatarOptimizer/pull/1503)
+- Error from optimize texture when remove unused objects is disabled [`#1504`](https://github.com/anatawa12/AvatarOptimizer/pull/1504)
+- Unity error when SkinnedMesh has no blend shapes after optimization [`#1402`](https://github.com/anatawa12/AvatarOptimizer/pull/1402)
+- Mesh can be disappeared when BlendShapes with infinity in their delta are frozen with AAO [`#1518`](https://github.com/anatawa12/AvatarOptimizer/pull/1518)
+  - Freezing them would result Infinity in vertex position, which results NaN or Infinity in bounds, which makes Unity to clear the mesh.
+- VRM: A NullReferenceException or MissingReferenceException may occur when parsing incomplete VRM components [`#1524`](https://github.com/anatawa12/AvatarOptimizer/pull/1524)
+- MeshCompression settings is not preserved after AvatarOptimizer process [`#1529`](https://github.com/anatawa12/AvatarOptimizer/pull/1529)
+  - This bug increases size of some avatars unexpectedly. This is fixed now.
+- Missing `Ignore Other Phys Bone` support for Merge Phys Bone [`#1532`](https://github.com/anatawa12/AvatarOptimizer/pull/1532) [`#1561`](https://github.com/anatawa12/AvatarOptimizer/pull/1561)
+  - Ignore Other Phys Bone property is not supported by Merge Phys Bone. This was a bug.
+  - This version fixes this bug.
+- Fixed Optimize Texture may throw error in rare cases [`#1538`](https://github.com/anatawa12/AvatarOptimizer/pull/1538)
+- VRChat parameter drivers now work correctly when parameters are converted from bool/int to float during Entry-Exit to BlendTree optimization [`#1547`](https://github.com/anatawa12/AvatarOptimizer/pull/1547)
+  - Based on fix from NDMF (bdunderscore/ndmf#693)
+  - Parameter drivers now use intermediate parameters to preserve original type semantics
+- Error in AutoFreezeBlendShape with broken viseme settings [`#1575`](https://github.com/anatawa12/AvatarOptimizer/pull/1575)
+- Error with Object as the animation target [`#1586`](https://github.com/anatawa12/AvatarOptimizer/pull/1586)
+- VRM: Improved robustness of parsing incompletely setup VRM0.x / VRM1.0 avatars [`#1599`](https://github.com/anatawa12/AvatarOptimizer/pull/1599)
+- AAO recognizes animation incorrectly in extremely rare cases with path conflict [`#1619`](https://github.com/anatawa12/AvatarOptimizer/pull/1619)
+- Unexpectedly some PhysBone colliders are removed [`#1620`](https://github.com/anatawa12/AvatarOptimizer/pull/1620)
 
 ## [1.8.16] - 2025-12-03
 ### Changed
@@ -1357,7 +1364,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.16...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0...HEAD
+[1.9.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.16...v1.9.0
 [1.8.16]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.15...v1.8.16
 [1.8.15]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.14...v1.8.15
 [1.8.14]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.13...v1.8.14
