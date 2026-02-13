@@ -393,7 +393,6 @@ namespace Anatawa12.AvatarOptimizer
                 };
                 set
                 {
-                    OverrideStatus x;
                     switch (_type)
                     {
                         case InternalType.Version: _mergePb.versionConfig.@override = B(value); break;
