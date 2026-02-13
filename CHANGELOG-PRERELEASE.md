@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Added more information onto Bug Report Helper `#1633`
 
 ### Deprecated
 

@@ -192,7 +192,7 @@ internal class BugReportHelper : EditorWindow
         }
     }
 
-    private static string CollectAvatarInfo(GameObject clonedAvatar)
+    public static string CollectAvatarInfo(GameObject clonedAvatar)
     {
         // Avatr Info file consists is something like:
         // Path/Of/GameObject:
@@ -244,6 +244,10 @@ internal class BugReportHelper : EditorWindow
                         builder.AppendLine($"    rootBone: {ComponentPath(skinnedMeshRenderer.rootBone)}");
                         // anchor related
                         builder.AppendLine($"    probeAnchor: {ComponentPath(skinnedMeshRenderer.probeAnchor)}");
+                        Renderer(skinnedMeshRenderer);
+                        break;
+                    case MeshRenderer meshRenderer:
+                        Renderer(meshRenderer);
                         break;
 
 #if AAO_VRCSDK3_AVATARS
@@ -348,6 +352,73 @@ internal class BugReportHelper : EditorWindow
                     }
                     // bone weights
                     builder.AppendLine($"      boneWeights: total={mesh.GetAllBoneWeights().Length}, bonesPerVertex={mesh.GetBonesPerVertex().Length}");
+                }
+
+                void Renderer(Renderer renderer)
+                {
+                    builder.AppendLine($"    enabled: {renderer.enabled}");
+                    builder.AppendLine($"    shadowCastingMode: {renderer.shadowCastingMode}");
+                    builder.AppendLine($"    receiveShadows: {renderer.receiveShadows}");
+                    builder.AppendLine($"    lightProbeUsage: {renderer.lightProbeUsage}");
+                    builder.AppendLine($"    reflectionProbeUsage: {renderer.reflectionProbeUsage}");
+                    builder.AppendLine($"    sortingLayerID: {renderer.sortingLayerID}");
+                    builder.AppendLine($"    sortingOrder: {renderer.sortingOrder}");
+                    for (var i = 0; i < renderer.sharedMaterials.Length; i++)
+                    {
+                        var sharedMaterial = renderer.sharedMaterials[i];
+                        if (sharedMaterial != null)
+                        {
+                            builder.AppendLine($"    sharedMaterials[{i}]: {sharedMaterial.name} ({sharedMaterial.shader.name}) ({sharedMaterial.GetInstanceID()})");
+                            MaterialInfo(sharedMaterial, "      ");
+                        }
+                        else
+                        {
+                            builder.AppendLine($"    sharedMaterials[{i}]: <Missing / None>");
+                        }
+                    }
+                }
+
+                void MaterialInfo(Material material, string indent)
+                {
+                    var shader = material.shader;
+                    var propertyCount = shader.GetPropertyCount();
+                    for (var i = 0; i < propertyCount; i++)
+                    {
+                        var propertyName = shader.GetPropertyName(i);
+                        var propertyType = shader.GetPropertyType(i);
+                        switch (propertyType)
+                        {
+                            case UnityEngine.Rendering.ShaderPropertyType.Color:
+                                var color = material.GetColor(propertyName);
+                                builder.AppendLine($"{indent}property[{i}]: {propertyName} (Color) = {Hashed($"{color}")}");
+                                break;
+                            case UnityEngine.Rendering.ShaderPropertyType.Vector:
+                                var vector = material.GetVector(propertyName);
+                                builder.AppendLine($"{indent}property[{i}]: {propertyName} (Vector) = {Hashed($"{vector}")}");
+                                break;
+                            case UnityEngine.Rendering.ShaderPropertyType.Float:
+                            case UnityEngine.Rendering.ShaderPropertyType.Range:
+                                var floatValue = material.GetFloat(propertyName);
+                                builder.AppendLine( $"{indent}property[{i}]: {propertyName} ({propertyType}) = {Hashed($"{floatValue}")}");
+                                break;
+                            case UnityEngine.Rendering.ShaderPropertyType.Int:
+                                var intValue = material.GetInt(propertyName);
+                                builder.AppendLine( $"{indent}property[{i}]: {propertyName} (Int) = {Hashed($"{intValue}")}");
+                                break;
+                            case UnityEngine.Rendering.ShaderPropertyType.Texture:
+                                var texture = material.GetTexture(propertyName);
+                                builder.AppendLine(
+                                    $"{indent}property[{i}]: {propertyName} (Texture) = {(texture != null ? texture.name : "<Missing>")}");
+                                break;
+                        }
+                    }
+                }
+
+                // simple hash function to avoid leaking exact values
+                string Hashed(string input)
+                {
+                    var hash = input.GetHashCode();
+                    return $"<hash:{hash:X8}>";
                 }
             }
         }
@@ -477,9 +548,10 @@ internal class Context
         ReportFile.AddFile("AnimatorParser.tree.txt", AnimatorParserDebugWindow.CreateText(modifications, context.AvatarRootObject, detailed: true));
     }
 
-    public void AddGcDebugInfo(InternalGcDebugPosition position, string collectDataToString)
+    public void AddGcDebugInfo(InternalGcDebugPosition position, string collectDataToString, GameObject root)
     {
         ReportFile.AddFile($"GCDebug.{position}.tree.txt", collectDataToString);
+        ReportFile.AddFile($"AvatarInfo.{position}.tree.txt", BugReportHelper.CollectAvatarInfo(root));
     }
 }
 
