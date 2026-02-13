@@ -465,18 +465,38 @@
             line-height: 1.6;
         }
 
-        .tree-node details {
+        .tree-node .tree-node-children {
             margin-left: 20px;
         }
 
-        .tree-node summary {
+        .tree-node-header {
             cursor: pointer;
             padding: 2px 0;
             user-select: none;
+            position: relative;
+            padding-left: 16px;
         }
 
-        .tree-node summary:hover {
+        .tree-node-header:hover {
             background: #f8f9fa;
+        }
+        
+        .tree-node-header::before {
+            content: '▶';
+            position: absolute;
+            left: 0;
+            display: inline-block;
+            width: 16px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        
+        .tree-node-header.expanded::before {
+            transform: rotate(90deg);
+        }
+        
+        .tree-node-header.collapsed::before {
+            transform: rotate(0deg);
         }
 
         .tree-node-content {
@@ -495,28 +515,30 @@
         }
 
         /* Root node styling - distinguishes actual tree roots from hierarchy path nodes */
-        .tree-node-root > summary {
+        .tree-node-root > .tree-node-header {
             font-weight: 600;
             background: #f0f4ff;
             padding: 3px 5px;
+            padding-left: 21px;
             border-radius: 3px;
             margin: 2px 0;
         }
 
-        .tree-node-root > summary:hover {
+        .tree-node-root > .tree-node-header:hover {
             background: #e0ebff;
         }
 
         /* Intermediate node styling - hierarchy nodes under root nodes */
-        .tree-node-intermediate > summary {
+        .tree-node-intermediate > .tree-node-header {
             font-weight: 500;
             background: #f8f9ff;
             padding: 2px 4px;
+            padding-left: 20px;
             border-radius: 2px;
             margin: 1px 0;
         }
 
-        .tree-node-intermediate > summary:hover {
+        .tree-node-intermediate > .tree-node-header:hover {
             background: #eef0ff;
         }
 
@@ -1233,6 +1255,26 @@
             // Clear previous highlights
             clearSearch();
             
+            // Helper function to expand and render all nodes recursively
+            function expandAndRenderAll(element) {
+                // Find all nodes with lazy-loaded children
+                const nodes = element.querySelectorAll('.tree-node-header');
+                nodes.forEach(header => {
+                    const wrapper = header.parentElement;
+                    const childContainer = wrapper.querySelector('.tree-node-children');
+                    
+                    if (childContainer && !wrapper._childrenRendered) {
+                        // Trigger rendering by simulating click
+                        header.click();
+                        // Then collapse it back - we'll expand matching ones later
+                        header.click();
+                    }
+                });
+            }
+            
+            // First, ensure all nodes are rendered (but collapsed)
+            expandAndRenderAll(activeView);
+            
             // Find all text nodes and highlight matches
             const allTextNodes = activeView.querySelectorAll('.tree-node-path, .tree-node-type');
             let foundMatch = false;
@@ -1247,11 +1289,25 @@
                     const highlightedText = text.replace(regex, '<span class="tree-search-highlight">$1</span>');
                     node.innerHTML = highlightedText;
                     
-                    // Expand all parent details elements
-                    let parent = node.closest('details');
-                    while (parent) {
-                        parent.open = true;
-                        parent = parent.parentElement.closest('details');
+                    // Expand all parent nodes
+                    let parentElement = node.closest('.tree-node, .tree-node-root, .tree-node-intermediate');
+                    while (parentElement) {
+                        const header = parentElement.querySelector(':scope > .tree-node-header');
+                        if (header && header.classList.contains('collapsed')) {
+                            const childContainer = parentElement.querySelector(':scope > .tree-node-children');
+                            if (childContainer) {
+                                header.classList.remove('collapsed');
+                                header.classList.add('expanded');
+                                childContainer.style.display = 'block';
+                                
+                                // Render children if not already rendered
+                                if (!parentElement._childrenRendered) {
+                                    header.click(); // This will render
+                                }
+                            }
+                        }
+                        // Move up the tree
+                        parentElement = parentElement.parentElement.closest('.tree-node, .tree-node-root, .tree-node-intermediate');
                     }
                 }
             });
@@ -1276,10 +1332,16 @@
                     parent.textContent = parent.textContent; // This removes all HTML tags
                 });
                 
-                // Collapse all details
-                const allDetails = view.querySelectorAll('details');
-                allDetails.forEach(details => {
-                    details.open = false;
+                // Collapse all nodes
+                const allHeaders = view.querySelectorAll('.tree-node-header.expanded');
+                allHeaders.forEach(header => {
+                    const wrapper = header.parentElement;
+                    const childContainer = wrapper.querySelector('.tree-node-children');
+                    if (childContainer) {
+                        header.classList.remove('expanded');
+                        header.classList.add('collapsed');
+                        childContainer.style.display = 'none';
+                    }
                 });
             });
             
@@ -1349,13 +1411,16 @@
             const container = document.getElementById('tree-simple-view');
             container.innerHTML = '';
             
-            function renderSimpleNode(node, container) {
+            function renderSimpleNode(node, parentContainer) {
                 const hasChildren = node.children && node.children.length > 0;
                 
                 if (hasChildren) {
-                    // Use details/summary for nodes with children
-                    const details = document.createElement('details');
-                    const summary = document.createElement('summary');
+                    // Use lazy-loaded collapsible node
+                    const nodeWrapper = document.createElement('div');
+                    nodeWrapper.className = 'tree-node';
+                    
+                    const header = document.createElement('div');
+                    header.className = 'tree-node-header collapsed';
                     
                     const content = document.createElement('span');
                     content.className = 'tree-node-content';
@@ -1364,20 +1429,48 @@
                         content.innerHTML += `<span class="tree-node-type">(${escapeHtml(node.type)})</span>`;
                     }
                     
-                    summary.appendChild(content);
-                    details.appendChild(summary);
+                    header.appendChild(content);
+                    nodeWrapper.appendChild(header);
                     
-                    const nodeDiv = document.createElement('div');
-                    nodeDiv.className = 'tree-node';
+                    // Create placeholder for children but don't render them yet
+                    const childrenContainer = document.createElement('div');
+                    childrenContainer.className = 'tree-node-children';
+                    childrenContainer.style.display = 'none';
+                    nodeWrapper.appendChild(childrenContainer);
                     
-                    node.children.forEach(child => {
-                        renderSimpleNode(child, nodeDiv);
+                    // Store node data for lazy loading
+                    nodeWrapper._nodeData = node;
+                    nodeWrapper._childrenRendered = false;
+                    
+                    // Click handler for lazy loading
+                    header.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const isExpanded = header.classList.contains('expanded');
+                        
+                        if (isExpanded) {
+                            // Collapse
+                            header.classList.remove('expanded');
+                            header.classList.add('collapsed');
+                            childrenContainer.style.display = 'none';
+                        } else {
+                            // Expand
+                            header.classList.remove('collapsed');
+                            header.classList.add('expanded');
+                            childrenContainer.style.display = 'block';
+                            
+                            // Render children on first expand
+                            if (!nodeWrapper._childrenRendered) {
+                                node.children.forEach(child => {
+                                    renderSimpleNode(child, childrenContainer);
+                                });
+                                nodeWrapper._childrenRendered = true;
+                            }
+                        }
                     });
                     
-                    details.appendChild(nodeDiv);
-                    container.appendChild(details);
+                    parentContainer.appendChild(nodeWrapper);
                 } else {
-                    // Leaf nodes without details/summary
+                    // Leaf nodes without collapsible header
                     const nodeDiv = document.createElement('div');
                     nodeDiv.className = 'tree-node';
                     
@@ -1414,17 +1507,22 @@
                                   (hierNode.treeChildren && hierNode.treeChildren.length > 0);
                 
                 if (hasChildren) {
-                    // Use details/summary for collapsible hierarchy
-                    const details = document.createElement('details');
+                    // Use lazy-loaded collapsible node
+                    const nodeWrapper = document.createElement('div');
+                    
                     // Mark hierarchy nodes with tree children as root nodes
                     const hasTreeChildren = hierNode.treeChildren && hierNode.treeChildren.length > 0;
                     if (hasTreeChildren) {
-                        details.className = 'tree-node-root';
+                        nodeWrapper.className = 'tree-node-root';
                     } else if (isUnderRoot) {
                         // Intermediate node under a root node
-                        details.className = 'tree-node-intermediate';
+                        nodeWrapper.className = 'tree-node-intermediate';
+                    } else {
+                        nodeWrapper.className = 'tree-node';
                     }
-                    const summary = document.createElement('summary');
+                    
+                    const header = document.createElement('div');
+                    header.className = 'tree-node-header collapsed';
                     
                     const content = document.createElement('span');
                     content.className = 'tree-node-content';
@@ -1433,31 +1531,60 @@
                         content.innerHTML += `<span class="tree-node-type">(${escapeHtml(hierNode.type)})</span>`;
                     }
                     
-                    summary.appendChild(content);
-                    details.appendChild(summary);
+                    header.appendChild(content);
+                    nodeWrapper.appendChild(header);
                     
                     const childContainer = document.createElement('div');
-                    childContainer.className = 'tree-node';
+                    childContainer.className = 'tree-node-children';
+                    childContainer.style.display = 'none';
+                    nodeWrapper.appendChild(childContainer);
                     
-                    // Determine if children should be marked as under root
-                    const childIsUnderRoot = hasTreeChildren || isUnderRoot;
+                    // Store node data for lazy loading
+                    nodeWrapper._hierNodeData = hierNode;
+                    nodeWrapper._childrenRendered = false;
+                    nodeWrapper._isUnderRoot = isUnderRoot;
                     
-                    // Render path hierarchy children first
-                    if (hierNode.pathChildren && hierNode.pathChildren.length > 0) {
-                        hierNode.pathChildren.forEach(child => {
-                            renderHierarchyNode(child, childContainer, childIsUnderRoot);
-                        });
-                    }
+                    // Click handler for lazy loading
+                    header.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const isExpanded = header.classList.contains('expanded');
+                        
+                        if (isExpanded) {
+                            // Collapse
+                            header.classList.remove('expanded');
+                            header.classList.add('collapsed');
+                            childContainer.style.display = 'none';
+                        } else {
+                            // Expand
+                            header.classList.remove('collapsed');
+                            header.classList.add('expanded');
+                            childContainer.style.display = 'block';
+                            
+                            // Render children on first expand
+                            if (!nodeWrapper._childrenRendered) {
+                                // Determine if children should be marked as under root
+                                const childIsUnderRoot = hasTreeChildren || isUnderRoot;
+                                
+                                // Render path hierarchy children first
+                                if (hierNode.pathChildren && hierNode.pathChildren.length > 0) {
+                                    hierNode.pathChildren.forEach(child => {
+                                        renderHierarchyNode(child, childContainer, childIsUnderRoot);
+                                    });
+                                }
+                                
+                                // Then render tree structure children
+                                if (hierNode.treeChildren && hierNode.treeChildren.length > 0) {
+                                    hierNode.treeChildren.forEach(child => {
+                                        renderTreeNode(child, childContainer, false); // Children of hierarchy node
+                                    });
+                                }
+                                
+                                nodeWrapper._childrenRendered = true;
+                            }
+                        }
+                    });
                     
-                    // Then render tree structure children
-                    if (hierNode.treeChildren && hierNode.treeChildren.length > 0) {
-                        hierNode.treeChildren.forEach(child => {
-                            renderTreeNode(child, childContainer, false); // Children of hierarchy node
-                        });
-                    }
-                    
-                    details.appendChild(childContainer);
-                    parentElement.appendChild(details);
+                    parentElement.appendChild(nodeWrapper);
                 } else {
                     // Leaf node without children
                     const leafDiv = document.createElement('div');
@@ -1480,12 +1607,16 @@
                 const hasChildren = node.children && node.children.length > 0;
                 
                 if (hasChildren) {
-                    const details = document.createElement('details');
+                    const nodeWrapper = document.createElement('div');
                     // Mark actual tree root nodes as distinguishable
                     if (isRoot) {
-                        details.className = 'tree-node-root';
+                        nodeWrapper.className = 'tree-node-root';
+                    } else {
+                        nodeWrapper.className = 'tree-node';
                     }
-                    const summary = document.createElement('summary');
+                    
+                    const header = document.createElement('div');
+                    header.className = 'tree-node-header collapsed';
                     
                     const content = document.createElement('span');
                     content.className = 'tree-node-content';
@@ -1494,18 +1625,45 @@
                         content.innerHTML += `<span class="tree-node-type">(${escapeHtml(node.type)})</span>`;
                     }
                     
-                    summary.appendChild(content);
-                    details.appendChild(summary);
+                    header.appendChild(content);
+                    nodeWrapper.appendChild(header);
                     
                     const childContainer = document.createElement('div');
-                    childContainer.className = 'tree-node';
+                    childContainer.className = 'tree-node-children';
+                    childContainer.style.display = 'none';
+                    nodeWrapper.appendChild(childContainer);
                     
-                    node.children.forEach(child => {
-                        renderTreeNode(child, childContainer, false);
+                    // Store node data for lazy loading
+                    nodeWrapper._treeNodeData = node;
+                    nodeWrapper._childrenRendered = false;
+                    
+                    // Click handler for lazy loading
+                    header.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const isExpanded = header.classList.contains('expanded');
+                        
+                        if (isExpanded) {
+                            // Collapse
+                            header.classList.remove('expanded');
+                            header.classList.add('collapsed');
+                            childContainer.style.display = 'none';
+                        } else {
+                            // Expand
+                            header.classList.remove('collapsed');
+                            header.classList.add('expanded');
+                            childContainer.style.display = 'block';
+                            
+                            // Render children on first expand
+                            if (!nodeWrapper._childrenRendered) {
+                                node.children.forEach(child => {
+                                    renderTreeNode(child, childContainer, false);
+                                });
+                                nodeWrapper._childrenRendered = true;
+                            }
+                        }
                     });
                     
-                    details.appendChild(childContainer);
-                    parentElement.appendChild(details);
+                    parentElement.appendChild(nodeWrapper);
                 } else {
                     // Leaf node
                     const leafDiv = document.createElement('div');
