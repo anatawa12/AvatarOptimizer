@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Unexpectedly animated end bones are replaced with endpoint position `#1634`
 
 ### Security
 
