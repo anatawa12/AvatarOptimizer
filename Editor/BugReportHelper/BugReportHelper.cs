@@ -478,7 +478,8 @@ internal class BugReportHelper : EditorWindow
 
             foreach (var (package, lockedInfo) in locked)
             {
-                var version = lockedInfo.version;
+                var version = lockedInfo?.version;
+                if (version == null) continue;
                 yield return (package, version);
             }
         }
@@ -490,7 +491,7 @@ internal class BugReportHelper : EditorWindow
             public class Dependency
             {
                 [JsonProperty]
-                public string version;
+                public string? version;
             }
         }
 
@@ -510,7 +511,8 @@ internal class BugReportHelper : EditorWindow
 
             foreach (var (package, locked) in manifest.dependencies)
             {
-                var version = locked.version;
+                var version = locked?.version;
+                if (version == null) continue;
                 yield return (package, version);
             }
         }
@@ -522,7 +524,7 @@ internal class BugReportHelper : EditorWindow
             public class Dependency
             {
                 [JsonProperty]
-                public string version;
+                public string? version;
             }
         }
     }

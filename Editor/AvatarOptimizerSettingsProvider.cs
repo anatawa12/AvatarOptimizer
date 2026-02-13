@@ -8,10 +8,10 @@ namespace Anatawa12.AvatarOptimizer
 {
     internal class AvatarOptimizerSettingsProvider : SettingsProvider
     {
-        private SerializedObject _serializedObject;
-        private SerializedProperty _ignoredComponentsProperty;
+        private SerializedObject _serializedObject = null!;
+        private SerializedProperty _ignoredComponentsProperty = null!;
 
-        private AvatarOptimizerSettingsProvider(string path, SettingsScope scopes, IEnumerable<string> keywords = null)
+        private AvatarOptimizerSettingsProvider(string path, SettingsScope scopes, IEnumerable<string>? keywords = null)
             : base(path, scopes, keywords)
         {
         }
