@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Unexpectedly animated end bones are replaced with endpoint position `#1634`
 - Unexpected compilation flags passed to unity `#1637`
+- ArgumentException if Body is added to exclusions and MMD World Compatibility is enabled `#1638`
 
 ### Security
 
