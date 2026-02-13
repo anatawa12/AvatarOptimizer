@@ -10,17 +10,22 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Added more information onto Bug Report Helper `#1633`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- KeyNotFoundException with MergeSMR in some cases `#1631`
-- False positive Differently animated BlendShape error `#1632`
 
 ### Security
+
+## [1.9.1] - 2026-02-13
+### Changed
+- Added more information onto Bug Report Helper [`#1633`](https://github.com/anatawa12/AvatarOptimizer/pull/1633)
+
+### Fixed
+- KeyNotFoundException with MergeSMR in some cases [`#1631`](https://github.com/anatawa12/AvatarOptimizer/pull/1631)
+- False positive Differently animated BlendShape error [`#1632`](https://github.com/anatawa12/AvatarOptimizer/pull/1632)
 
 ## [1.9.0] - 2026-02-12
 ### Changed
@@ -2139,7 +2144,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.1...HEAD
+[1.9.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.10...v1.9.0
 [1.9.0-rc.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.9...v1.9.0-rc.10
 [1.9.0-rc.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.8...v1.9.0-rc.9
