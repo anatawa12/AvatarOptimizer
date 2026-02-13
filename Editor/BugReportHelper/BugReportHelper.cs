@@ -184,6 +184,12 @@ internal class BugReportHelper : EditorWindow
             var postBuildAvatarInfo = CollectAvatarInfo(clonedAvatar);
             reportFile.AddFile("AvatarInfo.PostBuild.tree.txt", postBuildAvatarInfo);
 
+            reportFile.AddFile("AnimatorParser.PostBuild.tree.txt", 
+                AnimatorParserDebugWindow.CreateText(
+                    new AnimatorParser(true)
+                        .GatherAnimationModifications(new BuildContext(clonedAvatar, null)), 
+                    clonedAvatar, detailed: true));
+
             return reportFile;
         }
         finally
@@ -218,6 +224,28 @@ internal class BugReportHelper : EditorWindow
 
                 var type = component.GetType();
                 builder.AppendLine($"  {type.FullName}");
+
+                switch (component)
+                {
+                    case Transform t:
+                        builder.AppendLine($"    activeSelf: {t.gameObject.activeSelf}");
+                        break;
+                    case Behaviour b:
+                        builder.AppendLine($"    enabled: {b.enabled}");
+                        break;
+                    case Cloth cloth:
+                        builder.AppendLine($"    enabled: {cloth.enabled}");
+                        break;
+                    case Collider collider:
+                        builder.AppendLine($"    enabled: {collider.enabled}");
+                        break;
+                    case LODGroup lodGroup:
+                        builder.AppendLine($"    enabled: {lodGroup.enabled}");
+                        break;
+                    case Renderer r:
+                        builder.AppendLine($"    enabled: {r.enabled}");
+                        break;
+                }
 
                 // Additional info for few components
                 switch (component)
