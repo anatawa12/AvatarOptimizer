@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 using nadena.dev.ndmf;
+using UnityEngine;
 
 namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 {
@@ -22,6 +23,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     if (i != newLayers.Count)
                         layer.OnLayerIndexUpdated(newLayers.Count);
                     newLayers.Add(layer);
+                }
+                else
+                {
+                    Debug.Log($"RemoveMeaninglessLayer: removing layer #{i} ({layer.name}) in {controller.name}");
                 }
             }
             controller.SetLayersUnsafe(newLayers.ToArray());

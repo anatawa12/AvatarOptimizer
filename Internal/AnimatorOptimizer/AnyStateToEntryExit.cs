@@ -55,10 +55,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
             // first, collect transformable layers
             var layers = controller.layers;
-            foreach (var layer in layers)
+            for (var i = 0; i < layers.Length; i++)
             {
+                var layer = layers[i];
                 if (CanConvert(layer, state, controller.RootGameObjectOrNull, boolParameters))
                 {
+                    Debug.Log($"AnyStateToEntryExit: converting layer #{i} '{layer.name}' in controller '{controller.name}'");
                     DoConvert(layer);
                 }
             }

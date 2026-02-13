@@ -35,6 +35,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         }
 
         // ReSharper disable InconsistentNaming
+        public string name => _animatorController.name;
+
         public AnimatorControllerParameter[] parameters
         {
             get => _animatorController.parameters;

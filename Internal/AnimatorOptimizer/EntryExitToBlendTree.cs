@@ -7,7 +7,6 @@ using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
-using Debug = System.Diagnostics.Debug;
 
 #if AAO_VRCSDK3_AVATARS
 using VRC.SDK3.Avatars.Components;
@@ -70,6 +69,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 convertInfos[i] = info;
                 if (info != null)
                 {
+                    Debug.Log($"EntryExitToBlendTree: converting layer#{i} ({layers[i].name}) in controller {controller} by parameter {info.ParameterName}: default state={info.DefaultState.name}, states=[{string.Join(", ", info.RangeForStates.Select(p => $"{p.Key.name}: {p.Value}"))}], timeMotionParameter={info.TimeMotionParameter}");
                     foreach (var parameter in info.Parameters)
                     {
                         if (!layerByParameter.TryGetValue(parameter, out var list))
