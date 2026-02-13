@@ -90,7 +90,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         class GCDebugRoot : MonoBehaviour
         {
-            public GameObject root;
+            public GameObject root = null!;
 
             public string CollectDataToString()
             {

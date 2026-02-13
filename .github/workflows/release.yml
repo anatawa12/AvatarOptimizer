@@ -176,7 +176,7 @@ jobs:
       - name: update csc.rsp
         run: |
           update_csc_rsp() {
-            sed '/-warnaserror/d;p' -i "$1"
+            sed '/-warnaserror/d' -i "$1"
           }
           update_csc_rsp .csc.rsp.nullunsafe
           update_csc_rsp .csc.rsp.nullsafe
@@ -191,6 +191,9 @@ jobs:
           name: vpm-package
           path: build/${{ env.PKG_NAME }}-${{ env.VERSION }}.zip
       # endregion vpm release
+
+      - name: Restore csc.rsp
+        run: git restore --staged --worktree .csc.rsp.nullunsafe .csc.rsp.nullsafe
 
       # region docs
       # remember update update-website.yml

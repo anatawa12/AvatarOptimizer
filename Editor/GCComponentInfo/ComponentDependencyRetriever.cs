@@ -93,8 +93,8 @@ namespace Anatawa12.AvatarOptimizer
 
         class ConfirmAutoFixDialog : EditorWindow
         {
-            private Type type;
-            private Action<bool> _callback;
+            private Type? type;
+            private Action<bool>? _callback;
 
             public static Task<bool> ShowDialog(Type type)
             {
@@ -124,7 +124,7 @@ namespace Anatawa12.AvatarOptimizer
                 root.style.paddingRight = 10;
                 root.style.paddingTop = 10;
                 root.style.paddingBottom = 10;
-                root.Add(new Label(AAOL10N.Tr("TraceAndOptimize:warn:unknown-type:autofix:dialog:message").Replace("{0}", type.FullName))
+                root.Add(new Label(AAOL10N.Tr("TraceAndOptimize:warn:unknown-type:autofix:dialog:message").Replace("{0}", type?.FullName))
                 {
                     style =
                     {
@@ -158,17 +158,17 @@ namespace Anatawa12.AvatarOptimizer
                 };
             }
 
-            private void OnDisable() => _callback(false);
+            private void OnDisable() => _callback?.Invoke(false);
 
             void Cancel()
             {
-                _callback(false);
+                _callback?.Invoke(false);
                 Close();
             }
 
             void IgnoreComponent()
             {
-                _callback(true);
+                _callback?.Invoke(true);
                 Close();
             }
 

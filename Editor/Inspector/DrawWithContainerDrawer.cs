@@ -219,7 +219,7 @@ internal class DrawWithContainerDrawer : PropertyDrawer
         public static Type? GetDrawerTypeForPropertyAndType(SerializedProperty property, Type type) =>
             (Type?)GetDrawerTypeForPropertyAndTypeInfo.Invoke(null, new object[] { property, type });
 
-        public static void SetFieldAndAttribute(PropertyDrawer drawer, FieldInfo fieldInfo, PropertyAttribute attribute)
+        public static void SetFieldAndAttribute(PropertyDrawer drawer, FieldInfo fieldInfo, PropertyAttribute? attribute)
         {
             FieldInfoInfo.SetValue(drawer, fieldInfo);
             AttributeInfo.SetValue(drawer, attribute);
