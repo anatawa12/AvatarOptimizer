@@ -494,10 +494,6 @@
         .tree-node-header.expanded::before {
             transform: rotate(90deg);
         }
-        
-        .tree-node-header.collapsed::before {
-            transform: rotate(0deg);
-        }
 
         .tree-node-content {
             display: inline;
@@ -1407,6 +1403,32 @@
             return nodes;
         }
 
+        // Helper function to create expand/collapse handler for lazy-loaded nodes
+        function createExpandCollapseHandler(header, nodeWrapper, childrenContainer, renderChildrenFn) {
+            return (e) => {
+                e.stopPropagation();
+                const isExpanded = header.classList.contains('expanded');
+                
+                if (isExpanded) {
+                    // Collapse
+                    header.classList.remove('expanded');
+                    header.classList.add('collapsed');
+                    childrenContainer.style.display = 'none';
+                } else {
+                    // Expand
+                    header.classList.remove('collapsed');
+                    header.classList.add('expanded');
+                    childrenContainer.style.display = 'block';
+                    
+                    // Render children on first expand
+                    if (!nodeWrapper._childrenRendered) {
+                        renderChildrenFn();
+                        nodeWrapper._childrenRendered = true;
+                    }
+                }
+            };
+        }
+
         function renderSimpleTreeView(nodes) {
             const container = document.getElementById('tree-simple-view');
             container.innerHTML = '';
@@ -1443,30 +1465,16 @@
                     nodeWrapper._childrenRendered = false;
                     
                     // Click handler for lazy loading
-                    header.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const isExpanded = header.classList.contains('expanded');
-                        
-                        if (isExpanded) {
-                            // Collapse
-                            header.classList.remove('expanded');
-                            header.classList.add('collapsed');
-                            childrenContainer.style.display = 'none';
-                        } else {
-                            // Expand
-                            header.classList.remove('collapsed');
-                            header.classList.add('expanded');
-                            childrenContainer.style.display = 'block';
-                            
-                            // Render children on first expand
-                            if (!nodeWrapper._childrenRendered) {
-                                node.children.forEach(child => {
-                                    renderSimpleNode(child, childrenContainer);
-                                });
-                                nodeWrapper._childrenRendered = true;
-                            }
+                    header.addEventListener('click', createExpandCollapseHandler(
+                        header,
+                        nodeWrapper,
+                        childrenContainer,
+                        () => {
+                            node.children.forEach(child => {
+                                renderSimpleNode(child, childrenContainer);
+                            });
                         }
-                    });
+                    ));
                     
                     parentContainer.appendChild(nodeWrapper);
                 } else {
@@ -1545,44 +1553,29 @@
                     nodeWrapper._isUnderRoot = isUnderRoot;
                     
                     // Click handler for lazy loading
-                    header.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const isExpanded = header.classList.contains('expanded');
-                        
-                        if (isExpanded) {
-                            // Collapse
-                            header.classList.remove('expanded');
-                            header.classList.add('collapsed');
-                            childContainer.style.display = 'none';
-                        } else {
-                            // Expand
-                            header.classList.remove('collapsed');
-                            header.classList.add('expanded');
-                            childContainer.style.display = 'block';
+                    header.addEventListener('click', createExpandCollapseHandler(
+                        header,
+                        nodeWrapper,
+                        childContainer,
+                        () => {
+                            // Determine if children should be marked as under root
+                            const childIsUnderRoot = hasTreeChildren || isUnderRoot;
                             
-                            // Render children on first expand
-                            if (!nodeWrapper._childrenRendered) {
-                                // Determine if children should be marked as under root
-                                const childIsUnderRoot = hasTreeChildren || isUnderRoot;
-                                
-                                // Render path hierarchy children first
-                                if (hierNode.pathChildren && hierNode.pathChildren.length > 0) {
-                                    hierNode.pathChildren.forEach(child => {
-                                        renderHierarchyNode(child, childContainer, childIsUnderRoot);
-                                    });
-                                }
-                                
-                                // Then render tree structure children
-                                if (hierNode.treeChildren && hierNode.treeChildren.length > 0) {
-                                    hierNode.treeChildren.forEach(child => {
-                                        renderTreeNode(child, childContainer, false); // Children of hierarchy node
-                                    });
-                                }
-                                
-                                nodeWrapper._childrenRendered = true;
+                            // Render path hierarchy children first
+                            if (hierNode.pathChildren && hierNode.pathChildren.length > 0) {
+                                hierNode.pathChildren.forEach(child => {
+                                    renderHierarchyNode(child, childContainer, childIsUnderRoot);
+                                });
+                            }
+                            
+                            // Then render tree structure children
+                            if (hierNode.treeChildren && hierNode.treeChildren.length > 0) {
+                                hierNode.treeChildren.forEach(child => {
+                                    renderTreeNode(child, childContainer, false); // Children of hierarchy node
+                                });
                             }
                         }
-                    });
+                    ));
                     
                     parentElement.appendChild(nodeWrapper);
                 } else {
@@ -1638,30 +1631,16 @@
                     nodeWrapper._childrenRendered = false;
                     
                     // Click handler for lazy loading
-                    header.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const isExpanded = header.classList.contains('expanded');
-                        
-                        if (isExpanded) {
-                            // Collapse
-                            header.classList.remove('expanded');
-                            header.classList.add('collapsed');
-                            childContainer.style.display = 'none';
-                        } else {
-                            // Expand
-                            header.classList.remove('collapsed');
-                            header.classList.add('expanded');
-                            childContainer.style.display = 'block';
-                            
-                            // Render children on first expand
-                            if (!nodeWrapper._childrenRendered) {
-                                node.children.forEach(child => {
-                                    renderTreeNode(child, childContainer, false);
-                                });
-                                nodeWrapper._childrenRendered = true;
-                            }
+                    header.addEventListener('click', createExpandCollapseHandler(
+                        header,
+                        nodeWrapper,
+                        childContainer,
+                        () => {
+                            node.children.forEach(child => {
+                                renderTreeNode(child, childContainer, false);
+                            });
                         }
-                    });
+                    ));
                     
                     parentElement.appendChild(nodeWrapper);
                 } else {
