@@ -548,9 +548,10 @@ internal class Context
         ReportFile.AddFile("AnimatorParser.tree.txt", AnimatorParserDebugWindow.CreateText(modifications, context.AvatarRootObject, detailed: true));
     }
 
-    public void AddGcDebugInfo(InternalGcDebugPosition position, string collectDataToString)
+    public void AddGcDebugInfo(InternalGcDebugPosition position, string collectDataToString, GameObject root)
     {
         ReportFile.AddFile($"GCDebug.{position}.tree.txt", collectDataToString);
+        ReportFile.AddFile($"AvatarInfo.{position}.tree.txt", BugReportHelper.CollectAvatarInfo(root));
     }
 }
 
