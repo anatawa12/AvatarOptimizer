@@ -16,11 +16,14 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Unexpectedly animated end bones are replaced with endpoint position `#1634`
-- Unexpected compilation flags passed to unity `#1637`
-- ArgumentException if Body is added to exclusions and MMD World Compatibility is enabled `#1638`
 
 ### Security
+
+## [1.9.2] - 2026-02-13
+### Fixed
+- Unexpectedly animated end bones are replaced with endpoint position [`#1634`](https://github.com/anatawa12/AvatarOptimizer/pull/1634)
+- Unexpected compilation flags passed to unity [`#1637`](https://github.com/anatawa12/AvatarOptimizer/pull/1637)
+- ArgumentException if Body is added to exclusions and MMD World Compatibility is enabled [`#1638`](https://github.com/anatawa12/AvatarOptimizer/pull/1638)
 
 ## [1.9.1] - 2026-02-13
 ### Changed
@@ -1375,7 +1378,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.2...HEAD
+[1.9.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.1...v1.9.2
 [1.9.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.16...v1.9.0
 [1.8.16]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.8.15...v1.8.16
