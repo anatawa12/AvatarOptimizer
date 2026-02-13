@@ -52,7 +52,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     if (mmdBody.TryGetComponent<SkinnedMeshRenderer>(out var mmdBodyRenderer))
                     {
                         entryPointMap[componentInfos.GetInfo(mmdBodyRenderer)]
-                            .Add(context.AvatarRootTransform, GCComponentInfo.DependencyType.Normal);
+                            .TryAdd(context.AvatarRootTransform, GCComponentInfo.DependencyType.Normal);
                     }
                 }
             }
