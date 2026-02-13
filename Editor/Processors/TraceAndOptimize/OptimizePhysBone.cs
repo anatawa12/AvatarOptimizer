@@ -253,7 +253,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (state.Exclusions.Contains(gameObject)) continue;
                 if (gameObject.TryGetComponent<ReplaceEndBoneWithEndpointPosition>(out _)) continue;
 
-                if (physbones.All(physbone => ShouldReplace(physbone, state, entrypointMap, componentInfos)))
+                if (physbones.All(physbone => ShouldReplace(physbone, state, entrypointMap, componentInfos, context)))
                 {
                     var component = gameObject.AddComponent<ReplaceEndBoneWithEndpointPosition>();
                     component.kind = ReplaceEndBoneWithEndpointPositionKind.Average;
@@ -262,7 +262,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         private static bool ShouldReplace(VRCPhysBoneBase physbone, TraceAndOptimizeState state,
-            DependantMap entrypointMap, GCComponentInfoContext componentInfos)
+            DependantMap entrypointMap, GCComponentInfoContext componentInfos, BuildContext context)
         {
             var leafBones = physbone.GetAffectedLeafBones().ToHashSet();
             var boneLengthChange = ReplaceEndBoneWithEndpointPositionProcessor.IsBoneLengthChange(physbone);
@@ -295,6 +295,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     // Transform self-reference is not registered
                     if (!dependencies.All(dependency =>
                             dependency.Key == physbone && dependency.Value == GCComponentInfo.DependencyType.Normal))
+                        return false;
+                }
+
+                // if leaf bone is animated by other than physbone, we shouldn't replace it.
+                var animationInfo = context.GetAnimationComponent(leafBone);
+                foreach (var transformProperty in Properties.TransformProperties)
+                {
+                    var property = animationInfo.GetFloatNode(transformProperty);
+                    if (property.SourceComponents.Any(sourceComponent => sourceComponent != physbone))
                         return false;
                 }
 
