@@ -184,6 +184,12 @@ internal class BugReportHelper : EditorWindow
             var postBuildAvatarInfo = CollectAvatarInfo(clonedAvatar);
             reportFile.AddFile("AvatarInfo.PostBuild.tree.txt", postBuildAvatarInfo);
 
+            reportFile.AddFile("AnimatorParser.PostBuild.tree.txt", 
+                AnimatorParserDebugWindow.CreateText(
+                    new AnimatorParser(true)
+                        .GatherAnimationModifications(new BuildContext(clonedAvatar, null)), 
+                    clonedAvatar, detailed: true));
+
             return reportFile;
         }
         finally
