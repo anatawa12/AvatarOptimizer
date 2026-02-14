@@ -130,7 +130,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         where TValueInfo : struct, IValueInfo<TValueInfo>
     {
         private readonly IEnumerable<AnimatorStatePropModNode<TValueInfo>> _children;
-        private readonly ApplyState _layerApplyState;
+        internal readonly ApplyState LayerApplyState;
 
         public AnimatorLayerPropModNode(ICollection<AnimatorStatePropModNode<TValueInfo>> children, ApplyState applyState)
         {
@@ -139,11 +139,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             Utils.Assert(children.Any());
             // ReSharper disable once PossibleMultipleEnumeration
             _children = children;
-            _layerApplyState = applyState;
+            LayerApplyState = applyState;
         }
 
         public override ApplyState ApplyState =>
-            _layerApplyState.MultiplyApplyState(_children.Select(x => x.ApplyState).MergeSideBySide());
+            LayerApplyState.MultiplyApplyState(_children.Select(x => x.ApplyState).MergeSideBySide());
         public override TValueInfo Value => default(TValueInfo).ConstantInfoForSideBySide(_children);
         public override IEnumerable<ObjectReference> ContextReferences => _children.SelectMany(x => x.ContextReferences);
         public IEnumerable<AnimatorStatePropModNode<TValueInfo>> Children => _children;

@@ -569,6 +569,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         private bool WeightSumIsOne => _blendTreeType != BlendTreeType.Direct;
         public IReadOnlyList<BlendTreeElement<TValueInfo>> Children => _children;
+        public bool IsPartialApplication => _partial || !WeightSumIsOne;
 
         public override ApplyState ApplyState =>
             (WeightSumIsOne && !_partial ? ApplyState.Always : ApplyState.Partially)
