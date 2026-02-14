@@ -277,6 +277,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             bool ValidatePhysBone(VRCPhysBoneBase physbone, HashSet<Transform> leafBones)
             {
                 if (physbone.endpointPosition != Vector3.zero) return false; // alreday used
+                if (physbone.rootTransform != null && !physbone.rootTransform.IsChildOf(context.AvatarRootTransform)) return false; // physbone.roottransform field may contain external reference.
                 if (!ReplaceEndBoneWithEndpointPositionProcessor.IsSafeMultiChild(physbone, leafBones)) return false;
                 return true;
             }
