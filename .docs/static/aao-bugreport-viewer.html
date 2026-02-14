@@ -1999,8 +1999,8 @@
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            // Revoke URL after a small delay to ensure download starts
-            setTimeout(() => URL.revokeObjectURL(url), 100);
+            // Revoke URL after a delay to ensure download starts across different browsers
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
         });
 
         // Handle browser back/forward navigation
