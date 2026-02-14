@@ -152,6 +152,10 @@ internal class BugReportHelper : EditorWindow
             // collect environment information.
             reportFile.AddFile("ComponentInfoRegistry.txt", APIInternal.ComponentInfoRegistry.GetAsText());
             reportFile.AddFile("ShaderInformationRegistry.txt", API.ShaderInformationRegistry.GetAsText());
+            reportFile.AddFile("NDMFPlugins.txt", CollectNdmfPlugins());
+#if AAO_VRCSDK3_AVATARS
+            reportFile.AddFile("VRCSDKBuildCallbacks.txt", CollectVRCSDKBuildCallbacks());
+#endif
 
             // Collect pre-build avatar information
             var preBuildAvatarInfo = CollectAvatarInfo(clonedAvatar);
@@ -197,6 +201,65 @@ internal class BugReportHelper : EditorWindow
             DestroyImmediate(clonedAvatar);
         }
     }
+
+    private static string CollectNdmfPlugins()
+    {
+        // https://github.com/bdunderscore/ndmf/blob/d1bd628e38229c1d4000acd7526bf81cdd9d6294/Editor/API/Solver/PluginResolver.cs#L70
+        const string sessionStateKey = "nadena.dev.ndmf.plugin-disabled.";
+        // We collect NDMF Plugin information with reflections.
+        // (NDMF doesn't expose API to get the list of loaded plugins)
+        try
+        {
+            // required types
+            var iPluginInternal = GetType("nadena.dev.ndmf.PluginResolver");
+            var findAllPluginsMethod = iPluginInternal.GetMethod("FindAllPlugins", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static,
+                null, Type.EmptyTypes, null);
+            if (findAllPluginsMethod == null) throw new Exception("FindAllPlugins method not found in PluginResolver");
+            var plugins = (IEnumerable<object>)findAllPluginsMethod.Invoke(null, null);
+            var pluginInstances = plugins.Cast<PluginBase>().ToList();
+
+            var builder = new StringBuilder();
+            foreach (var plugin in pluginInstances)
+            {
+                var disabled = SessionState.GetBool(sessionStateKey + plugin.QualifiedName, false);
+                builder.AppendLine($"{plugin.QualifiedName} ({plugin.DisplayName}): {(disabled ? "Disabled" : "Enabled")}");
+            }
+
+            return builder.ToString();
+        }
+        catch (Exception e)
+        {
+            return "Error collecting NDMF plugin information: \n" + e;
+        }
+
+        Type GetType(string name) => Utils.GetTypeFromName(name) ?? throw new Exception($"Type '{name}' not found");
+    }
+
+#if AAO_VRCSDK3_AVATARS
+    private static string CollectVRCSDKBuildCallbacks()
+    {
+        try
+        {
+            var type = typeof(VRC.SDKBase.Editor.BuildPipeline.VRCBuildPipelineCallbacks);
+            var field = type.GetField("_preprocessAvatarCallbacks", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            if (field == null) throw new Exception("Field '_preprocessAvatarCallbacks' not found in VRCBuildPipelineCallbacks");
+            var callbacks = ((IEnumerable<VRC.SDKBase.Editor.BuildPipeline.IVRCSDKPreprocessAvatarCallback>)field.GetValue(null)).ToList();
+            callbacks.Sort((a, b) => a.callbackOrder.CompareTo(b.callbackOrder));
+
+            var builder = new StringBuilder();
+            foreach (var callback in callbacks)
+            {
+                builder.AppendLine($"{callback.GetType().FullName}: callbackOrder: {callback.callbackOrder}; {callback}");
+            }
+
+            return builder.ToString();
+        }
+        catch (Exception e)
+        {
+            return "Error collecting VRCSDK build callback information: \n" + e;
+        }
+    }
+#endif
 
     public static string CollectAvatarInfo(GameObject clonedAvatar)
     {
