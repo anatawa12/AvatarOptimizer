@@ -25,7 +25,11 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
     protected override void Execute(BuildContext context, TraceAndOptimizeState state)
     {
         var physBonesByKey = new Dictionary<PbInfo, List<VRCPhysBone>>();
-        foreach (var physBone in context.GetComponents<VRCPhysBone>())
+        foreach (var physBone in context.GetComponents<VRCPhysBone>()
+                     .GroupBy(x => x.GetTarget())
+                     .Where(x => x.Count() == 1) // if multiple PhysBones share the same target, they cannot be merged; skip them
+                     .Select(x => x.First())
+                 )
         {
             // Animated physbones cannot be merged
             if (context.GetAnimationComponent(physBone).GetAllFloatProperties().Any(x => !x.node.IsEmpty))
@@ -70,6 +74,7 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
 
             foreach (var groups in Utils.Partition(list.Select(pb => (pb.GetAffectedTransforms().Count(), pb)), 128))
             {
+                if (groups.Count() == 1) continue; // no need to merge if only one physbone in the group
                 var mergePBGameObject = new GameObject($"$$$$$AutoMergedPhysBone_{index++}$$$$");
                 mergePBGameObject.transform.SetParent(parent.transform, worldPositionStays: false);
                 var mergePB = mergePBGameObject.AddComponent<MergePhysBone>();
