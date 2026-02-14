@@ -193,14 +193,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
     // note: no default is allowed
     internal readonly struct ObjectValueInfo : IValueInfo<ObjectValueInfo>, IEquatable<ObjectValueInfo>
     {
-        private readonly Object[] _possibleValues;
+        private readonly Object?[] _possibleValues;
 
-        public ObjectValueInfo(Object value) => _possibleValues = new[] { value };
-        public ObjectValueInfo(Object[] values) => _possibleValues = values;
+        public ObjectValueInfo(Object? value) => _possibleValues = new[] { value };
+        public ObjectValueInfo(Object?[] values) => _possibleValues = values;
 
         public bool IsConstant => _possibleValues is { Length: 1 };
 
-        public Object[] PossibleValues => _possibleValues ?? Array.Empty<Object>();
+        public Object?[] PossibleValues => _possibleValues ?? Array.Empty<Object?>();
 
         public ObjectValueInfo ConstantInfoForSideBySide(IEnumerable<PropModNode<ObjectValueInfo>> nodes) =>
             new(nodes.SelectMany(node => node.Value.PossibleValues).Distinct().ToArray());
