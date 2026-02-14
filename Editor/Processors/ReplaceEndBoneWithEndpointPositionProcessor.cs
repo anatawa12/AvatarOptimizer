@@ -46,10 +46,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             foreach (var physbone in physbones)
             {
-                // physbone.roottransform field may contain external reference.
-                var leafBones = physbone.GetAffectedLeafBones()
-                    .Where(t => t.IsChildOf(context.AvatarRootTransform))
-                    .ToHashSet();
+                var leafBones = physbone.GetAffectedLeafBones().ToHashSet();
 
                 if (!CanReplace(replacer, physbone, overlappedPhysBones, leafBones, out var replacementPosition)) continue;
 
