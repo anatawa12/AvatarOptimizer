@@ -433,6 +433,39 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             Assert.That(smr.sharedMaterials, Has.Length.EqualTo(3), "Material slots should NOT be merged.");
         }
 
+        [Test]
+        public void Issue1655_AutoMergePB_Should_Not_Merge_PhysBones_Targeting_Same_Target()
+        {
+            var avatar = TestUtils.NewAvatar();
+            var pbTarget = Utils.NewGameObject("PBTarget", avatar.transform);
+            var pb1 = Utils.NewGameObject("PB1", avatar.transform);
+            var pbComponent1 = pb1.AddComponent<VRCPhysBone>();
+            pbComponent1.endpointPosition = Vector3.up;
+            pbComponent1.rootTransform = pbTarget.transform;
+            pbComponent1.allowGrabbing = VRCPhysBoneBase.AdvancedBool.False;
+            var pb2 = Utils.NewGameObject("PB2", avatar.transform);
+            var pbComponent2 = pb2.AddComponent<VRCPhysBone>();
+            pbComponent2.endpointPosition = Vector3.up;
+            pbComponent2.rootTransform = pbTarget.transform;
+            pbComponent2.allowGrabbing = VRCPhysBoneBase.AdvancedBool.False;
+            TestUtils.SetFxLayer(avatar, new AnimatorControllerBuilder("").Build());
+            // we nned to keep pbTarget
+            var meshFilter = pbTarget.AddComponent<MeshFilter>();
+            meshFilter.sharedMesh = TestUtils.NewCubeMesh();
+            pbTarget.AddComponent<MeshRenderer>();
+
+            avatar.AddComponent<TraceAndOptimize>();
+
+            LogTestUtility.Test(_ =>
+            {
+                AvatarProcessor.ProcessAvatar(avatar);
+            });
+
+            Assert.That(avatar.GetComponentsInChildren<VRCPhysBone>(), Has.Length.EqualTo(2), "PhysBones should NOT be merged.");
+            Assert.That(pb1 != null, "PB1 should not be merged");
+            Assert.That(pb2 != null, "PB2 should not be merged");
+        }
+
         #endregion
     }
 }
