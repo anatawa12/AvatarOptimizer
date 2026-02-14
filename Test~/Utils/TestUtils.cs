@@ -127,7 +127,7 @@ namespace Anatawa12.AvatarOptimizer.Test
         /// This function returns an cube mesh with 8 vertices and 12 triangles at the origin sized 2x2x2.
         /// </summary>
         /// <returns>New cube mesh</returns>
-        public static Mesh NewCubeMesh()
+        public static Mesh NewCubeMesh(int subMeshCount = 1)
         {
             var mesh = new Mesh();
             mesh.vertices = new Vector3[8]
@@ -141,7 +141,8 @@ namespace Anatawa12.AvatarOptimizer.Test
                 new (+1, +1, -1),
                 new (+1, +1, +1),
             };
-            mesh.triangles = new int[12 * 3]
+            var triangles = new int[12 * 3 * subMeshCount];
+            var trianglesOneSubMesh = new int[12 * 3]
             {
                 0, 1, 2,
                 1, 3, 2,
@@ -156,8 +157,14 @@ namespace Anatawa12.AvatarOptimizer.Test
                 2, 3, 6,
                 3, 7, 6,
             };
-            mesh.subMeshCount = 1;
-            mesh.SetSubMesh(0, new SubMeshDescriptor(0, 12 * 3));
+            for (int i = 0; i < subMeshCount; i++)
+            {
+                trianglesOneSubMesh.AsSpan().CopyTo(triangles.AsSpan()[(i * 12 * 3)..((i + 1) * 12 * 3)]);
+            }
+            mesh.triangles = triangles;
+            mesh.subMeshCount = subMeshCount;
+            for (var i = 0; i < subMeshCount; i++)
+                mesh.SetSubMesh(i, new SubMeshDescriptor(i * 12 * 3, 12 * 3));
             return mesh;
         }
 

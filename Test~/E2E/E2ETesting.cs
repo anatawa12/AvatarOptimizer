@@ -1,3 +1,5 @@
+using System;
+using System.Diagnostics;
 using System.Linq;
 using nadena.dev.ndmf;
 using NUnit.Framework;
@@ -6,6 +8,7 @@ using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Rendering;
 using VRC.Dynamics;
+using Debug = UnityEngine.Debug;
 #if AAO_VRCSDK3_AVATARS
 using VRC.SDK3.Dynamics.PhysBone.Components;
 #endif
@@ -307,6 +310,128 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             Assert.That(avatar.GetComponentsInChildren<VRCPhysBone>(), Is.Empty, "No PhysBone should remain after processing");
         }
 #endif
+
+        [Test]
+        public void Issue1648_MergeMaterialSlots_Doesnt_Map_Slot_Animations()
+        {
+            var avatar = TestUtils.NewAvatar();
+            avatar.AddComponent<TraceAndOptimize>();
+            var mesh = TestUtils.NewCubeMesh(subMeshCount: 3);
+            var go = Utils.NewGameObject("Mesh", avatar.transform);
+            var smr = go.AddComponent<SkinnedMeshRenderer>();
+            smr.sharedMesh = mesh;
+            var material1 = new Material(Shader.Find("Standard"));
+            material1.name = "Material1";
+            var material2 = new Material(Shader.Find("Standard"));
+            material2.name = "Material2";
+            var material3 = new Material(Shader.Find("Standard"));
+            material3.name = "Material3";
+            smr.sharedMaterials = new[] { material1, material1, material2 };
+
+            TestUtils.SetFxLayer(avatar, new AnimatorControllerBuilder("")
+                .AddLayer("Base Layer", sm =>
+                {
+                    sm.NewClipState("AnimateMaterialSlots", clip => clip
+                        .AddObjectReferenceBinding("Mesh", typeof(SkinnedMeshRenderer), "m_Materials.Array.data[2]",
+                            new ObjectReferenceKeyframe { time = 0, value = material2 },
+                            new ObjectReferenceKeyframe { time = 1, value = material3 }));
+                })
+                .Build());
+
+            LogTestUtility.Test(_ =>
+            {
+                AvatarProcessor.ProcessAvatar(avatar);
+            });
+
+            // assert merged state
+
+            Assert.That(smr.sharedMaterials, Has.Length.EqualTo(2), "Material slots should be merged to 2");
+            Assert.That(smr.sharedMaterials[0].name, Does.Contain(material1.name), "Material1 should be used as the merged material for slot 0 and 1");
+            Assert.That(smr.sharedMaterials[1].name, Does.Contain(material2.name), "Material1 should be used as the merged material for slot 2");
+
+            var parsed =
+                new AnimatorParsersV2.AnimatorParser(mmdWorldCompatibility: true).GatherAnimationModifications(
+                    new BuildContext(avatar, null));
+
+            Assert.That(parsed.ObjectNodes.Keys, Has.Exactly(1).Matches<(ComponentOrGameObject target, string prop)>(x => 
+                x.target.Value == smr && x.prop == "m_Materials.Array.data[1]"), "Material slot animation should be remapped to the correct slot");
+        }
+
+        [Test]
+        public void Issue1648_MergeMaterialSlots_Incorrectly_Merge_Animated_Slots_NoShuffle()
+        {
+            var avatar = TestUtils.NewAvatar();
+            var traceAndOptimize = avatar.AddComponent<TraceAndOptimize>();
+            traceAndOptimize.allowShuffleMaterialSlots = false;
+            var mesh = TestUtils.NewCubeMesh(subMeshCount: 3);
+            var go = Utils.NewGameObject("Mesh", avatar.transform);
+            var smr = go.AddComponent<SkinnedMeshRenderer>();
+            smr.sharedMesh = mesh;
+            var material1 = new Material(Shader.Find("Standard"));
+            material1.name = "Material1";
+            var material2 = new Material(Shader.Find("Standard"));
+            material2.name = "Material2";
+            var material3 = new Material(Shader.Find("Standard"));
+            material3.name = "Material3";
+            smr.sharedMaterials = new[] { material1, material1, material2 };
+
+            TestUtils.SetFxLayer(avatar, new AnimatorControllerBuilder("")
+                .AddLayer("Base Layer", sm =>
+                {
+                    sm.NewClipState("AnimateMaterialSlots", clip => clip
+                        .AddObjectReferenceBinding("Mesh", typeof(SkinnedMeshRenderer), "m_Materials.Array.data[1]",
+                            new ObjectReferenceKeyframe { time = 0, value = material2 },
+                            new ObjectReferenceKeyframe { time = 1, value = material3 }));
+                })
+                .Build());
+
+            LogTestUtility.Test(_ =>
+            {
+                AvatarProcessor.ProcessAvatar(avatar);
+            });
+
+            // assert merged state
+
+            Assert.That(smr.sharedMaterials, Has.Length.EqualTo(3), "Material slots should NOT be merged.");
+        }
+
+        [Test]
+        public void Issue1648_MergeMaterialSlots_Incorrectly_Merge_Animated_Slots_Shuffle()
+        {
+            var avatar = TestUtils.NewAvatar();
+            var traceAndOptimize = avatar.AddComponent<TraceAndOptimize>();
+            traceAndOptimize.allowShuffleMaterialSlots = true;
+            var mesh = TestUtils.NewCubeMesh(subMeshCount: 3);
+            var go = Utils.NewGameObject("Mesh", avatar.transform);
+            var smr = go.AddComponent<SkinnedMeshRenderer>();
+            smr.sharedMesh = mesh;
+            var material1 = new Material(Shader.Find("Standard"));
+            material1.name = "Material1";
+            var material2 = new Material(Shader.Find("Standard"));
+            material2.name = "Material2";
+            var material3 = new Material(Shader.Find("Standard"));
+            material3.name = "Material3";
+            smr.sharedMaterials = new[] { material1, material1, material2 };
+
+            TestUtils.SetFxLayer(avatar, new AnimatorControllerBuilder("")
+                .AddLayer("Base Layer", sm =>
+                {
+                    sm.NewClipState("AnimateMaterialSlots", clip => clip
+                        .AddObjectReferenceBinding("Mesh", typeof(SkinnedMeshRenderer), "m_Materials.Array.data[1]",
+                            new ObjectReferenceKeyframe { time = 0, value = material2 },
+                            new ObjectReferenceKeyframe { time = 1, value = material3 }));
+                })
+                .Build());
+
+            LogTestUtility.Test(_ =>
+            {
+                AvatarProcessor.ProcessAvatar(avatar);
+            });
+
+            // assert merged state
+
+            Assert.That(smr.sharedMaterials, Has.Length.EqualTo(3), "Material slots should NOT be merged.");
+        }
 
         #endregion
     }
