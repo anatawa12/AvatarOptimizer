@@ -46,7 +46,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             foreach (var physbone in physbones)
             {
-                if (!CanReplace(replacer, physbone, overlappedPhysBones, out var leafBones, out var replacementPosition)) continue;
+                var leafBones = physbone.GetAffectedLeafBones().ToHashSet();
+
+                if (!CanReplace(replacer, physbone, overlappedPhysBones, leafBones, out var replacementPosition)) continue;
 
                 foreach (var leafBone in leafBones)
                 {
@@ -77,9 +79,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
         }
 
-        private static bool CanReplace(ReplaceEndBoneWithEndpointPosition replacer, VRCPhysBoneBase physbone, HashSet<VRCPhysBoneBase> overlappedPhysBones, out HashSet<Transform> leafBones, out Vector3 replacementPosition)
+        private static bool CanReplace(ReplaceEndBoneWithEndpointPosition replacer, VRCPhysBoneBase physbone, HashSet<VRCPhysBoneBase> overlappedPhysBones, HashSet<Transform> leafBones, out Vector3 replacementPosition)
         {
-            leafBones = physbone.GetAffectedLeafBones().ToHashSet();
             replacementPosition = default;
 
             if (leafBones.Count == 0) return false;
