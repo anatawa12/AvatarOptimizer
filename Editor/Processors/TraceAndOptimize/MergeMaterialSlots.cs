@@ -14,12 +14,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public override string DisplayName => "T&O: MergeMaterialSlots";
         protected override bool Enabled(TraceAndOptimizeState state) => state.MergeMaterials;
 
+        private delegate (int[][], List<(MeshTopology, Material?)>) MaterialCategorizer(MeshInfo2[] meshes, BuildContext context);
+
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
             var mergeMeshes = FilterMergeMeshes(context, state);
             if (mergeMeshes.Count == 0) return;
 
-            Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes;
+            MaterialCategorizer createSubMeshes;
 
             // createSubMeshes must preserve first material to be the first material
             if (state.AllowShuffleMaterialSlots)
@@ -45,6 +47,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (
                     // FlattenMultiPassRendering will increase polygon count by VRChat so it's not good for T&O
                     meshInfo.SubMeshes.All(x => x.SharedMaterials.Length == 1)
+                    // no support for null materials
+                    && meshInfo.SubMeshes.All(x => x.SharedMaterial != null)
                     // any other components are not supported
                     && !HasUnsupportedComponents(meshRenderer.gameObject)
                 )
@@ -57,10 +61,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         private void MergeMaterialSlot(MeshInfo2 orphanMesh,
-            Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes, 
+            MaterialCategorizer createSubMeshes, 
             BuildContext context)
         {
-            var (mapping, subMeshInfos) = createSubMeshes(new[] { orphanMesh });
+            var (mapping, subMeshInfos) = createSubMeshes(new[] { orphanMesh }, context);
             var subMeshes = orphanMesh.SubMeshes.ToList();
 
             orphanMesh.SubMeshes.Clear();
@@ -78,42 +82,62 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             context.RecordMoveProperties(orphanMesh.SourceRenderer, mappings.ToArray());
         }
 
-        public static (int[][], List<(MeshTopology, Material?)>) CreateSubMeshesMergeShuffling(MeshInfo2[] meshInfos) =>
-            MergeSkinnedMeshProcessor.GenerateSubMeshMapping(meshInfos, new HashSet<Material>());
+        public static (int[][], List<(MeshTopology, Material?)>) CreateSubMeshesMergeShuffling(MeshInfo2[] meshInfos, BuildContext context)
+        {
+            var doNotMerges = new HashSet<Material>();
+            // do not merge materials that are animated
+            foreach (var meshInfo in meshInfos)
+            {
+                var renderer = meshInfo.SourceRenderer;
+                var animationComponent = context.GetAnimationComponent(renderer);
+                // since all submesh have exactly one material (see FilterMergeMeshes), we can use submesh index for material slot index
+                for (var index = 0; index < meshInfo.SubMeshes.Count; index++)
+                {
+                    var objectNode = animationComponent.GetObjectNode($"m_Materials.Array.data[{index}]");
+                    if (objectNode.ComponentNodes.Any())
+                    {
+                        doNotMerges.Add(meshInfo.SubMeshes[index].SharedMaterial!);
+                    }
+                }
+            }
+            return MergeSkinnedMeshProcessor.GenerateSubMeshMapping(meshInfos, doNotMerges);
+        }
 
         // must preserve first material to be the first material
-        public static (int[][], List<(MeshTopology, Material?)>) CreateSubMeshesMergePreserveOrder(MeshInfo2[] meshInfos)
+        public static (int[][], List<(MeshTopology, Material?)>) CreateSubMeshesMergePreserveOrder(MeshInfo2[] meshInfos, BuildContext context)
         {
             // merge consecutive submeshes with same material to one for simpler logic
             // note: both start and end are inclusive
             var reducedMeshInfos =
-                new LinkedList<((MeshTopology topology, Material? material) info, (int start, int end) actualIndices)>
+                new LinkedList<((MeshTopology topology, Material? material) info, (int start, int end) actualIndices, bool isAnimated)>
                     [meshInfos.Length];
 
             for (var meshI = 0; meshI < meshInfos.Length; meshI++)
             {
                 var meshInfo = meshInfos[meshI];
                 var reducedMeshInfo =
-                    new LinkedList<((MeshTopology topology, Material? material) info, (int start, int end) actualIndices
+                    new LinkedList<((MeshTopology topology, Material? material) info, (int start, int end) actualIndices, bool isAnimated
                         )>();
+                var animationComponent = context.GetAnimationComponent(meshInfo.SourceRenderer);
 
                 if (meshInfo.SubMeshes.Count > 0)
                 {
-                    reducedMeshInfo.AddLast(((meshInfo.SubMeshes[0].Topology, meshInfo.SubMeshes[0].SharedMaterial),
-                        (0, 0)));
+                    reducedMeshInfo.AddLast(((meshInfo.SubMeshes[0].Topology, meshInfo.SubMeshes[0].SharedMaterial), (0, 0), 
+                        isAnimated: animationComponent.GetObjectNode($"m_Materials.Array.data[0]").ComponentNodes.Any()));
 
                     for (var subMeshI = 1; subMeshI < meshInfo.SubMeshes.Count; subMeshI++)
                     {
                         var info = (meshInfo.SubMeshes[subMeshI].Topology, meshInfo.SubMeshes[subMeshI].SharedMaterial);
+                        var isAnimatedCurrent = animationComponent.GetObjectNode($"m_Materials.Array.data[{subMeshI}]").ComponentNodes.Any();
                         var last = reducedMeshInfo.Last.Value;
-                        if (last.info.Equals(info))
+                        if (last.info.Equals(info) && !last.isAnimated && !isAnimatedCurrent)
                         {
                             last.actualIndices.end = subMeshI;
                             reducedMeshInfo.Last.Value = last;
                         }
                         else
                         {
-                            reducedMeshInfo.AddLast((info, (subMeshI, subMeshI)));
+                            reducedMeshInfo.AddLast((info, (subMeshI, subMeshI), isAnimated: isAnimatedCurrent));
                         }
                     }
                 }
@@ -205,33 +229,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 return false;
             }
-        }
-
-        private static bool IsAnimatedForbidden(AnimationComponentInfo<PropertyInfo> component)
-        {
-            // any of object / pptr / material animation is forbidden
-            if (component.GetAllObjectProperties().Any(x => x.node.ComponentNodes.Any()))
-                return true;
-
-            foreach (var (name, node) in component.GetAllFloatProperties())
-            {
-                // skip non animating ones
-                if (!node.ComponentNodes.Any()) continue;
-                // m_Enabled is allowed
-                if (name == Props.EnabledFor(typeof(SkinnedMeshRenderer))) continue;
-
-                // Note: when you added some other allowed properties,
-                // You have to add default value handling in GetDefaultValue below
-
-                // blendShapes are renamed to avoid conflict, so it's allowed
-                if (name.StartsWith("blendShape.", StringComparison.Ordinal)) continue;
-                // material properties are allowed, will be merged if animated similarly
-                if (name.StartsWith("material.", StringComparison.Ordinal)) continue;
-                // other float properties are forbidden
-                return true;
-            }
-
-            return false;
         }
 
         private static bool HasUnsupportedComponents(GameObject gameObject)
