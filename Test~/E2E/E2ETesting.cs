@@ -5,6 +5,10 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Rendering;
+using VRC.Dynamics;
+#if AAO_VRCSDK3_AVATARS
+using VRC.SDK3.Dynamics.PhysBone.Components;
+#endif
 
 namespace Anatawa12.AvatarOptimizer.Test.E2E
 {
@@ -270,6 +274,39 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
 
             // if no error is reported, test is passed
         }
+
+#if AAO_VRCSDK3_AVATARS
+        [Test]
+        public void Issue1645_AutoMergePhysBone_Enables_Disabled_PhysBone()
+        {
+            var avatar = TestUtils.NewAvatar();
+            var pb1 = Utils.NewGameObject("PB1", avatar.transform);
+            var pbTarget1 = Utils.NewGameObject("PBTarget", pb1.transform);
+            var pbComponent1 = pb1.AddComponent<VRCPhysBone>();
+            pbComponent1.endpointPosition = Vector3.up;
+            pbComponent1.enabled = false;
+            pbComponent1.allowGrabbing = VRCPhysBoneBase.AdvancedBool.False;
+            pbTarget1.AddComponent<MeshRenderer>();
+            pbTarget1.AddComponent<MeshFilter>().sharedMesh = TestUtils.NewCubeMesh();
+            var pb2 = Utils.NewGameObject("PB2", avatar.transform);
+            var pbTarget2 = Utils.NewGameObject("PBTarget2", pb2.transform);
+            var pbComponent2 = pb2.AddComponent<VRCPhysBone>();
+            pbComponent2.endpointPosition = Vector3.up;
+            pbComponent2.enabled = false;
+            pbComponent2.allowGrabbing = VRCPhysBoneBase.AdvancedBool.False;
+            pbTarget2.AddComponent<MeshRenderer>();
+            pbTarget2.AddComponent<MeshFilter>().sharedMesh = TestUtils.NewCubeMesh();
+            TestUtils.SetFxLayer(avatar, new AnimatorControllerBuilder("").Build());
+            avatar.AddComponent<TraceAndOptimize>();
+
+            LogTestUtility.Test(_ =>
+            {
+                AvatarProcessor.ProcessAvatar(avatar);
+            });
+
+            Assert.That(avatar.GetComponentsInChildren<VRCPhysBone>(), Is.Empty, "No PhysBone should remain after processing");
+        }
+#endif
 
         #endregion
     }
