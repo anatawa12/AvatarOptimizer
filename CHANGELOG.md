@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 - Auto Merge PhysBone may enables disabled PhysBones by merging disabled PhysBones `#1647`
 - Auto Merge Material Slots may break material swapping animations `#1650`
 - KeyNotFoundException occurs when the physbone root transform field contains an external transform `1651`
+- PhysBones targeting same bone are merged `#1656`
 
 ### Security
 
