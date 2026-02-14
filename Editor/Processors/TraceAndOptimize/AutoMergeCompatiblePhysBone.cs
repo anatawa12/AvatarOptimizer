@@ -94,6 +94,8 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
 
     readonly struct PbInfo : IEquatable<PbInfo>
     {
+        public readonly bool Enabled;
+
         public readonly VRCPhysBoneBase.Version Version;
 
         // transform
@@ -162,6 +164,7 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
 
         public PbInfo(VRCPhysBone physBone, GameObject? toggleRoot)
         {
+            Enabled = physBone.enabled;
             Version = physBone.version;
             ToggleRoot = toggleRoot;
             // transform
@@ -287,6 +290,7 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
 
         public bool CanMergePhysBone() => this is
         {
+            Enabled: true, // disabled physbone should not be merged; will be removed by optimizer later
             MultiChildType: VRCPhysBoneBase.MultiChildType.Ignore,
             AllowGrabbingOthers: false,
             AllowGrabbingSelf: false,
@@ -295,7 +299,8 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
 
         public bool Equals(PbInfo other)
         {
-            return Version == other.Version && 
+            return Enabled == other.Enabled && 
+                   Version == other.Version && 
                    ToggleRoot == other.ToggleRoot &&
                    RootTransformParent.Equals(other.RootTransformParent) &&
                    IgnoreOtherPhysBones == other.IgnoreOtherPhysBones &&
@@ -352,6 +357,7 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
         public override int GetHashCode()
         {
             var hashCode = new HashCode();
+            hashCode.Add(Enabled);
             hashCode.Add((int)Version);
             hashCode.Add(ToggleRoot);
             hashCode.Add(RootTransformParent);
