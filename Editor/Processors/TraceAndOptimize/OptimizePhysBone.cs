@@ -264,7 +264,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         private static bool ShouldReplace(VRCPhysBoneBase physbone, TraceAndOptimizeState state,
             DependantMap entrypointMap, GCComponentInfoContext componentInfos, BuildContext context)
         {
-            var leafBones = physbone.GetAffectedLeafBones().ToHashSet();
+            // physbone.roottransform field may contain external reference.
+            var leafBones = physbone.GetAffectedLeafBones()
+                .Where(t => t.IsChildOf(context.AvatarRootTransform))
+                .ToHashSet();
             var boneLengthChange = ReplaceEndBoneWithEndpointPositionProcessor.IsBoneLengthChange(physbone);
 
             if (leafBones.Count == 0) return false;
