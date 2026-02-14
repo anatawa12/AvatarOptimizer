@@ -135,7 +135,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     resultText.Append($"{indent}Variable({variable.Component.GetType().Name}): {variable.Component.name}\n");
                     break;
                 case AnimatorLayerPropModNode<TValueInfo> animatorLayer:
-                    resultText.Append($"{indent}AnimatorLayer:\n");
+                    resultText.Append($"{indent}AnimatorLayer: {animatorLayer.LayerApplyState}\n");
                     foreach (var childNode in animatorLayer.Children)
                         AppendNodeRecursive(childNode, resultText, indent + "  ");
                     break;
@@ -144,7 +144,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     AppendNodeRecursive(stateNode.Node, resultText, indent + "  ");
                     break;
                 case BlendTreeNode<TValueInfo> blendTreeNode:
-                    resultText.Append($"{indent}BlendTree:\n");
+                    resultText.Append($"{indent}BlendTree: {(blendTreeNode.IsPartialApplication ? "Partial" : "Full")}\n");
                     foreach (var childNode in blendTreeNode.Children)
                     {
                         resultText.Append($"{indent}  BlendTreeElement({childNode.Index}):\n");
@@ -152,7 +152,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     }
                     break;
                 case FloatAnimationCurveNode curve:
-                    resultText.Append($"{indent}FloatAnimationCurve: {curve.Clip.name}\n");
+                    resultText.Append($"{indent}FloatAnimationCurve: {curve.Clip.name}, {curve.Value}, curve: {curve.Curve.GetHashCode2():x8}\n");
                     break;
                 case ObjectAnimationCurveNode curve:
                     resultText.Append($"{indent}ObjectAnimationCurve: {curve.Clip.name}\n");
