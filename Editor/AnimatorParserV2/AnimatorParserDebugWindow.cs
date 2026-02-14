@@ -186,7 +186,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         }
 
         private static string ToShortDescription(PropModNode<ObjectValueInfo> propState) =>
-            $"{propState.ApplyState}:Const:{string.Join(",", propState.Value.PossibleValues.Select(x => x.name))}";
+            $"{propState.ApplyState}:Const:{string.Join(",", propState.Value.PossibleValues.Select(x => x == null ? "<null>" : x.name))}";
 
         private static void NarrowValueLabelField(string label0, string value)
         {
