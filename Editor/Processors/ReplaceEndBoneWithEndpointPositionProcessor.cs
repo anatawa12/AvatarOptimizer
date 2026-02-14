@@ -46,7 +46,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             foreach (var physbone in physbones)
             {
-                if (!CanReplace(replacer, physbone, overlappedPhysBones, out var leafBones, out var replacementPosition)) continue;
+                var leafBones = physbone.GetAffectedLeafBones().ToHashSet();
+
+                if (!CanReplace(context, replacer, physbone, overlappedPhysBones, leafBones, out var replacementPosition)) continue;
 
                 foreach (var leafBone in leafBones)
                 {
@@ -77,9 +79,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
             }
         }
 
-        private static bool CanReplace(ReplaceEndBoneWithEndpointPosition replacer, VRCPhysBoneBase physbone, HashSet<VRCPhysBoneBase> overlappedPhysBones, out HashSet<Transform> leafBones, out Vector3 replacementPosition)
+        private static bool CanReplace(BuildContext context, ReplaceEndBoneWithEndpointPosition replacer, VRCPhysBoneBase physbone, HashSet<VRCPhysBoneBase> overlappedPhysBones, HashSet<Transform> leafBones, out Vector3 replacementPosition)
         {
-            leafBones = physbone.GetAffectedLeafBones().ToHashSet();
             replacementPosition = default;
 
             if (leafBones.Count == 0) return false;
@@ -107,6 +108,12 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             bool ValidatePhysBone(VRCPhysBoneBase physbone, HashSet<Transform> leafBones)
             {
+                // physbone.roottransform field may contain external reference.
+                if (physbone.rootTransform != null && !physbone.rootTransform.IsChildOf(context.AvatarRootTransform))
+                {
+                    Debug.Log($"The RootTransform of the PhysBone is not a child of the Avatar Root, so it cannot be replaced: {physbone.name}", physbone);
+                    return false;
+                }
                 if (overlappedPhysBones.Contains(physbone))
                 {
                     // just warning
