@@ -746,9 +746,6 @@ msgstr "Endpoint Positionの設定方法"
 msgid "ReplaceEndBoneWithEndpointPosition:prop:overridePosition"
 msgstr "Endpoint Position Override"
 
-msgid "ReplaceEndBoneWithEndpointPosition:validation:rootTransformNotChildOfAvatarRoot"
-msgstr "PhysBoneのRootTransformがアバターの子にあるTransformではないため、置き換えることができません。"
-
 msgid "ReplaceEndBoneWithEndpointPosition:validation:endpointPositionAlreadySet"
 msgstr "Endpoint Positionがすでに設定されているため、置き換えることができません。"
 

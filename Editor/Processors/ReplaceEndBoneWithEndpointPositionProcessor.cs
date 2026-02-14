@@ -111,7 +111,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 // physbone.roottransform field may contain external reference.
                 if (physbone.rootTransform != null && !physbone.rootTransform.IsChildOf(context.AvatarRootTransform))
                 {
-                    Debug.Log("ReplaceEndBoneWithEndpointPosition:validation:rootTransformNotChildOfAvatarRoot", physbone);
+                    Debug.Log($"The RootTransform of the PhysBone is not a child of the Avatar Root, so it cannot be replaced: {physbone.name}");
                     return false;
                 }
                 if (overlappedPhysBones.Contains(physbone))
