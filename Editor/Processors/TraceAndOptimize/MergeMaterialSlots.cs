@@ -28,7 +28,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 createSubMeshes = CreateSubMeshesMergePreserveOrder;
 
             foreach (var orphanMesh in mergeMeshes)
-                MergeMaterialSlot(orphanMesh, createSubMeshes);
+                MergeMaterialSlot(orphanMesh, createSubMeshes, context);
         }
 
         public static List<MeshInfo2> FilterMergeMeshes(BuildContext context, TraceAndOptimizeState state)
@@ -57,7 +57,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         }
 
         private void MergeMaterialSlot(MeshInfo2 orphanMesh,
-            Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes)
+            Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes, 
+            BuildContext context)
         {
             var (mapping, subMeshInfos) = createSubMeshes(new[] { orphanMesh });
             var subMeshes = orphanMesh.SubMeshes.ToList();
@@ -66,8 +67,15 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             foreach (var (meshTopology, material) in subMeshInfos)
                 orphanMesh.SubMeshes.Add(new SubMesh(material, meshTopology));
 
-            for (var i = 0; i < subMeshes.Count; i++)
-                orphanMesh.SubMeshes[mapping[0][i]].Vertices.AddRange(subMeshes[i].Vertices);
+            // we can use mapping[0] since we only have one mesh
+            var mappings = new List<(string, string)>();
+            for (var sourceIndex = 0; sourceIndex < subMeshes.Count; sourceIndex++)
+            {
+                var targetSubMeshIndex = mapping[0][sourceIndex];
+                orphanMesh.SubMeshes[targetSubMeshIndex].Vertices.AddRange(subMeshes[sourceIndex].Vertices);
+                mappings.Add(($"m_Materials.Array.data[{sourceIndex}]", $"m_Materials.Array.data[{targetSubMeshIndex}]"));
+            }
+            context.RecordMoveProperties(orphanMesh.SourceRenderer, mappings.ToArray());
         }
 
         public static (int[][], List<(MeshTopology, Material?)>) CreateSubMeshesMergeShuffling(MeshInfo2[] meshInfos) =>
