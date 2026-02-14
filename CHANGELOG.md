@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Auto Merge PhysBone may enables disabled PhysBones by merging disabled PhysBones `#1647`
+- Auto Merge Material Slots may break material swapping animations `#1650`
 
 ### Security
 
