@@ -16,12 +16,15 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Auto Merge PhysBone may enables disabled PhysBones by merging disabled PhysBones `#1647`
-- Auto Merge Material Slots may break material swapping animations `#1650`
-- KeyNotFoundException occurs when the physbone root transform field contains an external transform `1651`
-- PhysBones targeting same bone are merged `#1656`
 
 ### Security
+
+## [1.9.3] - 2026-02-14
+### Fixed
+- Auto Merge PhysBone may enables disabled PhysBones by merging disabled PhysBones [`#1647`](https://github.com/anatawa12/AvatarOptimizer/pull/1647)
+- Auto Merge Material Slots may break material swapping animations [`#1650`](https://github.com/anatawa12/AvatarOptimizer/pull/1650)
+- KeyNotFoundException occurs when the physbone root transform field contains an external transform `1651`
+- PhysBones targeting same bone are merged [`#1656`](https://github.com/anatawa12/AvatarOptimizer/pull/1656)
 
 ## [1.9.2] - 2026-02-13
 ### Fixed
@@ -2154,7 +2157,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.3...HEAD
+[1.9.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.2...v1.9.3
 [1.9.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.1...v1.9.2
 [1.9.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0-rc.10...v1.9.0
