@@ -840,6 +840,9 @@
             });
             document.getElementById('show-global-headers-btn').classList.remove('active');
             
+            // Update page title
+            document.title = `${file.filename} - AAO-BugReport-File Viewer`;
+            
             // Update content header
             contentFilename.textContent = file.filename;
             fileHeadersToggle.style.display = 'inline-block';
@@ -883,6 +886,9 @@
         }
 
         function showGlobalHeadersView(updateHistory = true) {
+            // Update page title
+            document.title = 'Global Headers - AAO-BugReport-File Viewer';
+            
             contentFilename.textContent = 'Global Headers';
             fileHeadersToggle.style.display = 'none';
             fileHeaders.classList.remove('visible');
@@ -1922,6 +1928,7 @@
             
             if (!hash || hash === '') {
                 // No hash - show input screen
+                document.title = 'AAO-BugReport-File Viewer';
                 viewerContainer.classList.remove('visible');
                 inputContainer.classList.remove('hidden');
                 parsedData = null;
