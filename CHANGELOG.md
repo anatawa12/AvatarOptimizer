@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Auto Merge PhysBone may enables disabled PhysBones by merging disabled PhysBones `#1647`
 
 ### Security
 
