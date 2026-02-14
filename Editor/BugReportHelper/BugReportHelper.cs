@@ -399,8 +399,12 @@ internal class BugReportHelper : EditorWindow
 
                 string ComponentPath(Component? c)
                 {
-                    if (c == null) return "<Missing>";
-                    return Utils.RelativePath(clonedAvatar.transform, c.transform);
+                    if (c == null) return "<None or Missing>";
+                    if (c.transform.IsChildOf(clonedAvatar.transform))
+                        return "avatar:" + Utils.RelativePath(clonedAvatar.transform, c.transform);
+                    if (c.gameObject.scene.IsValid())
+                        return "scene:" + Utils.RelativePath(null, c.transform);
+                    return "non-scene:" + Utils.RelativePath(null, c.transform);
                 }
 
                 void MeshInfo(Mesh mesh)
