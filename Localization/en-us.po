@@ -843,6 +843,9 @@ msgstr "Endpoint Position Mode"
 msgid "ReplaceEndBoneWithEndpointPosition:prop:overridePosition"
 msgstr "Endpoint Position Override"
 
+msgid "ReplaceEndBoneWithEndpointPosition:validation:rootTransformNotChildOfAvatarRoot"
+msgstr "The RootTransform of the PhysBone is not a child of the Avatar Root, so it cannot be replaced."
+
 msgid "ReplaceEndBoneWithEndpointPosition:validation:endpointPositionAlreadySet"
 msgstr "Endpoint Position is already set, so it cannot be replaced."
 
