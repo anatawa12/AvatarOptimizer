@@ -335,6 +335,26 @@
             background: #5568d3;
         }
 
+        .file-action-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: none;
+        }
+
+        .file-action-btn:hover {
+            background: #5568d3;
+        }
+
+        .file-action-btn:active {
+            background: #4a5cc5;
+        }
+
         #file-headers {
             display: none;
             background: #f8f9fa;
@@ -632,6 +652,8 @@
                                 <button class="view-mode-btn" data-mode="raw">Raw</button>
                             </div>
                         </div>
+                        <button id="copy-file-btn" class="file-action-btn" title="Copy file contents to clipboard">📋 Copy</button>
+                        <button id="download-file-btn" class="file-action-btn" title="Download file">⬇️ Download</button>
                         <button id="file-headers-toggle" style="display: none;">Show File Headers</button>
                     </div>
                 </div>
@@ -670,6 +692,8 @@
         const fileHeaders = document.getElementById('file-headers');
         const contentViewer = document.getElementById('content-viewer');
         const reportFilenameSpan = document.getElementById('report-filename');
+        const copyFileBtn = document.getElementById('copy-file-btn');
+        const downloadFileBtn = document.getElementById('download-file-btn');
 
         // Parser
         class AAOBugReportParser {
@@ -858,6 +882,8 @@
             // Update content header
             contentFilename.textContent = file.filename;
             fileHeadersToggle.style.display = 'inline-block';
+            copyFileBtn.style.display = 'inline-block';
+            downloadFileBtn.style.display = 'inline-block';
             
             // Display file headers
             displayFileHeaders(file.headers);
@@ -905,6 +931,8 @@
             
             contentFilename.textContent = 'Global Headers';
             fileHeadersToggle.style.display = 'none';
+            copyFileBtn.style.display = 'none';
+            downloadFileBtn.style.display = 'none';
             fileHeaders.classList.remove('visible');
             document.getElementById('tree-view-controls').style.display = 'none';
             document.getElementById('show-global-headers-btn').classList.add('active');
@@ -1935,6 +1963,44 @@
         fileHeadersToggle.addEventListener('click', () => {
             const isVisible = fileHeaders.classList.toggle('visible');
             fileHeadersToggle.textContent = isVisible ? 'Hide File Headers' : 'Show File Headers';
+        });
+
+        // Copy file contents to clipboard
+        copyFileBtn.addEventListener('click', async () => {
+            if (currentFileIndex === -1) return;
+            
+            const file = parsedData.files[currentFileIndex];
+            try {
+                await navigator.clipboard.writeText(file.content);
+                // Provide visual feedback
+                const originalText = copyFileBtn.textContent;
+                copyFileBtn.textContent = '✓ Copied!';
+                copyFileBtn.style.background = '#27ae60';
+                setTimeout(() => {
+                    copyFileBtn.textContent = originalText;
+                    copyFileBtn.style.background = '';
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy:', err);
+                alert('Failed to copy to clipboard. Please try again.');
+            }
+        });
+
+        // Download file
+        downloadFileBtn.addEventListener('click', () => {
+            if (currentFileIndex === -1) return;
+            
+            const file = parsedData.files[currentFileIndex];
+            const blob = new Blob([file.content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = file.filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            // Revoke URL after click event is processed
+            setTimeout(() => URL.revokeObjectURL(url), 100);
         });
 
         // Handle browser back/forward navigation
