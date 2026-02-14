@@ -144,6 +144,13 @@
             font-weight: 500;
         }
 
+        #report-filename {
+            margin-left: 10px;
+            opacity: 0.7;
+            font-weight: 400;
+            font-size: 16px;
+        }
+
         #toolbar button {
             background: #34495e;
             padding: 8px 16px;
@@ -600,7 +607,7 @@
     <!-- Viewer Container -->
     <div id="viewer-container">
         <div id="toolbar">
-            <h2>AAO-BugReport-File Viewer</h2>
+            <h2>AAO-BugReport-File Viewer<span id="report-filename"></span></h2>
             <button id="back-button">← Back to Input</button>
         </div>
         
@@ -646,6 +653,7 @@
         let parsedData = null;
         let currentFileIndex = -1;
         let lastViewMode = 'simple'; // Track last used view mode for persistence
+        let reportFileName = null; // Store the report file (.gz) name
 
         // DOM Elements
         const inputContainer = document.getElementById('input-container');
@@ -661,6 +669,7 @@
         const fileHeadersToggle = document.getElementById('file-headers-toggle');
         const fileHeaders = document.getElementById('file-headers');
         const contentViewer = document.getElementById('content-viewer');
+        const reportFilenameSpan = document.getElementById('report-filename');
 
         // Parser
         class AAOBugReportParser {
@@ -785,6 +794,7 @@
         async function handleFile(file) {
             try {
                 showError('');
+                reportFileName = file.name; // Store the report file name
                 const arrayBuffer = await file.arrayBuffer();
                 
                 let content;
@@ -840,6 +850,11 @@
             });
             document.getElementById('show-global-headers-btn').classList.remove('active');
             
+            // Update page title with report file name
+            if (reportFileName) {
+                document.title = `${reportFileName} - AAO-BugReport-File Viewer`;
+            }
+            
             // Update content header
             contentFilename.textContent = file.filename;
             fileHeadersToggle.style.display = 'inline-block';
@@ -883,6 +898,11 @@
         }
 
         function showGlobalHeadersView(updateHistory = true) {
+            // Update page title with report file name
+            if (reportFileName) {
+                document.title = `${reportFileName} - AAO-BugReport-File Viewer`;
+            }
+            
             contentFilename.textContent = 'Global Headers';
             fileHeadersToggle.style.display = 'none';
             fileHeaders.classList.remove('visible');
@@ -1891,6 +1911,7 @@
         parseButton.addEventListener('click', () => {
             const content = textInput.value.trim();
             if (content) {
+                reportFileName = null; // No file name when pasting content
                 parseAndDisplay(content);
             } else {
                 showError('Please enter some content to parse');
@@ -1922,6 +1943,9 @@
             
             if (!hash || hash === '') {
                 // No hash - show input screen
+                document.title = 'AAO-BugReport-File Viewer';
+                reportFileName = null;
+                reportFilenameSpan.textContent = '';
                 viewerContainer.classList.remove('visible');
                 inputContainer.classList.remove('hidden');
                 parsedData = null;
@@ -1963,6 +1987,11 @@
         function displayViewer() {
             inputContainer.classList.add('hidden');
             viewerContainer.classList.add('visible');
+            
+            // Update toolbar with report filename
+            if (reportFileName) {
+                reportFilenameSpan.textContent = ` - ${reportFileName}`;
+            }
             
             // Display file list
             displayFileList();
