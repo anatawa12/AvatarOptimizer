@@ -482,7 +482,15 @@ internal class LiltoonShaderInformation : ShaderInformation
                 UsingUVChannels.UV0, null);
         }
 
-        if (matInfo.GetInt("_UseAudioLink") != 0 && matInfo.GetInt("_AudioLink2Vertex") != 0)
+        if (matInfo.GetInt("_UseAudioLink") != 0 && (
+                matInfo.GetInt("_AudioLink2Main2nd") != 0
+                || matInfo.GetInt("_AudioLink2Main3rd") != 0
+                || matInfo.GetInt("_AudioLink2Emission") != 0
+                || matInfo.GetInt("_AudioLink2EmissionGrad") != 0
+                || matInfo.GetInt("_AudioLink2Emission2nd") != 0
+                || matInfo.GetInt("_AudioLink2Emission2ndGrad") != 0
+                || matInfo.GetInt("_AudioLink2Vertex") != 0
+            ))
         {
             var _AudioLinkUVMode = matInfo.GetInt("_AudioLinkUVMode");
 
