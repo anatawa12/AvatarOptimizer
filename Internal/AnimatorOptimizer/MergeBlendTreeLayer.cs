@@ -36,7 +36,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     var blendTreeModified = blendTree.GetAllBindings();
                     // nothing is animated in higher priority layer
                     if (!blendTreeModified.Any(modifiedProperties.Contains))
+                    {
+                        Debug.Log($"MergeBlendTreeLayer: Merging layer {layer.name} (index {i}) of {controller.name} with blend tree {blendTree.name}");
                         directBlendTrees.Add((i, blendTree));
+                    }
 
                     modifiedProperties.UnionWith(blendTreeModified);
                 }
