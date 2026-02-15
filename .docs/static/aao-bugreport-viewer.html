@@ -1303,17 +1303,28 @@
             
             // Helper function to expand and render all nodes recursively
             function expandAndRenderAll(element) {
-                // Find all nodes with lazy-loaded children
-                const nodes = element.querySelectorAll('.tree-node-header');
-                nodes.forEach(header => {
-                    const wrapper = header.parentElement;
-                    const childContainer = wrapper.querySelector('.tree-node-children');
+                // Find all nodes with lazy-loaded children at this level
+                const nodes = element.querySelectorAll(':scope > .tree-node-header, :scope > .tree-node, :scope > .tree-node-root, :scope > .tree-node-intermediate');
+                nodes.forEach(nodeOrHeader => {
+                    // Handle both direct headers and wrapper nodes
+                    const wrapper = nodeOrHeader.classList.contains('tree-node-header') ? nodeOrHeader.parentElement : nodeOrHeader;
+                    const header = wrapper.querySelector(':scope > .tree-node-header');
+                    const childContainer = wrapper.querySelector(':scope > .tree-node-children');
                     
-                    if (childContainer && !wrapper._childrenRendered) {
-                        // Trigger rendering by simulating click
-                        header.click();
+                    if (header && childContainer && !wrapper._childrenRendered) {
+                        // Trigger rendering by expanding
+                        if (header.classList.contains('collapsed')) {
+                            header.click();
+                        }
+                        // Now recursively expand children
+                        expandAndRenderAll(childContainer);
                         // Then collapse it back - we'll expand matching ones later
-                        header.click();
+                        if (header.classList.contains('expanded')) {
+                            header.click();
+                        }
+                    } else if (childContainer && wrapper._childrenRendered) {
+                        // If already rendered, still recurse into children
+                        expandAndRenderAll(childContainer);
                     }
                 });
             }
