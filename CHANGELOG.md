@@ -19,6 +19,8 @@ The format is based on [Keep a Changelog].
 - PhysBones squished / stretched by colliders can behave differently after optimization `#1663`
   - Hard to explain shortly but AAO falsy replaces end bone with endpoint position in some cases.
   - This broke marshmallow PB in some cases. This is fixed now.
+- lilToon audio link mask texture removed if used as any color or color gradient. `#1667`
+  - We previously retained audio link mask only if it was used as vertex offset.
 
 ### Security
 
