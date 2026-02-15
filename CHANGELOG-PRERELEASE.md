@@ -16,6 +16,9 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- PhysBones squished / stretched by colliders can behave differently after optimization `#1663`
+  - Hard to explain shortly but AAO falsy replaces end bone with endpoint position in some cases.
+  - This broke marshmallow PB in some cases. This is fixed now.
 
 ### Security
 
