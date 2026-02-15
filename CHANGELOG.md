@@ -16,13 +16,16 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- PhysBones squished / stretched by colliders can behave differently after optimization `#1663`
-  - Hard to explain shortly but AAO falsy replaces end bone with endpoint position in some cases.
-  - This broke marshmallow PB in some cases. This is fixed now.
-- lilToon audio link mask texture removed if used as any color or color gradient. `#1667`
-  - We previously retained audio link mask only if it was used as vertex offset.
 
 ### Security
+
+## [1.9.4] - 2026-02-15
+### Fixed
+- PhysBones squished / stretched by colliders can behave differently after optimization [`#1663`](https://github.com/anatawa12/AvatarOptimizer/pull/1663)
+  - Hard to explain shortly but AAO falsy replaces end bone with endpoint position in some cases.
+  - This broke marshmallow PB in some cases. This is fixed now.
+- lilToon audio link mask texture removed if used as any color or color gradient. [`#1667`](https://github.com/anatawa12/AvatarOptimizer/pull/1667)
+  - We previously retained audio link mask only if it was used as vertex offset.
 
 ## [1.9.3] - 2026-02-14
 ### Fixed
@@ -1390,7 +1393,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.4...HEAD
+[1.9.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.3...v1.9.4
 [1.9.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.2...v1.9.3
 [1.9.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.1...v1.9.2
 [1.9.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.0...v1.9.1
