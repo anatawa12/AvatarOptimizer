@@ -185,18 +185,19 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         public static bool IsBoneLengthChange(VRCPhysBoneBase physBone)
         {
-            var anyGrabbingAllowed = IsAnyGrabbingAllowed(physBone.allowGrabbing, physBone.grabFilter);
+            var anyGrabbingAllowed = PermissionAllowed(physBone.allowGrabbing, physBone.grabFilter);
+            var anyCollisionAllowed = PermissionAllowed(physBone.allowCollision, physBone.collisionFilter) || physBone.colliders.Any(x => x != null);
             var anyLengthChange = physBone.maxStretch != 0f || physBone.maxSquish != 0f;
             var stretchMotion = physBone.stretchMotion != 0f;
             return physBone.version switch
             {
-                VRCPhysBoneBase.Version.Version_1_0 => anyGrabbingAllowed && anyLengthChange,
-                VRCPhysBoneBase.Version.Version_1_1 => (anyGrabbingAllowed || stretchMotion) && anyLengthChange,
+                VRCPhysBoneBase.Version.Version_1_0 => (anyGrabbingAllowed || anyCollisionAllowed) && anyLengthChange,
+                VRCPhysBoneBase.Version.Version_1_1 => (anyGrabbingAllowed || stretchMotion || anyCollisionAllowed) && anyLengthChange,
                 _ => throw new InvalidOperationException($"Invalid version: {physBone.version}"),
             };
         }
 
-        private static bool IsAnyGrabbingAllowed(VRCPhysBoneBase.AdvancedBool allow, VRCPhysBoneBase.PermissionFilter filter)
+        private static bool PermissionAllowed(VRCPhysBoneBase.AdvancedBool allow, VRCPhysBoneBase.PermissionFilter filter)
         {
             return allow switch
             {
