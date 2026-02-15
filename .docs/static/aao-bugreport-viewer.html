@@ -1301,59 +1301,166 @@
             // Clear previous highlights
             clearSearch();
             
-            // Helper function to expand and render all nodes recursively
-            function expandAndRenderAll(element) {
-                // Find all nodes with lazy-loaded children
-                const nodes = element.querySelectorAll('.tree-node-header');
-                nodes.forEach(header => {
-                    const wrapper = header.parentElement;
-                    const childContainer = wrapper.querySelector('.tree-node-children');
-                    
-                    if (childContainer && !wrapper._childrenRendered) {
-                        // Trigger rendering by simulating click
-                        header.click();
-                        // Then collapse it back - we'll expand matching ones later
-                        header.click();
-                    }
-                });
-            }
-            
-            // First, ensure all nodes are rendered (but collapsed)
-            expandAndRenderAll(activeView);
-            
-            // Find all text nodes and highlight matches
-            const allTextNodes = activeView.querySelectorAll('.tree-node-path, .tree-node-type');
+            const searchLower = searchTerm.toLowerCase();
             let foundMatch = false;
             
-            allTextNodes.forEach(node => {
-                const text = node.textContent;
-                if (text.toLowerCase().includes(searchTerm.toLowerCase())) {
-                    foundMatch = true;
-                    
-                    // Highlight the match
-                    const regex = new RegExp(`(${escapeRegex(searchTerm)})`, 'gi');
-                    const highlightedText = text.replace(regex, '<span class="tree-search-highlight">$1</span>');
-                    node.innerHTML = highlightedText;
-                    
-                    // Expand all parent nodes
-                    let parentElement = node.closest('.tree-node, .tree-node-root, .tree-node-intermediate');
-                    while (parentElement) {
-                        const header = parentElement.querySelector(':scope > .tree-node-header');
-                        if (header && header.classList.contains('collapsed')) {
-                            const childContainer = parentElement.querySelector(':scope > .tree-node-children');
-                            if (childContainer) {
-                                header.classList.remove('collapsed');
-                                header.classList.add('expanded');
-                                childContainer.style.display = 'block';
-                                
-                                // Render children if not already rendered
-                                if (!parentElement._childrenRendered) {
-                                    header.click(); // This will render
-                                }
+            // Helper function to check if a node or its descendants match the search
+            function nodeMatchesSearch(nodeData) {
+                if (!nodeData) return false;
+                
+                // Check if this node matches
+                const pathMatches = nodeData.path && nodeData.path.toLowerCase().includes(searchLower);
+                const typeMatches = nodeData.type && nodeData.type.toLowerCase().includes(searchLower);
+                
+                if (pathMatches || typeMatches) {
+                    return true;
+                }
+                
+                // Check children recursively
+                if (nodeData.children && nodeData.children.length > 0) {
+                    return nodeData.children.some(child => nodeMatchesSearch(child));
+                }
+                
+                return false;
+            }
+            
+            // Helper function for hierarchy nodes (tree view)
+            function hierNodeMatchesSearch(hierNode) {
+                if (!hierNode) return false;
+                
+                // Check if this node matches
+                const nameMatches = hierNode.name && hierNode.name.toLowerCase().includes(searchLower);
+                const typeMatches = hierNode.type && hierNode.type.toLowerCase().includes(searchLower);
+                
+                if (nameMatches || typeMatches) {
+                    return true;
+                }
+                
+                // Check path children
+                if (hierNode.pathChildren && hierNode.pathChildren.length > 0) {
+                    if (hierNode.pathChildren.some(child => hierNodeMatchesSearch(child))) {
+                        return true;
+                    }
+                }
+                
+                // Check tree children
+                if (hierNode.treeChildren && hierNode.treeChildren.length > 0) {
+                    return hierNode.treeChildren.some(child => nodeMatchesSearch(child));
+                }
+                
+                return false;
+            }
+            
+            // Helper function to expand and render a node path
+            function expandNodePath(wrapper) {
+                const header = wrapper.querySelector(':scope > .tree-node-header');
+                const childContainer = wrapper.querySelector(':scope > .tree-node-children');
+                
+                if (header && childContainer) {
+                    // Expand if collapsed
+                    if (header.classList.contains('collapsed')) {
+                        header.classList.remove('collapsed');
+                        header.classList.add('expanded');
+                        childContainer.style.display = 'block';
+                        
+                        // Render children if not already rendered
+                        if (!wrapper._childrenRendered) {
+                            header.click(); // This will render and toggle, so click again to expand
+                            if (header.classList.contains('collapsed')) {
+                                header.click();
                             }
                         }
-                        // Move up the tree
-                        parentElement = parentElement.parentElement.closest('.tree-node, .tree-node-root, .tree-node-intermediate');
+                    }
+                }
+            }
+            
+            // Helper function to process nodes recursively
+            function processNode(wrapper) {
+                const nodeData = wrapper._nodeData;
+                const hierNodeData = wrapper._hierNodeData;
+                
+                // Check if this node or its descendants match
+                const hasMatch = nodeData ? nodeMatchesSearch(nodeData) : 
+                                hierNodeData ? hierNodeMatchesSearch(hierNodeData) : false;
+                
+                if (hasMatch) {
+                    // Expand this node to reveal its children
+                    expandNodePath(wrapper);
+                    
+                    // Check if this node itself matches (not just descendants)
+                    const thisNodeMatches = (nodeData && 
+                        (nodeData.path && nodeData.path.toLowerCase().includes(searchLower) ||
+                         nodeData.type && nodeData.type.toLowerCase().includes(searchLower))) ||
+                        (hierNodeData && 
+                        (hierNodeData.name && hierNodeData.name.toLowerCase().includes(searchLower) ||
+                         hierNodeData.type && hierNodeData.type.toLowerCase().includes(searchLower)));
+                    
+                    if (thisNodeMatches) {
+                        foundMatch = true;
+                        
+                        // Highlight the match in the header
+                        const pathSpan = wrapper.querySelector(':scope > .tree-node-header .tree-node-path');
+                        const typeSpan = wrapper.querySelector(':scope > .tree-node-header .tree-node-type');
+                        
+                        if (pathSpan) {
+                            const text = pathSpan.textContent;
+                            if (text.toLowerCase().includes(searchLower)) {
+                                const regex = new RegExp(`(${escapeRegex(searchTerm)})`, 'gi');
+                                pathSpan.innerHTML = text.replace(regex, '<span class="tree-search-highlight">$1</span>');
+                            }
+                        }
+                        
+                        if (typeSpan) {
+                            const text = typeSpan.textContent;
+                            // Remove parentheses for matching
+                            const textContent = text.replace(/^\(|\)$/g, '');
+                            if (textContent.toLowerCase().includes(searchLower)) {
+                                const regex = new RegExp(`(${escapeRegex(searchTerm)})`, 'gi');
+                                const highlighted = textContent.replace(regex, '<span class="tree-search-highlight">$1</span>');
+                                typeSpan.innerHTML = '(' + highlighted + ')';
+                            }
+                        }
+                    }
+                    
+                    // Process children recursively
+                    const childContainer = wrapper.querySelector(':scope > .tree-node-children');
+                    if (childContainer) {
+                        const childWrappers = childContainer.querySelectorAll(':scope > .tree-node, :scope > .tree-node-root, :scope > .tree-node-intermediate');
+                        childWrappers.forEach(childWrapper => processNode(childWrapper));
+                    }
+                }
+            }
+            
+            // Start processing from root nodes
+            const rootNodes = activeView.querySelectorAll(':scope > .tree-node, :scope > .tree-node-root, :scope > .tree-node-intermediate');
+            rootNodes.forEach(wrapper => processNode(wrapper));
+            
+            // Also check leaf nodes that might be already rendered
+            const leafNodes = activeView.querySelectorAll('.tree-node-path, .tree-node-type');
+            leafNodes.forEach(node => {
+                const text = node.textContent;
+                // Remove parentheses from type for matching
+                const matchText = node.classList.contains('tree-node-type') ? text.replace(/^\(|\)$/g, '') : text;
+                
+                if (matchText.toLowerCase().includes(searchLower)) {
+                    // Check if not already highlighted
+                    if (!node.querySelector('.tree-search-highlight')) {
+                        foundMatch = true;
+                        
+                        const regex = new RegExp(`(${escapeRegex(searchTerm)})`, 'gi');
+                        if (node.classList.contains('tree-node-type')) {
+                            const highlighted = matchText.replace(regex, '<span class="tree-search-highlight">$1</span>');
+                            node.innerHTML = '(' + highlighted + ')';
+                        } else {
+                            node.innerHTML = text.replace(regex, '<span class="tree-search-highlight">$1</span>');
+                        }
+                        
+                        // Expand parent nodes
+                        let parentElement = node.closest('.tree-node, .tree-node-root, .tree-node-intermediate');
+                        while (parentElement) {
+                            expandNodePath(parentElement);
+                            parentElement = parentElement.parentElement.closest('.tree-node, .tree-node-root, .tree-node-intermediate');
+                        }
                     }
                 }
             });
