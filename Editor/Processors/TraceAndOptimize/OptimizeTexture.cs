@@ -1040,7 +1040,8 @@ internal struct OptimizeTextureImpl {
     {
         var prev = RenderTexture.active;
         var textureFormat = Utils.GetTextureFormatForReading(original.graphicsFormat);
-        var texture = new Texture2D(source.width, source.height, textureFormat, true, linear: !source.isDataSRGB);
+        var maxMipCountBySize = Utils.MostSignificantBit(Mathf.Max(source.width, source.height)) + 1;
+        var texture = new Texture2D(source.width, source.height, textureFormat, mipCount: Math.Min(maxMipCountBySize, original.mipmapCount), linear: !source.isDataSRGB);
 
         try
         {
