@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Mipmaps are generated for textures without mipmaps with Optimize Texture `#1669`
 - Few cases that can apply Optimize Texture but not applied `#1669`
+- MaxTextureSize component errors on Windows when building for Android `#1670`
+  - Actually MaxTextureSize fails to create ASTC textures on Windows because of undocumented Unity behavior.
 
 ### Security
 
