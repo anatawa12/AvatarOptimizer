@@ -439,7 +439,7 @@ internal struct OptimizeTextureImpl {
         var renderers = info.SubMeshUvs.Select(x => x.SubMeshId.MeshInfo2.SourceRenderer).ToHashSet();
         if (info.Textures.SelectMany(x => x.Users.Keys)
             .Any(mat => context.GetMaterialInformation(mat) is not { } matInfo ||
-                        !renderers.SetEquals(matInfo.UserRenderers.Where(x => x))))
+                        !renderers.IsSupersetOf(matInfo.UserRenderers.Where(x => x))))
             return EmptyAtlasConnectedResult;
 
         var uvids = info.SubMeshUvs.Select(x => x.UVId).ToEqualsHashSet();
