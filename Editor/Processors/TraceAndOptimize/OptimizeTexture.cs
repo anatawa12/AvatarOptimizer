@@ -439,7 +439,7 @@ internal struct OptimizeTextureImpl {
         var renderers = info.SubMeshUvs.Select(x => x.SubMeshId.MeshInfo2.SourceRenderer).ToHashSet();
         if (info.Textures.SelectMany(x => x.Users.Keys)
             .Any(mat => context.GetMaterialInformation(mat) is not { } matInfo ||
-                        !renderers.SetEquals(matInfo.UserRenderers.Where(x => x))))
+                        !renderers.IsSupersetOf(matInfo.UserRenderers.Where(x => x))))
             return EmptyAtlasConnectedResult;
 
         var uvids = info.SubMeshUvs.Select(x => x.UVId).ToEqualsHashSet();
@@ -1040,7 +1040,8 @@ internal struct OptimizeTextureImpl {
     {
         var prev = RenderTexture.active;
         var textureFormat = Utils.GetTextureFormatForReading(original.graphicsFormat);
-        var texture = new Texture2D(source.width, source.height, textureFormat, true, linear: !source.isDataSRGB);
+        var maxMipCountBySize = Utils.MostSignificantBit(Mathf.Max(source.width, source.height)) + 1;
+        var texture = new Texture2D(source.width, source.height, textureFormat, mipCount: Math.Min(maxMipCountBySize, original.mipmapCount), linear: !source.isDataSRGB);
 
         try
         {

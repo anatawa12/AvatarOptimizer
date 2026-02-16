@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Mipmaps are generated for textures without mipmaps with Optimize Texture `#1669`
+- Few cases that can apply Optimize Texture but not applied `#1669`
 
 ### Security
 
