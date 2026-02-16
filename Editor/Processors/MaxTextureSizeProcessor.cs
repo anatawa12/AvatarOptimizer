@@ -202,7 +202,26 @@ namespace Anatawa12.AvatarOptimizer.Processors
             var sourceData = readableVersion.GetRawTextureData<byte>();
 
             // Create a new texture with the same format
-            var newTexture = new Texture2D(width, height, original.graphicsFormat, mipCount: mipCount, mipCount != 1 ? TextureCreationFlags.MipChain : TextureCreationFlags.None);
+            // We previously used GraphicsFormat-based overload of Texture2D constructor since GraphicsFormat provides exact information of texture format,
+            // which contains format and isSRGB information, while TextureFormat requires additional boolean to specify whether it's linear or srgb.
+            // However, GraphicsFormat based constructor internally uses SystemInfo.IsFormatSupported(format, GraphicsFormatUsage.Sample) to check if format is valid,
+            // but it returns information of current platform (editor platform) instead of target platform.
+            // Therefore, on Windows Editor, it returns false for ASTC formats, which are vaild for android target.
+            // To avoid this issue, we switched back to TextureFormat-based constructor with linear boolean parameter,
+            // and manually set linear or srgb format based on original texture's isDataSRGB property.
+            //
+            // The behavior difference is not documented on Script Reference [1], but there is comment suggesting
+            // behavior difference at ValidateFormat() in Reference Source [2,3].
+            // [2]
+            // > // *ONLY* GPU support is checked here. If it is not available, fail validation.
+            // > // GraphicsFormat does not use fallbacks by design.
+            // [3]
+            // > // If GPU support is detected, pass validation. Caveat support can also be used for uncompressed/non-IEEE754 formats.
+            // > // In contrast to GraphicsFormat, TextureFormat can use fallbacks by design.
+            // [1]: https://docs.unity3d.com/6000.3/Documentation/ScriptReference/Texture2D-ctor.html
+            // [2]: https://github.com/Unity-Technologies/UnityCsReference/blob/6000.1.6f1/Runtime/Export/Graphics/Texture.cs#L739-L740
+            // [3]: https://github.com/Unity-Technologies/UnityCsReference/blob/6000.1.6f1/Runtime/Export/Graphics/Texture.cs#L718-L719
+            var newTexture = new Texture2D(width, height, original.format, mipCount: mipCount, linear: !original.isDataSRGB);
             newTexture.LoadRawTextureData(sourceData.AsSpan()[offset..]);
             newTexture.Apply(updateMipmaps: false, makeNoLongerReadable: !original.isReadable);
             
