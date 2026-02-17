@@ -1,14 +1,15 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using nadena.dev.ndmf;
 using nadena.dev.ndmf.platform;
 using Newtonsoft.Json;
 using UnityEditor;
-using UnityEditorInternal;
 using UnityEngine;
 using VRC.Dynamics;
 using Object = UnityEngine.Object;
@@ -153,6 +154,7 @@ internal class BugReportHelper : EditorWindow
             reportFile.AddFile("ComponentInfoRegistry.txt", APIInternal.ComponentInfoRegistry.GetAsText());
             reportFile.AddFile("ShaderInformationRegistry.txt", API.ShaderInformationRegistry.GetAsText());
             reportFile.AddFile("NDMFPlugins.txt", CollectNdmfPlugins());
+            reportFile.AddFile("NDMFSequence.txt", CollectNdmfSequence());
 #if AAO_VRCSDK3_AVATARS
             reportFile.AddFile("VRCSDKBuildCallbacks.txt", CollectVRCSDKBuildCallbacks());
 #endif
@@ -233,6 +235,104 @@ internal class BugReportHelper : EditorWindow
         }
 
         Type GetType(string name) => Utils.GetTypeFromName(name) ?? throw new Exception($"Type '{name}' not found");
+    }
+
+    private static string CollectNdmfSequence()
+    {
+        // We collect NDMF build sequence information, something like shown on SolverWindow, with reflections.
+        try
+        {
+            var pluginResolver = GetType("nadena.dev.ndmf.PluginResolver");
+            var constructor = pluginResolver.GetConstructors().Select(ctor =>
+            {
+                var parameters = ctor.GetParameters();
+                if (parameters.Length == 0) return null;
+                if (parameters.Count(x => !x.HasDefaultValue) != 0) return null;
+
+                var includeDisabledParamIndex = Array.FindIndex(parameters, p => p.Name == "includeDisabled" && p.ParameterType == typeof(bool));
+                if (includeDisabledParamIndex < 0) return null;
+
+                // we found a constructor with optional bool parameter named includeDisabled.
+                // we can use it to create PluginResolver instance with includeDisabled = true
+
+                return ((Func<bool, object>)(includeDisabled =>
+                {
+                    var args = new object[parameters.Length];
+                    Array.Fill(args, Type.Missing);
+                    args[includeDisabledParamIndex] = includeDisabled;
+                    return ctor.Invoke(args);
+                }));
+            }).FirstOrDefault(x => x != null)?? throw new Exception("PluginResolver constructor with optional bool parameter named includeDisabled not found");
+            // passes should be type interactable as IEnumerable<(BuildPhase, IEnumerable<ConcretePass>)>
+            var passesProperty = GetPropertyOrField<IEnumerable>(pluginResolver, "Passes");
+            var concratePassType = GetType("nadena.dev.ndmf.ConcretePass");
+            var pluginOfConcratePass = GetPropertyOrField<PluginBase>(concratePassType, "Plugin");
+            var deactivatePluginsOfConcratePass = GetPropertyOrField<IEnumerable<Type>>(concratePassType, "DeactivatePlugins");
+            var activatePluginsOfConcratePass = GetPropertyOrField<IEnumerable<Type>>(concratePassType, "ActivatePlugins");
+            var instantiatedPassOfConcratePass = GetPropertyOrField<object>(concratePassType, "InstantiatedPass");
+            var iPassType = GetType("nadena.dev.ndmf.IPass");
+            var qualifiedNameOfIPass = GetPropertyOrField<string>(iPassType, "QualifiedName");
+            var displayNameOfIPass = GetPropertyOrField<string>(iPassType, "DisplayName");
+
+            // generic type instances
+            var enumerableOfConcretePass = typeof(IEnumerable<>).MakeGenericType(concratePassType);
+
+            var resolverInstance = constructor(true);
+
+            var passes = passesProperty(resolverInstance);
+            var builder = new StringBuilder();
+            foreach (ITuple passObj in passes)
+            {
+                var buildPhase = (BuildPhase)passObj[0];
+                var phasePasses = (IEnumerable)passObj[1];
+                if (!enumerableOfConcretePass.IsInstanceOfType(phasePasses))
+                    throw new Exception($"Passes[*].Item2 is not of type IEnumerable<ConcretePass>");
+
+                builder.AppendLine($"BuildPhase: {buildPhase}");
+                PluginBase? priorPlugin = null;
+                foreach (var pass in phasePasses)
+                {
+                    var plugin = pluginOfConcratePass(pass);
+                    var deactivatePlugins = deactivatePluginsOfConcratePass(pass);
+                    var activatePlugins = activatePluginsOfConcratePass(pass);
+                    var instantiatedPass = instantiatedPassOfConcratePass(pass);
+                    var qualifiedName = qualifiedNameOfIPass(instantiatedPass);
+                    var displayName = displayNameOfIPass(instantiatedPass);
+
+                    foreach (var deactivatePlugin in deactivatePlugins)
+                        builder.AppendLine($"    Deactivates: {deactivatePlugin}");
+
+                    if (priorPlugin != plugin)
+                    {
+                        builder.AppendLine($"  Plugin: {plugin.QualifiedName} ({plugin.DisplayName})");
+                        priorPlugin = plugin;
+                    }
+
+                    foreach (var activatePlugin in activatePlugins)
+                        builder.AppendLine($"    Activate: {activatePlugin}");
+
+                    builder.AppendLine($"      Pass: {qualifiedName} ({displayName})");
+                }
+            }
+
+            return builder.ToString();
+        }
+        catch (Exception e)
+        {
+            return "Error collecting NDMF sequence information: \n" + e;
+        }
+
+        Type GetType(string name) => Utils.GetTypeFromName(name) ?? throw new Exception($"Type '{name}' not found");
+        Func<object, T> GetPropertyOrField<T>(Type type, string name)
+        {
+            var field = type.GetField(name, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (field != null)
+                return obj => (T)field.GetValue(obj);
+            var prop = type.GetProperty(name, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (prop != null)
+                return obj => (T)prop.GetValue(obj);
+            throw new Exception($"Field or property '{name}' not found in type '{type.FullName}'");
+        }
     }
 
 #if AAO_VRCSDK3_AVATARS
