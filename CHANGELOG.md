@@ -16,12 +16,15 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Mipmaps are generated for textures without mipmaps with Optimize Texture `#1669`
-- Few cases that can apply Optimize Texture but not applied `#1669`
-- MaxTextureSize component errors on Windows when building for Android `#1670`
-  - Actually MaxTextureSize fails to create ASTC textures on Windows because of undocumented Unity behavior.
 
 ### Security
+
+## [1.9.5] - 2026-02-17
+### Fixed
+- Mipmaps are generated for textures without mipmaps with Optimize Texture [`#1669`](https://github.com/anatawa12/AvatarOptimizer/pull/1669)
+- Few cases that can apply Optimize Texture but not applied [`#1669`](https://github.com/anatawa12/AvatarOptimizer/pull/1669)
+- MaxTextureSize component errors on Windows when building for Android [`#1670`](https://github.com/anatawa12/AvatarOptimizer/pull/1670)
+  - Actually MaxTextureSize fails to create ASTC textures on Windows because of undocumented Unity behavior.
 
 ## [1.9.4] - 2026-02-15
 ### Fixed
@@ -1397,7 +1400,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.4...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.5...HEAD
+[1.9.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.4...v1.9.5
 [1.9.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.3...v1.9.4
 [1.9.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.2...v1.9.3
 [1.9.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.1...v1.9.2
