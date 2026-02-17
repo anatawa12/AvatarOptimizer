@@ -76,8 +76,13 @@ namespace Anatawa12.AvatarOptimizer.PatchApplier
                 var verificationsNeeded = new List<(string path, string expectedSha)>();
                 foreach (var filePatch in filePatches)
                 {
-                    if (!filePatch.IsNewFile && !string.IsNullOrEmpty(filePatch.OldSha))
+                    if (!filePatch.IsNewFile)
                     {
+                        if (string.IsNullOrEmpty(filePatch.OldSha))
+                        {
+                            result.ErrorMessage = $"Missing SHA for file {filePatch.GetPath()}";
+                            return result;
+                        }
                         verificationsNeeded.Add((filePatch.GetPath(), filePatch.OldSha));
                     }
                 }
@@ -221,6 +226,7 @@ namespace Anatawa12.AvatarOptimizer.PatchApplier
         {
             var result = new List<string>();
             int originalIndex = 0;
+            bool resultMissingNewlineAtEof = false;
 
             foreach (var hunk in hunks)
             {
@@ -279,6 +285,9 @@ namespace Anatawa12.AvatarOptimizer.PatchApplier
                         result.Add(content);
                     }
                 }
+                
+                // Track if this hunk indicates missing newline at EOF
+                resultMissingNewlineAtEof = hunk.NewMissingNewlineAtEof;
             }
 
             // Copy remaining lines
@@ -288,7 +297,17 @@ namespace Anatawa12.AvatarOptimizer.PatchApplier
                 originalIndex++;
             }
 
-            return string.Join("\n", result);
+            // Join with newlines, but respect missing newline at EOF
+            if (resultMissingNewlineAtEof && result.Count > 0)
+            {
+                // Last line should not have a trailing newline
+                var joined = string.Join("\n", result);
+                return joined;
+            }
+            else
+            {
+                return string.Join("\n", result);
+            }
         }
     }
 }

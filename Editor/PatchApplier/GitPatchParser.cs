@@ -21,7 +21,15 @@ namespace Anatawa12.AvatarOptimizer.PatchApplier
 
         public string GetPath()
         {
-            return NewPath ?? OldPath ?? throw new InvalidOperationException("Both paths are null");
+            var path = NewPath ?? OldPath ?? throw new InvalidOperationException("Both paths are null");
+            
+            // Prevent path traversal attacks
+            if (path.Contains("..") || Path.IsPathRooted(path))
+            {
+                throw new InvalidOperationException($"Invalid path: {path}");
+            }
+            
+            return path;
         }
     }
 
@@ -35,6 +43,8 @@ namespace Anatawa12.AvatarOptimizer.PatchApplier
         public int NewStart { get; set; }
         public int NewCount { get; set; }
         public List<string> Lines { get; } = new List<string>();
+        public bool OldMissingNewlineAtEof { get; set; }
+        public bool NewMissingNewlineAtEof { get; set; }
     }
 
     /// <summary>
@@ -197,45 +207,99 @@ namespace Anatawa12.AvatarOptimizer.PatchApplier
             var hunk = new Hunk();
 
             // Parse @@ -oldStart,oldCount +newStart,newCount @@
-            if (i < lines.Length && lines[i].StartsWith("@@ "))
+            if (i >= lines.Length || !lines[i].StartsWith("@@ "))
             {
-                var hunkHeader = lines[i];
-                var match = System.Text.RegularExpressions.Regex.Match(
-                    hunkHeader, @"@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@");
-                
-                if (match.Success)
-                {
-                    hunk.OldStart = int.Parse(match.Groups[1].Value);
-                    hunk.OldCount = match.Groups[2].Success ? int.Parse(match.Groups[2].Value) : 1;
-                    hunk.NewStart = int.Parse(match.Groups[3].Value);
-                    hunk.NewCount = match.Groups[4].Success ? int.Parse(match.Groups[4].Value) : 1;
-                }
-                i++;
+                return null;
             }
 
-            // Parse hunk lines
-            while (i < lines.Length)
+            var hunkHeader = lines[i];
+            var match = System.Text.RegularExpressions.Regex.Match(
+                hunkHeader, @"@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@");
+            
+            if (!match.Success)
+            {
+                return null;
+            }
+
+            hunk.OldStart = int.Parse(match.Groups[1].Value);
+            hunk.OldCount = match.Groups[2].Success ? int.Parse(match.Groups[2].Value) : 1;
+            hunk.NewStart = int.Parse(match.Groups[3].Value);
+            hunk.NewCount = match.Groups[4].Success ? int.Parse(match.Groups[4].Value) : 1;
+            
+            i++;
+
+            // Parse hunk lines based on expected counts
+            int oldLinesProcessed = 0;
+            int newLinesProcessed = 0;
+            
+            while (i < lines.Length && (oldLinesProcessed < hunk.OldCount || newLinesProcessed < hunk.NewCount))
             {
                 var line = lines[i];
                 
+                // Check for next hunk or file
                 if (line.StartsWith("@@") || line.StartsWith("diff --git "))
                 {
-                    // Next hunk or file
                     break;
                 }
-                else if (line.StartsWith(" ") || line.StartsWith("+") || line.StartsWith("-"))
+                
+                // Handle "\ No newline at end of file" marker
+                if (line.StartsWith("\\"))
                 {
+                    // This marker applies to the last line processed
+                    if (hunk.Lines.Count > 0)
+                    {
+                        var lastLine = hunk.Lines[hunk.Lines.Count - 1];
+                        if (lastLine.StartsWith("-") || lastLine.StartsWith(" "))
+                        {
+                            hunk.OldMissingNewlineAtEof = true;
+                        }
+                        if (lastLine.StartsWith("+") || lastLine.StartsWith(" "))
+                        {
+                            hunk.NewMissingNewlineAtEof = true;
+                        }
+                    }
+                    i++;
+                    continue;
+                }
+                
+                if (line.Length == 0)
+                {
+                    // Empty line - treat as context
+                    hunk.Lines.Add(" ");
+                    oldLinesProcessed++;
+                    newLinesProcessed++;
+                    i++;
+                    continue;
+                }
+                
+                var marker = line[0];
+                
+                if (marker == ' ')
+                {
+                    // Context line
                     hunk.Lines.Add(line);
+                    oldLinesProcessed++;
+                    newLinesProcessed++;
                     i++;
                 }
-                else if (line.StartsWith("\\"))
+                else if (marker == '-')
                 {
-                    // Skip "\ No newline at end of file" markers
+                    // Removed line
+                    hunk.Lines.Add(line);
+                    oldLinesProcessed++;
+                    i++;
+                }
+                else if (marker == '+')
+                {
+                    // Added line
+                    hunk.Lines.Add(line);
+                    newLinesProcessed++;
                     i++;
                 }
                 else
                 {
-                    i++;
+                    // Unknown line type - break
+                    break;
                 }
             }
 

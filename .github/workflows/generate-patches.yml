@@ -1,6 +1,24 @@
-name: Auto Generate PR Patches
+name: Generate Patches
 
 on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Target commit range (PR number, commit SHA, or commit range like head...base)'
+        required: true
+        type: string
+      base_version:
+        description: 'Base version number (e.g., 1.9.0-rc.10)'
+        required: true
+        type: string
+      base_patch:
+        description: 'Base patch commit SHA (leave empty if based on release)'
+        required: false
+        type: string
+      custom_message:
+        description: 'Custom message to include in commit message (for local changes)'
+        required: false
+        type: string
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
@@ -8,11 +26,118 @@ on:
       - 'master-**'
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
 
 jobs:
-  generate-patches:
+  # Manual patch generation job
+  generate-manual-patch:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Parse target input
+        id: parse_target
+        run: |
+          TARGET="${{ inputs.target }}"
+          
+          # Check if it's a PR number
+          if [[ "$TARGET" =~ ^[0-9]+$ ]]; then
+            echo "type=pr" >> $GITHUB_OUTPUT
+            echo "pr_number=$TARGET" >> $GITHUB_OUTPUT
+            
+            # Fetch PR information
+            PR_HEAD=$(gh pr view "$TARGET" --json headRefOid --jq .headRefOid)
+            PR_URL=$(gh pr view "$TARGET" --json url --jq .url)
+            
+            echo "target=$PR_HEAD" >> $GITHUB_OUTPUT
+            echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
+          else
+            echo "type=commit" >> $GITHUB_OUTPUT
+            echo "target=$TARGET" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate patch using script
+        id: generate
+        run: |
+          TARGET="${{ steps.parse_target.outputs.target }}"
+          BASE_VERSION="${{ inputs.base_version }}"
+          BASE_PATCH="${{ inputs.base_patch }}"
+          CUSTOM_MESSAGE="${{ inputs.custom_message }}"
+          OUTPUT_FILE="generated-patch.patch"
+          
+          # Build command
+          CMD="./.github/scripts/generate-patch.sh -t \"$TARGET\" -v \"$BASE_VERSION\" -o \"$OUTPUT_FILE\""
+          [ -n "$BASE_PATCH" ] && CMD="$CMD -p \"$BASE_PATCH\""
+          [ -n "$CUSTOM_MESSAGE" ] && CMD="$CMD -m \"$CUSTOM_MESSAGE\""
+          
+          # Run the script
+          if eval $CMD; then
+            PATCH_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
+            echo "patch_commit=$PATCH_COMMIT" >> $GITHUB_OUTPUT
+            echo "success=true" >> $GITHUB_OUTPUT
+          else
+            echo "success=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload patch artifact
+        if: steps.generate.outputs.success == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: patch-${{ steps.generate.outputs.patch_commit }}
+          path: generated-patch.patch
+          retention-days: 90
+
+      - name: Comment on PR (if applicable)
+        if: steps.parse_target.outputs.type == 'pr' && steps.generate.outputs.success == 'true'
+        run: |
+          PATCH_COMMIT="${{ steps.generate.outputs.patch_commit }}"
+          PATCH_URL="https://github.com/${{ github.repository }}/commit/${PATCH_COMMIT}.patch"
+          gh pr comment "${{ steps.parse_target.outputs.pr_number }}" --body \
+            "**Patch Generated** :package:
+            
+            A patch has been generated for testing this PR against version \`${{ inputs.base_version }}\`.
+            
+            **Patch Commit:** \`${PATCH_COMMIT}\`
+            **Download:** [${PATCH_COMMIT}.patch](${PATCH_URL})
+            
+            To apply this patch:
+            1. Open Unity with your project
+            2. Go to \`Tools > Avatar Optimizer > Apply Patch\`
+            3. Enter the patch URL: \`${PATCH_URL}\`
+            4. Click \`Apply Patch\`
+            
+            Or download the artifact from this workflow run."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment on PR (failure)
+        if: steps.parse_target.outputs.type == 'pr' && steps.generate.outputs.success != 'true'
+        run: |
+          gh pr comment "${{ steps.parse_target.outputs.pr_number }}" --body \
+            "**Patch Generation Failed** :x:
+            
+            Failed to generate patch for version \`${{ inputs.base_version }}\`.
+            
+            Please check the workflow logs for details."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Automatic PR patch generation job
+  generate-pr-patches:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     strategy:
       matrix:

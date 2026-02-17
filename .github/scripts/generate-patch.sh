@@ -190,7 +190,11 @@ if [ "$TARGET" = "working" ]; then
     TARGET_COMMIT=$(git rev-parse HEAD)
     
     COMMIT_MSG="patch: Working directory changes"
-    [ -n "$CUSTOM_MESSAGE" ] && COMMIT_MSG="${COMMIT_MSG}\n\n${CUSTOM_MESSAGE}"
+    if [ -n "$CUSTOM_MESSAGE" ]; then
+        COMMIT_MSG="${COMMIT_MSG}
+
+${CUSTOM_MESSAGE}"
+    fi
     
 elif echo "$TARGET" | grep -q '\.\.\.'; then
     # It's a range
@@ -203,7 +207,11 @@ elif echo "$TARGET" | grep -q '\.\.\.'; then
     TARGET_COMMIT="$HEAD_REF"
     
     COMMIT_MSG="patch: Applied commit range"
-    [ -n "$CUSTOM_MESSAGE" ] && COMMIT_MSG="${COMMIT_MSG}\n\n${CUSTOM_MESSAGE}"
+    if [ -n "$CUSTOM_MESSAGE" ]; then
+        COMMIT_MSG="${COMMIT_MSG}
+
+${CUSTOM_MESSAGE}"
+    fi
     
 else
     # Single commit
@@ -215,7 +223,11 @@ else
     # Get original commit message
     ORIGINAL_MSG=$(git log -1 --format=%B "$TARGET" | head -n1)
     COMMIT_MSG="patch: $ORIGINAL_MSG"
-    [ -n "$CUSTOM_MESSAGE" ] && COMMIT_MSG="${COMMIT_MSG}\n\n${CUSTOM_MESSAGE}"
+    if [ -n "$CUSTOM_MESSAGE" ]; then
+        COMMIT_MSG="${COMMIT_MSG}
+
+${CUSTOM_MESSAGE}"
+    fi
 fi
 
 # Generate diff between base and target
