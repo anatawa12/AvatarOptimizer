@@ -4,7 +4,7 @@ title: Component Scripting API
 
 # Component Scripting API
 
-Since Avatar Optimizer v1.7.0, Avatar Optimizer provides Component API to add Avatar Optimizer components to the Avatar.
+Since Avatar Optimizer v1.7.0, Avatar Optimizer provides Component API to add Avatar Optimizer components to the Avatar.\
 By using this API, you can create tools or components that add Avatar Optimizer components.
 
 ## Components that supported by Component API  {#supported-components}
@@ -23,7 +23,7 @@ you need extra attention for the configuration. See document below for more deta
 
 ## Getting Started
 
-To use Component API, you have to reference `com.anatawa12.avatar-optimizer.runtime` assembly in your assembly definition file.
+To use Component API, you have to reference `com.anatawa12.avatar-optimizer.runtime` assembly in your Assembly Definition file.
 Since Avatar Optimizer does not work on the runtime, you should not depends on `com.anatawa12.avatar-optimizer.runtime` assembly for runtime build.\
 We may remove some classes from `com.anatawa12.avatar-optimizer.runtime` on runtime build in the future.
 In other words, it's recommended to avoid use of `com.anatawa12.avatar-optimizer.runtime` in runtime assembly, you should use it only in editor assembly.
