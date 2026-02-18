@@ -93,7 +93,7 @@ Optimizing phaseの中でコンポーネントを削除する場合は、デフ�
 ツールのコンポーネントをAvatar Optimizerの処理より後に残しておきたい場合、
 Avatar Optimizerにコンポーネントの情報を登録できます。
 
-まず、Avatar OptimizerのAPIを呼び出すために、assembly definitionファイル[^asmdef]を(存在しない場合)作成してください。
+まず、Avatar OptimizerのAPIを呼び出すために、Assembly Definitionファイル[^asmdef]を(存在しない場合)作成してください。
 
 次に、asmdefファイルのアセンブリ参照に`com.anatawa12.avatar-optimizer.api.editor`を追加してください。\
 ツールをAvatar Optimizerに依存させたくない場合、[Version Defines]を使用してください。
@@ -136,7 +136,7 @@ internal class YourComponentInformation : ComponentInformation<YourComponent>
 [ndmf-BeforePlugin]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_BeforePlugin_System_String_System_String_System_Int32_
 [register-component]: #register-component
 
-[^asmdef]: Assembly-CSharp以外のアセンブリを定義するためのファイル。[unity docs](https://docs.unity3d.com/2019.4/Documentation/Manual/ScriptCompilationAssemblyDefinitionFiles.html)を参照してください。
+[^asmdef]: Assembly-CSharp以外のアセンブリを定義するためのファイル。[unity docs](https://docs.unity3d.com/2022.3/Documentation/Manual/ScriptCompilationAssemblyDefinitionFiles.html)を参照してください。
 [^NDMF]: bdunderscoreさんが作成した[NDMF] (Non-Destructive Modular Framework)は、非破壊改変ツールのためのフレームワークです。
 Avatar Optimizerは他の非破壊改変ツールとの互換性を確保するためにこのフレームワークを使用しています。
 
