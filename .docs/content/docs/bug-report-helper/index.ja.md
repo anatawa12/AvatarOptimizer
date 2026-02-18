@@ -23,7 +23,7 @@ Bug Report Helperウィンドウはメニューの `Tools > Avatar Optimizer > B
 
 <blockquote class="book-hint warning">
 
-Trace and OptimizeのFeaturesを無効してるなど、バグを回避するために何らかの設定を行っている場合は、バグレポートを生成する前にその設定を元に戻してください。\
+Trace and OptimizeのFeaturesを無効化しているなど、バグを回避するために何らかの設定を行っている場合は、バグレポートを生成する前にその設定を元に戻してください。\
 回避設定が有効な状態では、問題の原因を特定することが困難になる場合があります。
 
 </blockquote>
