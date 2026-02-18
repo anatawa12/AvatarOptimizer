@@ -21,6 +21,13 @@ Bug Report Helperウィンドウはメニューの `Tools > Avatar Optimizer > B
 ウィンドウ上部には、報告対象のアバターを指定するためのフィールドがあります。\
 発生している問題に関連するアバターをセットしてください。
 
+<blockquote class="book-hint warning">
+
+もしバグを回避するために何らかの設定を行っている場合は、バグレポートを生成する前にその回避設定を無効化してください。\
+回避設定が有効な状態では、問題の原因を特定することが困難になる場合があります。
+
+</blockquote>
+
 ウィンドウ下部には、`Save Bug Report`と`Copy Bug Report to Clipboard`という2つのボタンがあります。
 
 <blockquote class="book-hint info">

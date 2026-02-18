@@ -22,6 +22,13 @@ The Bug Report Helper window can be opened from `Tools > Avatar Optimizer > Bug 
 At the top of the window, there is a field to specify the avatar to report the bug.
 Please set the avatar that bug of AAO is related to.
 
+<blockquote class="book-hint warning">
+
+If you have configured any settings to work around a bug, please disable those workaround settings before generating the bug report.\
+Having workaround settings enabled may make it difficult to identify the root cause of the problem.
+
+</blockquote>
+
 At the bottom of the window, there are two buttons: `Save Bug Report` `Copy Bug Report to Clipboard`.
 
 <blockquote class="book-hint info">
