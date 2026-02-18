@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- EntryExit to BlendTree optimization breaks 'Copy' Parameter Drivers `#1674`
 
 ### Security
 
