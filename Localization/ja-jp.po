@@ -367,6 +367,9 @@ msgstr "統合済み"
 msgid "MergePhysBone:prop:components"
 msgstr "コンポーネント"
 
+msgid "MergePhysBone:error:physbone-outside-of-avatar-root"
+msgstr "アバタールートの外にRoot Transformが設定されているVRCPhysBoneコンポーネントはMerge PhysBoneの統合対象としてサポートされていません。"
+
 # endregion
 
 #region EditSkinnedMeshComponents
