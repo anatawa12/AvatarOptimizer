@@ -16,7 +16,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
         protected override void Execute(BuildContext context)
         {
             var maxTextureSizeComponents = context.GetComponents<MaxTextureSize>();
-            if (!maxTextureSizeComponents.Any()) return;
+            if (maxTextureSizeComponents.Length == 0) return;
 
             var avatarRoot = context.AvatarRootTransform;
 
@@ -75,14 +75,14 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         var texture = material.GetTexture(propertyName);
                         if (texture is Texture2D texture2D)
                         {
-                            if (!textureToMaxSize.ContainsKey(texture2D))
+                            if (!textureToMaxSize.TryGetValue(texture2D, out int existingMax))
                             {
                                 textureToMaxSize[texture2D] = maxSize;
                             }
                             else
                             {
                                 // Use maximum size if texture is used by multiple materials with different limits
-                                textureToMaxSize[texture2D] = Math.Max(textureToMaxSize[texture2D], maxSize);
+                                textureToMaxSize[texture2D] = Math.Max(existingMax, maxSize);
                             }
                         }
                     }

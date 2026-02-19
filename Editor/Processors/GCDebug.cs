@@ -103,16 +103,16 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     {
                         if (gcData.component is null) continue; // use is instead of null to get type information of missing component
                         collect.Append(RuntimeUtil.RelativePath(root, gcData.component.gameObject))
-                            .Append("(").Append(gcData.component.GetType().Name).Append("):\n");
+                            .Append('(').Append(gcData.component.GetType().Name).Append("):\n");
                         collect.Append("  IsEntryPoint: ").Append(gcData.isEntryPoint).Append('\n');
                         collect.Append("  ActiveNess: ").Append(gcData.activeness).Append('\n');
                         collect.Append("  Dependencies:\n");
                         foreach (var line in PairsToStrings(root, gcData.dependencies))
-                            collect.Append("    ").Append(line).Append("\n");
+                            collect.Append("    ").Append(line).Append('\n');
                         collect.Append("  EntryPoints:\n");
                         foreach (var line in PairsToStrings(root, gcData.entryPoints))
-                            collect.Append("    ").Append(line).Append("\n");
-                        collect.Append("\n");
+                            collect.Append("    ").Append(line).Append('\n');
+                        collect.Append('\n');
                     }
 
                     return collect.ToString();

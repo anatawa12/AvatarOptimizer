@@ -373,7 +373,7 @@ namespace Anatawa12.AvatarOptimizer
                 }
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException($"Invalid override mode: {prop.GetOverride(forceOverride)}");
             }
 
             EditorGUI.BeginProperty(overrideRect, null, prop.OverrideProperty);
@@ -532,7 +532,7 @@ namespace Anatawa12.AvatarOptimizer
                 }
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException($"Invalid override mode: {prop.OverrideProperty.enumValueIndex}");
             }
 
             EditorGUI.BeginProperty(overrideRect, null, prop.OverrideProperty);
@@ -588,7 +588,7 @@ namespace Anatawa12.AvatarOptimizer
                 }
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException($"Invalid override mode: {prop.OverrideProperty.enumValueIndex}");
             }
 
             EditorGUI.BeginProperty(overrideRect, null, prop.OverrideProperty);
@@ -751,8 +751,8 @@ namespace Anatawa12.AvatarOptimizer
                     }
 
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                case var overrideMode:
+                    throw new ArgumentOutOfRangeException(nameof(prop), overrideMode, $"Invalid override mode: {overrideMode}");
             }
         }
 

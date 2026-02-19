@@ -163,12 +163,12 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
                                 break;
                             default:
-                                throw new ArgumentOutOfRangeException();
+                                throw new InvalidOperationException($"AAO Bug: unexpected Blending Mode: {layer.BlendingMode}");
                         }
                     }
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        throw new InvalidOperationException($"AAO Bug: unexpected Weight State: {layer.Weight}");
                 }
             }
 
@@ -253,7 +253,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                             case ApplyState.Never:
                                 break;
                             default:
-                                throw new ArgumentOutOfRangeException();
+                                throw new InvalidOperationException($"AAO Bug: unexpected ApplyState: {layerState}");
                         }
 
                         break;
@@ -273,13 +273,13 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                             case ApplyState.Never:
                                 break;
                             default:
-                                throw new ArgumentOutOfRangeException();
+                                throw new InvalidOperationException($"AAO Bug: unexpected ApplyState: {layerState}");
                         }
 
                         break;
                     }
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        throw new InvalidOperationException($"AAO Bug: unexpected ApplyState: {layer.BlendingMode}");
                 }
             }
 
@@ -291,7 +291,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             AnimatorWeightState.AlwaysZero => ApplyState.Never, // Might have effect with write defaults true?
             AnimatorWeightState.AlwaysOne => ApplyState.Always,
             AnimatorWeightState.NonZeroOne => ApplyState.Partially,
-            _ => throw new ArgumentOutOfRangeException()
+            _ => throw new ArgumentOutOfRangeException(nameof(weight), $"Bad weight state: {weight}")
         };
 
         public static bool IsAlwaysOverride<TLayer>(this TLayer layer)
@@ -451,7 +451,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             if (!clip) throw new ArgumentNullException(nameof(clip));
             Clip = clip;
             var curve = AnimationUtility.GetEditorCurve(clip, binding);
-            Curve = curve ?? throw new ArgumentNullException(nameof(curve));
+            Curve = curve ?? throw new ArgumentException("The binding is not valid for the clip", nameof(binding));
             _constantInfo = new Lazy<FloatValueInfo>(() => ParseProperty(curve, additiveReferenceClip, binding, additiveReferenceFrame), isThreadSafe: false);
         }
 
@@ -559,7 +559,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             // expected to pass list or array
             // ReSharper disable once PossibleMultipleEnumeration
-            Utils.Assert(children.Any());
+            Utils.Assert(children.Count != 0);
             // ReSharper disable once PossibleMultipleEnumeration
             _children = children;
             _blendTreeType = blendTreeType;

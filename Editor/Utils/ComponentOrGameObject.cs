@@ -15,7 +15,7 @@ namespace Anatawa12.AvatarOptimizer
         public ComponentOrGameObject(Object o)
         {
             if (!(o is null || o is Component || o is GameObject))
-                throw new ArgumentException();
+                throw new ArgumentException("Argument is not null, Component, nor GameObject", nameof(o));
             _object = o;
         }
 

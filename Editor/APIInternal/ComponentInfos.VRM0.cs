@@ -149,7 +149,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                             VrmFirstPersonFlag.Both => FirstPersonFlag.Both,
                             VrmFirstPersonFlag.ThirdPersonOnly => FirstPersonFlag.ThirdPersonOnly,
                             VrmFirstPersonFlag.FirstPersonOnly => FirstPersonFlag.FirstPersonOnly,
-                            _ => throw new ArgumentOutOfRangeException()
+                            _ => throw new InvalidOperationException($"Invalid VrmFirstPersonFlag value: {firstPersonFlag}"),
                         }
                     };
                 }).ToList();

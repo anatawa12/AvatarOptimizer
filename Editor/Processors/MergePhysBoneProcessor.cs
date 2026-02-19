@@ -120,7 +120,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     merged.endpointPosition = merge.endpointPositionConfig.value;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(merge), merge.endpointPositionConfig.@override, $"Invalid override mode: {merge.collidersConfig.@override}");
             }
 
             merged.multiChildType = VRCPhysBoneBase.MultiChildType.Ignore;
@@ -136,7 +136,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     merged.colliders = merge.collidersConfig.value;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(merge), merge.collidersConfig.@override, $"Invalid override mode: {merge.collidersConfig.@override}");
             }
             // == Limits ==
             
@@ -353,7 +353,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                                 activeChildren.Length;
                             break;
                         default:
-                            throw new ArgumentOutOfRangeException();
+                            throw new ArgumentOutOfRangeException(nameof(physBone), physBone.multiChildType, $"Invalid multi child type: {physBone.multiChildType}");
                     }
 
                     break;
@@ -564,8 +564,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         _mergedPhysBone.FindProperty(prop.PhysBoneCurveYName).animationCurveValue = new AnimationCurve();
                         _mergedPhysBone.FindProperty(prop.PhysBoneCurveZName).animationCurveValue = new AnimationCurve();
                         break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
+                    case var overrideMode:
+                        throw new ArgumentOutOfRangeException(nameof(prop), overrideMode, $"Invalid override mode: {overrideMode}");
                 }
             }
 

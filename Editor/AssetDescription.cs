@@ -103,7 +103,7 @@ namespace Anatawa12.AvatarOptimizer
 
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(parameter), "Unknown match mode: " + parameter.matchMode);
                 }
             }
         }

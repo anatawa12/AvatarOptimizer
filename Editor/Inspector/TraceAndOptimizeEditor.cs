@@ -1,4 +1,5 @@
 
+using System;
 using nadena.dev.ndmf;
 using nadena.dev.ndmf.platform;
 using UnityEditor;
@@ -62,7 +63,7 @@ namespace Anatawa12.AvatarOptimizer
             EditorGUILayout.LabelField(AAOL10N.Tr("TraceAndOptimize:report-bugs"), Styles.bigHelpBox);
 
             var link = AAOL10N.Tr("TraceAndOptimize:tao-bug-link");
-            if (link.StartsWith("https://"))
+            if (link.StartsWith("https://", StringComparison.Ordinal))
             {
                 if (GUILayout.Button(AAOL10N.Tr("TraceAndOptimize:report-bug"))) Application.OpenURL(link);
             }

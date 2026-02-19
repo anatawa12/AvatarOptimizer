@@ -259,7 +259,7 @@ internal class BugReportHelper : EditorWindow
             {
                 var parameters = ctor.GetParameters();
                 if (parameters.Length == 0) return null;
-                if (parameters.Count(x => !x.HasDefaultValue) != 0) return null;
+                if (parameters.Any(x => !x.HasDefaultValue)) return null;
 
                 var includeDisabledParamIndex = Array.FindIndex(parameters, p => p.Name == "includeDisabled" && p.ParameterType == typeof(bool));
                 if (includeDisabledParamIndex < 0) return null;
@@ -793,7 +793,7 @@ internal class ReportFile
     private void AddField(string key, string value, bool @internal)
     {
         if (!@internal)
-            if (key.ToLowerInvariant() == "boundary")
+            if (key.Equals("boundary", StringComparison.OrdinalIgnoreCase))
                 throw new ArgumentException("Field key 'boundary' is reserved", nameof(key));
         Fields.Add(new KeyValuePair<string, string>(key, value));
     }
