@@ -24,7 +24,7 @@ Please set the avatar that bug of AAO is related to.
 
 <blockquote class="book-hint info">
 
-If you have configured any settings to work around a bug (such as disabling Features in Trace and Optimize), please revert those settings before generating the bug report.\
+If you have configured any settings to work around a bug (such as disabling Features in Trace and Optimize), please revert those settings before generating the report file.\
 Having workaround settings enabled may make it difficult to identify the root cause of the problem.
 
 </blockquote>
