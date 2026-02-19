@@ -4,57 +4,65 @@ title: Shader Information API
 
 # Shader Information API
 
-Avatar Optimizer v1.8.0以降は、カスタムシェーダーを使用するマテリアルの最適化を支援するShader Information APIを提供しています。シェーダー情報を登録することで、Avatar Optimizerがテクスチャのアトラス化やUVのパッキングなどの高度な最適化を実行できるようになります。
+Avatar Optimizer v1.8.0以降では、カスタムシェーダーが使用されているマテリアルの最適化を支援するためのShader Information APIを提供しています。\
+APIを通じてシェーダーの情報を登録することで、Avatar Optimizerはテクスチャのアトラス化やUVパッキングなどの高度な最適化を実行できるようになります。
 
 ## Shader Informationとは？ {#what-is-shader-information}
 
-Shader Informationは、あなたのシェーダーがテクスチャ、UVチャンネル、その他のマテリアルプロパティをどのように使用しているかをAvatar Optimizerに伝える方法です。
+Shader Informationは、テクスチャ、UVチャンネル、その他のマテリアルプロパティをシェーダーがどのように使用しているかをAvatar Optimizerに伝えるための方法です。
 
-現在のAvatar Optimizerはこの情報を用いて、以下の方法でアバターを最適化します。将来的にさらに多くの最適化が追加される可能性があります。[^optimization-note] ただし、すべての最適化が Trace and Optimize によって自動的に実行されるわけではありません。
+現在のAvatar Optimizerはこの情報を用いて、アバターに以下のような最適化を行います。
+(将来的に、さらに多くの最適化が追加される可能性があります。[^optimization-note])\
+なお、すべての最適化がTrace and Optimizeで自動的に実行されるとは限りません。
 
-- 複数のテクスチャをテクスチャアトラスにパッキング (`AAO Merge Material`などのコンポーネントを使用)
-- シェーダー機能で使用されているがマテリアル設定で無効化されているテクスチャを削除
+- 複数のテクスチャをアトラス化し、パッキングする (`AAO Merge Material`などのコンポーネントを使用)
+- シェーダーの機能としては存在するが、マテリアル設定で無効化されていて使用されていないテクスチャの削除
 
-Shader Informationがない場合、Avatar Optimizerはシェーダーを保守的に扱い、これらの最適化の一部を実行できません。
+Shaderの情報がない場合、Avatar Optimizerはシェーダーを慎重に取り扱うため、これらの最適化の一部を実行することができません。
 
-[^optimization-note]: 例えば、UVチャンネル最適化は現在実装されていませんが、将来のバージョンで追加される可能性があります。
+[^optimization-note]: 例えば、現時点ではUVチャンネルの最適化は実装されていませんが、将来のバージョンで追加される可能性はあります。
 
-## コアコンセプト {#core-concepts}
+## コンセプト {#core-concepts}
 
 ### 主要なクラス {#main-classes}
 
-Shader Information APIは3つの主要なクラスで構成されています:
+Shader Information APIは3つの主要なクラスで構成されています。
 
-- `ShaderInformation`: シェーダーに関する情報を提供するために継承する基底クラス。`GetMaterialInformation`をオーバーライドして、シェーダーを使用するマテリアルのテクスチャとUV使用状況を登録します。
-- `ShaderInformationRegistry`: エディタ初期化中に`ShaderInformation`実装をAvatar Optimizerに[登録](#registration-methods)するために使用する静的クラス。
-- `MaterialInformationCallback`: `GetMaterialInformation`に渡され、マテリアルプロパティを読み取り、テクスチャ/UV使用情報を登録するメソッドを提供します。
+- `ShaderInformation`: シェーダーに関する情報を提供するために継承する基底クラス。\
+  `GetMaterialInformation`メソッドをオーバーライドして、そのシェーダーを使用するマテリアルがテクスチャとUVをどのように使用するかを登録します。
+- `ShaderInformationRegistry`: エディターの初期化処理中に`ShaderInformation`の実装をAvatar Optimizerに[登録](#registration-methods)するために使用する静的クラス。
+- `MaterialInformationCallback`: マテリアルプロパティを読み取ってテクスチャとUVの使用方法を伝えるためのメソッドを提供します。これは`GetMaterialInformation`に渡されます。
 
 ### Null値 {#null-values}
 
-Shader Information API全体を通して、`null`値には一貫した意味があります: **不明な値**または**アニメーション化された(静的に決定不可能な)値**を表します。マテリアルプロパティがアニメーション化されている可能性があるか、ビルド時にその値を決定できない場合、APIは不確実性を示すために`null`を返します。値を静的に決定できない場合は、パラメータに`null`を渡す必要があります。
+Shader Information API全体を通して、`null`値は**不明な値**または**アニメーションで操作される(静的に決定することのできない)値**を表します。\
+マテリアルプロパティがアニメーションで操作されているなど、ビルド時にその値を決定できない場合、APIはその不確実性を示すために`null`を返します。\
+値を静的に決定できない場合は、パラメータに`null`を渡す必要があります。
 
-## はじめに {#getting-started}
+## 使い方 {#getting-started}
 
-シェーダーのShader Informationを提供するには、以下の手順に従ってください:
+Shader Informationを提供するには、以下の手順に従ってください。
 
-### 1. Assembly Definitionを作成 {#create-asmdef}
+### 1. Assembly Definitionを作成する {#create-asmdef}
 
-シェーダーパッケージにエディタ用のAssembly Definition（asmdef）がない場合は、作成してください。 Shader Informationはビルド時にのみ使用され、Shader Information APIはエディタでのみ利用可能なため、該当するアセンブリはエディタ専用にしてください。
+シェーダーのパッケージにエディター向けのAssembly Definition[^asmdef]がない場合は、作成してください。\
+Shader Informationはビルド時にのみ使用され、Shader Information APIもエディター上でのみ利用可能であるため、エディター向けのアセンブリが必要です。
 
-### 2. Assembly Referenceを追加 {#add-reference}
+### 2. Assembly Referenceを追加する {#add-reference}
 
-assembly definitionの参照に`com.anatawa12.avatar-optimizer.api.editor`を追加してください。
+asmdefファイルのアセンブリ参照に`com.anatawa12.avatar-optimizer.api.editor`を追加してください。
 
-Avatar Optimizerを必須の依存関係にしたくない場合は、`AVATAR_OPTIMIZER`のようなシンボルで[Version Defines]を使用して、Avatar Optimizerがインストールされているか、AAOバージョンが指定されたバージョンより新しいかを検出してください。
+Avatar Optimizerを必須の依存関係にしたくない場合は、`AVATAR_OPTIMIZER`のようなシンボルで[Version Defines]を使用して、Avatar Optimizerがインストールされているか、および、AAOのバージョンが特定のバージョンより新しいかを検出することができます。
 
 ![version-defines.png](../version-defines.png)
 
-`[1.8,2.0)`のようなバージョン範囲を推奨します (v1.8.0以降をサポートしますが、v2.0.0では更新が必要になります)。一部のAPIは後のバージョンで追加された可能性があるため、使用するAPIに基づいてバージョン範囲を調整する必要がある場合があることに注意してください。
+ここでは、`[1.8,2.0)`のようなバージョン範囲を指定することを推奨します。(v1.8.0以降をサポートしますが、v2.0.0以降には更新が必要になることを意味します)\
+一部のAPIは後のバージョンから追加される可能性があるため、使用するAPIに基づいてバージョン範囲を調整しなければならない可能性があることにご注意ください。
 
 ### 3. Shader Informationクラスを作成 {#create-class}
 
-`ShaderInformation`を継承するクラスを作成し、`ShaderInformationRegistry`に登録してください。
-Avatar Optimizerがマテリアルを処理する前に登録されることを保証するため、登録は`[InitializeOnLoad]`属性とstaticコンストラクタを使って行ってください:
+`ShaderInformation`を継承するクラスを作成し、`ShaderInformationRegistry`に登録してください。\
+Avatar Optimizerがマテリアルを処理する前に登録されることを保証するため、登録には`[InitializeOnLoad]`属性とstaticコンストラクタを使用してください。
 
 ```csharp
 #if AVATAR_OPTIMIZER && UNITY_EDITOR
@@ -70,7 +78,7 @@ namespace YourNamespace
     {
         static YourShaderInformation()
         {
-            // シェーダーGUIDで登録 (シェーダーアセットに推奨)
+            // シェーダーのGUIDで登録 (シェーダーアセットに推奨)
             string shaderGuid = "your-shader-guid-here";
             ShaderInformationRegistry.RegisterShaderInformationWithGUID(
                 shaderGuid, 
@@ -83,7 +91,7 @@ namespace YourNamespace
 
         public override void GetMaterialInformation(MaterialInformationCallback matInfo)
         {
-            // ここでテクスチャとUV使用状況を登録 (以下の例を参照)
+            // ここでテクスチャとUVの使用状況を登録 (次に示す例を参照)
         }
     }
 }
@@ -93,14 +101,18 @@ namespace YourNamespace
 
 ## ShaderInformationKindフラグ {#information-kinds}
 
-`SupportedInformationKind`プロパティは、提供している情報をAvatar Optimizerに伝えます。
+`SupportedInformationKind`プロパティは、Shader Informationから提供する情報の種類をAvatar Optimizerに伝えます。
 
-現在、2つの情報種類があります:
+現在は以下の2種類があります。
 
-- `TextureAndUVUsage`: シェーダーが使用するテクスチャ、各テクスチャがサンプリングするUVチャンネル、UV変換マトリックス、サンプラーステートに関する情報を提供していることを示します。[テクスチャ使用状況の登録](#registering-textures)を参照してください。
-- `VertexIndexUsage`: シェーダーが頂点インデックス (例: `SV_VertexID`) を使用していることを示します。このフラグを提供しない場合、Avatar Optimizerは頂点インデックスが使用されていないと仮定し、最適化中に頂点をシャッフルする可能性があります。[頂点インデックス使用状況の登録](#register-vertex-index)を参照してください。
+- `TextureAndUVUsage`: シェーダーが使用するテクスチャや、各テクスチャがサンプリングを行うUVチャンネル、UVの変換行列、サンプラー状態に関する情報を提供していることを示します。\
+  詳細は[テクスチャ使用状況の登録](#registering-textures)を参照してください。
+- `VertexIndexUsage`: シェーダーが頂点インデックス(例: `SV_VertexID`)を使用するという情報を提供していることを示します。\
+  このフラグを提供しない場合、Avatar Optimizerは頂点インデックスは使用されていないものと仮定し、最適化中に頂点を入れ替える可能性があります。\
+  詳細は[頂点インデックス使用状況の登録](#register-vertex-index)を参照してください。
 
-これはフラグ列挙型なので、`|`演算子で複数の値を組み合わせることができます。
+これはフラグ用Enum型であるため、`|`演算子で複数の値を組み合わせることができます。
+
 ```csharp
 public override ShaderInformationKind SupportedInformationKind =>
     ShaderInformationKind.TextureAndUVUsage | ShaderInformationKind.VertexIndexUsage;
@@ -108,26 +120,26 @@ public override ShaderInformationKind SupportedInformationKind =>
 
 ## マテリアル情報の登録 {#registering-information}
 
-`GetMaterialInformation`メソッドは、シェーダーを使用する各マテリアルに対して呼び出されます。
-`MaterialInformationCallback`を使用してテクスチャとUV使用状況を登録してください。
+`GetMaterialInformation`メソッドは、シェーダーを使用する各マテリアルに対して呼び出されます。\
+`MaterialInformationCallback`を使用して、テクスチャとUVの使用状況を登録してください。
 
-各メソッドの詳細については、APIドキュメントコメントを参照してください。
+各メソッドの詳細については、APIドキュメントのコメントを参照してください。
 
 ### マテリアルプロパティの読み取り {#reading-properties}
 
-コールバックは、シェーダー上のマテリアルプロパティを読み取るメソッドを提供します:
+`MaterialInformationCallback`は、シェーダー上のマテリアルプロパティを読み取るメソッドを提供します。
 
 ```csharp
-// floatプロパティを読み取り
+// floatプロパティの読み取り
 float? value = matInfo.GetFloat("_PropertyName");
 
-// intプロパティを読み取り
+// intプロパティの読み取り
 int? value = matInfo.GetInt("_PropertyName");
 
-// Vector4プロパティを読み取り (_MainTex_STなど)
+// Vector4プロパティの読み取り (_MainTex_STなど)
 Vector4? value = matInfo.GetVector("_MainTex_ST");
 
-// シェーダーキーワードが有効かどうかをチェック
+// シェーダーキーワードが有効かどうかの確認
 bool? enabled = matInfo.IsShaderKeywordEnabled("KEYWORD_NAME");
 ```
 
@@ -135,15 +147,16 @@ bool? enabled = matInfo.IsShaderKeywordEnabled("KEYWORD_NAME");
 
 ### テクスチャ使用状況の登録 {#registering-textures}
 
-`RegisterTextureUVUsage`を使用して、各2Dテクスチャについて Avatar Optimizerに伝えます。パラメータの詳細については、APIドキュメントコメントを参照してください。
+`RegisterTextureUVUsage`メソッドを使用して、各2Dテクスチャに関する情報をAvatar Optimizerに伝えます。\
+パラメータの詳細については、APIドキュメントのコメントを参照してください。
 
 ```csharp
 public override void GetMaterialInformation(MaterialInformationCallback matInfo)
 {
-    // UV変換 (スケール/オフセット) を取得
+    // UV変換(スケールやオフセット)を取得
     var mainTexST = matInfo.GetVector("_MainTex_ST");
-    Matrix2x3? uvMatrix = mainTexST is { } st 
-        ? Matrix2x3.NewScaleOffset(st) 
+    Matrix2x3? uvMatrix = mainTexST is { } st
+        ? Matrix2x3.NewScaleOffset(st)
         : null;
 
     // テクスチャを登録
@@ -156,9 +169,11 @@ public override void GetMaterialInformation(MaterialInformationCallback matInfo)
 }
 ```
 
-#### サンプラーステート {#sampler-states}
+#### サンプラー状態 {#sampler-states}
 
-サンプラーステートはテクスチャのラッピングとフィルタリングを定義します。ほとんどのシェーダーはマテリアルプロパティのサンプラーを使用します - プロパティ名を使用してください (文字列は暗黙的に`SamplerStateInformation`に変換されます):
+サンプラー状態はテクスチャのラッピングとフィルタリングを定義します。\
+ほとんどのシェーダーはマテリアルプロパティにあるサンプラーを使用するため、その場合はプロパティ名を使用してください。
+(文字列は暗黙的に`SamplerStateInformation`に変換されます)
 
 ```csharp
 matInfo.RegisterTextureUVUsage(
@@ -169,39 +184,42 @@ matInfo.RegisterTextureUVUsage(
 );
 ```
 
-シェーダーがインラインサンプラーを使用している場合 (例: `SamplerState linearClampSampler`)、`SamplerStateInformation.LinearRepeatSampler`のような定義済みの定数を使用してください。
+シェーダーがインラインサンプラー(例: `SamplerState linearClampSampler`)を使用している場合は、`SamplerStateInformation.LinearRepeatSampler`のような定義済みの定数を使用してください。
 
-サンプラーを判定できない場合は、`SamplerStateInformation.Unknown`を使用してください。
+サンプラーを決定できない場合は、`SamplerStateInformation.Unknown`を使用してください。
 
 #### UVチャンネル {#uv-channels}
 
-`UsingUVChannels`を使用して、テクスチャがサンプリングするUVチャンネルを指定します。メッシュUVを使用しないテクスチャ (スクリーンスペース、MatCap、ビュー方向ベースなど) の場合は、`UsingUVChannels.NonMesh`を使用してください:
+`UsingUVChannels`メソッドを使用して、テクスチャがサンプリングを行うUVチャンネルを指定します。\
+メッシュUVを使用しないテクスチャ(スクリーンスペース、MatCap、ビュー方向が基準など)の場合は、`UsingUVChannels.NonMesh`を使用してください。
 
 ```csharp
 matInfo.RegisterTextureUVUsage(
     "_MatCapTexture",
-    "_MatCapTexture", 
-    UsingUVChannels.NonMesh,  // メッシュUVからではない
+    "_MatCapTexture",
+    UsingUVChannels.NonMesh,  // メッシュUVを使用しない
     null  // UV変換なし
 );
 ```
 
-UVチャンネルがマテリアルプロパティに依存する場合:
+UVチャンネルがマテリアルプロパティに依存する場合は、以下のようにします。
 
 ```csharp
 var uvChannel = matInfo.GetFloat("_UVChannel") switch
 {
     0 => UsingUVChannels.UV0,
     1 => UsingUVChannels.UV1,
-    _ => UsingUVChannels.UV0 | UsingUVChannels.UV1  // 不明、どちらかの可能性
+    _ => UsingUVChannels.UV0 | UsingUVChannels.UV1  // 不明、どちらにもなる可能性あり
 };
 
 matInfo.RegisterTextureUVUsage("_DetailTex", "_DetailTex", uvChannel, uvMatrix);
 ```
 
-#### UV変換マトリックス {#uv-transform-matrices}
+#### UV変換行列 {#uv-transform-matrices}
 
-UV変換マトリックスは、UVがどのようにスケールおよびオフセットされるかを記述します (`_MainTex_ST`のように)。ほとんどのUnityシェーダーは`(scaleX, scaleY, offsetX, offsetY)`のVector4を使用します:
+UV変換行列では、UVがどのようにスケール調整およびオフセットされるかを記述します。(例: `_MainTex_ST`)\
+ほとんどのUnityシェーダーは`(scaleX, scaleY, offsetX, offsetY)`のVector4を使用しています。\
+スケール調整とオフセットは`Matrix2x3.NewScaleOffset`メソッドを使用して`Matrix2x3`に変換できます。
 
 ```csharp
 var texST = matInfo.GetVector("_MainTex_ST");
@@ -210,14 +228,16 @@ Matrix2x3? uvMatrix = texST is { } st
     : null;
 ```
 
-必要に応じてマトリックスを手動で構築することもできます。UV変換がアニメーション化されているか動的に計算される場合は、`null`を使用してください。
+必要に応じてこれを手動で構築することもできます。\
+UV変換がアニメーションで操作可能であるか、動的に計算されるような場合には、`null`を使用してください。
 
 ### 頂点インデックス使用状況の登録 {#register-vertex-index}
 
-シェーダーが頂点インデックス使用状況を登録すると、Avatar Optimizerは元のメッシュから頂点インデックスを保持しようとします。
-これは現在、Trace and Optimizeの自動Merge Skinned Mesh機能を無効にしますが、将来的にはより多くの機能が影響を受ける可能性があります。
+シェーダーが頂点インデックス使用状況を登録すると、Avatar Optimizerは元のメッシュから頂点インデックスを保持しようとします。\
+これは現在、Trace and Optimizeの自動メッシュ統合を無効にしますが、将来的にはより多くの機能が影響を受ける可能性があります。
 
-このメソッドは頂点インデックスを保持するためのものです。シェーダーがランダムなシーケンスを生成する目的でのみ頂点インデックスを使用している場合は、RegisterVertexIndexUsage を呼び出すべきではありません。
+この方法は頂点インデックスを保持するためのものです。\
+シェーダーがランダムなシーケンスを生成する目的でのみ頂点インデックスを使用している場合は登録する必要がないため、`RegisterVertexIndexUsage`メソッドを呼び出すべきではありません。
 
 ```csharp
 public override void GetMaterialInformation(MaterialInformationCallback matInfo)
@@ -235,12 +255,14 @@ public override void GetMaterialInformation(MaterialInformationCallback matInfo)
 
 ## Shader Informationの登録 {#registration-methods}
 
-シェーダーに情報をリンクするには、ShaderInformation実装を登録する必要があります。
-Shader Informationを登録する方法は2つあります:
+シェーダーと情報を紐付けるには、`ShaderInformation`の実装を登録する必要があります。\
+Shader Informationを登録する方法には、以下の2つがあります。
 
-### GUIDで登録 (推奨) {#register-by-guid}
+### GUIDで登録する (推奨) {#register-by-guid}
 
-シェーダーアセットの場合、シェーダーのGUIDを使用します。このメソッドは、GUIDが変更されず、重複せず、AssetDatabaseへのアクセスを必要としないため推奨されます (InitializeOnLoadメソッドでAssetDatabaseにアクセスすることは無効であるため、シェーダーインスタンスによる登録は無効になる可能性があります)。
+シェーダーアセットの場合、シェーダーのGUIDを使用して登録できます。\
+GUIDは通常変更されず、重複もせず、AssetDatabaseへのアクセスを必要としないため、この方法の使用を推奨します。\
+(InitializeOnLoadなメソッドでのAssetDatabaseへのアクセスは無効であるため、シェーダーインスタンスによる登録は動作しない可能性があります)
 
 ```csharp
 ShaderInformationRegistry.RegisterShaderInformationWithGUID(
@@ -249,9 +271,9 @@ ShaderInformationRegistry.RegisterShaderInformationWithGUID(
 );
 ```
 
-### シェーダーインスタンスで登録 {#register-by-instance}
+### シェーダーインスタンスで登録する {#register-by-instance}
 
-ビルド時に動的に作成されるシェーダー、またはシェーダーインスタンスがある場合、シェーダーインスタンスで登録できます。
+ビルド時に動的に作成されるシェーダー、またはシェーダーインスタンスがある場合は、シェーダーインスタンスを登録することができます。
 
 ```csharp
 Shader shader = Shader.Find("Your/Shader/Name");
@@ -263,9 +285,9 @@ ShaderInformationRegistry.RegisterShaderInformation(
 
 ## ベストプラクティス {#best-practices}
 
-### InitializeOnLoadを使用 {#use-initializeonload}
+### InitializeOnLoadを使用する {#use-initializeonload}
 
-`[InitializeOnLoad]`を使用してstatic constructorでShader Informationを登録し、'apply on play'ビルドの前に登録してください。
+`[InitializeOnLoad]`を使用してstaticコンストラクタでShader Informationを登録し、'Apply on Play'用ビルド処理の前に登録してください。
 
 ```csharp
 [InitializeOnLoad]
@@ -286,9 +308,10 @@ internal class YourShaderInformation : ShaderInformation
 }
 ```
 
-### 不明な値を処理 {#handle-unknown-values}
+### nullの取り扱い {#handle-unknown-values}
 
-マテリアルプロパティはアニメーション化されている可能性があります。`null`値を想定して処理してください。シェーダーがプロパティのアニメーション化をサポートしていない場合でも、Avatar Optimizerが一度に複数のマテリアルを処理することにより`null`が渡されることがあります。
+マテリアルプロパティはアニメーションで操作されたり、不明であったりする可能性があります。\
+`null`値を想定して処理してください。シェーダー自身はアニメーションでのプロパティ操作をサポートしていない場合でも、Avatar Optimizerが一度に複数のマテリアルを処理することにより`null`が渡される可能性があります。
 
 ```csharp
 // パターンマッチングを使用
@@ -305,9 +328,9 @@ var uvChannel = matInfo.GetFloat("_UVChannel") switch
 };
 ```
 
-### キーワードとプロパティをチェック {#check-keywords-properties}
+### キーワードとプロパティを確認する {#check-keywords-properties}
 
-実際に使用されているテクスチャのみを登録してください:
+実際に使用されているテクスチャのみを登録してください。
 
 ```csharp
 if (matInfo.IsShaderKeywordEnabled("_NORMALMAP") != false)
@@ -321,27 +344,32 @@ if (matInfo.GetFloat("_UseEmission") != 0)
 }
 ```
 
-**注意:** `!= false`は、値が`true`または`null` (不明) かどうかをチェックします。
-この保守的なアプローチは、不明な場合に機能が有効であると仮定します。
+<blockquote class="book-hint info">
 
-### 正確な情報を提供 {#provide-accurate-information}
+`!= false`は、値が`true`または`null`(不明)かどうかをチェックするのに用います。\
+この保守的なアプローチで、不明な場合に機能が有効であると仮定することができます。
 
-- 頂点インデックスが本当に重要な場合にのみ`VertexIndexUsage`を設定
-- 正しいサンプラーステートを使用 (アトラス化中のテクスチャフィルタリングに影響)
-- UV行列が動的またはアニメーション化されている場合は`null`に設定
-- スクリーンスペースUVには`UsingUVChannels.NonMesh`を使用
+</blockquote>
+
+### 正確な情報を提供する {#provide-accurate-information}
+
+- 頂点インデックスが本当に重要な場合にのみ`VertexIndexUsage`を設定する
+- 正しいサンプラー状態を使用する (アトラス化のテクスチャフィルタリングに影響します)
+- UV行列が動的に変化するか、アニメーションで操作される場合は`null`に設定
+- スクリーンスペースのUVには`UsingUVChannels.NonMesh`を使用する
 
 ### Shader Informationクラスに`internal class`を使用する {#use-internal-class}
 
-Shader Informationクラスをアセンブリの公開APIにさらさないために、`internal class` として宣言することを推奨します。これによりコードベースがクリーンになり、内部の実装詳細が誤って外部から使用されるのを防げます。
+Shader Informationクラスをアセンブリの公開APIとして晒してしまわないために、`internal class` として宣言することを推奨します。\
+これによりコードベースがクリーンになり、内部の実装詳細が誤って外部から使用されるのを防ぐことができます。
 
-エディタ側に公開APIがない場合、アセンブリ定義の Auto Reference を false に設定して、クラスが `Assembly-CSharp` に露出するのを防ぐことができます。
+エディタ用スクリプト側に公開APIがない場合は、asmdefファイルのAuto Referenceをfalseに設定することで、クラスが`Assembly-CSharp`に対して使用可能になるのを防ぐことができます。
 
-## 完全な例 {#examples}
+## 記述例 {#examples}
 
-シンプルなシェーダーのためのシンプルなShaderInformation例です。
+シンプルなシェーダーのためのShaderInformationの記述例です。
 
-より複雑な例については、[GitHub][shader-information-impl]にあるAvatar Optimizerの組み込みシェーダー情報実装を参照してください。
+より複雑な例については、[GitHub][shader-information-impl]にあるAvatar Optimizerの組み込みShaderInformation実装を参照してください。
 
 [shader-information-impl]: https://github.com/anatawa12/AvatarOptimizer/tree/master/Editor/APIInternal/
 
@@ -379,7 +407,7 @@ internal class SimpleShaderInformation : ShaderInformation
 }
 ```
 
-### 条件付き機能を持つシェーダー {#example-conditional}
+### 条件付きで機能が有効になるシェーダー {#example-conditional}
 
 ```csharp
 [InitializeOnLoad]
@@ -478,7 +506,7 @@ internal class VertexShaderInformation : ShaderInformation
             "_MainTex", "_MainTex", UsingUVChannels.UV0, uvMatrix
         );
 
-        // シェーダーは効果のためにSV_VertexIDを使用
+        // シェーダーはエフェクトのためにSV_VertexIDを使用
         matInfo.RegisterVertexIndexUsage();
     }
 }
@@ -496,3 +524,5 @@ internal class VertexShaderInformation : ShaderInformation
 [NDMF Discord]: https://discord.gg/dV4cVpewmM
 [fediverse]: https://misskey.niri.la/@anatawa12
 [AvatarOptimizer Issues]: https://github.com/anatawa12/AvatarOptimizer/issues
+
+[^asmdef]: Assembly-CSharp以外のアセンブリを定義するためのファイル。[unity docs](https://docs.unity3d.com/2022.3/Documentation/Manual/ScriptCompilationAssemblyDefinitionFiles.html)を参照してください。
