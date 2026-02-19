@@ -16,6 +16,13 @@ AAO: Avatar Optimizerのバグを見つけた場合、報告していただけ�
 
 ## 使い方 {#how-to-use}
 
+<blockquote class="book-hint info">
+
+Trace and Optimizeの機能を無効化するなど、バグを回避するために何らかの設定調整を行っている場合は、レポートファイルを生成する前にその設定を元に戻してください。\
+バグ回避用の設定が行われている状態では、問題の原因を特定することが困難な場合があります。
+
+</blockquote>
+
 Bug Report Helperウィンドウはメニューの `Tools > Avatar Optimizer > Bug Report Helper` から開くことができます。
 
 ウィンドウ上部には、報告対象のアバターを指定するためのフィールドがあります。\

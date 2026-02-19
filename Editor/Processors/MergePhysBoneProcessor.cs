@@ -67,6 +67,12 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 if (parentDiffer)
                     return; // differ error reported by validator
 
+                if (context != null && !pb.GetTarget().IsChildOf(context.AvatarRootTransform))
+                {
+                    BuildLog.LogError("MergePhysBone:error:physbone-outside-of-avatar-root", pb, merge, pb.GetTarget());
+                    return;
+                }
+
                 if (sourceComponents.Count == pb.GetTarget().parent.childCount)
                 {
                     root = pb.GetTarget().parent;

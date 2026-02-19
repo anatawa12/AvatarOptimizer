@@ -28,6 +28,7 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
         foreach (var physBone in context.GetComponents<VRCPhysBone>()
                      .GroupBy(x => x.GetTarget())
                      .Where(x => x.Count() == 1) // if multiple PhysBones share the same target, they cannot be merged; skip them
+                     .Where(x => x.Key.IsChildOf(context.AvatarRootTransform))
                      .Select(x => x.First())
                  )
         {

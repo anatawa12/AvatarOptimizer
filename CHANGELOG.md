@@ -17,6 +17,9 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - EntryExit to BlendTree optimization breaks 'Copy' Parameter Drivers `#1674`
+- Error when there is PhysBone targeting non-avatar bones `#1675`
+- Bad behavior when PhysBones targeting non-avatar bones are specified in MergePhysBone `#1675`
+  - We added error for such case instead of modifying non-avatar bones.
 
 ### Security
 
