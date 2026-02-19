@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog].
 - Error when there is PhysBone targeting non-avatar bones `#1675`
 - Bad behavior when PhysBones targeting non-avatar bones are specified in MergePhysBone `#1675`
   - We added error for such case instead of modifying non-avatar bones.
+- Some animations with Chinese characters are broken in some Japanese environments `#1679`
 
 ### Security
 
