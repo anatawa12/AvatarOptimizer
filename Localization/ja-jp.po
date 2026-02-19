@@ -1233,4 +1233,13 @@ msgid "BugReportHelper:copy-warning"
 msgstr ""
 "バグ報告用の情報をクリップボードにコピーすると、大量のデータがコピーされる可能性があります。(アバターの複雑さによっては数MB程度)\n"  
 "ファイルに保存すると、データは遥かに小さく圧縮されるため、ファイルへの保存をお勧めします。\n"  
-"それでも続行しますか？"  
+"それでも続行しますか？"
+
+msgid "BugReportHelper:select-avatar"
+msgstr "バグ報告を生成するには、アバターのGameObjectを選択してください。"
+
+msgid "BugReportHelper:not-avatar-root"
+msgstr "選択されたGameObjectはアバターのルートではありません。バグ報告を生成するには、アバターのルートGameObjectを選択してください。"
+
+msgid "BugReportHelper:avatar-inactive"
+msgstr "バグ報告を生成するには、アバターのGameObjectがヒエラルキー内で有効である必要があります。アバターおよびその親GameObjectがすべて有効になっていることを確認してください。"  

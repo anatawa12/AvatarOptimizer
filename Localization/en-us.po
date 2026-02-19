@@ -1305,3 +1305,12 @@ msgstr ""
 "Copying bug report to clipboard may copy large amount of data (several MBs depending on your avatar complexity).\n"
 "Saving will compress the data to a much smaller size, so saving to a file is recommended.\n"
 "Are you sure you want to proceed?"
+
+msgid "BugReportHelper:select-avatar"
+msgstr "Please select an avatar GameObject to generate bug report."
+
+msgid "BugReportHelper:not-avatar-root"
+msgstr "The selected GameObject is not an avatar root. Please select the root GameObject of your avatar to generate bug report."
+
+msgid "BugReportHelper:avatar-inactive"
+msgstr "The avatar GameObject must be active in the hierarchy to generate bug report. Please ensure the avatar and all its parent GameObjects are enabled."

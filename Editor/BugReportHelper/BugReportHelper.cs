@@ -64,19 +64,19 @@ internal class BugReportHelper : EditorWindow
 
         if (targetAvatar == null)
         {
-            EditorGUILayout.HelpBox("Please select an avatar GameObject to generate bug report.", MessageType.Info);
+            EditorGUILayout.HelpBox(AAOL10N.Tr("BugReportHelper:select-avatar"), MessageType.Info);
             return;
         }
 
         if (!nadena.dev.ndmf.runtime.RuntimeUtil.IsAvatarRoot(targetAvatar.transform))
         {
-            EditorGUILayout.HelpBox("The GameObject is not avatar. Please select an avatar to generate bug report.", MessageType.Info);
+            EditorGUILayout.HelpBox(AAOL10N.Tr("BugReportHelper:not-avatar-root"), MessageType.Info);
             return;
         }
 
         if (!targetAvatar.activeInHierarchy)
         {
-            EditorGUILayout.HelpBox("The avatar GameObject must be active in hierarchy to generate bug report. Please activate the avatar GameObject.", MessageType.Info);
+            EditorGUILayout.HelpBox(AAOL10N.Tr("BugReportHelper:avatar-inactive"), MessageType.Info);
             return;
         }
 
