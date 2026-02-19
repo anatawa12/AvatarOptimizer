@@ -32,9 +32,11 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             public T GetRemoveKey(T value) => value;
         }
 
+#pragma warning disable CA1000 // Do not declare static members on generic types
         public static PSSEditorUtil<T> Create(SerializedProperty property,
             Func<SerializedProperty, T> getValue, Action<SerializedProperty, T> setValue) =>
             new(BaseEditorUtil<T, T>.Create(property, new EditorUtilHelper(getValue, setValue)));
+#pragma warning restore CA1000
 
         private PSSEditorUtil(BaseEditorUtil<T, T> upstream)
         {
@@ -62,7 +64,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
             _upstream.HandleApplyRevertMenuItems(upstreamEleement, genericMenu);
         }
 
-        public static ElementStatus MapStatus(PrefabSafeUniqueCollection.ElementStatus status) =>
+        private static ElementStatus MapStatus(PrefabSafeUniqueCollection.ElementStatus status) =>
             status switch
             {
                 PrefabSafeUniqueCollection.ElementStatus.Natural => ElementStatus.Natural,

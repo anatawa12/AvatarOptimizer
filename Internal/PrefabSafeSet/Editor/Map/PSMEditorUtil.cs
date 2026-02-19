@@ -54,11 +54,13 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeMap
             public TKey GetRemoveKey(KeyValuePair<TKey, TValue> value) => value.Key;
         }
 
+#pragma warning disable CA1000 // Do not declare static members on generic types
         public static PSMEditorUtil<TKey, TValue> Create(SerializedProperty property,
             Func<SerializedProperty, TKey> getKey, Action<SerializedProperty, TKey> setKey,
             Func<SerializedProperty, TValue> getValue, Action<SerializedProperty, TValue> setValue) => new(
             BaseEditorUtil<KeyValuePair<TKey, TValue>, TKey>.Create(property,
                 new EditorUtilHelper(getKey, setKey, getValue, setValue)));
+#pragma warning restore CA1000
 
         private PSMEditorUtil(BaseEditorUtil<KeyValuePair<TKey, TValue>, TKey> upstream) => _upstream = upstream;
 
@@ -80,7 +82,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeMap
             _upstream.HandleApplyRevertMenuItems(((ElementWrapper)element).Upstream, genericMenu);
         }
 
-        public static ElementStatus MapStatus(PrefabSafeUniqueCollection.ElementStatus status) =>
+        private static ElementStatus MapStatus(PrefabSafeUniqueCollection.ElementStatus status) =>
             status switch
             {
                 PrefabSafeUniqueCollection.ElementStatus.Natural => ElementStatus.Natural,

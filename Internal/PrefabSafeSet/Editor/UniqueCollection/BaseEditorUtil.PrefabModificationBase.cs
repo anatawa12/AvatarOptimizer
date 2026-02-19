@@ -456,7 +456,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                             }
                             break;
                         default:
-                            throw new ArgumentOutOfRangeException();
+                            throw new InvalidOperationException($"Invalid element status: {Status}");
                     }
                 }
 
@@ -491,7 +491,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                         case ElementStatus.Invalid:
                             break;
                         default:
-                            throw new ArgumentOutOfRangeException();
+                            throw new InvalidOperationException($"Invalid element status: {Status}");
                     }
 
                     _container.RootProperty.serializedObject.ApplyModifiedProperties();
@@ -731,7 +731,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
                                 genericMenu.AddDisabledItem(guiContent);
                                 break;
                             default:
-                                throw new ArgumentOutOfRangeException();
+                                throw new InvalidOperationException($"Invalid element status: {elementImpl.Status}");
                         }
                     }
                 }

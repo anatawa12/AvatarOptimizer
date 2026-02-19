@@ -262,7 +262,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeSet
                         fieldModKind = ModificationKind.Remove;
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        throw new InvalidOperationException($"Unknown element status: {element.Status}");
                 }
 
                 var currentModKind = OnePrefabElement(position, newLabel, element, fieldModKind);
