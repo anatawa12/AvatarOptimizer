@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.9.6] - 2026-02-19
 ## [1.9.6-beta.1] - 2026-02-19
 ### Fixed
 - EntryExit to BlendTree optimization breaks 'Copy' Parameter Drivers [`#1674`](https://github.com/anatawa12/AvatarOptimizer/pull/1674)
@@ -2180,7 +2181,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.6-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.6...HEAD
+[1.9.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.6-beta.1...v1.9.6
 [1.9.6-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.5...v1.9.6-beta.1
 [1.9.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.4...v1.9.5
 [1.9.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.3...v1.9.4
