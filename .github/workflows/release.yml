@@ -181,6 +181,11 @@ jobs:
           update_csc_rsp .csc.rsp.nullunsafe
           update_csc_rsp .csc.rsp.nullsafe
 
+      - name: Remove Analyzer settings
+        run: |
+          find . \( -name 'AvatarOptimizer.ruleset' -or -name 'AvatarOptimizer.ruleset.meta' \) -delete
+          rm -rf Analyzers Analyzers.meta 
+
       # region vpm release
       - name: Build VPM release
         run: |
