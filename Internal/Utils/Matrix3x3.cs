@@ -10,8 +10,8 @@ namespace Anatawa12.AvatarOptimizer
     public struct Matrix3x3 : IEquatable<Matrix3x3>
     {
         // ReSharper disable InconsistentNaming
-        public static Matrix3x3 zero = new Matrix3x3(0, 0, 0, 0, 0, 0, 0, 0, 0);
-        public static Matrix3x3 identity = new Matrix3x3(1, 0, 0, 0, 1, 0, 0, 0, 1);
+        public static readonly Matrix3x3 zero = new Matrix3x3(0, 0, 0, 0, 0, 0, 0, 0, 0);
+        public static readonly Matrix3x3 identity = new Matrix3x3(1, 0, 0, 0, 1, 0, 0, 0, 1);
 
         public float determinant =>
             (m00 * m11 * m22) + (m01 * m12 * m20) + (m02 * m10 * m21)
@@ -206,5 +206,7 @@ namespace Anatawa12.AvatarOptimizer
             m02.Equals(other.m02) && m12.Equals(other.m12) && m22.Equals(other.m22);
 
         public override bool Equals(object? obj) => obj is Matrix3x3 other && Equals(other);
+        public static bool operator ==(Matrix3x3 left, Matrix3x3 right) => left.Equals(right);
+        public static bool operator !=(Matrix3x3 left, Matrix3x3 right) => !(left == right);
     }
 }

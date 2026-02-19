@@ -81,7 +81,7 @@ public readonly struct TracingInterpolatedStringHandler
     internal string? GetFormattedText() => _builder?.ToString();
 }
 
-internal class TracingManagerWindow : EditorWindow
+internal sealed class TracingManagerWindow : EditorWindow
 {
     [MenuItem("Tools/Avatar Optimizer/TracingLog Manager")]
     public static void OpenWindow() => GetWindow<TracingManagerWindow>("TracingLog Manager");

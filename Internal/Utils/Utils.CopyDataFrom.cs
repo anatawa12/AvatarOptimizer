@@ -131,7 +131,7 @@ namespace Anatawa12.AvatarOptimizer
                     case SerializedPropertyType.ManagedReference:
                         throw new InvalidOperationException("unsupported type: ManagedReference");
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        throw new InvalidOperationException($"unknown property type: {dst.propertyType}");
                 }
             }
         }

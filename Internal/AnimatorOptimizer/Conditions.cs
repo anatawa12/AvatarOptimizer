@@ -31,7 +31,7 @@ public static class Conditions
                     RangesUtil.BoolSetFromConditions(parameterConds).IsEmpty(),
                 AnimatorControllerParameterType.Trigger =>
                     RangesUtil.BoolSetFromConditions(parameterConds).IsEmpty(),
-                _ => throw new ArgumentOutOfRangeException(),
+                _ => throw new InvalidOperationException($"Unknown parameter type: {parameterType}")
             };
 
             if (isContradiction) return true;

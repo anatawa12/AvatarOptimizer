@@ -39,8 +39,7 @@ namespace Anatawa12.AvatarOptimizer
                             overrides[mappedFrom] = overrides[upperMappedFrom];
 
                 foreach (var (original, mapped) in overridesBuffer)
-                    if (!overrides.ContainsKey(original))
-                        overrides.Add(original, mapped);
+                    overrides.TryAdd(original, mapped);
             }
         }
     }

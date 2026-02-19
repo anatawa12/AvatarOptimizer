@@ -80,8 +80,8 @@ namespace Anatawa12.AvatarOptimizer
                     return original;
                 case ComponentSupport.Clone:
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                case var support:
+                    throw new InvalidOperationException($"Unknown component support: {support}");
             }
 
             var cache = GetCache(original.GetType());

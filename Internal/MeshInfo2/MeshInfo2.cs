@@ -18,9 +18,11 @@ using Random = UnityEngine.Random;
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {
-    public class MeshInfo2 : IDisposable
+    public sealed class MeshInfo2 : IDisposable
     {
+#pragma warning disable CA2211
         public static bool MeshValidationEnabled = true;
+#pragma warning restore CA2211
 
         public readonly Renderer SourceRenderer;
         public Transform? RootBone;
@@ -606,8 +608,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                                 uv4[i] = Vertices[i].GetTexCoord(uvIndex);
                             destMesh.SetUVs(uvIndex, uv4);
                             break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
+                        case var status:
+                            throw new InvalidOperationException($"Unknown texture status for UV {uvIndex}: {status}");
                     }
                     Profiler.EndSample();
                 }
@@ -1076,7 +1078,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     primitiveSize = default;
                     return false;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException($"Unsupported topology: {Topology}");
             }
         }
 
@@ -1103,7 +1105,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         }
     }
 
-    public class Vertex : IDisposable
+    public sealed class Vertex : IDisposable
     {
         public Vector3 Position { get; set; }
         public Vector3 Normal { get; set; }
@@ -1292,7 +1294,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
     ///
     /// This class is generally immutable except for removing blendShapes because adding data would require creating new array.
     /// </summary>
-    public class BlendShapeBuffer : IReferenceCount
+    public sealed class BlendShapeBuffer : IReferenceCount
     {
         public Dictionary<string, BlendShapeShape> Shapes { get; } = new();
         public readonly NativeArray<Vector3>[] DeltaVertices;

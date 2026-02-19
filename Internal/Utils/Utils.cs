@@ -131,7 +131,7 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
-        private class EmptyDictionaryHolder<TKey, TValue>
+        private sealed class EmptyDictionaryHolder<TKey, TValue>
         {
             public static readonly IReadOnlyDictionary<TKey, TValue> Empty =
                 new ReadOnlyDictionary<TKey, TValue>(new Dictionary<TKey, TValue>());

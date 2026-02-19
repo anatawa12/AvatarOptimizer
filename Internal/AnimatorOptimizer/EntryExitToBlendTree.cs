@@ -582,7 +582,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             return true;
         }
 
-        class ConvertibleLayerInfo
+        private sealed class ConvertibleLayerInfo
         {
             public readonly string ParameterName;
             public readonly AnimatorState DefaultState;
@@ -750,7 +750,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 AnimatorConditionMode.IfNot => BoolSet.FromValue(false).ToFloatRangeSet(),
                 AnimatorConditionMode.Greater or AnimatorConditionMode.Less or AnimatorConditionMode.Equals
                     or AnimatorConditionMode.NotEqual => RangesUtil.IntRangeSetFromConditions(new[] { condition }).ToFloatRangeSet(),
-                _ => throw new ArgumentOutOfRangeException()
+                _ => throw new InvalidOperationException($"Unsupported condition mode: {condition.mode}")
             };
             return RangesToFloatConditions(rangeSet, condition.parameter);
         }

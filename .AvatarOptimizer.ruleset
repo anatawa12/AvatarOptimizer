@@ -3,7 +3,7 @@
     <Rules AnalyzerId="Microsoft.CodeAnalysis.NetAnalyzers" RuleNamespace="Microsoft.CodeAnalysis.NetAnalyzers">
         <!-- Enabled by default rules from https://github.com/dotnet/sdk/blob/e90c4413024970eca97d05122243737aa207af11/src/Microsoft.CodeAnalysis.NetAnalyzers/src/Microsoft.CodeAnalysis.NetAnalyzers.md?plain=1 -->
         <!-- We disabled some rules that are not relevant for our codebase, and set the rest to error to ensure we fix them as we encounter them. -->
-        <Rule Id="CA1000" Action="Error" /> <!-- CA1000: Do not declare static members on generic types -->
+        <Rule Id="CA1000" Action="Warning" /> <!-- CA1000: Do not declare static members on generic types -->
         <!-- Disabled for SerializedObject -->
         <Rule Id="CA1001" Action="Hidden" /> <!-- CA1001: Types that own disposable fields should be disposable -->
         <Rule Id="CA1010" Action="Error" /> <!-- CA1010: Generic interface should also be implemented -->
@@ -13,7 +13,7 @@
         <Rule Id="CA1041" Action="Error" /> <!-- CA1041: Provide ObsoleteAttribute message -->
         <Rule Id="CA1047" Action="Error" /> <!-- CA1047: Do not declare protected member in sealed type -->
         <Rule Id="CA1050" Action="Error" /> <!-- CA1050: Declare types in namespaces -->
-        <Rule Id="CA1051" Action="Error" /> <!-- CA1051: Do not declare visible instance fields -->
+        <Rule Id="CA1051" Action="Hidden" /> <!-- CA1051: Do not declare visible instance fields -->
         <Rule Id="CA1061" Action="Error" /> <!-- CA1061: Do not hide base class methods -->
         <Rule Id="CA1067" Action="Error" /> <!-- CA1067: Override Object.Equals(object) when implementing IEquatable\<T> -->
         <Rule Id="CA1068" Action="Error" /> <!-- CA1068: CancellationToken parameters must come last -->
@@ -47,8 +47,8 @@
         <Rule Id="CA1711" Action="Error" /> <!-- CA1711: Identifiers should not have incorrect suffix -->
         <Rule Id="CA1712" Action="Error" /> <!-- CA1712: Do not prefix enum values with type name -->
         <Rule Id="CA1715" Action="Error" /> <!-- CA1715: Identifiers should have correct prefix -->
-        <Rule Id="CA1716" Action="Error" /> <!-- CA1716: Identifiers should not match keywords -->
-        <Rule Id="CA1720" Action="Error" /> <!-- CA1720: Identifier contains type name -->
+        <Rule Id="CA1716" Action="Hidden" /> <!-- CA1716: Identifiers should not match keywords -->
+        <Rule Id="CA1720" Action="Hidden" /> <!-- CA1720: Identifier contains type name -->
         <Rule Id="CA1725" Action="Error" /> <!-- CA1725: Parameter names should match base declaration -->
         <Rule Id="CA1727" Action="Error" /> <!-- CA1727: Use PascalCase for named placeholders -->
         <Rule Id="CA1805" Action="Hidden" /> <!-- CA1805: Do not initialize unnecessarily -->

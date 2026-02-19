@@ -14,6 +14,10 @@ using IntRangeSet = RangeSet<int, RangeIntTrait>;
 using FloatRange = Range<float, RangeFloatTrait>;
 using FloatRangeSet = RangeSet<float, RangeFloatTrait>;
 
+// We generally expect users to use Range and RangeSet via type aliases like IntRange/IntRangeSet/FloatRange/FloatRangeSet,
+// so we put static factory methods on Range itself for better discoverability.
+#pragma warning disable CA1000 // Do not declare static members on generic types
+
 // This file includes 'range' related utilities for animator optimization.
 
 public interface IRangeTrait<TValue> where TValue : struct
@@ -314,6 +318,8 @@ public readonly struct RangeSet<TValue, TTrait> : IRangeSet<RangeSet<TValue, TTr
     }
     public override bool Equals(object? obj) => obj is RangeSet<TValue, TTrait> other && Equals(other);
     public override int GetHashCode() => IsEmpty() ? 0 : _ranges!.Aggregate(0, (hash, range) => HashCode.Combine(hash, range.GetHashCode()));
+    public static bool operator ==(RangeSet<TValue, TTrait> left, RangeSet<TValue, TTrait> right) => left.Equals(right);
+    public static bool operator !=(RangeSet<TValue, TTrait> left, RangeSet<TValue, TTrait> right) => !(left == right);
 }
 
 public struct RangeIntTrait : IRangeTrait<int>
@@ -395,6 +401,9 @@ public readonly struct BoolSet : IRangeSet<BoolSet>
     public bool Equals(BoolSet other) => _bits == other._bits;
     public override bool Equals(object? obj) => obj is BoolSet other && Equals(other);
     public override int GetHashCode() => _bits.GetHashCode();
+
+    public static bool operator ==(BoolSet left, BoolSet right) => left.Equals(right);
+    public static bool operator !=(BoolSet left, BoolSet right) => !(left == right);
 }
 
 #region SetTraits
@@ -573,7 +582,7 @@ public static class RangesUtil
             AnimatorConditionMode.NotEqual => current.ExcludeValue(Mathf.FloorToInt(c.threshold)),
             AnimatorConditionMode.Greater => current.Intersect(IntRange.GreaterThanExclusive(Mathf.FloorToInt(c.threshold))),
             AnimatorConditionMode.Less => current.Intersect(IntRange.LessThanExclusive(Mathf.FloorToInt(c.threshold))),
-            _ => throw new ArgumentOutOfRangeException(),
+            _ => throw new InvalidOperationException($"Unsupported condition mode for int parameter: {c.mode}"),
         });
 
     public static FloatRangeSet FloatRangeSetFromConditions(IEnumerable<AnimatorCondition> conditions) => conditions
@@ -581,7 +590,7 @@ public static class RangesUtil
         {
             AnimatorConditionMode.Greater => current.Intersect(FloatRange.GreaterThanExclusive(c.threshold)),
             AnimatorConditionMode.Less => current.Intersect(FloatRange.LessThanExclusive(c.threshold)),
-            _ => throw new ArgumentOutOfRangeException(),
+            _ => throw new InvalidOperationException($"Unsupported condition mode for float parameter: {c.mode}"),
         });
 
     public static BoolSet BoolSetFromConditions(IEnumerable<AnimatorCondition> conditions) => conditions
@@ -589,7 +598,7 @@ public static class RangesUtil
         {
             AnimatorConditionMode.If => current.Intersect(BoolSet.FromValue(true)),
             AnimatorConditionMode.IfNot => current.Intersect(BoolSet.FromValue(false)),
-            _ => throw new ArgumentOutOfRangeException(),
+            _ => throw new InvalidOperationException($"Unsupported condition mode for bool parameter: {c.mode}"),
         });
 
     // utilities
