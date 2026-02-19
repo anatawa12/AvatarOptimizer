@@ -441,6 +441,9 @@ msgstr "Merge Bone on PhysBone for Merge PhysBone with Limit Rotation mode Fix d
 msgid "MergePhysBone:warning:limit-rotation-fix-animation:description"
 msgstr "This is not supported with Limit Rotation mode Fix for now."
 
+msgid "MergePhysBone:error:physbone-outside-of-avatar-root"
+msgstr "VRCPhysBone components whose Root Transform is outside of the avatar are not supported as source of Merge PhysBone."
+
 # endregion
 
 #region EditSkinnedMeshComponents
@@ -1305,3 +1308,14 @@ msgstr ""
 "Copying bug report to clipboard may copy large amount of data (several MBs depending on your avatar complexity).\n"
 "Saving will compress the data to a much smaller size, so saving to a file is recommended.\n"
 "Are you sure you want to proceed?"
+
+msgid "BugReportHelper:select-avatar"
+msgstr "Please select an Avatar Root to generate bug report."
+
+msgid "BugReportHelper:not-avatar-root"
+msgstr "The selected GameObject is not an Avatar Root.\n"
+"The 'Avatar Root' is the GameObject at the top of the avatar hierarchy."
+
+msgid "BugReportHelper:avatar-inactive"
+msgstr "The avatar GameObject must be active in the hierarchy to generate bug report.\n"
+"Please ensure the avatar and all its parent GameObjects are enabled."

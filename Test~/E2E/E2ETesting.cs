@@ -466,6 +466,70 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             Assert.That(pb2 != null, "PB2 should not be merged");
         }
 
+#if AAO_VRCSDK3_AVATARS
+        [Test]
+        public void PR1675_AutoMergePB_Targeting_External_Bone()
+        {
+            var outOfAvatar = new GameObject("OutOfAvatarRoot");
+            var outAvatarPbTarget1 = Utils.NewGameObject("OutAvatarPBTarget1", outOfAvatar.transform);
+            var outAvatarPbTarget2 = Utils.NewGameObject("OutAvatarPBTarget2", outOfAvatar.transform);
+            var outAvatarPbTarget3 = Utils.NewGameObject("OutAvatarPBTarget3", outOfAvatar.transform);
+
+            var avatar = TestUtils.NewAvatar();
+            var pb1 = Utils.NewGameObject("PB1", avatar.transform);
+            var pbComponent1 = pb1.AddComponent<VRCPhysBone>();
+            pbComponent1.rootTransform = outAvatarPbTarget1.transform;
+            pbComponent1.endpointPosition = Vector3.up;
+            pbComponent1.allowGrabbing = VRCPhysBoneBase.AdvancedBool.False;
+            var pb2 = Utils.NewGameObject("PB2", avatar.transform);
+            var pbComponent2 = pb2.AddComponent<VRCPhysBone>();
+            pbComponent2.endpointPosition = Vector3.up;
+            pbComponent2.rootTransform = outAvatarPbTarget2.transform;
+            pbComponent2.allowGrabbing = VRCPhysBoneBase.AdvancedBool.False;
+            TestUtils.SetFxLayer(avatar, new AnimatorControllerBuilder("").Build());
+            avatar.AddComponent<TraceAndOptimize>();
+
+            LogTestUtility.Test(_ =>
+            {
+                AvatarProcessor.ProcessAvatar(avatar);
+            });
+        }
+        
+        [Test]
+        public void PR1675_ManualMergePB_Targeting_External_Bone()
+        {
+            var outOfAvatar = new GameObject("OutOfAvatarRoot");
+            var outAvatarPbTarget1 = Utils.NewGameObject("OutAvatarPBTarget1", outOfAvatar.transform);
+            var outAvatarPbTarget2 = Utils.NewGameObject("OutAvatarPBTarget2", outOfAvatar.transform);
+            var outAvatarPbTarget3 = Utils.NewGameObject("OutAvatarPBTarget3", outOfAvatar.transform);
+
+            var avatar = TestUtils.NewAvatar();
+            var pb1 = Utils.NewGameObject("PB1", avatar.transform);
+            var pbComponent1 = pb1.AddComponent<VRCPhysBone>();
+            pbComponent1.rootTransform = outAvatarPbTarget1.transform;
+            pbComponent1.endpointPosition = Vector3.up;
+            pbComponent1.allowGrabbing = VRCPhysBoneBase.AdvancedBool.False;
+            var pb2 = Utils.NewGameObject("PB2", avatar.transform);
+            var pbComponent2 = pb2.AddComponent<VRCPhysBone>();
+            pbComponent2.endpointPosition = Vector3.up;
+            pbComponent2.rootTransform = outAvatarPbTarget2.transform;
+            pbComponent2.allowGrabbing = VRCPhysBoneBase.AdvancedBool.False;
+
+            var mergePB = Utils.NewGameObject("MergePB", avatar.transform);
+            var mergePBComponent = mergePB.AddComponent<MergePhysBone>();
+            mergePBComponent.componentsSet.AddRange(new[] { pbComponent1, pbComponent2 });
+
+            TestUtils.SetFxLayer(avatar, new AnimatorControllerBuilder("").Build());
+            avatar.AddComponent<TraceAndOptimize>();
+
+            LogTestUtility.Test(c =>
+            {
+                AvatarProcessor.ProcessAvatar(avatar);
+                c.ExpectError(ErrorSeverity.Error, "MergePhysBone:error:physbone-outside-of-avatar-root");
+            });
+        }
+#endif
+
         #endregion
     }
 }

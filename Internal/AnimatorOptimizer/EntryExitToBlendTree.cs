@@ -884,22 +884,22 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             var originalParameters = driver.parameters;
             if (originalParameters == null || originalParameters.Count == 0) return;
             
-            var newParameters = new List<VRC_AvatarParameterDriver.Parameter>();
+            var newParametersToDrive = new List<VRC_AvatarParameterDriver.Parameter>();
 
-            foreach (var param in originalParameters)
+            foreach (var driveParam in originalParameters)
             {
-                if (string.IsNullOrEmpty(param.name))
+                if (string.IsNullOrEmpty(driveParam.name))
                 {
                     // Keep parameters with no name as-is
-                    newParameters.Add(param);
+                    newParametersToDrive.Add(driveParam);
                     continue;
                 }
                 
-                if (parameterTypeChanges.TryGetValue(param.name, out var oldType))
+                if (parameterTypeChanges.TryGetValue(driveParam.name, out var oldType))
                 {
                     // This parameter was changed from bool/int to float
                     // Create an intermediate parameter with the original type
-                    var tmpName = $"__AAO_tmp_{param.name}_{System.Threading.Interlocked.Increment(ref _tempParameterCounter)}";
+                    var tmpName = $"__AAO_tmp_{driveParam.name}_{System.Threading.Interlocked.Increment(ref _tempParameterCounter)}";
 
                     // Add the temporary parameter
                     parametersToAdd.Add(new AnimatorControllerParameter
@@ -911,40 +911,51 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         defaultBool = false
                     });
 
-                    // Create a new parameter that sets the temporary parameter
-                    var tmpParam = new VRC_AvatarParameterDriver.Parameter
+                    // We convert the original parameter driver to three steps:
+                    // - Copy current float value to temporary parameter, if the driver is dependent on the parameter value
+                    // - Apply the parameter driver logic to the temporary parameter with original type
+                    // - Copy the temporary parameter value back to the original parameter as float
+
+                    if (driveParam.type is not (VRC_AvatarParameterDriver.ChangeType.Random 
+                        or VRC_AvatarParameterDriver.ChangeType.Set
+                        or VRC_AvatarParameterDriver.ChangeType.Copy))
+                    {
+                        newParametersToDrive.Add(new VRC_AvatarParameterDriver.Parameter
+                        {
+                            name = tmpName,
+                            source = driveParam.name,
+                            type = VRC_AvatarParameterDriver.ChangeType.Copy
+                        });
+                    }
+
+                    newParametersToDrive.Add(new VRC_AvatarParameterDriver.Parameter
                     {
                         name = tmpName,
-                        type = param.type,
-                        value = param.value,
-                        valueMin = param.valueMin,
-                        valueMax = param.valueMax,
-                        chance = param.chance,
-                        convertRange = param.convertRange,
-                        destMin = param.destMin,
-                        destMax = param.destMax,
-                        source = param.source
-                    };
-
-                    // Create a copy parameter that copies the temp to the final float parameter
-                    var copyParam = new VRC_AvatarParameterDriver.Parameter
+                        type = driveParam.type,
+                        value = driveParam.value,
+                        valueMin = driveParam.valueMin,
+                        valueMax = driveParam.valueMax,
+                        chance = driveParam.chance,
+                        convertRange = driveParam.convertRange,
+                        destMin = driveParam.destMin,
+                        destMax = driveParam.destMax,
+                        source = driveParam.source
+                    });
+                    newParametersToDrive.Add(new VRC_AvatarParameterDriver.Parameter
                     {
-                        name = param.name,
+                        name = driveParam.name,
                         type = VRC_AvatarParameterDriver.ChangeType.Copy,
                         source = tmpName
-                    };
-
-                    newParameters.Add(tmpParam);
-                    newParameters.Add(copyParam);
+                    });
                 }
                 else
                 {
                     // Parameter wasn't changed, keep as-is
-                    newParameters.Add(param);
+                    newParametersToDrive.Add(driveParam);
                 }
             }
 
-            driver.parameters = newParameters;
+            driver.parameters = newParametersToDrive;
         }
 #endif
     }
