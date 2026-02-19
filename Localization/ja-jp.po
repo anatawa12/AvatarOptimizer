@@ -1239,10 +1239,12 @@ msgstr ""
 "それでも続行しますか？"
 
 msgid "BugReportHelper:select-avatar"
-msgstr "バグ報告を生成するには、アバターのGameObjectを選択してください。"
+msgstr "レポートファイルを生成するには、アバターのルートを選択してください。"
 
 msgid "BugReportHelper:not-avatar-root"
-msgstr "選択されたGameObjectはアバターのルートではありません。バグ報告を生成するには、アバターのルートGameObjectを選択してください。"
+msgstr "選択されたGameObjectはアバターのルートではありません。\n"
+"'アバターのルート'は、アバターの最も上の階層にあるGameObjectです。"
 
 msgid "BugReportHelper:avatar-inactive"
-msgstr "バグ報告を生成するには、アバターのGameObjectがヒエラルキー内で有効である必要があります。アバターおよびその親GameObjectがすべて有効になっていることを確認してください。"  
+msgstr "レポートファイルを生成するには、アバターがヒエラルキー内で有効になっている必要があります。\n"
+"アバターのルート、およびその親GameObjectがすべて有効になっていることを確認してください。"
