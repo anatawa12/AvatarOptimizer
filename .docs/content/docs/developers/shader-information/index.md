@@ -4,12 +4,12 @@ title: Shader Information API
 
 # Shader Information API
 
-Since Avatar Optimizer v1.8.0, Avatar Optimizer provides the Shader Information API to help optimize materials that use custom shaders.\
+Since Avatar Optimizer v1.8.0, Avatar Optimizer provides the Shader Information API to help optimize materials that use your custom shaders.\
 By registering shader information, you can enable Avatar Optimizer to perform advanced optimizations like texture atlasing and UV packing.
 
 ## What is Shader Information? {#what-is-shader-information}
 
-Shader Information is a way to tell Avatar Optimizer how a shader uses textures, UV channels, and other material properties.
+Shader Information is a way to tell Avatar Optimizer how your shader uses textures, UV channels, and other material properties.
 
 Current Avatar Optimizer optimizes avatars with this information in the following way, but more optimizations might be added later.[^optimization-note]\
 Please note that not all optimizations are performed automatically with Trace and Optimize.
@@ -27,7 +27,7 @@ Without Shader Information, Avatar Optimizer treats a shader conservatively and 
 
 The Shader Information API consists of three main classes:
 
-- `ShaderInformation`: Base class you extend to provide information about the shader.\
+- `ShaderInformation`: Base class you extend to provide information about your shader.\
   Override `GetMaterialInformation` method to register texture and UV usage for materials using the shader.
 - `ShaderInformationRegistry`: Static class used to [register](#registration-methods) your `ShaderInformation` implementation with Avatar Optimizer during editor initialization.
 - `MaterialInformationCallback`: Passed to `GetMaterialInformation`, provides methods to read material properties and register texture and UV usage information.
@@ -40,11 +40,11 @@ You should pass `null` for parameters when their values cannot be determined sta
 
 ## Getting Started {#getting-started}
 
-To provide Shader Information for a shader, follow these steps:
+To provide Shader Information for your shader, follow these steps:
 
 ### 1. Create an Assembly Definition {#create-asmdef}
 
-If the shader package doesn't have an Editor Assembly Definition[^asmdef], create one.\
+If your shader package doesn't have an Editor Assembly Definition[^asmdef], create one.\
 The assembly should be Editor-only since Shader Information is only used at build time and Shader Information API is only available for Editor build.
 
 ### 2. Add Assembly Reference {#add-reference}
@@ -106,7 +106,7 @@ Currently, the following kinds are available for registration:
 
 - `TextureAndUVUsage`: Indicates you provide information about which textures the shader uses, which UV channels each texture samples from, UV transform matrices, and sampler states.\
   See [Registering Texture Usage](#registering-textures).
-- `VertexIndexUsage`: Indicates the shader uses vertex indices. If you don't provide this flag, Avatar Optimizer assumes vertex indices are not used and may shuffle vertices during optimization.\
+- `VertexIndexUsage`: Indicates your shader uses vertex indices. If you don't provide this flag, Avatar Optimizer assumes vertex indices are not used and may shuffle vertices during optimization.\
   See [Registering Vertex Index Usage](#register-vertex-index).
 
 This is a flags enum, so you can combine multiple values with the `|` operator.
@@ -118,7 +118,7 @@ public override ShaderInformationKind SupportedInformationKind =>
 
 ## Registering Material Information {#registering-information}
 
-The `GetMaterialInformation` method is called for each material using the shader.\
+The `GetMaterialInformation` method is called for each material using your shader.\
 Use the `MaterialInformationCallback` to register texture and UV usage.
 
 See the API documentation comments for more details on each method.
@@ -182,7 +182,7 @@ matInfo.RegisterTextureUVUsage(
 );
 ```
 
-If the shader uses inline samplers (e.g., `SamplerState linearClampSampler`), use predefined constants like `SamplerStateInformation.LinearRepeatSampler`.
+If your shader uses inline samplers (e.g., `SamplerState linearClampSampler`), use predefined constants like `SamplerStateInformation.LinearRepeatSampler`.
 
 If the sampler cannot be determined, use `SamplerStateInformation.Unknown`.
 
@@ -234,7 +234,7 @@ If the UV transform is animated or calculated dynamically, use `null`.
 When the shader registers vertex index usage, Avatar Optimizer will try to preserve vertex indices from the original mesh.\
 This currently disables automatic Merge Skinned Mesh feature in Trace and Optimize, but more features may be affected later.
 
-Since this method is to preserve vertex indices, when the shader uses vertex indices just for generating random sequences, you don't have to register them.\
+Since this method is to preserve vertex indices, when your shader uses vertex indices just for generating random sequences, you don't have to register them.\
 So, in this case, you should not call `RegisterVertexIndexUsage` method.
 
 ```csharp
@@ -253,7 +253,7 @@ public override void GetMaterialInformation(MaterialInformationCallback matInfo)
 
 ## Registering Shader Information {#registration-methods}
 
-You have to register your `ShaderInformation` implementation to link to the shader.\
+You have to register your `ShaderInformation` implementation to link to your shader.\
 There are two ways to register Shader Information.
 
 ### Register by GUID (Recommended) {#register-by-guid}
@@ -285,7 +285,7 @@ ShaderInformationRegistry.RegisterShaderInformation(
 
 ### Use InitializeOnLoad {#use-initializeonload}
 
-Register the Shader Information in a static constructor with `[InitializeOnLoad]` attribute to register before 'Apply on Play' builds.
+Register your Shader Information in a static constructor with `[InitializeOnLoad]` attribute to register before 'Apply on Play' builds.
 
 ```csharp
 [InitializeOnLoad]
@@ -309,7 +309,7 @@ internal class YourShaderInformation : ShaderInformation
 ### Handle Unknown Values {#handle-unknown-values}
 
 Material properties might be animated or unknown.\
-Handle `null` values. Even when the shader itself does not support animating a property, Avatar Optimizer may pass it as `null` since Avatar Optimizer may process multiple materials at once.
+Handle `null` values. Even when your shader itself does not support animating a property, Avatar Optimizer may pass it as `null` since Avatar Optimizer may process multiple materials at once.
 
 ```csharp
 // Use pattern matching
@@ -358,7 +358,7 @@ This conservative approach assumes features are enabled if unknown.
 
 ### Use `internal class` for Shader Information Classes {#use-internal-class}
 
-To avoid exposing the Shader Information classes in your assembly's public API, we recommend declaring them as `internal class`.\
+To avoid exposing your Shader Information classes in your assembly's public API, we recommend declaring them as `internal class`.\
 This helps keep your codebase clean and prevents accidental misuse of internal details.
 
 If your editor script doesn't have public API, you may set your Assembly Definition Auto Reference to false to avoid exposing classes to `Assembly-CSharp`.
