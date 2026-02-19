@@ -16,13 +16,16 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- EntryExit to BlendTree optimization breaks 'Copy' Parameter Drivers `#1674`
-- Error when there is PhysBone targeting non-avatar bones `#1675`
-- Bad behavior when PhysBones targeting non-avatar bones are specified in MergePhysBone `#1675`
-  - We added error for such case instead of modifying non-avatar bones.
-- Some animations with Chinese characters are broken in some Japanese environments `#1679`
 
 ### Security
+
+## [1.9.6-beta.1] - 2026-02-19
+### Fixed
+- EntryExit to BlendTree optimization breaks 'Copy' Parameter Drivers [`#1674`](https://github.com/anatawa12/AvatarOptimizer/pull/1674)
+- Error when there is PhysBone targeting non-avatar bones [`#1675`](https://github.com/anatawa12/AvatarOptimizer/pull/1675)
+- Bad behavior when PhysBones targeting non-avatar bones are specified in MergePhysBone [`#1675`](https://github.com/anatawa12/AvatarOptimizer/pull/1675)
+  - We added error for such case instead of modifying non-avatar bones.
+- Some animations with Chinese characters are broken in some Japanese environments [`#1679`](https://github.com/anatawa12/AvatarOptimizer/pull/1679)
 
 ## [1.9.5] - 2026-02-17
 ### Fixed
@@ -2177,7 +2180,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.5...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.6-beta.1...HEAD
+[1.9.6-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.5...v1.9.6-beta.1
 [1.9.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.4...v1.9.5
 [1.9.4]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.3...v1.9.4
 [1.9.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.2...v1.9.3
