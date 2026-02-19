@@ -1310,10 +1310,12 @@ msgstr ""
 "Are you sure you want to proceed?"
 
 msgid "BugReportHelper:select-avatar"
-msgstr "Please select an avatar GameObject to generate bug report."
+msgstr "Please select an Avatar Root to generate bug report."
 
 msgid "BugReportHelper:not-avatar-root"
-msgstr "The selected GameObject is not an avatar root. Please select the root GameObject of your avatar to generate bug report."
+msgstr "The selected GameObject is not an Avatar Root.\n"
+"The 'Avatar Root' is the GameObject at the top of the avatar hierarchy."
 
 msgid "BugReportHelper:avatar-inactive"
-msgstr "The avatar GameObject must be active in the hierarchy to generate bug report. Please ensure the avatar and all its parent GameObjects are enabled."
+msgstr "The avatar GameObject must be active in the hierarchy to generate bug report.\n"
+"Please ensure the avatar and all its parent GameObjects are enabled."
