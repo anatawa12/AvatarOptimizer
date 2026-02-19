@@ -1,7 +1,9 @@
 {
     "name": "com.anatawa12.avatar-optimizer.internal.prefab-safe-set",
     "rootNamespace": "Anatawa12.AvatarOptimizer.PrefabSafeSet",
-    "references": [],
+    "references": [
+        "com.anatawa12.avatar-optimizer.development.analyzers"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

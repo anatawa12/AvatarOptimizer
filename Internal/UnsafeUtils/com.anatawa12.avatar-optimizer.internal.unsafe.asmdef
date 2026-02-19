@@ -1,7 +1,9 @@
 {
     "name": "com.anatawa12.avatar-optimizer.internal.unsafe",
     "rootNamespace": "Anatawa12.AvatarOptimizer",
-    "references": [],
+    "references": [
+        "com.anatawa12.avatar-optimizer.development.analyzers"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": true,

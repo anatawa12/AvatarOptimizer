@@ -2,6 +2,7 @@
     "name": "com.anatawa12.avatar-optimizer.internal.trace-and-optimize-base",
     "rootNamespace": "Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes",
     "references": [
+        "com.anatawa12.avatar-optimizer.development.analyzers",
         "com.anatawa12.avatar-optimizer.runtime",
         "com.anatawa12.avatar-optimizer.internal.localization.editor",
         "com.anatawa12.avatar-optimizer.internal.utils",

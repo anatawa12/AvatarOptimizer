@@ -2,6 +2,7 @@
     "name": "com.anatawa12.avatar-optimizer.internal.meshinfo2",
     "rootNamespace": "Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes",
     "references": [
+        "com.anatawa12.avatar-optimizer.development.analyzers",
         "com.anatawa12.avatar-optimizer.runtime",
         "Unity.Burst",
         "nadena.dev.ndmf",
