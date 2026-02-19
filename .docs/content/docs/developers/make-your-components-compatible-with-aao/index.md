@@ -100,7 +100,7 @@ you can simply use [Asset Description] to register your components as safe-to-re
 If you want to keep your component after Avatar Optimizer processes,
 you can register your components to Avatar Optimizer to tell about your components.
 
-First, to call APIs of Avatar Optimizer, please make an assembly definition file[^asmdef] if your tool doesn't have.
+First, to call APIs of Avatar Optimizer, please make an Assembly Definition file[^asmdef] if your tool doesn't have.
 
 Next, add `com.anatawa12.avatar-optimizer.api.editor` to assembly references in asmdef file.\
 If your tool doesn't want to depend on Avatar Optimizer, please use [Version Defines].
@@ -144,7 +144,7 @@ Please refer [Asset Description] for more details.
 [ndmf-BeforePlugin]: https://ndmf.nadena.dev/api/nadena.dev.ndmf.fluent.Sequence.html#nadena_dev_ndmf_fluent_Sequence_BeforePlugin_System_String_System_String_System_Int32_
 [register-component]: #register-component
 
-[^asmdef]: The file defines assembly other than Assembly-CSharp. Please refer [unity docs](https://docs.unity3d.com/2019.4/Documentation/Manual/ScriptCompilationAssemblyDefinitionFiles.html).
+[^asmdef]: The file defines assembly other than Assembly-CSharp. Please refer [unity docs](https://docs.unity3d.com/2022.3/Documentation/Manual/ScriptCompilationAssemblyDefinitionFiles.html).
 [^NDMF]: [NDMF], Non-Destructive Modular Framework, is a framework for running non-destructive build plugins when
 building avatars by bdunderscore. Avatar Optimizer uses that framework for compatibility
 with many non-destructive tools based on NDMF.
