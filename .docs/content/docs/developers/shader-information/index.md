@@ -234,8 +234,7 @@ If the UV transform is animated or calculated dynamically, use `null`.
 When the shader registers vertex index usage, Avatar Optimizer will try to preserve vertex indices from the original mesh.\
 This currently disables automatic Merge Skinned Mesh feature in Trace and Optimize, but more features may be affected later.
 
-Since this method is to preserve vertex indices, when your shader uses vertex indices just for generating random sequences, you don't have to register them.\
-So, in this case, you should not call `RegisterVertexIndexUsage` method.
+Since this `RegisterVertexIndexUsage` method is to preserve vertex indices, when your shader uses vertex indices just for generating random sequences, you should not register them.
 
 ```csharp
 public override void GetMaterialInformation(MaterialInformationCallback matInfo)
