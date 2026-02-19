@@ -75,7 +75,7 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
 
             foreach (var groups in Utils.Partition(list.Select(pb => (pb.GetAffectedTransforms().Count(), pb)), 128))
             {
-                if (groups.Count() == 1) continue; // no need to merge if only one physbone in the group
+                if (groups.Count == 1) continue; // no need to merge if only one physbone in the group
                 var mergePBGameObject = new GameObject($"$$$$$AutoMergedPhysBone_{index++}$$$$");
                 mergePBGameObject.transform.SetParent(parent.transform, worldPositionStays: false);
                 var mergePB = mergePBGameObject.AddComponent<MergePhysBone>();

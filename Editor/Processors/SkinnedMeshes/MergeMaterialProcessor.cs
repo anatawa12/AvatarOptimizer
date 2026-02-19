@@ -277,7 +277,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                             usage.UVChannel != UVChannel.NonMeshRelated && usage.UVMatrix != Matrix2x3.Identity)
                         .Select(x => x.MaterialPropertyName)
                         .ToList();
-                    if (badProperties.Any())
+                    if (badProperties.Count != 0)
                     {
                         validationErrors.Add(new UnsupportedUVTransformInReferenceMaterial(badProperties, referenceMaterial));
                         return null;
@@ -314,7 +314,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                             .Select(x => x.MaterialPropertyName)
                             .ToList();
 
-                        if (badProperties.Any())
+                        if (badProperties.Count != 0)
                         {
                             validationErrors.Add(new UnknownUVTransform(badProperties, referenceMaterial));
                             continue;
@@ -345,7 +345,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     var referenceUsages = referenceInformation.DefaultResult!.TextureUsageInformationList!;
                     var nonUsedProperties =
                         allProperties.Except(referenceUsages.Select(x => x.MaterialPropertyName)).ToList();
-                    if (nonUsedProperties.Any())
+                    if (nonUsedProperties.Count != 0)
                     {
                         // TODO: consider just ignore unused textures?
                         validationErrors.Add(new NotAllTexturesUsed(nonUsedProperties, referenceMaterial));

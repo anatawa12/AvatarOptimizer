@@ -134,7 +134,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                                 AnimatorControllerParameterType.Int => condition.IsValidForInt(),
                                 AnimatorControllerParameterType.Bool => condition.IsValidForBool(),
                                 AnimatorControllerParameterType.Trigger => condition.IsValidForTrigger(),
-                                _ => throw new ArgumentOutOfRangeException()
+                                _ => throw new InvalidOperationException($"Unsupported parameter type: {paramType}")
                             };
 
                             if (!isValid)

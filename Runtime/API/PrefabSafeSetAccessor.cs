@@ -6,7 +6,9 @@ using JetBrains.Annotations;
 namespace Anatawa12.AvatarOptimizer.API
 {
     [PublicAPI]
+#pragma warning disable CA1710
     public readonly struct PrefabSafeSetAccessor<T> : ICollection<T> where T : notnull
+#pragma warning restore CA1710
     {
         private readonly PrefabSafeSet<T> _set;
 

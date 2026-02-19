@@ -7,6 +7,7 @@ namespace Anatawa12.AvatarOptimizer
     {
     }
 
+    [AttributeUsage(AttributeTargets.Class)]
     internal class AllowMultipleComponent : Attribute
     {
     }

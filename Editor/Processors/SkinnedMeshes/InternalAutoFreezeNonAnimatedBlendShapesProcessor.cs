@@ -55,7 +55,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     case ApplyState.Never:
                         return true;
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        throw new InvalidOperationException($"Unknown ApplyState: {prop.ApplyState}");
                 }
             }
 

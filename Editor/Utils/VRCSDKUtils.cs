@@ -45,7 +45,7 @@ namespace Anatawa12.AvatarOptimizer
                 var transform = queue.Dequeue();
 
                 var children = transform.DirectChildrenEnumerable().Where(t => !ignores.Contains(t));
-                if (children.Count() == 0 && transform != rootBone)
+                if (!children.Any() && transform != rootBone)
                     yield return transform;
 
                 foreach (var child in children)

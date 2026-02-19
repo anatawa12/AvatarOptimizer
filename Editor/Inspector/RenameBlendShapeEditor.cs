@@ -54,7 +54,7 @@ internal class RenameBlendShapeEditor : AvatarTagComponentEditorBase
 
         Action? deferredAction = null;
         var hasEmptyError = false;
-        var hasDuplicatedWarning = duplicatedNames.Any();
+        var hasDuplicatedWarning = duplicatedNames.Count != 0;
 
         foreach (var element in _nameMap.Elements)
         {

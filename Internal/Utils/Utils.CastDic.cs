@@ -15,7 +15,7 @@ namespace Anatawa12.AvatarOptimizer
                 => new CastedDictionary<TKey, TValue, TValueCasted>(self);
         }
 
-        class CastedDictionary<TKey, TValue, TValueCasted> : IReadOnlyDictionary<TKey, TValueCasted>
+        private sealed class CastedDictionary<TKey, TValue, TValueCasted> : IReadOnlyDictionary<TKey, TValueCasted>
             where TValue : class, TValueCasted
         {
             private readonly IReadOnlyDictionary<TKey, TValue> _base;

@@ -136,7 +136,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         {
             // expected to pass list or array
             // ReSharper disable once PossibleMultipleEnumeration
-            Utils.Assert(children.Any());
+            Utils.Assert(children.Count != 0);
             // ReSharper disable once PossibleMultipleEnumeration
             _children = children;
             LayerApplyState = applyState;

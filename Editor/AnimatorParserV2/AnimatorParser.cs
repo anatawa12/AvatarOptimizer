@@ -659,7 +659,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 case AnimatorWeightChange.NonZeroOneChange:
                     return AnimatorWeightState.NonZeroOne;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(external), external, $"Invalid AnimatorWeightChange value: {external}");
             }
         }
 

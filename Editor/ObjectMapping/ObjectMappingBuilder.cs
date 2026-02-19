@@ -67,7 +67,7 @@ namespace Anatawa12.AvatarOptimizer
                             FirstPersonFlag.Both => VrmFirstPersonFlag.Both,
                             FirstPersonFlag.ThirdPersonOnly => VrmFirstPersonFlag.ThirdPersonOnly,
                             FirstPersonFlag.FirstPersonOnly => VrmFirstPersonFlag.FirstPersonOnly,
-                            _ => throw new ArgumentOutOfRangeException()
+                            _ => throw new InvalidOperationException($"Unknown FirstPersonFlag: {renderer.FirstPersonFlag}"),
                         };
                     }
                 }
@@ -88,7 +88,7 @@ namespace Anatawa12.AvatarOptimizer
                             FirstPersonType.both => VrmFirstPersonFlag.Both,
                             FirstPersonType.thirdPersonOnly => VrmFirstPersonFlag.ThirdPersonOnly,
                             FirstPersonType.firstPersonOnly => VrmFirstPersonFlag.FirstPersonOnly,
-                            _ => throw new ArgumentOutOfRangeException()
+                            _ => throw new InvalidOperationException($"Unknown FirstPersonType: {renderer.FirstPersonFlag}"),
                         };
                     }
                 }
@@ -306,8 +306,7 @@ namespace Anatawa12.AvatarOptimizer
                 {
                     var newProp = new AnimationPropertyInfo(this, name);
                     if (!remove) _afterPropertyIds.Add(name, newProp);
-                    if (!_beforePropertyIds.ContainsKey(name))
-                        _beforePropertyIds.Add(name, newProp);
+                    _beforePropertyIds.TryAdd(name, newProp);
                     return newProp;
                 }
             }

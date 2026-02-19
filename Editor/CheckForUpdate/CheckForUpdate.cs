@@ -31,7 +31,7 @@ namespace Anatawa12.AvatarOptimizer.CheckForUpdate
             private set => SessionState.SetString("com.anatawa12.avatar-optimizer.current", value);
         }
 
-        public static bool IsBeta => CurrentVersionName.Contains("-");
+        public static bool IsBeta => CurrentVersionName.Contains('-');
 
         static async void DoCheckForUpdate()
         {

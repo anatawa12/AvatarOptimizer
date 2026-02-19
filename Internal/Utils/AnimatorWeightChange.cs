@@ -36,7 +36,7 @@ namespace Anatawa12.AvatarOptimizer
             if (b == AnimatorWeightChange.AlwaysOne && a == AnimatorWeightChange.AlwaysZero)
                 return AnimatorWeightChange.NonZeroOneChange;
 
-            throw new ArgumentOutOfRangeException();
+            throw new ArgumentOutOfRangeException(nameof(a), $"Unexpected combination of {a} and {b}");
         }
     }
 

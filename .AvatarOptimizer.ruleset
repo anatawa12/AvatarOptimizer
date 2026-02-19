@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="New Rule Set" Description=" " ToolsVersion="10.0">
+    <Rules AnalyzerId="Microsoft.CodeAnalysis.NetAnalyzers" RuleNamespace="Microsoft.CodeAnalysis.NetAnalyzers">
+        <!-- Enabled by default rules from https://github.com/dotnet/sdk/blob/e90c4413024970eca97d05122243737aa207af11/src/Microsoft.CodeAnalysis.NetAnalyzers/src/Microsoft.CodeAnalysis.NetAnalyzers.md?plain=1 -->
+        <!-- We disabled some rules that are not relevant for our codebase, and set the rest to error to ensure we fix them as we encounter them. -->
+        <Rule Id="CA1000" Action="Warning" /> <!-- CA1000: Do not declare static members on generic types -->
+        <!-- Disabled for SerializedObject -->
+        <Rule Id="CA1001" Action="Hidden" /> <!-- CA1001: Types that own disposable fields should be disposable -->
+        <Rule Id="CA1010" Action="Warning" /> <!-- CA1010: Generic interface should also be implemented -->
+        <Rule Id="CA1016" Action="Hidden" /> <!-- CA1016: Mark assemblies with assembly version -->
+        <Rule Id="CA1018" Action="Warning" /> <!-- CA1018: Mark attributes with AttributeUsageAttribute -->
+        <Rule Id="CA1036" Action="Warning" /> <!-- CA1036: Override methods on comparable types -->
+        <Rule Id="CA1041" Action="Warning" /> <!-- CA1041: Provide ObsoleteAttribute message -->
+        <Rule Id="CA1047" Action="Warning" /> <!-- CA1047: Do not declare protected member in sealed type -->
+        <Rule Id="CA1050" Action="Warning" /> <!-- CA1050: Declare types in namespaces -->
+        <Rule Id="CA1051" Action="Hidden" /> <!-- CA1051: Do not declare visible instance fields -->
+        <Rule Id="CA1061" Action="Warning" /> <!-- CA1061: Do not hide base class methods -->
+        <Rule Id="CA1067" Action="Warning" /> <!-- CA1067: Override Object.Equals(object) when implementing IEquatable\<T> -->
+        <Rule Id="CA1068" Action="Warning" /> <!-- CA1068: CancellationToken parameters must come last -->
+        <Rule Id="CA1069" Action="Warning" /> <!-- CA1069: Enums values should not be duplicated -->
+        <Rule Id="CA1070" Action="Warning" /> <!-- CA1070: Do not declare event fields as virtual -->
+        <Rule Id="CA1200" Action="Warning" /> <!-- CA1200: Avoid using cref tags with a prefix -->
+        <Rule Id="CA1304" Action="Warning" /> <!-- CA1304: Specify CultureInfo -->
+        <Rule Id="CA1305" Action="Hidden" /> <!-- CA1305: Specify IFormatProvider -->
+        <Rule Id="CA1309" Action="Warning" /> <!-- CA1309: Use ordinal string comparison -->
+        <Rule Id="CA1310" Action="Warning" /> <!-- CA1310: Specify StringComparison for correctness -->
+        <Rule Id="CA1311" Action="Warning" /> <!-- CA1311: Specify a culture or use an invariant version -->
+        <Rule Id="CA1401" Action="Warning" /> <!-- CA1401: P/Invokes should not be visible -->
+        <Rule Id="CA1416" Action="Warning" /> <!-- CA1416: Validate platform compatibility -->
+        <Rule Id="CA1417" Action="Warning" /> <!-- CA1417: Do not use 'OutAttribute' on string parameters for P/Invokes -->
+        <Rule Id="CA1418" Action="Warning" /> <!-- CA1418: Use valid platform string -->
+        <Rule Id="CA1419" Action="Warning" /> <!-- CA1419: Provide a parameterless constructor that is as visible as the containing type for concrete types derived from 'System.Runtime.InteropServices.SafeHandle' -->
+        <Rule Id="CA1420" Action="Warning" /> <!-- CA1420: Property, type, or attribute requires runtime marshalling -->
+        <Rule Id="CA1421" Action="Warning" /> <!-- CA1421: This method uses runtime marshalling even when the 'DisableRuntimeMarshallingAttribute' is applied -->
+        <Rule Id="CA1422" Action="Warning" /> <!-- CA1422: Validate platform compatibility -->
+        <Rule Id="CA1507" Action="Warning" /> <!-- CA1507: Use nameof to express symbol names -->
+        <Rule Id="CA1510" Action="Warning" /> <!-- CA1510: Use ArgumentNullException throw helper -->
+        <Rule Id="CA1511" Action="Warning" /> <!-- CA1511: Use ArgumentException throw helper -->
+        <Rule Id="CA1512" Action="Warning" /> <!-- CA1512: Use ArgumentOutOfRangeException throw helper -->
+        <Rule Id="CA1513" Action="Warning" /> <!-- CA1513: Use ObjectDisposedException throw helper -->
+        <Rule Id="CA1514" Action="Warning" /> <!-- CA1514: Avoid redundant length argument -->
+        <Rule Id="CA1516" Action="Warning" /> <!-- CA1516: Use cross-platform intrinsics -->
+        <Rule Id="CA1517" Action="Warning" /> <!-- CA1517: Use 'ReadOnlySpan\<T>' or 'ReadOnlyMemory\<T>' instead of 'Span\<T>' or 'Memory\<T>' -->
+        <Rule Id="CA1707" Action="Warning" /> <!-- CA1707: Identifiers should not contain underscores -->
+        <Rule Id="CA1708" Action="Hidden" /> <!-- CA1708: Identifiers should differ by more than case -->
+        <Rule Id="CA1710" Action="Warning" /> <!-- CA1710: Identifiers should have correct suffix -->
+        <Rule Id="CA1711" Action="Warning" /> <!-- CA1711: Identifiers should not have incorrect suffix -->
+        <Rule Id="CA1712" Action="Warning" /> <!-- CA1712: Do not prefix enum values with type name -->
+        <Rule Id="CA1715" Action="Warning" /> <!-- CA1715: Identifiers should have correct prefix -->
+        <Rule Id="CA1716" Action="Hidden" /> <!-- CA1716: Identifiers should not match keywords -->
+        <Rule Id="CA1720" Action="Hidden" /> <!-- CA1720: Identifier contains type name -->
+        <Rule Id="CA1725" Action="Warning" /> <!-- CA1725: Parameter names should match base declaration -->
+        <Rule Id="CA1727" Action="Warning" /> <!-- CA1727: Use PascalCase for named placeholders -->
+        <Rule Id="CA1805" Action="Hidden" /> <!-- CA1805: Do not initialize unnecessarily -->
+        <Rule Id="CA1806" Action="Warning" /> <!-- CA1806: Do not ignore method results -->
+        <Rule Id="CA1816" Action="Warning" /> <!-- CA1816: Dispose methods should call SuppressFinalize -->
+        <Rule Id="CA1821" Action="Warning" /> <!-- CA1821: Remove empty Finalizers -->
+        <Rule Id="CA1822" Action="Hidden" /> <!-- CA1822: Mark members as static -->
+        <Rule Id="CA1824" Action="Warning" /> <!-- CA1824: Mark assemblies with NeutralResourcesLanguageAttribute -->
+        <Rule Id="CA1825" Action="Warning" /> <!-- CA1825: Avoid zero-length array allocations -->
+        <Rule Id="CA1826" Action="Warning" /> <!-- CA1826: Do not use Enumerable methods on indexable collections -->
+        <Rule Id="CA1827" Action="Warning" /> <!-- CA1827: Do not use Count() or LongCount() when Any() can be used -->
+        <Rule Id="CA1828" Action="Warning" /> <!-- CA1828: Do not use CountAsync() or LongCountAsync() when AnyAsync() can be used -->
+        <Rule Id="CA1829" Action="Warning" /> <!-- CA1829: Use Length/Count property instead of Count() when available -->
+        <Rule Id="CA1830" Action="Warning" /> <!-- CA1830: Prefer strongly-typed Append and Insert method overloads on StringBuilder -->
+        <Rule Id="CA1831" Action="Warning" /> <!-- CA1831: Use AsSpan or AsMemory instead of Range-based indexers when appropriate -->
+        <Rule Id="CA1832" Action="Warning" /> <!-- CA1832: Use AsSpan or AsMemory instead of Range-based indexers when appropriate -->
+        <Rule Id="CA1833" Action="Warning" /> <!-- CA1833: Use AsSpan or AsMemory instead of Range-based indexers when appropriate -->
+        <Rule Id="CA1834" Action="Warning" /> <!-- CA1834: Consider using 'StringBuilder.Append(char)' when applicable -->
+        <Rule Id="CA1835" Action="Warning" /> <!-- CA1835: Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync' -->
+        <Rule Id="CA1836" Action="Warning" /> <!-- CA1836: Prefer IsEmpty over Count -->
+        <Rule Id="CA1837" Action="Warning" /> <!-- CA1837: Use 'Environment.ProcessId' -->
+        <Rule Id="CA1838" Action="Warning" /> <!-- CA1838: Avoid 'StringBuilder' parameters for P/Invokes -->
+        <Rule Id="CA1839" Action="Warning" /> <!-- CA1839: Use 'Environment.ProcessPath' -->
+        <Rule Id="CA1840" Action="Warning" /> <!-- CA1840: Use 'Environment.CurrentManagedThreadId' -->
+        <Rule Id="CA1841" Action="Warning" /> <!-- CA1841: Prefer Dictionary.Contains methods -->
+        <Rule Id="CA1842" Action="Warning" /> <!-- CA1842: Do not use 'WhenAll' with a single task -->
+        <Rule Id="CA1843" Action="Warning" /> <!-- CA1843: Do not use 'WaitAll' with a single task -->
+        <Rule Id="CA1844" Action="Warning" /> <!-- CA1844: Provide memory-based overrides of async methods when subclassing 'Stream' -->
+        <Rule Id="CA1845" Action="Warning" /> <!-- CA1845: Use span-based 'string.Concat' -->
+        <Rule Id="CA1846" Action="Warning" /> <!-- CA1846: Prefer 'AsSpan' over 'Substring' -->
+        <Rule Id="CA1847" Action="Warning" /> <!-- CA1847: Use char literal for a single character lookup -->
+        <Rule Id="CA1848" Action="Warning" /> <!-- CA1848: Use the LoggerMessage delegates -->
+        <Rule Id="CA1850" Action="Warning" /> <!-- CA1850: Prefer static 'HashData' method over 'ComputeHash' -->
+        <Rule Id="CA1852" Action="Warning" /> <!-- CA1852: Seal internal types -->
+        <Rule Id="CA1853" Action="Warning" /> <!-- CA1853: Unnecessary call to 'Dictionary.ContainsKey(key)' -->
+        <Rule Id="CA1854" Action="Warning" /> <!-- CA1854: Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method -->
+        <Rule Id="CA1855" Action="Warning" /> <!-- CA1855: Prefer 'Clear' over 'Fill' -->
+        <Rule Id="CA1856" Action="Warning" /> <!-- CA1856: Incorrect usage of ConstantExpected attribute -->
+        <Rule Id="CA1857" Action="Warning" /> <!-- CA1857: A constant is expected for the parameter -->
+        <Rule Id="CA1858" Action="Warning" /> <!-- CA1858: Use 'StartsWith' instead of 'IndexOf' -->
+        <Rule Id="CA1859" Action="Hidden" /> <!-- CA1859: Use concrete types when possible for improved performance -->
+        <Rule Id="CA1860" Action="Warning" /> <!-- CA1860: Avoid using 'Enumerable.Any()' extension method -->
+        <Rule Id="CA1861" Action="Hidden" /> <!-- CA1861: Avoid constant arrays as arguments -->
+        <Rule Id="CA1862" Action="Warning" /> <!-- CA1862: Use the 'StringComparison' method overloads to perform case-insensitive string comparisons -->
+        <Rule Id="CA1863" Action="Warning" /> <!-- CA1863: Use 'CompositeFormat' -->
+        <Rule Id="CA1864" Action="Warning" /> <!-- CA1864: Prefer the 'IDictionary.TryAdd(TKey, TValue)' method -->
+        <Rule Id="CA1865" Action="Warning" /> <!-- CA1865: Use char overload -->
+        <Rule Id="CA1866" Action="Warning" /> <!-- CA1866: Use char overload -->
+        <Rule Id="CA1868" Action="Warning" /> <!-- CA1868: Unnecessary call to 'Contains(item)' -->
+        <Rule Id="CA1869" Action="Warning" /> <!-- CA1869: Cache and reuse 'JsonSerializerOptions' instances -->
+        <Rule Id="CA1870" Action="Warning" /> <!-- CA1870: Use a cached 'SearchValues' instance -->
+        <Rule Id="CA1871" Action="Warning" /> <!-- CA1871: Do not pass a nullable struct to 'ArgumentNullException.ThrowIfNull' -->
+        <Rule Id="CA1872" Action="Warning" /> <!-- CA1872: Prefer 'Convert.ToHexString' and 'Convert.ToHexStringLower' over call chains based on 'BitConverter.ToString' -->
+        <Rule Id="CA1873" Action="Warning" /> <!-- CA1873: Avoid potentially expensive logging -->
+        <Rule Id="CA1874" Action="Warning" /> <!-- CA1874: Use 'Regex.IsMatch' -->
+        <Rule Id="CA1875" Action="Warning" /> <!-- CA1875: Use 'Regex.Count' -->
+        <Rule Id="CA1876" Action="Warning" /> <!-- CA1876: Do not use 'AsParallel' in 'foreach' -->
+        <Rule Id="CA1877" Action="Warning" /> <!-- CA1877: Collapse consecutive Path.Combine or Path.Join operations -->
+        <Rule Id="CA2009" Action="Warning" /> <!-- CA2009: Do not call ToImmutableCollection on an ImmutableCollection value -->
+        <Rule Id="CA2011" Action="Warning" /> <!-- CA2011: Avoid infinite recursion -->
+        <Rule Id="CA2012" Action="Warning" /> <!-- CA2012: Use ValueTasks correctly -->
+        <Rule Id="CA2013" Action="Warning" /> <!-- CA2013: Do not use ReferenceEquals with value types -->
+        <Rule Id="CA2014" Action="Warning" /> <!-- CA2014: Do not use stackalloc in loops -->
+        <Rule Id="CA2015" Action="Warning" /> <!-- CA2015: Do not define finalizers for types derived from MemoryManager\<T> -->
+        <Rule Id="CA2016" Action="Warning" /> <!-- CA2016: Forward the 'CancellationToken' parameter to methods -->
+        <Rule Id="CA2017" Action="Warning" /> <!-- CA2017: Parameter count mismatch -->
+        <Rule Id="CA2018" Action="Warning" /> <!-- CA2018: 'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument -->
+        <Rule Id="CA2019" Action="Warning" /> <!-- CA2019: Improper 'ThreadStatic' field initialization -->
+        <Rule Id="CA2020" Action="Warning" /> <!-- CA2020: Prevent behavioral change -->
+        <Rule Id="CA2021" Action="Warning" /> <!-- CA2021: Do not call Enumerable.Cast\<T> or Enumerable.OfType\<T> with incompatible types -->
+        <Rule Id="CA2022" Action="Warning" /> <!-- CA2022: Avoid inexact read with 'Stream.Read' -->
+        <Rule Id="CA2023" Action="Warning" /> <!-- CA2023: Invalid braces in message template -->
+        <Rule Id="CA2024" Action="Warning" /> <!-- CA2024: Do not use 'StreamReader.EndOfStream' in async methods -->
+        <Rule Id="CA2026" Action="Warning" /> <!-- CA2026: Prefer JsonElement.Parse over JsonDocument.Parse().RootElement -->
+        <Rule Id="CA2027" Action="Warning" /> <!-- CA2027: Cancel Task.Delay after Task.WhenAny completes -->
+        <Rule Id="CA2101" Action="Warning" /> <!-- CA2101: Specify marshaling for P/Invoke string arguments -->
+        <Rule Id="CA2200" Action="Warning" /> <!-- CA2200: Rethrow to preserve stack details -->
+        <Rule Id="CA2201" Action="Hidden" /> <!-- CA2201: Do not raise reserved exception types -->
+        <Rule Id="CA2208" Action="Warning" /> <!-- CA2208: Instantiate argument exceptions correctly -->
+        <Rule Id="CA2211" Action="Warning" /> <!-- CA2211: Non-constant fields should not be visible -->
+        <Rule Id="CA2215" Action="Warning" /> <!-- CA2215: Dispose methods should call base class dispose -->
+        <Rule Id="CA2218" Action="Warning" /> <!-- CA2218: Override GetHashCode on overriding Equals -->
+        <Rule Id="CA2219" Action="Warning" /> <!-- CA2219: Do not raise exceptions in finally clauses -->
+        <Rule Id="CA2224" Action="Warning" /> <!-- CA2224: Override Equals on overloading operator equals -->
+        <Rule Id="CA2231" Action="Warning" /> <!-- CA2231: Overload operator equals on overriding value type Equals -->
+        <Rule Id="CA2241" Action="Warning" /> <!-- CA2241: Provide correct arguments to formatting methods -->
+        <Rule Id="CA2242" Action="Warning" /> <!-- CA2242: Test for NaN correctly -->
+        <Rule Id="CA2244" Action="Warning" /> <!-- CA2244: Do not duplicate indexed element initializations -->
+        <Rule Id="CA2245" Action="Warning" /> <!-- CA2245: Do not assign a property to itself -->
+        <Rule Id="CA2246" Action="Warning" /> <!-- CA2246: Assigning symbol and its member in the same statement -->
+        <Rule Id="CA2247" Action="Warning" /> <!-- CA2247: Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum -->
+        <Rule Id="CA2248" Action="Warning" /> <!-- CA2248: Provide correct 'enum' argument to 'Enum.HasFlag' -->
+        <Rule Id="CA2249" Action="Warning" /> <!-- CA2249: Consider using 'string.Contains' instead of 'string.IndexOf' -->
+        <Rule Id="CA2250" Action="Warning" /> <!-- CA2250: Use 'ThrowIfCancellationRequested' -->
+        <Rule Id="CA2251" Action="Warning" /> <!-- CA2251: Use 'string.Equals' -->
+        <Rule Id="CA2252" Action="Warning" /> <!-- CA2252: This API requires opting into preview features -->
+        <Rule Id="CA2253" Action="Warning" /> <!-- CA2253: Named placeholders should not be numeric values -->
+        <Rule Id="CA2254" Action="Warning" /> <!-- CA2254: Template should be a static expression -->
+        <Rule Id="CA2255" Action="Warning" /> <!-- CA2255: The 'ModuleInitializer' attribute should not be used in libraries -->
+        <Rule Id="CA2256" Action="Warning" /> <!-- CA2256: All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface -->
+        <Rule Id="CA2257" Action="Warning" /> <!-- CA2257: Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'static' -->
+        <Rule Id="CA2258" Action="Warning" /> <!-- CA2258: Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported -->
+        <Rule Id="CA2259" Action="Warning" /> <!-- CA2259: 'ThreadStatic' only affects static fields -->
+        <Rule Id="CA2260" Action="Warning" /> <!-- CA2260: Use correct type parameter -->
+        <Rule Id="CA2261" Action="Warning" /> <!-- CA2261: Do not use ConfigureAwaitOptions.SuppressThrowing with Task\<TResult> -->
+        <Rule Id="CA2262" Action="Warning" /> <!-- CA2262: Set 'MaxResponseHeadersLength' properly -->
+        <Rule Id="CA2263" Action="Warning" /> <!-- CA2263: Prefer generic overload when type is known -->
+        <Rule Id="CA2264" Action="Warning" /> <!-- CA2264: Do not pass a non-nullable value to 'ArgumentNullException.ThrowIfNull' -->
+        <Rule Id="CA2265" Action="Warning" /> <!-- CA2265: Do not compare Span\<T> to 'null' or 'default' -->
+        <Rule Id="CA3061" Action="Warning" /> <!-- CA3061: Do Not Add Schema By URL -->
+        <Rule Id="CA3075" Action="Warning" /> <!-- CA3075: Insecure DTD processing in XML -->
+        <Rule Id="CA3076" Action="Warning" /> <!-- CA3076: Insecure XSLT script processing -->
+        <Rule Id="CA3077" Action="Warning" /> <!-- CA3077: Insecure Processing in API Design, XmlDocument and XmlTextReader -->
+        <Rule Id="CA3147" Action="Warning" /> <!-- CA3147: Mark Verb Handlers With Validate Antiforgery Token -->
+        <Rule Id="CA5350" Action="Warning" /> <!-- CA5350: Do Not Use Weak Cryptographic Algorithms -->
+        <Rule Id="CA5351" Action="Warning" /> <!-- CA5351: Do Not Use Broken Cryptographic Algorithms -->
+        <Rule Id="CA5359" Action="Warning" /> <!-- CA5359: Do Not Disable Certificate Validation -->
+        <Rule Id="CA5360" Action="Warning" /> <!-- CA5360: Do Not Call Dangerous Methods In Deserialization -->
+        <Rule Id="CA5363" Action="Warning" /> <!-- CA5363: Do Not Disable Request Validation -->
+        <Rule Id="CA5364" Action="Warning" /> <!-- CA5364: Do Not Use Deprecated Security Protocols -->
+        <Rule Id="CA5365" Action="Warning" /> <!-- CA5365: Do Not Disable HTTP Header Checking -->
+        <Rule Id="CA5366" Action="Warning" /> <!-- CA5366: Use XmlReader for 'DataSet.ReadXml()' -->
+        <Rule Id="CA5368" Action="Warning" /> <!-- CA5368: Set ViewStateUserKey For Classes Derived From Page -->
+        <Rule Id="CA5369" Action="Warning" /> <!-- CA5369: Use XmlReader for 'XmlSerializer.Deserialize()' -->
+        <Rule Id="CA5370" Action="Warning" /> <!-- CA5370: Use XmlReader for XmlValidatingReader constructor -->
+        <Rule Id="CA5371" Action="Warning" /> <!-- CA5371: Use XmlReader for 'XmlSchema.Read()' -->
+        <Rule Id="CA5372" Action="Warning" /> <!-- CA5372: Use XmlReader for XPathDocument constructor -->
+        <Rule Id="CA5373" Action="Warning" /> <!-- CA5373: Do not use obsolete key derivation function -->
+        <Rule Id="CA5374" Action="Warning" /> <!-- CA5374: Do Not Use XslTransform -->
+        <Rule Id="CA5379" Action="Warning" /> <!-- CA5379: Ensure Key Derivation Function algorithm is sufficiently strong -->
+        <Rule Id="CA5384" Action="Warning" /> <!-- CA5384: Do Not Use Digital Signature Algorithm (DSA) -->
+        <Rule Id="CA5385" Action="Warning" /> <!-- CA5385: Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size -->
+        <Rule Id="CA5397" Action="Warning" /> <!-- CA5397: Do not use deprecated SslProtocols values -->
+    </Rules>
+</RuleSet>

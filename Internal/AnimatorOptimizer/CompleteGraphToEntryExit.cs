@@ -156,7 +156,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             return true;
         }
 
-        private class AnimatorConditionComparator : IEqualityComparer<AnimatorCondition>
+        private sealed class AnimatorConditionComparator : IEqualityComparer<AnimatorCondition>
         {
             public static readonly AnimatorConditionComparator Instance = new();
             public bool Equals(AnimatorCondition x, AnimatorCondition y) => x.mode == y.mode && x.parameter == y.parameter && Equals(x.threshold, y.threshold);
@@ -263,7 +263,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                             AnimatorControllerParameterType.Int => OptimizeConditions<IntRangeSet, IntSetTrait>(thisConditions),
                             AnimatorControllerParameterType.Bool => OptimizeConditions<BoolSet, BoolSetTrait>(thisConditions),
                             AnimatorControllerParameterType.Trigger => OptimizeConditions<BoolSet, BoolSetTrait>(thisConditions),
-                            _ => throw new ArgumentOutOfRangeException()
+                            _ => throw new InvalidOperationException($"Unknown parameter type: {parameterType}")
                         }).Select(x => x.Concat(otherConditions).ToArray()));
                     }
                 }
@@ -301,7 +301,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
         public class AnimatorConditionEqualityComparer : IEqualityComparer<AnimatorCondition>
         {
-            public static AnimatorConditionEqualityComparer Instance = new();
+            public static readonly AnimatorConditionEqualityComparer Instance = new();
             public bool Equals(AnimatorCondition x, AnimatorCondition y) => x.mode == y.mode && x.parameter == y.parameter && Equals(x.threshold, y.threshold);
             public int GetHashCode(AnimatorCondition obj) => HashCode.Combine(obj.mode, obj.parameter, obj.threshold);
         }

@@ -8,6 +8,9 @@ using UnityEngine;
 using UnityEngine.Animations;
 using Object = UnityEngine.Object;
 
+// We allow Collection even if it's not IEnumerable
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
+
 namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 {
     // PSUC: PrefabSafeUniqueCollection

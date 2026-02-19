@@ -181,6 +181,11 @@ jobs:
           update_csc_rsp .csc.rsp.nullunsafe
           update_csc_rsp .csc.rsp.nullsafe
 
+      - name: Remove Analyzer settings
+        run: |
+          find . \( -name 'AvatarOptimizer.ruleset' -or -name 'AvatarOptimizer.ruleset.meta' \) -delete
+          rm -rf Analyzers Analyzers.meta 
+
       # region vpm release
       - name: Build VPM release
         run: |
@@ -191,9 +196,6 @@ jobs:
           name: vpm-package
           path: build/${{ env.PKG_NAME }}-${{ env.VERSION }}.zip
       # endregion vpm release
-
-      - name: Restore csc.rsp
-        run: git restore --staged --worktree .csc.rsp.nullunsafe .csc.rsp.nullsafe
 
       # region docs
       # remember update update-website.yml
@@ -221,8 +223,6 @@ jobs:
           name: website
           path: .docs/public
 
-      - name: Restore .docs/config.toml
-        run: git restore --staged --worktree .docs/config.toml
       # endregion docs
       # endregion building
 
@@ -247,8 +247,8 @@ jobs:
             build/website.zip \
             "package.json" \
 
-      - name: Restore package.json
-        run: git restore --staged --worktree package.json
+      - name: Restore All changes
+        run: git restore --staged --worktree .
 
       - name: prepare next release & push
         if: inputs.publish && !fromJSON(env.PRERELEASE)

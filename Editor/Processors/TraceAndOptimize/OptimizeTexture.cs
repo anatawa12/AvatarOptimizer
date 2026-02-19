@@ -704,7 +704,7 @@ internal struct OptimizeTextureImpl {
                         // no problem
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        throw new InvalidOperationException($"Unknown wrap mode: {wrapMode}");
                 }
             }
 

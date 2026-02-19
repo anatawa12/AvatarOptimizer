@@ -79,7 +79,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         private static bool TrySubProp(string prop, string subProp, out string? sub)
         {
             sub = null;
-            if (!prop.StartsWith(subProp + '.')) return false;
+            if (!prop.StartsWith(subProp + '.', StringComparison.Ordinal)) return false;
             sub = prop.Substring(subProp.Length + 1);
             return true;
         }
@@ -87,13 +87,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         private static bool TryArrayIndex(string prop, string arrayPropertyName, out int index)
         {
             index = -1; 
-            if (!prop.StartsWith(arrayPropertyName)) return false;
+            if (!prop.StartsWith(arrayPropertyName, StringComparison.Ordinal)) return false;
             prop = prop.Substring(arrayPropertyName.Length);
-            if (!prop.StartsWith(".Array.data[")) return false;
+            if (!prop.StartsWith(".Array.data[", StringComparison.Ordinal)) return false;
             prop = prop.Substring(".Array.data[".Length);
             var close = prop.IndexOf(']');
             if (close == -1) return false;
-            if (!int.TryParse(prop.Substring(0, close), out index)) return false;
+            if (!int.TryParse(prop.AsSpan(0, close), out index)) return false;
             return true;
         }
     }

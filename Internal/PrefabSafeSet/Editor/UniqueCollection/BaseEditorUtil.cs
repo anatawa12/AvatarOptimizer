@@ -45,8 +45,10 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
         public virtual int Count => Elements.Count(x => x.Contains);
         public virtual IEnumerable<TAdditionValue> Values => Elements.Where(x => x.Contains).Select(x => x.Value!);
 
+#pragma warning disable CA1000
         public static BaseEditorUtil<TAdditionValue, TRemoveKey> Create(SerializedProperty property, IEditorUtilHelper<TAdditionValue, TRemoveKey> helper) 
             => new Wrapper(property, helper);
+#pragma warning restore CA1000
 
         static BaseEditorUtil<TAdditionValue, TRemoveKey> CreateImpl(SerializedProperty property, int nestCount,
             IEditorUtilHelper<TAdditionValue, TRemoveKey> helper)
