@@ -36,7 +36,7 @@ namespace Anatawa12.AvatarOptimizer
                     Debug.LogWarning($"The Component {component} is initialized after using the API. This will cause unexpected behavior!", component);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException($"Invalid state of APIChecker: {_isAPIUsed}");
             }
         }
 
@@ -52,7 +52,7 @@ namespace Anatawa12.AvatarOptimizer
                 case State.UsedBeforeInitialization:
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException($"Invalid state of APIChecker: {_isAPIUsed}");
             }
 
             return value;
@@ -78,7 +78,7 @@ namespace Anatawa12.AvatarOptimizer
                         throw new InvalidOperationException($"This API (see stacktrace) of {component} is initialized with unsupported version. Initialize with supported version.");
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException($"Invalid state of APIChecker: {_isAPIUsed}");
             }
 
             return value();

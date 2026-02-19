@@ -42,7 +42,7 @@
         <Rule Id="CA1516" Action="Warning" /> <!-- CA1516: Use cross-platform intrinsics -->
         <Rule Id="CA1517" Action="Warning" /> <!-- CA1517: Use 'ReadOnlySpan\<T>' or 'ReadOnlyMemory\<T>' instead of 'Span\<T>' or 'Memory\<T>' -->
         <Rule Id="CA1707" Action="Warning" /> <!-- CA1707: Identifiers should not contain underscores -->
-        <Rule Id="CA1708" Action="Warning" /> <!-- CA1708: Identifiers should differ by more than case -->
+        <Rule Id="CA1708" Action="Hidden" /> <!-- CA1708: Identifiers should differ by more than case -->
         <Rule Id="CA1710" Action="Warning" /> <!-- CA1710: Identifiers should have correct suffix -->
         <Rule Id="CA1711" Action="Warning" /> <!-- CA1711: Identifiers should not have incorrect suffix -->
         <Rule Id="CA1712" Action="Warning" /> <!-- CA1712: Do not prefix enum values with type name -->
