@@ -844,7 +844,7 @@ msgid "TraceAndOptimize:prop:removeUnusedObjects"
 msgstr "使われていないObjectを自動的に削除する"
 
 msgid "TraceAndOptimize:prop:optimizePhysBone"
-msgstr "PhysBoneの設定を最適化する"
+msgstr "PhysBoneを最適化する"
 
 msgid "TraceAndOptimize:prop:optimizeAnimator"
 msgstr "アニメーターを最適化する"
