@@ -528,6 +528,39 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
                 c.ExpectError(ErrorSeverity.Error, "MergePhysBone:error:physbone-outside-of-avatar-root");
             });
         }
+
+        // similar to 1645 but disabled with IsActive of parent GameObject, which is more common case and was not fixed by 1645 fix.
+        [Test]
+        public void Issue1682_AutoMergePB_Activates_PB_Disabled_With_GameObject_IsActivate()
+        {
+            
+            var avatar = TestUtils.NewAvatar();
+            var pb1 = Utils.NewGameObject("PB1", avatar.transform);
+            var pbTarget1 = Utils.NewGameObject("PBTarget", pb1.transform);
+            var pbComponent1 = pb1.AddComponent<VRCPhysBone>();
+            pbComponent1.endpointPosition = Vector3.up;
+            pbComponent1.allowGrabbing = VRCPhysBoneBase.AdvancedBool.False;
+            pb1.SetActive(false);
+            pbTarget1.AddComponent<MeshRenderer>();
+            pbTarget1.AddComponent<MeshFilter>().sharedMesh = TestUtils.NewCubeMesh();
+            var pb2 = Utils.NewGameObject("PB2", avatar.transform);
+            var pbTarget2 = Utils.NewGameObject("PBTarget2", pb2.transform);
+            var pbComponent2 = pb2.AddComponent<VRCPhysBone>();
+            pbComponent2.endpointPosition = Vector3.up;
+            pbComponent2.allowGrabbing = VRCPhysBoneBase.AdvancedBool.False;
+            pb2.SetActive(false);
+            pbTarget2.AddComponent<MeshRenderer>();
+            pbTarget2.AddComponent<MeshFilter>().sharedMesh = TestUtils.NewCubeMesh();
+            TestUtils.SetFxLayer(avatar, new AnimatorControllerBuilder("").Build());
+            avatar.AddComponent<TraceAndOptimize>();
+
+            LogTestUtility.Test(_ =>
+            {
+                AvatarProcessor.ProcessAvatar(avatar);
+            });
+
+            Assert.That(avatar.GetComponentsInChildren<VRCPhysBone>(), Is.Empty, "No PhysBone should remain after processing");
+        }
 #endif
 
         #endregion
