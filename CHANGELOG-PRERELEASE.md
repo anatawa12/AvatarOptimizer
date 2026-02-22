@@ -16,12 +16,15 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- AutoMergePB enables PhysBones if disabled with IsActive of GameObjects `#1683`
-- MergePhysBone may change force-relative value when curve is used `#1685`
-  - In extreme case, the value from t=0 is used in original phys bone but the value from t=1 is used in merged phys bone.
-  - This also affects Automatic MergePhysBone since it uses MergePhysBone internally.
 
 ### Security
+
+## [1.9.7] - 2026-02-22
+### Fixed
+- AutoMergePB enables PhysBones if disabled with IsActive of GameObjects [`#1683`](https://github.com/anatawa12/AvatarOptimizer/pull/1683)
+- MergePhysBone may change force-relative value when curve is used [`#1685`](https://github.com/anatawa12/AvatarOptimizer/pull/1685)
+  - In extreme case, the value from t=0 is used in original phys bone but the value from t=1 is used in merged phys bone.
+  - This also affects Automatic MergePhysBone since it uses MergePhysBone internally.
 
 ## [1.9.6] - 2026-02-19
 ## [1.9.6-beta.1] - 2026-02-19
@@ -2185,7 +2188,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.6...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.7...HEAD
+[1.9.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.6...v1.9.7
 [1.9.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.6-beta.1...v1.9.6
 [1.9.6-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.5...v1.9.6-beta.1
 [1.9.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.4...v1.9.5
