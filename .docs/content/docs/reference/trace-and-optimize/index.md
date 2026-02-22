@@ -28,7 +28,7 @@ Currently the following optimizations are applied automatically.
   <small>Previously known as `Freeze BlendShapes` but renamed to add more functionality.</small>\
   By scanning animation etc., remove, freeze, or merge BlendShapes automatically to reduce the number of BlendShapes.
 - `Remove unused Objects`\
-  By scanning animation etc., automatically removes unused Objects (e.g. GameObjects, Components).\
+  By scanning animation etc., automatically removes unused Objects (e.g. GameObjects, Components, Textures).\
   In addition, this will automatically toggle PhysBone Components if they are only used by toggled objects.
   - `Preserve EndBone`\
     Prevents removing end bones[^endbone] whose parent is not removed.
@@ -36,6 +36,8 @@ Currently the following optimizations are applied automatically.
   Optimizes PhysBone settings for better performance. This performs the following optimizations.
   - Merges PhysBone Colliders with the exactly same settings into one PhysBone Collider.
   - Unchecks `Is Animated` if it's not necessary.
+  - Merges PhysBones into one PhysBone if they can be merged without behavioral change, e.g. if they are not grabbable.
+  - If the behavior can be expressed with Endpoint Position without end bone, removes end bone and replace it with Endpoint Position.
 - `Optimize Animator`\
   Optimizes Animator Controller. See [this section](#animator-optimizer) for more details.
 - `Merge Skinned Meshes`\
@@ -43,7 +45,7 @@ Currently the following optimizations are applied automatically.
   Some meshes may not be automatically merged in some cases, so use [Merge Skinned Mesh](../merge-skinned-mesh) manually if necessary.
   - `Allow Shuffling Material Slots`\
     By shuffling material slots, you may reduce draw calls of the avatar.
-    The order of material slots usually doesn't matter, but it may affect the drawing order in rare cases.
+    The order of material slots usually doesn't matter as far as we know.
 - `Optimize Texture`\
   Optimizes textures without affecting the appearance.\
   Currently, UV Packing and reducing texture size is performed only for materials with supported shaders.
