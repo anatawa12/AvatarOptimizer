@@ -441,7 +441,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
         sealed class MergePhysBoneMerger : MergePhysBoneEditorModificationUtils
         {
             private SerializedObject _mergedPhysBone;
-            private int _maxChainLength;
+            private int _maxChainLength; // = maxBoneChainIndex + (endpointPosition != Vector3.zero ? 1 : 0))
 
             public MergePhysBoneMerger(SerializedObject serializedObject, SerializedObject mergedPhysBone) : base(serializedObject)
             {
@@ -527,7 +527,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 else
                 {
                     _mergedPhysBone.FindProperty(prop.PhysBoneCurveName).animationCurveValue =
-                        FixCurve(prop.GetCurveProperty(@override).animationCurveValue);
+                        prop == Radius 
+                            ? FixTransformCurve(prop.GetCurveProperty(@override).animationCurveValue)
+                            : FixBoneCurve(prop.GetCurveProperty(@override).animationCurveValue);
                 }
             }
 
@@ -540,11 +542,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         _mergedPhysBone.FindProperty(prop.PhysBoneValueName).vector3Value =
                             prop.SourceValue!.vector3Value;
                         _mergedPhysBone.FindProperty(prop.PhysBoneCurveXName).animationCurveValue =
-                            FixCurve(prop.SourceCurveX!.animationCurveValue);
+                            FixBoneCurve(prop.SourceCurveX!.animationCurveValue);
                         _mergedPhysBone.FindProperty(prop.PhysBoneCurveYName).animationCurveValue =
-                            FixCurve(prop.SourceCurveY!.animationCurveValue);
+                            FixBoneCurve(prop.SourceCurveY!.animationCurveValue);
                         _mergedPhysBone.FindProperty(prop.PhysBoneCurveZName).animationCurveValue =
-                            FixCurve(prop.SourceCurveZ!.animationCurveValue);
+                            FixBoneCurve(prop.SourceCurveZ!.animationCurveValue);
                         break;
                     case MergePhysBone.LimitRotationConfigStruct.Override.Override:
                         _mergedPhysBone.FindProperty(prop.PhysBoneValueName).vector3Value =
@@ -583,11 +585,28 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 // merged later
             }
             
-            private AnimationCurve FixCurve(AnimationCurve curve)
+            // Fixes a transform curve (curves ratio calculated with CalcTransformRatio) that is used for calculating radius
+            private AnimationCurve FixTransformCurve(AnimationCurve curve) => FixCurve(curve, _maxChainLength);
+
+            // Fixes a bone curve (curves ratio calculated with CalcBoneRatio) that is used for calculating limit and force
+            private AnimationCurve FixBoneCurve(AnimationCurve curve) => FixCurve(curve, _maxChainLength - 1);
+
+            private AnimationCurve FixCurve(AnimationCurve curve, int chainLength)
             {
-                //return curve;
-                var offset = 1f / (_maxChainLength + 1);
-                var tangentRatio = (_maxChainLength + 1f) / _maxChainLength;
+                if (curve == null || curve.length == 0)
+                    return new AnimationCurve();
+                if (chainLength <= 0)
+                {
+                    // If original chain length is less than or equals to 0, CalcBoneRatio always returns 1,
+                    // and the first frame of curve is used for whole chain.
+                    // We just calculate ratio for weight 0 and set it to whole curve.
+                    // This case is incorrect for transform chain, but transform chain with length 0
+                    // means no affected transform, so it won't cause any problem.
+                    var value = curve.Evaluate(0);
+                    return AnimationCurve.Constant(0, 1, value);
+                }
+                var offset = 1f / (chainLength + 1f);
+                var tangentRatio = (chainLength + 1f) / chainLength;
                 var keys = curve.keys;
                 foreach (ref var curveKey in keys.AsSpan())
                 {
@@ -595,8 +614,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     curveKey.inTangent *= tangentRatio;
                     curveKey.outTangent *= tangentRatio;
                 }
-                curve.keys = keys;
-                return curve;
+                return new AnimationCurve(keys);
             }
         }
     }
