@@ -100,7 +100,7 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
 
     readonly struct PbInfo : IEquatable<PbInfo>
     {
-        public readonly bool Enabled;
+        public readonly bool IsActiveAndEnabled;
 
         public readonly VRCPhysBoneBase.Version Version;
 
@@ -170,7 +170,7 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
 
         public PbInfo(VRCPhysBone physBone, GameObject? toggleRoot)
         {
-            Enabled = physBone.enabled;
+            IsActiveAndEnabled = physBone.isActiveAndEnabled;
             Version = physBone.version;
             ToggleRoot = toggleRoot;
             // transform
@@ -296,7 +296,7 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
 
         public bool CanMergePhysBone() => this is
         {
-            Enabled: true, // disabled physbone should not be merged; will be removed by optimizer later
+            IsActiveAndEnabled: true, // disabled physbone should not be merged; will be removed by optimizer later
             MultiChildType: VRCPhysBoneBase.MultiChildType.Ignore,
             AllowGrabbingOthers: false,
             AllowGrabbingSelf: false,
@@ -305,7 +305,7 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
 
         public bool Equals(PbInfo other)
         {
-            return Enabled == other.Enabled && 
+            return IsActiveAndEnabled == other.IsActiveAndEnabled && 
                    Version == other.Version && 
                    ToggleRoot == other.ToggleRoot &&
                    RootTransformParent.Equals(other.RootTransformParent) &&
@@ -363,7 +363,7 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
         public override int GetHashCode()
         {
             var hashCode = new HashCode();
-            hashCode.Add(Enabled);
+            hashCode.Add(IsActiveAndEnabled);
             hashCode.Add((int)Version);
             hashCode.Add(ToggleRoot);
             hashCode.Add(RootTransformParent);

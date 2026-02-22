@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- AutoMergePB enables PhysBones if disabled with IsActive of GameObjects `#1683`
 
 ### Security
 
