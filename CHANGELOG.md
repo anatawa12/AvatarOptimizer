@@ -17,6 +17,9 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - AutoMergePB enables PhysBones if disabled with IsActive of GameObjects `#1683`
+- MergePhysBone may change force-relative value when curve is used `#1685`
+  - In extreme case, the value from t=0 is used in original phys bone but the value from t=1 is used in merged phys bone.
+  - This also affects Automatic MergePhysBone since it uses MergePhysBone internally.
 
 ### Security
 
