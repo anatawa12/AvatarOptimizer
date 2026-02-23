@@ -303,6 +303,13 @@ namespace Anatawa12.AvatarOptimizer.PatchApplier
                 }
             }
 
+            // Validate that we parsed the expected number of lines
+            if (oldLinesProcessed != hunk.OldCount || newLinesProcessed != hunk.NewCount)
+            {
+                // Hunk is incomplete - return null to indicate parsing failure
+                return null;
+            }
+
             return hunk;
         }
     }

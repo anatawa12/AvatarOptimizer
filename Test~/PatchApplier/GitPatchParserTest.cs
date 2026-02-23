@@ -177,5 +177,36 @@ index 111222..333444 100644
             Assert.AreEqual("file1.cs", patches[0].GetPath());
             Assert.AreEqual("file2.cs", patches[1].GetPath());
         }
+
+        [Test]
+        public void ParsePatch_IncompleteHunk_ReturnsNull()
+        {
+            // Test patch with incomplete hunk (header says 3 lines, but only 2 provided)
+            var patchContent = @"From abc123 Mon Sep 17 00:00:00 2001
+From: Test <test@example.com>
+Date: Mon, 1 Jan 2024 12:00:00 +0000
+Subject: [PATCH] Incomplete hunk
+
+Base-Version: 1.9.0
+Base-Commit: base123
+---
+ test.cs | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/test.cs b/test.cs
+index abc1234..def5678 100644
+--- a/test.cs
++++ b/test.cs
+@@ -1,3 +1,3 @@
+ line1
+-line2
+";
+
+            var (metadata, patches) = GitPatchParser.Parse(patchContent);
+            
+            // The patch should be parsed but the hunk should be rejected due to incomplete lines
+            Assert.AreEqual(1, patches.Count);
+            Assert.AreEqual(0, patches[0].Hunks.Count); // Hunk should be rejected
+        }
     }
 }
