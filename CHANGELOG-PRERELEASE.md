@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Few more debug information `#1689`
 
 ### Changed
 
@@ -19,6 +18,10 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.9.8-beta.1] - 2026-02-24
+### Added
+- Few more debug information [`#1689`](https://github.com/anatawa12/AvatarOptimizer/pull/1689)
 
 ## [1.9.7] - 2026-02-22
 ### Fixed
@@ -2189,7 +2192,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.7...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.8-beta.1...HEAD
+[1.9.8-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.7...v1.9.8-beta.1
 [1.9.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.6...v1.9.7
 [1.9.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.6-beta.1...v1.9.6
 [1.9.6-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.5...v1.9.6-beta.1
