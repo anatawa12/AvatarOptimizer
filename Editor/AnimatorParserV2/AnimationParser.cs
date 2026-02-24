@@ -134,7 +134,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             foreach (var binding in floatBindings)
             {
                 var obj = Utils.GetAnimatedObject(root, binding, clip);
-                if (obj == null) continue;
+                if (obj == null)
+                {
+                    Tracing.Trace(TracingArea.AnimatorParser, $"{binding.path}.{binding.type.FullName}.{binding.propertyName} is animated but target object is not found");
+                    continue;
+                }
                 var componentOrGameObject = obj is Component component ? (ComponentOrGameObject)component
                     : obj is GameObject gameObject ? (ComponentOrGameObject)gameObject
                     : throw new InvalidOperationException($"unexpected animated object: {obj} ({obj.GetType().Name}");
@@ -157,7 +161,11 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             foreach (var binding in objectBindings)
             {
                 var obj = Utils.GetAnimatedObject(root, binding, clip);
-                if (obj == null) continue;
+                if (obj == null)
+                {
+                    Tracing.Trace(TracingArea.AnimatorParser, $"{binding.path}.({binding.type.FullName}).{binding.propertyName} is animated but target object is not found");
+                    continue;
+                }
                 var componentOrGameObject = obj is Component component ? (ComponentOrGameObject)component
                     : obj is GameObject gameObject ? (ComponentOrGameObject)gameObject
                     : throw new InvalidOperationException($"unexpected animated object: {obj} ({obj.GetType().Name}");
