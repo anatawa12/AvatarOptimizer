@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Anatawa12.AvatarOptimizer.PatchApplier;
 using UnityEditor;
 using UnityEngine;
 
@@ -48,7 +49,8 @@ namespace Anatawa12.AvatarOptimizer.CheckForUpdate
                 return;
             }
 
-            CurrentVersionName = currentVersion.ToString();
+            // Update current version name to include patch information
+            CurrentVersionName = VersionInfo.GetVersionString();
 
             var isBeta = currentVersion.IsPrerelease || MenuItems.ForceBetaChannel;
             if (!UnityVersion.TryParse(Application.unityVersion, out var unityVersion))

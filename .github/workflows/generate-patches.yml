@@ -1,0 +1,257 @@
+name: Generate Patches
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Target commit range (PR number, commit SHA, or commit range like head...base)'
+        required: true
+        type: string
+      base_version:
+        description: 'Base version number (e.g., 1.9.0-rc.10)'
+        required: true
+        type: string
+      base_patch:
+        description: 'Base patch commit SHA (leave empty if based on release)'
+        required: false
+        type: string
+      custom_message:
+        description: 'Custom message to include in commit message (for local changes)'
+        required: false
+        type: string
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - master
+      - 'master-**'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  # Manual patch generation job
+  generate-manual-patch:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Parse target input
+        id: parse_target
+        run: |
+          TARGET="${{ inputs.target }}"
+          
+          # Check if it's a PR number
+          if [[ "$TARGET" =~ ^[0-9]+$ ]]; then
+            echo "type=pr" >> $GITHUB_OUTPUT
+            echo "pr_number=$TARGET" >> $GITHUB_OUTPUT
+            
+            # Fetch PR information
+            PR_HEAD=$(gh pr view "$TARGET" --json headRefOid --jq .headRefOid)
+            PR_URL=$(gh pr view "$TARGET" --json url --jq .url)
+            
+            echo "target=$PR_HEAD" >> $GITHUB_OUTPUT
+            echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
+          else
+            echo "type=commit" >> $GITHUB_OUTPUT
+            echo "target=$TARGET" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate patch using script
+        id: generate
+        run: |
+          TARGET="${{ steps.parse_target.outputs.target }}"
+          BASE_VERSION="${{ inputs.base_version }}"
+          BASE_PATCH="${{ inputs.base_patch }}"
+          CUSTOM_MESSAGE="${{ inputs.custom_message }}"
+          OUTPUT_FILE="generated-patch.patch"
+          
+          # Build command
+          CMD="./.github/scripts/generate-patch.sh -t \"$TARGET\" -v \"$BASE_VERSION\" -o \"$OUTPUT_FILE\""
+          [ -n "$BASE_PATCH" ] && CMD="$CMD -p \"$BASE_PATCH\""
+          [ -n "$CUSTOM_MESSAGE" ] && CMD="$CMD -m \"$CUSTOM_MESSAGE\""
+          
+          # Run the script
+          if eval $CMD; then
+            PATCH_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
+            echo "patch_commit=$PATCH_COMMIT" >> $GITHUB_OUTPUT
+            echo "success=true" >> $GITHUB_OUTPUT
+          else
+            echo "success=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload patch artifact
+        if: steps.generate.outputs.success == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: patch-${{ steps.generate.outputs.patch_commit }}
+          path: generated-patch.patch
+          retention-days: 90
+
+      - name: Comment on PR (if applicable)
+        if: steps.parse_target.outputs.type == 'pr' && steps.generate.outputs.success == 'true'
+        run: |
+          PATCH_COMMIT="${{ steps.generate.outputs.patch_commit }}"
+          PATCH_URL="https://github.com/${{ github.repository }}/commit/${PATCH_COMMIT}.patch"
+          gh pr comment "${{ steps.parse_target.outputs.pr_number }}" --body \
+            "**Patch Generated** :package:
+            
+            A patch has been generated for testing this PR against version \`${{ inputs.base_version }}\`.
+            
+            **Patch Commit:** \`${PATCH_COMMIT}\`
+            **Download:** [${PATCH_COMMIT}.patch](${PATCH_URL})
+            
+            To apply this patch:
+            1. Open Unity with your project
+            2. Go to \`Tools > Avatar Optimizer > Apply Patch\`
+            3. Enter the patch URL: \`${PATCH_URL}\`
+            4. Click \`Apply Patch\`
+            
+            Or download the artifact from this workflow run."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment on PR (failure)
+        if: steps.parse_target.outputs.type == 'pr' && steps.generate.outputs.success != 'true'
+        run: |
+          gh pr comment "${{ steps.parse_target.outputs.pr_number }}" --body \
+            "**Patch Generation Failed** :x:
+            
+            Failed to generate patch for version \`${{ inputs.base_version }}\`.
+            
+            Please check the workflow logs for details."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Automatic PR patch generation job
+  generate-pr-patches:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          # Generate patch for latest stable and prerelease
+          - type: stable
+          - type: prerelease
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get latest release version
+        id: get_version
+        run: |
+          if [ "${{ matrix.type }}" = "stable" ]; then
+            # Get latest non-prerelease tag
+            VERSION=$(git tag -l 'v*' --sort=-version:refname | grep -v '-' | head -n1 | sed 's/^v//')
+          else
+            # Get latest prerelease tag
+            VERSION=$(git tag -l 'v*' --sort=-version:refname | grep '-' | head -n1 | sed 's/^v//')
+          fi
+          
+          if [ -z "$VERSION" ]; then
+            echo "No ${{ matrix.type }} version found"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Found ${{ matrix.type }} version: $VERSION"
+
+      - name: Setup Git
+        if: steps.get_version.outputs.skip != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Generate patch using script
+        if: steps.get_version.outputs.skip != 'true'
+        id: generate
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          PR_HEAD="${{ github.event.pull_request.head.sha }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          OUTPUT_FILE="patch-${VERSION}.patch"
+          
+          # Run the script
+          if ./.github/scripts/generate-patch.sh \
+              -t "$PR_HEAD" \
+              -v "$VERSION" \
+              -m "From PR #${{ github.event.pull_request.number }}: $PR_TITLE" \
+              -o "$OUTPUT_FILE"; then
+            PATCH_COMMIT=$(git log -1 --format=%H 2>/dev/null || echo "unknown")
+            echo "patch_commit=$PATCH_COMMIT" >> $GITHUB_OUTPUT
+            echo "success=true" >> $GITHUB_OUTPUT
+          else
+            echo "success=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload patch artifact
+        if: steps.get_version.outputs.skip != 'true' && steps.generate.outputs.success == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: patch-${{ matrix.type }}-${{ steps.get_version.outputs.version }}
+          path: patch-${{ steps.get_version.outputs.version }}.patch
+          retention-days: 30
+
+      - name: Post comment marker
+        if: steps.get_version.outputs.skip != 'true'
+        id: find_comment
+        uses: peter-evans/find-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '<!-- patch-generation-comment-${{ matrix.type }} -->'
+
+      - name: Create or update PR comment (success)
+        if: steps.get_version.outputs.skip != 'true' && steps.generate.outputs.success == 'true'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find_comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            <!-- patch-generation-comment-${{ matrix.type }} -->
+            ## :package: Test Patch for ${{ matrix.type }} version
+            
+            **Base Version:** `${{ steps.get_version.outputs.version }}` (${{ matrix.type }})
+            **Status:** :white_check_mark: Success
+            **Patch:** [Download](https://github.com/${{ github.repository }}/commit/${{ steps.generate.outputs.patch_commit }}.patch)
+            
+            ### How to Apply
+            1. Open Unity with your project
+            2. Go to `Tools > Avatar Optimizer > Apply Patch`
+            3. Enter patch URL or download and select the file
+            4. Click `Apply Patch`
+            
+            **Note:** Patches are for testing purposes only.
+
+      - name: Create or update PR comment (failure)
+        if: steps.get_version.outputs.skip != 'true' && steps.generate.outputs.success != 'true'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find_comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            <!-- patch-generation-comment-${{ matrix.type }} -->
+            ## :package: Test Patch for ${{ matrix.type }} version
+            
+            **Base Version:** `${{ steps.get_version.outputs.version }}` (${{ matrix.type }})
+            **Status:** :x: Failed - Could not generate patch (likely due to conflicts)
+            
+            Please check the workflow logs for details or try manually resolving conflicts.
