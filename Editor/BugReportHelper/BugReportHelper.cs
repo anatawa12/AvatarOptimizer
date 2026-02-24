@@ -10,6 +10,7 @@ using nadena.dev.ndmf;
 using nadena.dev.ndmf.platform;
 using Newtonsoft.Json;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEngine;
 using VRC.Dynamics;
 using Object = UnityEngine.Object;
@@ -207,6 +208,8 @@ internal class BugReportHelper : EditorWindow
                     new AnimatorParser(true)
                         .GatherAnimationModifications(new BuildContext(clonedAvatar, null)), 
                     clonedAvatar, detailed: true));
+            
+            reportFile.AddFile("RawAnimations.PostBuild.tree.txt", RawAnimationInfo(clonedAvatar));;
 
             return reportFile;
         }
@@ -735,6 +738,87 @@ internal class BugReportHelper : EditorWindow
             }
         }
     }
+
+    public static string RawAnimationInfo(GameObject contextAvatarRootObject)
+    {
+        var builder = new StringBuilder();
+
+        foreach (var animator in contextAvatarRootObject.GetComponentsInChildren<Animator>(includeInactive: true))
+        {
+            RawAnimationInfo(builder, contextAvatarRootObject, animator.gameObject, animator, animator.runtimeAnimatorController);
+        }
+
+#if AAO_VRCSDK3_AVATARS
+        foreach (var descriptor in contextAvatarRootObject.GetComponentsInChildren<VRC.SDK3.Avatars.Components.VRCAvatarDescriptor>(includeInactive: true))
+        {
+            foreach (var customAnimLayer in descriptor.baseAnimationLayers.Concat(descriptor.specialAnimationLayers))
+            {
+                RawAnimationInfo(builder, contextAvatarRootObject, descriptor.gameObject, descriptor, customAnimLayer.animatorController);
+            }
+        }
+#endif
+
+        return builder.ToString();
+    }
+
+    private static void RawAnimationInfo(
+        StringBuilder builder,
+        GameObject avatarRoot,
+        GameObject rootObject,
+        Component component,
+        RuntimeAnimatorController? animatorController
+    )
+    {
+        if (animatorController == null) return;
+        var (controller, animationClipMapping) = ACUtils.GetControllerAndOverrides(animatorController);
+        if (controller == null) return;
+        RawAnimationInfo(builder, avatarRoot, rootObject, component, controller, animationClipMapping);
+    }
+
+    // saves animation info without resolving references for debugging purpose.
+    private static void RawAnimationInfo(
+        StringBuilder builder,
+        GameObject avatarRoot, 
+        GameObject rootObject, 
+        Component component, 
+        AnimatorController animatorController,
+        IReadOnlyDictionary<AnimationClip, AnimationClip> animationClipMapping
+    ) {
+        builder.AppendLine($"{Utils.RelativePath(avatarRoot.transform, rootObject.transform)}: {component.GetType().FullName} with AnimatorController {animatorController.name}");
+
+        var layers = animatorController.layers;
+
+        foreach (var grouping in layers.SelectMany(layer => layer.syncedLayerIndex < 0
+                         ? ACUtils.AllStates(layer.stateMachine)
+                             .Select(state => (state, state.motion))
+                         : ACUtils.AllStates(layers[layer.syncedLayerIndex].stateMachine)
+                             .Select(state => (state, motion: layer.GetOverrideMotion(state))))
+                     .SelectMany(p => ACUtils.AllClips(p.motion)
+                         .Select(clip => (p.state, clip: animationClipMapping.GetValueOrDefault(clip, clip))))
+                     .GroupBy(x => x.clip))
+        {
+            var clip = grouping.Key;
+
+            builder.Append($"  {clip.name}: ({clip.GetInstanceID()}) (Used in:");
+            foreach (var state in grouping.Select(x => x.state))
+                builder.Append($" {state.name}");
+            builder.AppendLine(")");
+
+            // contents of the clip
+            var bindings = AnimationUtility.GetCurveBindings(clip);
+            foreach (var binding in bindings)
+            {
+                var curve = AnimationUtility.GetEditorCurve(clip, binding);
+                builder.AppendLine($"    {binding.path}.({binding.type.FullName}).{binding.propertyName}: float: {curve.GetHashCode2():x8}");
+            }
+            var objectBindings = AnimationUtility.GetObjectReferenceCurveBindings(clip);
+            foreach (var binding in objectBindings)
+            {
+                var curve = AnimationUtility.GetObjectReferenceCurve(clip, binding);
+                builder.AppendLine($"    {binding.path}.({binding.type.FullName}).{binding.propertyName}: object reference: {curve.Length}");
+            }
+        }
+    }
 }
 
 /// <summary>
@@ -755,6 +839,7 @@ internal class Context
     public void AnimatorParserResult(BuildContext context, RootPropModNodeContainer modifications)
     {
         ReportFile.AddFile("AnimatorParser.tree.txt", AnimatorParserDebugWindow.CreateText(modifications, context.AvatarRootObject, detailed: true));
+        ReportFile.AddFile("RawAnimations.tree.txt", BugReportHelper.RawAnimationInfo(context.AvatarRootObject));
     }
 
     public void AddGcDebugInfo(InternalGcDebugPosition position, string collectDataToString, GameObject root)
