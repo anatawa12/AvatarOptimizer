@@ -136,7 +136,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 var obj = Utils.GetAnimatedObject(root, binding, clip);
                 if (obj == null)
                 {
-                    Tracing.Trace(TracingArea.AnimatorParser, $"{binding.path}.{binding.type.FullName}.{binding.propertyName} is animated but target object is not found");
+                    if (Tracing.IsEnabled(TracingArea.AnimatorParser))
+                    {
+                        var go = Utils.ResolveAnimationPath(root.transform, binding.path);
+                        Tracing.Trace(TracingArea.AnimatorParser,
+                            $"In {clip.name}: '{binding.path}'.({binding.type.FullName}).'{binding.propertyName}' " +
+                            $"(float curve) is animated but target object is not found. " +
+                            $"(Target object {(go == null ? "not found" : "found")})");
+                    }
                     continue;
                 }
                 var componentOrGameObject = obj is Component component ? (ComponentOrGameObject)component
@@ -163,7 +170,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 var obj = Utils.GetAnimatedObject(root, binding, clip);
                 if (obj == null)
                 {
-                    Tracing.Trace(TracingArea.AnimatorParser, $"{binding.path}.({binding.type.FullName}).{binding.propertyName} is animated but target object is not found");
+                    if (Tracing.IsEnabled(TracingArea.AnimatorParser))
+                    {
+                        var go = Utils.ResolveAnimationPath(root.transform, binding.path);
+                        Tracing.Trace(TracingArea.AnimatorParser,
+                            $"In {clip.name}: '{binding.path}'.({binding.type.FullName}).'{binding.propertyName}' " +
+                            $"(object curve) is animated but target object is not found. " +
+                            $"(Target object {(go == null ? "not found" : "found")})");
+                    }
                     continue;
                 }
                 var componentOrGameObject = obj is Component component ? (ComponentOrGameObject)component
