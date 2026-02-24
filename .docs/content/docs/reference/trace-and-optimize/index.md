@@ -44,8 +44,8 @@ Currently the following optimizations are applied automatically.
   Merges skinned meshes which don't need to be separated.\
   Some meshes may not be automatically merged in some cases, so use [Merge Skinned Mesh](../merge-skinned-mesh) manually if necessary.
   - `Allow Shuffling Material Slots`\
-    By shuffling material slots, you may reduce draw calls of the avatar.
-    The order of material slots usually doesn't matter as far as we know.
+    By shuffling material slots, you may reduce draw calls of the avatar.\
+    The order of material slots doesn't matter as far as we know.
 - `Optimize Texture`\
   Optimizes textures without affecting the appearance.\
   Currently, UV Packing and reducing texture size is performed only for materials with supported shaders.
