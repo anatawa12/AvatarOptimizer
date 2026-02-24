@@ -49,7 +49,7 @@ public enum TracingArea : uint
 {
     ApplyObjectMapping = 1,
     BuildObjectMapping = 2,
-    AnimatorParser = 3,
+    AnimatorParser = 4,
     None = 0,
     All = uint.MaxValue,
 }
