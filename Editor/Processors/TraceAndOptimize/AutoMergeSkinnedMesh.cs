@@ -211,6 +211,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes
         )
         {
+            Tracing.Trace(TracingArea.TraceAndOptimizeDecision, $"Merging non-toggled skinned meshes: {string.Join(", ", meshInfos.Select(x => x.SourceRenderer != null ? x.SourceRenderer.name : "unknown renderer"))} into one.");
             // if there's no activeness animation, we merge them at root
             var newSkinnedMeshRenderer = CreateNewRenderer(gameObjectFactory, context.AvatarRootTransform, key);
             newSkinnedMeshRenderer.gameObject.SetActive(key.Activeness == Activeness.AlwaysActive);
@@ -238,6 +239,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes,
             ObjectMappingBuilder<PropertyInfo> mappingBuilder)
         {
+            Tracing.Trace(TracingArea.TraceAndOptimizeDecision, $"Merging non-toggled skinned meshes: {string.Join(", ", meshInfos.Select(x => x.SourceRenderer != null ? x.SourceRenderer.name : "unknown renderer"))} into one.");
             // if there is activeness animation, we have to decide the parent of merged mesh
 
             var commonParent = ComputeCommonParent(meshInfos, context.AvatarRootTransform);

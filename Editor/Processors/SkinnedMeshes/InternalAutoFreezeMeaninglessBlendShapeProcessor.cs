@@ -101,6 +101,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             
             Profiler.EndSample();
 
+            Tracing.Trace(TracingArea.TraceAndOptimizeDecision, 
+                $"Automatically freezing {meaninglessBlendShapes.Count} blendShape(s) of " +
+                $"{TargetGeneric.name} because they are have no effect on the mesh: {string.Join(", ", meaninglessBlendShapes)}");
+
             foreach (var meaninglessBlendShape in meaninglessBlendShapes)
                 context.RecordRemoveProperty(Target, $"blendShape.{meaninglessBlendShape}");
 

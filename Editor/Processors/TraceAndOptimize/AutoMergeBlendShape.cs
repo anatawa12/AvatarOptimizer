@@ -67,6 +67,11 @@ class AutoMergeBlendShape: TraceAndOptimizePass<AutoMergeBlendShape>
         // bulk remove to optimize removing blendshape process
         var removeNames = new HashSet<string>();
 
+        Tracing.Trace(TracingArea.TraceAndOptimizeDecision,
+            @$"Merging blendShapes for {meshInfo2.SourceRenderer.name}: {string.Join(", ", 
+                groups.Where(x => x.Value.Count > 1)
+                    .Select(x => $"{x.Value.Count}x {string.Join("+", x.Value)}"))}");
+
         var newNames = new Dictionary<string, string>();
 
         var i = 0;

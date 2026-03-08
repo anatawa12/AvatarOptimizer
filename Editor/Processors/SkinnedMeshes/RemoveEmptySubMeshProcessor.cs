@@ -26,6 +26,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             {
                 if (target.SubMeshes[srcIndex].Vertices.Count == 0)
                 {
+                    Tracing.Trace(TracingArea.TraceAndOptimizeDecision, 
+                        $"Removing empty subMesh at index {srcIndex} from {TargetGeneric.name}.");
                     srcIndex++;
                 }
                 else

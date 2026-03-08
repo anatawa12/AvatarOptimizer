@@ -449,6 +449,10 @@ internal struct OptimizeTextureImpl {
             return EmptyAtlasConnectedResult;
         var textures = info.Textures.Select(x => (Texture2D)x.Texture).ToList();
 
+        Tracing.Trace(TracingArea.TraceAndOptimizeDecision,
+            $"Picked textures for atlasing: {string.Join(", ", textures)} used by UVs {string.Join(", ", uvids)}," +
+            $"renderers: {string.Join(", ", renderers.Select(x => x != null ? x.name : "nul"))}");
+
         {
             var usageInformations = info.Textures.SelectMany(x => x.Users).SelectMany(x => x.Value);
             if (!usageInformations.Any()) return EmptyAtlasConnectedResult;

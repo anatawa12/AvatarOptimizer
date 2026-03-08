@@ -148,6 +148,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 if (asList.Count == 1) continue;
                 // Congratulation! We can merge those colliders!
 
+                Tracing.Trace(TracingArea.TraceAndOptimizeDecision,
+                    $"Merging {asList.Count} colliders into one collider for {grouping.Key} because they have same properties and their root transforms are not animated: " +
+                    $"{string.Join(", ", asList.Select(collider => collider.name))}");
+
                 var mergeTo = asList[0];
                 foreach (var mapped in asList.Skip(1))
                     colliderMapping.Add(mapped, mergeTo);
@@ -255,6 +259,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
                 if (physbones.All(physbone => ShouldReplace(physbone, state, entrypointMap, componentInfos, context)))
                 {
+                    Tracing.Trace(TracingArea.TraceAndOptimizeDecision,
+                        $"Relacing end bone with endpoint position for {gameObject.name} because all its leaf bones " +
+                        $"have approximately same local position and no leaf bone has animation or non-physbone dependency. ");
                     var component = gameObject.AddComponent<ReplaceEndBoneWithEndpointPosition>();
                     component.kind = ReplaceEndBoneWithEndpointPositionKind.Average;
                 }

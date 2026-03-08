@@ -70,6 +70,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             orphanMesh.SubMeshes.Clear();
             foreach (var (meshTopology, material) in subMeshInfos)
                 orphanMesh.SubMeshes.Add(new SubMesh(material, meshTopology));
+            
+            Tracing.Trace(TracingArea.TraceAndOptimizeDecision, $"Merging material slots for {orphanMesh.SourceRenderer.gameObject.name} with mapping: {string.Join(", ", mapping[0].Select((x, i) => $"slot {i} -> slot {x}"))}");
 
             // we can use mapping[0] since we only have one mesh
             var mappings = new List<(string, string)>();
