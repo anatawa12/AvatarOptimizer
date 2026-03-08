@@ -508,6 +508,13 @@
         .tree-node-header:hover {
             background: #f8f9fa;
         }
+
+        .tree-node-header:focus,
+        .tree-node-leaf:focus {
+            outline: 2px solid #667eea;
+            outline-offset: -2px;
+            background: #e8eaff;
+        }
         
         .tree-node-header::before {
             content: '▶';
@@ -1069,6 +1076,10 @@
                         renderSimpleTreeView(nodes);
                         renderTreeView(nodes);
                         
+                        // Setup keyboard navigation for both views
+                        setupKeyboardNavigation(document.getElementById('tree-simple-view'));
+                        setupKeyboardNavigation(document.getElementById('tree-tree-view'));
+                        
                         // Apply the initial mode (show correct view based on saved preference)
                         if (initialMode !== 'simple') {
                             // Need to switch to the saved mode
@@ -1599,6 +1610,7 @@
                     
                     const header = document.createElement('div');
                     header.className = 'tree-node-header collapsed';
+                    header.tabIndex = 0;
                     
                     const content = document.createElement('span');
                     content.className = 'tree-node-content';
@@ -1639,8 +1651,10 @@
                     nodeDiv.className = 'tree-node';
                     
                     const leafDiv = document.createElement('div');
+                    leafDiv.className = 'tree-node-leaf';
                     leafDiv.style.padding = '2px 0';
                     leafDiv.style.paddingLeft = '20px';
+                    leafDiv.tabIndex = 0;
                     
                     const content = document.createElement('span');
                     content.className = 'tree-node-content';
@@ -1687,6 +1701,7 @@
                     
                     const header = document.createElement('div');
                     header.className = 'tree-node-header collapsed';
+                    header.tabIndex = 0;
                     
                     const content = document.createElement('span');
                     content.className = 'tree-node-content';
@@ -1737,8 +1752,10 @@
                 } else {
                     // Leaf node without children
                     const leafDiv = document.createElement('div');
+                    leafDiv.className = 'tree-node-leaf';
                     leafDiv.style.padding = '2px 0';
                     leafDiv.style.paddingLeft = '20px';
+                    leafDiv.tabIndex = 0;
                     
                     const content = document.createElement('span');
                     content.className = 'tree-node-content';
@@ -1766,6 +1783,7 @@
                     
                     const header = document.createElement('div');
                     header.className = 'tree-node-header collapsed';
+                    header.tabIndex = 0;
                     
                     const content = document.createElement('span');
                     content.className = 'tree-node-content';
@@ -1802,8 +1820,10 @@
                 } else {
                     // Leaf node
                     const leafDiv = document.createElement('div');
+                    leafDiv.className = 'tree-node-leaf';
                     leafDiv.style.padding = '2px 0';
                     leafDiv.style.paddingLeft = '20px';
+                    leafDiv.tabIndex = 0;
                     
                     const content = document.createElement('span');
                     content.className = 'tree-node-content';
@@ -1945,6 +1965,108 @@
             mergeSiblingsAndArrange(roots);
             
             return roots;
+        }
+
+        // Keyboard navigation for tree views
+        function setupKeyboardNavigation(container) {
+            container.addEventListener('keydown', (e) => {
+                const focused = document.activeElement;
+                if (!container.contains(focused)) return;
+
+                const isHeader = focused.classList.contains('tree-node-header');
+                const isLeaf = focused.classList.contains('tree-node-leaf');
+                if (!isHeader && !isLeaf) return;
+
+                switch (e.key) {
+                    case 'ArrowDown': {
+                        e.preventDefault();
+                        const next = getAdjacentFocusable(container, focused, 1);
+                        if (next) next.focus();
+                        break;
+                    }
+                    case 'ArrowUp': {
+                        e.preventDefault();
+                        const prev = getAdjacentFocusable(container, focused, -1);
+                        if (prev) prev.focus();
+                        break;
+                    }
+                    case 'ArrowRight': {
+                        if (isHeader) {
+                            e.preventDefault();
+                            if (!focused.classList.contains('expanded')) {
+                                focused.click();
+                            }
+                            // Move focus to first child (whether just expanded or already expanded)
+                            const nodeWrapper = focused.parentElement;
+                            const childContainer = nodeWrapper && nodeWrapper.querySelector(':scope > .tree-node-children');
+                            if (childContainer) {
+                                const firstChild = childContainer.querySelector('.tree-node-header, .tree-node-leaf');
+                                if (firstChild) firstChild.focus();
+                            }
+                        }
+                        break;
+                    }
+                    case 'ArrowLeft': {
+                        e.preventDefault();
+                        if (isHeader && focused.classList.contains('expanded')) {
+                            // Collapse the node
+                            focused.click();
+                        } else {
+                            // Move to parent header
+                            const parentHeader = getParentTreeHeader(focused);
+                            if (parentHeader) parentHeader.focus();
+                        }
+                        break;
+                    }
+                    case 'Enter':
+                    case ' ': {
+                        if (isHeader) {
+                            e.preventDefault();
+                            focused.click();
+                        }
+                        break;
+                    }
+                }
+            });
+        }
+
+        function getVisibleFocusables(container) {
+            const all = container.querySelectorAll('.tree-node-header, .tree-node-leaf');
+            return Array.from(all).filter(el => isTreeElementVisible(el));
+        }
+
+        function isTreeElementVisible(el) {
+            let current = el;
+            while (current) {
+                if (current.style && current.style.display === 'none') return false;
+                if (current === document.body) break;
+                current = current.parentElement;
+            }
+            return true;
+        }
+
+        function getAdjacentFocusable(container, current, direction) {
+            const all = getVisibleFocusables(container);
+            const idx = all.indexOf(current);
+            const next = idx + direction;
+            if (next >= 0 && next < all.length) return all[next];
+            return null;
+        }
+
+        function getParentTreeHeader(el) {
+            let current = el.parentElement;
+            while (current) {
+                if (current.classList.contains('tree-node-children')) {
+                    const nodeWrapper = current.parentElement;
+                    if (nodeWrapper) {
+                        for (const child of nodeWrapper.children) {
+                            if (child.classList.contains('tree-node-header')) return child;
+                        }
+                    }
+                }
+                current = current.parentElement;
+            }
+            return null;
         }
 
         // Function for view switching
