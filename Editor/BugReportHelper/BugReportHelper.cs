@@ -992,48 +992,48 @@ internal class ReportFile
     /// part before the first <c>.</c>) has already been added, the content is
     /// automatically stored as a line-based diff against that earlier file if doing
     /// so produces a smaller blob.  The diff is indicated with a
-    /// <c>Content-Encoding: diff base="&lt;baseFilename&gt;"</c> header so that
+    /// <c>Content-Encoding: ed-script base="&lt;baseFilename&gt;"</c> header so that
     /// <see cref="AAOBugReportParser"/> (JS viewer) and <see cref="ApplyLineDiff"/>
     /// can reconstruct the original content.
     /// </summary>
     public void AddFile(string fileName, string content)
     {
+        var headers = new List<KeyValuePair<string, string>>
+        {
+            new KeyValuePair<string, string>("Content-Disposition", $"attachment; filename=\"{fileName}\""),
+        };
+
         var prefix = GetFilePrefix(fileName);
         if (prefix != null && _lastFileByPrefix.TryGetValue(prefix, out var baseInfo))
         {
             var diff = CreateLineDiff(baseInfo.resolvedContent, content);
             if (diff.Length < content.Length)
             {
-                var headers = new List<KeyValuePair<string, string>>
-                {
-                    new KeyValuePair<string, string>("Content-Disposition", $"attachment; filename=\"{fileName}\""),
-                    new KeyValuePair<string, string>("Content-Encoding", $"diff base=\"{baseInfo.fileName}\""),
-                };
+                headers.Add(new KeyValuePair<string, string>("Content-Encoding", $"ed-script base=\"{baseInfo.fileName}\""));
                 Blobs.Add(new ReportBlob { Headers = headers, Content = diff });
                 _lastFileByPrefix[prefix] = (fileName, content);
                 return;
             }
         }
 
-        var plainHeaders = new List<KeyValuePair<string, string>>
-        {
-            new KeyValuePair<string, string>("Content-Disposition", $"attachment; filename=\"{fileName}\""),
-        };
-        Blobs.Add(new ReportBlob { Headers = plainHeaders, Content = content });
+        Blobs.Add(new ReportBlob { Headers = headers, Content = content });
         if (prefix != null)
             _lastFileByPrefix[prefix] = (fileName, content);
     }
 
     /// <summary>
-    /// Produces a compact line-based diff from <paramref name="baseContent"/> to
+    /// Produces an ed-script diff from <paramref name="baseContent"/> to
     /// <paramref name="newContent"/> that can be applied with <see cref="ApplyLineDiff"/>.
     /// <para>
-    /// Format: each instruction occupies one line.
+    /// The output follows the standard <c>diff -e</c> ed-script format:
+    /// commands are emitted in <em>reverse</em> file order so they can be applied
+    /// sequentially without adjusting line numbers.
     /// <list type="bullet">
-    ///   <item><c>@=N</c> – copy the next N lines verbatim from base.</item>
-    ///   <item><c>@-N</c> – skip (delete) the next N lines from base.</item>
-    ///   <item><c>@+N</c> – the following N lines are new content to insert;
-    ///     content lines whose first character is <c>@</c> are escaped as <c>@@</c>.</item>
+    ///   <item><c>addr1[,addr2]d</c> – delete the specified 1-based line range.</item>
+    ///   <item><c>addr1[,addr2]c</c> – replace the specified lines with the following
+    ///     text block, terminated by a line containing only <c>.</c>.</item>
+    ///   <item><c>addra</c> – append (insert after line <c>addr</c>, where 0 means
+    ///     before the first line) the following text block, terminated by <c>.</c>.</item>
     /// </list>
     /// </para>
     /// </summary>
@@ -1043,94 +1043,152 @@ internal class ReportFile
         var newLines = SplitLines(newContent);
         int n = baseLines.Length, m = newLines.Length;
 
-        // Remove common prefix.
-        int prefix = 0;
-        while (prefix < n && prefix < m && baseLines[prefix] == newLines[prefix])
-            prefix++;
+        // Compute matching runs with absolute positions:
+        // 1. Strip a common prefix and suffix for efficiency.
+        int pfx = 0;
+        while (pfx < n && pfx < m && baseLines[pfx] == newLines[pfx])
+            pfx++;
 
-        // Remove common suffix (must not overlap with prefix).
-        int suffix = 0;
-        while (suffix < n - prefix && suffix < m - prefix &&
-               baseLines[n - 1 - suffix] == newLines[m - 1 - suffix])
-            suffix++;
+        int sfx = 0;
+        while (sfx < n - pfx && sfx < m - pfx &&
+               baseLines[n - 1 - sfx] == newLines[m - 1 - sfx])
+            sfx++;
 
-        var sb = new StringBuilder();
+        // 2. Run greedy matching on the middle section, then prepend/append the
+        //    fixed-point runs for prefix and suffix.
+        var runs = new List<(int baseI, int newI, int count)>();
+        if (pfx > 0)
+            runs.Add((0, 0, pfx));
 
-        if (prefix > 0)
-            sb.Append("@=").Append(prefix).Append('\n');
-
-        int midN = n - prefix - suffix;
-        int midM = m - prefix - suffix;
-
+        int midN = n - pfx - sfx;
+        int midM = m - pfx - sfx;
         if (midN > 0 || midM > 0)
-            AppendGreedyDiff(sb, baseLines, prefix, midN, newLines, prefix, midM);
+        {
+            foreach (var (bi, ni, cnt) in ComputeGreedyRuns(baseLines, pfx, midN, newLines, pfx, midM))
+                runs.Add((pfx + bi, pfx + ni, cnt));
+        }
 
-        if (suffix > 0)
-            sb.Append("@=").Append(suffix).Append('\n');
+        if (sfx > 0)
+            runs.Add((n - sfx, m - sfx, sfx));
+
+        // 3. Derive hunks (differing regions between runs).
+        var hunks = new List<(int bStart, int bEnd, int nStart, int nEnd)>();
+        int prevB = 0, prevN = 0;
+        foreach (var (bI, nI, cnt) in runs)
+        {
+            if (bI > prevB || nI > prevN)
+                hunks.Add((prevB, bI, prevN, nI));
+            prevB = bI + cnt;
+            prevN = nI + cnt;
+        }
+        if (prevB < n || prevN < m)
+            hunks.Add((prevB, n, prevN, m));
+
+        // 4. Emit ed script in reverse file order.
+        var sb = new StringBuilder();
+        for (int i = hunks.Count - 1; i >= 0; i--)
+        {
+            var (bStart, bEnd, nStart, nEnd) = hunks[i];
+            bool hasDel = bEnd > bStart;
+            bool hasIns = nEnd > nStart;
+
+            if (hasDel && hasIns)
+            {
+                AppendEdAddress(sb, bStart + 1, bEnd);
+                sb.Append("c\n");
+                for (int j = nStart; j < nEnd; j++)
+                    sb.Append(newLines[j]).Append('\n');
+                sb.Append(".\n");
+            }
+            else if (hasDel)
+            {
+                AppendEdAddress(sb, bStart + 1, bEnd);
+                sb.Append("d\n");
+            }
+            else // insert only
+            {
+                // 'a' appends after line bStart (0 = before first line).
+                sb.Append(bStart).Append("a\n");
+                for (int j = nStart; j < nEnd; j++)
+                    sb.Append(newLines[j]).Append('\n');
+                sb.Append(".\n");
+            }
+        }
 
         return sb.ToString();
     }
 
     /// <summary>
-    /// Reconstructs the original content from a base file and a diff produced by
-    /// <see cref="CreateLineDiff"/>.
+    /// Reconstructs the original content from a base file and an ed-script diff
+    /// produced by <see cref="CreateLineDiff"/>.
+    /// Commands are applied in the order given (reverse file order), so each
+    /// operation targets a region that is unaffected by previous operations.
     /// </summary>
     internal static string ApplyLineDiff(string baseContent, string diffContent)
     {
-        var baseLines = SplitLines(baseContent);
+        var lines = new List<string>(SplitLines(baseContent));
         var diffLines = SplitLines(diffContent);
-        var result = new List<string>(baseLines.Length);
-        int baseIdx = 0;
         int i = 0;
 
         while (i < diffLines.Length)
         {
-            var line = diffLines[i];
-            if (line.StartsWith("@="))
+            var cmdLine = diffLines[i];
+            if (string.IsNullOrEmpty(cmdLine)) { i++; continue; }
+
+            char cmd = cmdLine[cmdLine.Length - 1];
+            if (cmd != 'a' && cmd != 'd' && cmd != 'c') { i++; continue; }
+
+            var addrPart = cmdLine.Substring(0, cmdLine.Length - 1);
+            int addr1, addr2;
+            int comma = addrPart.IndexOf(',');
+            if (comma >= 0)
             {
-                if (int.TryParse(line.Substring(2), out int count))
-                    for (int j = 0; j < count && baseIdx < baseLines.Length; j++)
-                        result.Add(baseLines[baseIdx++]);
-                i++;
-            }
-            else if (line.StartsWith("@-"))
-            {
-                if (int.TryParse(line.Substring(2), out int count))
-                    baseIdx = Math.Min(baseIdx + count, baseLines.Length);
-                i++;
-            }
-            else if (line.StartsWith("@+"))
-            {
-                if (int.TryParse(line.Substring(2), out int count))
-                {
-                    i++;
-                    for (int j = 0; j < count; j++, i++)
-                    {
-                        var contentLine = i < diffLines.Length ? diffLines[i] : "";
-                        result.Add(contentLine.StartsWith("@@") ? contentLine.Substring(1) : contentLine);
-                    }
-                }
-                else i++;
+                addr1 = int.Parse(addrPart.Substring(0, comma));
+                addr2 = int.Parse(addrPart.Substring(comma + 1));
             }
             else
             {
-                i++; // skip unknown or empty lines
+                addr1 = int.Parse(addrPart);
+                addr2 = addr1;
+            }
+            i++;
+
+            switch (cmd)
+            {
+                case 'd':
+                    lines.RemoveRange(addr1 - 1, addr2 - addr1 + 1);
+                    break;
+                case 'a':
+                case 'c':
+                    var insertLines = new List<string>();
+                    while (i < diffLines.Length && diffLines[i] != ".")
+                        insertLines.Add(diffLines[i++]);
+                    if (i < diffLines.Length) i++; // skip '.'
+
+                    if (cmd == 'c')
+                    {
+                        lines.RemoveRange(addr1 - 1, addr2 - addr1 + 1);
+                        lines.InsertRange(addr1 - 1, insertLines);
+                    }
+                    else // 'a': insert after addr1 (addr1=0 means before first line)
+                    {
+                        lines.InsertRange(addr1, insertLines);
+                    }
+                    break;
             }
         }
 
-        return string.Join("\n", result);
+        return string.Join("\n", lines);
     }
 
-    // Produces diff operations for the middle section (after prefix/suffix have been removed)
-    // using a greedy forward-scan that builds a hash index of base lines and matches each
-    // new line to the earliest available base position.  Consecutive matched lines are
-    // merged into a single @=N run.
-    private static void AppendGreedyDiff(
-        StringBuilder sb,
+    // Greedy forward-scan LCS approximation: builds a hash index of base lines and
+    // matches each new line to the earliest available base position strictly after
+    // the last match.  Consecutive matched pairs are merged into copy runs.
+    // Returns runs with positions relative to the supplied offsets.
+    private static List<(int baseI, int newI, int count)> ComputeGreedyRuns(
         string[] baseLines, int baseOffset, int baseCount,
         string[] newLines, int newOffset, int newCount)
     {
-        // Build an index: line text → sorted list of positions within the base section.
         var baseIndex = new Dictionary<string, List<int>>();
         for (int i = 0; i < baseCount; i++)
         {
@@ -1140,7 +1198,6 @@ internal class ReportFile
             positions.Add(i);
         }
 
-        // For each new line find the earliest base position strictly after the last match.
         var matches = new List<(int baseI, int newI)>();
         int lastBase = -1;
         for (int j = 0; j < newCount; j++)
@@ -1163,7 +1220,6 @@ internal class ReportFile
             lastBase = matchedBase;
         }
 
-        // Merge consecutive matched pairs into copy runs.
         var runs = new List<(int baseI, int newI, int count)>();
         int k = 0;
         while (k < matches.Count)
@@ -1177,36 +1233,13 @@ internal class ReportFile
             k += cnt;
         }
 
-        // Emit delete/insert/copy operations.
-        int prevBase = 0, prevNew = 0;
-        foreach (var (bI, nI, cnt) in runs)
-        {
-            int gapBase = bI - prevBase;
-            int gapNew = nI - prevNew;
-            if (gapBase > 0) sb.Append("@-").Append(gapBase).Append('\n');
-            if (gapNew > 0) AppendInsertBlock(sb, newLines, newOffset + prevNew, gapNew);
-            sb.Append("@=").Append(cnt).Append('\n');
-            prevBase = bI + cnt;
-            prevNew = nI + cnt;
-        }
-
-        // Remaining tail.
-        int remBase = baseCount - prevBase;
-        int remNew = newCount - prevNew;
-        if (remBase > 0) sb.Append("@-").Append(remBase).Append('\n');
-        if (remNew > 0) AppendInsertBlock(sb, newLines, newOffset + prevNew, remNew);
+        return runs;
     }
 
-    private static void AppendInsertBlock(StringBuilder sb, string[] lines, int start, int count)
+    private static void AppendEdAddress(StringBuilder sb, int start, int end)
     {
-        sb.Append("@+").Append(count).Append('\n');
-        for (int i = 0; i < count; i++)
-        {
-            var line = lines[start + i];
-            if (line.Length > 0 && line[0] == '@')
-                sb.Append('@'); // escape leading '@'
-            sb.Append(line).Append('\n');
-        }
+        sb.Append(start);
+        if (start != end) sb.Append(',').Append(end);
     }
 
     private static string[] SplitLines(string content)

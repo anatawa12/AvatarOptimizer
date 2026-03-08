@@ -810,7 +810,7 @@
                 };
             }
 
-            // Resolve Content-Encoding: diff base="..." for every file in order.
+            // Resolve Content-Encoding: ed-script base="..." for every file in order.
             // Because a diff always references an earlier file the single forward
             // pass is sufficient.
             _resolveDiffs(files) {
@@ -820,7 +820,7 @@
                         h => h.key.toLowerCase() === 'content-encoding'
                     );
                     if (contentEncoding) {
-                        const match = contentEncoding.value.match(/diff\s+base="([^"]+)"/);
+                        const match = contentEncoding.value.match(/ed-script\s+base="([^"]+)"/);
                         if (match) {
                             const baseFile = filesByName.get(match[1]);
                             if (baseFile) {
@@ -832,48 +832,55 @@
                 }
             }
 
-            // Apply a line-based diff (produced by ReportFile.CreateLineDiff in C#) to
+            // Apply an ed-script diff (produced by ReportFile.CreateLineDiff in C#) to
             // baseContent and return the reconstructed new content.
+            // Commands are in reverse file order so they can be applied sequentially
+            // without adjusting line numbers.
             // Operations:
-            //   @=N  – copy the next N lines from base
-            //   @-N  – skip (delete) the next N lines from base
-            //   @+N  – the following N lines are new content; '@@' prefix is unescaped to '@'
+            //   addr1[,addr2]d  – delete 1-based line range
+            //   addr1[,addr2]c  – replace lines with following text block (terminated by '.')
+            //   addr1a          – append text block after line addr1 (0 = before first line)
             _applyLineDiff(baseContent, diffContent) {
-                const baseLines = baseContent.split('\n');
+                const lines = baseContent.split('\n');
                 const diffLines = diffContent.split('\n');
-                const result = [];
-                let baseIdx = 0;
                 let i = 0;
 
                 while (i < diffLines.length) {
-                    const line = diffLines[i];
-                    if (line.startsWith('@=')) {
-                        const n = parseInt(line.substring(2), 10);
-                        if (!isNaN(n)) {
-                            for (let j = 0; j < n && baseIdx < baseLines.length; j++)
-                                result.push(baseLines[baseIdx++]);
-                        }
-                        i++;
-                    } else if (line.startsWith('@-')) {
-                        const n = parseInt(line.substring(2), 10);
-                        if (!isNaN(n))
-                            baseIdx = Math.min(baseIdx + n, baseLines.length);
-                        i++;
-                    } else if (line.startsWith('@+')) {
-                        const n = parseInt(line.substring(2), 10);
-                        i++;
-                        if (!isNaN(n)) {
-                            for (let j = 0; j < n; j++, i++) {
-                                const contentLine = i < diffLines.length ? diffLines[i] : '';
-                                result.push(contentLine.startsWith('@@') ? contentLine.substring(1) : contentLine);
-                            }
-                        }
+                    const cmdLine = diffLines[i];
+                    if (!cmdLine) { i++; continue; }
+
+                    const cmd = cmdLine[cmdLine.length - 1];
+                    if (cmd !== 'a' && cmd !== 'd' && cmd !== 'c') { i++; continue; }
+
+                    const addrPart = cmdLine.substring(0, cmdLine.length - 1);
+                    const commaIdx = addrPart.indexOf(',');
+                    let addr1, addr2;
+                    if (commaIdx >= 0) {
+                        addr1 = parseInt(addrPart.substring(0, commaIdx), 10);
+                        addr2 = parseInt(addrPart.substring(commaIdx + 1), 10);
                     } else {
-                        i++; // skip unknown or empty lines
+                        addr1 = parseInt(addrPart, 10);
+                        addr2 = addr1;
+                    }
+                    i++;
+
+                    if (cmd === 'd') {
+                        lines.splice(addr1 - 1, addr2 - addr1 + 1);
+                    } else { // 'a' or 'c'
+                        const newLines = [];
+                        while (i < diffLines.length && diffLines[i] !== '.')
+                            newLines.push(diffLines[i++]);
+                        if (i < diffLines.length) i++; // skip '.'
+
+                        if (cmd === 'c') {
+                            lines.splice(addr1 - 1, addr2 - addr1 + 1, ...newLines);
+                        } else { // 'a': insert after addr1 (0 = before first line)
+                            lines.splice(addr1, 0, ...newLines);
+                        }
                     }
                 }
 
-                return result.join('\n');
+                return lines.join('\n');
             }
         }
 
