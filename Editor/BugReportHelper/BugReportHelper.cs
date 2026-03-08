@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
+using Anatawa12.AvatarOptimizer.Processors;
 using nadena.dev.ndmf;
 using nadena.dev.ndmf.platform;
 using Newtonsoft.Json;
@@ -819,6 +820,60 @@ internal class BugReportHelper : EditorWindow
             }
         }
     }
+
+    public static string MaterialInformation(Transform avatarRoot, IEnumerable<MaterialInformation> materialInformations)
+    {
+        var builder = new StringBuilder();
+        foreach (var information in materialInformations)
+        {
+            builder.AppendLine($"{information.Material.name} ({information.Material.shader.name}):");
+            builder.AppendLine($"  UserRenderers:");
+            foreach (var renderer in information.UserRenderers)
+                builder.AppendLine($"    {Utils.RelativePath(avatarRoot, renderer.transform)}({renderer.GetType()})");
+            AddShaderInformationResult(builder, "DefaultResult", information.DefaultResult);
+            AddShaderInformationResult(builder, "FallbackResult", information.FallbackResult);
+        }
+        return builder.ToString();
+
+        void AddShaderInformationResult(StringBuilder builder, string label, MaterialInformation.ShaderInformationResult? result)
+        {
+            if (result != null)
+            {
+                builder.AppendLine($"  {label}:");
+                builder.AppendLine($"    OtherUVUsage: {result.OtherUVUsage}");
+                builder.AppendLine($"    UseVertexIndex: {result.UseVertexIndex}");
+                if (result.TextureUsageInformationList == null)
+                {
+                    builder.AppendLine($"    TextureUsageInformationList: null");
+                }
+                else
+                {
+                    builder.AppendLine($"    TextureUsageInformationList");
+                    foreach (var usageInformation in result.TextureUsageInformationList)
+                    {
+                        builder.AppendLine($"      {usageInformation.MaterialPropertyName}:");
+                        builder.AppendLine($"        UVChannel: {usageInformation.UVChannel}");
+                        builder.AppendLine($"        WrapModeU: {usageInformation.WrapModeU}");
+                        builder.AppendLine($"        WrapModeV: {usageInformation.WrapModeV}");
+                        if (usageInformation.UVMatrix is { } matrix)
+                        {
+                            builder.AppendLine($"        UVMatrix: ");
+                            builder.AppendLine($"          {matrix.M00,-10} {matrix.M01,-10} {matrix.M02,-10}");
+                            builder.AppendLine($"          {matrix.M10,-10} {matrix.M11,-10} {matrix.M12,-10}");
+                        }
+                        else
+                        {
+                            builder.AppendLine($"        UVMatrix: null");
+                        }
+                    }
+                }
+            }
+            else
+            {
+                builder.AppendLine($"  {label}: null");
+            }
+        }
+    }
 }
 
 /// <summary>
@@ -842,10 +897,12 @@ internal class Context
         ReportFile.AddFile("RawAnimations.tree.txt", BugReportHelper.RawAnimationInfo(context.AvatarRootObject));
     }
 
-    public void AddGcDebugInfo(InternalGcDebugPosition position, string collectDataToString, GameObject root)
+    public void AddGcDebugInfo(InternalGcDebugPosition position, string collectDataToString, GameObject root, IEnumerable<MaterialInformation> materials)
     {
         ReportFile.AddFile($"GCDebug.{position}.tree.txt", collectDataToString);
         ReportFile.AddFile($"AvatarInfo.{position}.tree.txt", BugReportHelper.CollectAvatarInfo(root));
+        ReportFile.AddFile($"MaterialInformation.{position}.tree.txt", 
+            BugReportHelper.MaterialInformation(root.transform, materials));
     }
 }
 

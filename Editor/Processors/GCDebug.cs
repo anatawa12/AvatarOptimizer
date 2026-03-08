@@ -40,7 +40,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 try
                 {
                     var gcDebugRoot = AddGCDebugInfo(context, place);
-                    reportCtx.AddGcDebugInfo(_position, gcDebugRoot.CollectDataToString(), context.AvatarRootObject);
+                    reportCtx.AddGcDebugInfo(_position, gcDebugRoot.CollectDataToString(), context.AvatarRootObject,
+                        context.GetState<MaterialInformationState>().MaterialInformationByMaterial.Values);
                 }
                 finally
                 {
