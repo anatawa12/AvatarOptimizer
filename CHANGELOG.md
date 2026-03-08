@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Few more debug information `#1689`
+- More debug information `#1689` `#1694`
 
 ### Changed
 
