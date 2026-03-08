@@ -8,12 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- More debug information `#1694`
-  - In particular, the decisions made by T&O during optimization are now recorded as tracing logs, and all tracing logs are included in bug reports.
 
 ### Changed
-- Reduced size of report file a little `#1695`
-  - With add information, the overall size may be increased, but report file should be smaller with same information as before.
 
 ### Deprecated
 
@@ -22,6 +18,15 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.9.8-beta.2] - 2026-03-08
+### Added
+- More debug information [`#1694`](https://github.com/anatawa12/AvatarOptimizer/pull/1694)
+  - In particular, the decisions made by T&O during optimization are now recorded as tracing logs, and all tracing logs are included in bug reports.
+
+### Changed
+- Reduced size of report file a little [`#1695`](https://github.com/anatawa12/AvatarOptimizer/pull/1695)
+  - With add information, the overall size may be increased, but report file should be smaller with same information as before.
 
 ## [1.9.8-beta.1] - 2026-02-24
 ### Added
@@ -2196,7 +2201,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.8-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.8-beta.2...HEAD
+[1.9.8-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.8-beta.1...v1.9.8-beta.2
 [1.9.8-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.7...v1.9.8-beta.1
 [1.9.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.6...v1.9.7
 [1.9.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.6-beta.1...v1.9.6
