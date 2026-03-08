@@ -451,7 +451,7 @@ internal struct OptimizeTextureImpl {
 
         Tracing.Trace(TracingArea.TraceAndOptimizeDecision,
             $"Picked textures for atlasing: {string.Join(", ", textures)} used by UVs {string.Join(", ", uvids)}," +
-            $"renderers: {string.Join(", ", renderers.Select(x => x != null ? x.name : "nul"))}");
+            $"renderers: {string.Join(", ", renderers.Select(x => x != null ? x.name : "null"))}");
 
         {
             var usageInformations = info.Textures.SelectMany(x => x.Users).SelectMany(x => x.Value);

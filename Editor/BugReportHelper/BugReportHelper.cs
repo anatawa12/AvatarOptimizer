@@ -865,7 +865,7 @@ internal class BugReportHelper : EditorWindow
                 if (renderer)
                     builder.AppendLine($"    {Utils.RelativePath(avatarRoot, renderer.transform)}({renderer.GetType()})");
                 else
-                    builder.AppendLine($"    destoryed renderer");
+                    builder.AppendLine($"    destroyed renderer");
             AddShaderInformationResult(builder, "DefaultResult", information.DefaultResult);
             AddShaderInformationResult(builder, "FallbackResult", information.FallbackResult);
         }

@@ -1302,8 +1302,8 @@ msgstr ""
 
 msgid "BugReportHelper:tracing-log"
 msgstr ""
-"You can disable some Detailed Log to minimize the size of the report, but providing Detailed Log is recommended to resolve the issue.\n"
-"Unless you have a specific reason to disable it, or the log is too large to provide, please keep it enabled."
+"You can disable detailed logs to reduce the size of the report, but including detailed logs is recommended to help resolve the issue.\n"
+"Unless you have a specific reason to disable them, or the logs are too large to provide, please keep detailed logging enabled."
 
 msgid "BugReportHelper:play-mode"
 msgstr "Report generation cannot be run in Play Mode. Please exit Play Mode and try again."
