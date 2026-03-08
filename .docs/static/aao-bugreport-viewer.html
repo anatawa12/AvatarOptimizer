@@ -799,11 +799,81 @@
                     }
                 }
 
+                // Resolve any diff-encoded files so that file.content always
+                // contains the fully-restored text before the caller sees it.
+                this._resolveDiffs(files);
+
                 return {
                     globalHeaders,
                     boundary,
                     files
                 };
+            }
+
+            // Resolve Content-Encoding: diff base="..." for every file in order.
+            // Because a diff always references an earlier file the single forward
+            // pass is sufficient.
+            _resolveDiffs(files) {
+                const filesByName = new Map();
+                for (const file of files) {
+                    const contentEncoding = file.headers.find(
+                        h => h.key.toLowerCase() === 'content-encoding'
+                    );
+                    if (contentEncoding) {
+                        const match = contentEncoding.value.match(/diff\s+base="([^"]+)"/);
+                        if (match) {
+                            const baseFile = filesByName.get(match[1]);
+                            if (baseFile) {
+                                file.content = this._applyLineDiff(baseFile.content, file.content);
+                            }
+                        }
+                    }
+                    filesByName.set(file.filename, file);
+                }
+            }
+
+            // Apply a line-based diff (produced by ReportFile.CreateLineDiff in C#) to
+            // baseContent and return the reconstructed new content.
+            // Operations:
+            //   @=N  – copy the next N lines from base
+            //   @-N  – skip (delete) the next N lines from base
+            //   @+N  – the following N lines are new content; '@@' prefix is unescaped to '@'
+            _applyLineDiff(baseContent, diffContent) {
+                const baseLines = baseContent.split('\n');
+                const diffLines = diffContent.split('\n');
+                const result = [];
+                let baseIdx = 0;
+                let i = 0;
+
+                while (i < diffLines.length) {
+                    const line = diffLines[i];
+                    if (line.startsWith('@=')) {
+                        const n = parseInt(line.substring(2), 10);
+                        if (!isNaN(n)) {
+                            for (let j = 0; j < n && baseIdx < baseLines.length; j++)
+                                result.push(baseLines[baseIdx++]);
+                        }
+                        i++;
+                    } else if (line.startsWith('@-')) {
+                        const n = parseInt(line.substring(2), 10);
+                        if (!isNaN(n))
+                            baseIdx = Math.min(baseIdx + n, baseLines.length);
+                        i++;
+                    } else if (line.startsWith('@+')) {
+                        const n = parseInt(line.substring(2), 10);
+                        i++;
+                        if (!isNaN(n)) {
+                            for (let j = 0; j < n; j++, i++) {
+                                const contentLine = i < diffLines.length ? diffLines[i] : '';
+                                result.push(contentLine.startsWith('@@') ? contentLine.substring(1) : contentLine);
+                            }
+                        }
+                    } else {
+                        i++; // skip unknown or empty lines
+                    }
+                }
+
+                return result.join('\n');
             }
         }
 

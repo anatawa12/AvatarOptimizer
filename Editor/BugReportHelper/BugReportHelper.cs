@@ -976,18 +976,241 @@ internal class ReportFile
         Fields.Add(new KeyValuePair<string, string>(key, value));
     }
 
+    // Tracks the most recently added file per filename prefix (for diff base selection).
+    // The value holds the file name and its fully-resolved content (not a diff).
+    private readonly Dictionary<string, (string fileName, string resolvedContent)> _lastFileByPrefix = new();
+
+    // Returns the first dot-separated segment of a filename, e.g. "AvatarInfo" from "AvatarInfo.PreBuild.tree.txt".
+    private static string? GetFilePrefix(string fileName)
+    {
+        var dot = fileName.IndexOf('.');
+        return dot > 0 ? fileName.Substring(0, dot) : null;
+    }
+
+    /// <summary>
+    /// Adds a file to the report.  When a file with the same filename prefix (the
+    /// part before the first <c>.</c>) has already been added, the content is
+    /// automatically stored as a line-based diff against that earlier file if doing
+    /// so produces a smaller blob.  The diff is indicated with a
+    /// <c>Content-Encoding: diff base="&lt;baseFilename&gt;"</c> header so that
+    /// <see cref="AAOBugReportParser"/> (JS viewer) and <see cref="ApplyLineDiff"/>
+    /// can reconstruct the original content.
+    /// </summary>
     public void AddFile(string fileName, string content)
     {
-        var headers = new List<KeyValuePair<string, string>>
+        var prefix = GetFilePrefix(fileName);
+        if (prefix != null && _lastFileByPrefix.TryGetValue(prefix, out var baseInfo))
+        {
+            var diff = CreateLineDiff(baseInfo.resolvedContent, content);
+            if (diff.Length < content.Length)
+            {
+                var headers = new List<KeyValuePair<string, string>>
+                {
+                    new KeyValuePair<string, string>("Content-Disposition", $"attachment; filename=\"{fileName}\""),
+                    new KeyValuePair<string, string>("Content-Encoding", $"diff base=\"{baseInfo.fileName}\""),
+                };
+                Blobs.Add(new ReportBlob { Headers = headers, Content = diff });
+                _lastFileByPrefix[prefix] = (fileName, content);
+                return;
+            }
+        }
+
+        var plainHeaders = new List<KeyValuePair<string, string>>
         {
             new KeyValuePair<string, string>("Content-Disposition", $"attachment; filename=\"{fileName}\""),
         };
-        Blobs.Add(new ReportBlob
-        {
-            Headers = headers,
-            Content = content,
-        });
+        Blobs.Add(new ReportBlob { Headers = plainHeaders, Content = content });
+        if (prefix != null)
+            _lastFileByPrefix[prefix] = (fileName, content);
     }
+
+    /// <summary>
+    /// Produces a compact line-based diff from <paramref name="baseContent"/> to
+    /// <paramref name="newContent"/> that can be applied with <see cref="ApplyLineDiff"/>.
+    /// <para>
+    /// Format: each instruction occupies one line.
+    /// <list type="bullet">
+    ///   <item><c>@=N</c> – copy the next N lines verbatim from base.</item>
+    ///   <item><c>@-N</c> – skip (delete) the next N lines from base.</item>
+    ///   <item><c>@+N</c> – the following N lines are new content to insert;
+    ///     content lines whose first character is <c>@</c> are escaped as <c>@@</c>.</item>
+    /// </list>
+    /// </para>
+    /// </summary>
+    internal static string CreateLineDiff(string baseContent, string newContent)
+    {
+        var baseLines = SplitLines(baseContent);
+        var newLines = SplitLines(newContent);
+        int n = baseLines.Length, m = newLines.Length;
+
+        // Remove common prefix.
+        int prefix = 0;
+        while (prefix < n && prefix < m && baseLines[prefix] == newLines[prefix])
+            prefix++;
+
+        // Remove common suffix (must not overlap with prefix).
+        int suffix = 0;
+        while (suffix < n - prefix && suffix < m - prefix &&
+               baseLines[n - 1 - suffix] == newLines[m - 1 - suffix])
+            suffix++;
+
+        var sb = new StringBuilder();
+
+        if (prefix > 0)
+            sb.Append("@=").Append(prefix).Append('\n');
+
+        int midN = n - prefix - suffix;
+        int midM = m - prefix - suffix;
+
+        if (midN > 0 || midM > 0)
+            AppendGreedyDiff(sb, baseLines, prefix, midN, newLines, prefix, midM);
+
+        if (suffix > 0)
+            sb.Append("@=").Append(suffix).Append('\n');
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Reconstructs the original content from a base file and a diff produced by
+    /// <see cref="CreateLineDiff"/>.
+    /// </summary>
+    internal static string ApplyLineDiff(string baseContent, string diffContent)
+    {
+        var baseLines = SplitLines(baseContent);
+        var diffLines = SplitLines(diffContent);
+        var result = new List<string>(baseLines.Length);
+        int baseIdx = 0;
+        int i = 0;
+
+        while (i < diffLines.Length)
+        {
+            var line = diffLines[i];
+            if (line.StartsWith("@="))
+            {
+                if (int.TryParse(line.Substring(2), out int count))
+                    for (int j = 0; j < count && baseIdx < baseLines.Length; j++)
+                        result.Add(baseLines[baseIdx++]);
+                i++;
+            }
+            else if (line.StartsWith("@-"))
+            {
+                if (int.TryParse(line.Substring(2), out int count))
+                    baseIdx = Math.Min(baseIdx + count, baseLines.Length);
+                i++;
+            }
+            else if (line.StartsWith("@+"))
+            {
+                if (int.TryParse(line.Substring(2), out int count))
+                {
+                    i++;
+                    for (int j = 0; j < count; j++, i++)
+                    {
+                        var contentLine = i < diffLines.Length ? diffLines[i] : "";
+                        result.Add(contentLine.StartsWith("@@") ? contentLine.Substring(1) : contentLine);
+                    }
+                }
+                else i++;
+            }
+            else
+            {
+                i++; // skip unknown or empty lines
+            }
+        }
+
+        return string.Join("\n", result);
+    }
+
+    // Produces diff operations for the middle section (after prefix/suffix have been removed)
+    // using a greedy forward-scan that builds a hash index of base lines and matches each
+    // new line to the earliest available base position.  Consecutive matched lines are
+    // merged into a single @=N run.
+    private static void AppendGreedyDiff(
+        StringBuilder sb,
+        string[] baseLines, int baseOffset, int baseCount,
+        string[] newLines, int newOffset, int newCount)
+    {
+        // Build an index: line text → sorted list of positions within the base section.
+        var baseIndex = new Dictionary<string, List<int>>();
+        for (int i = 0; i < baseCount; i++)
+        {
+            var line = baseLines[baseOffset + i];
+            if (!baseIndex.TryGetValue(line, out var positions))
+                baseIndex[line] = positions = new List<int>();
+            positions.Add(i);
+        }
+
+        // For each new line find the earliest base position strictly after the last match.
+        var matches = new List<(int baseI, int newI)>();
+        int lastBase = -1;
+        for (int j = 0; j < newCount; j++)
+        {
+            var line = newLines[newOffset + j];
+            if (!baseIndex.TryGetValue(line, out var positions)) continue;
+
+            // Binary search: first index where positions[idx] > lastBase.
+            int lo = 0, hi = positions.Count;
+            while (lo < hi)
+            {
+                int mid = (lo + hi) / 2;
+                if (positions[mid] > lastBase) hi = mid;
+                else lo = mid + 1;
+            }
+            if (lo >= positions.Count) continue;
+
+            int matchedBase = positions[lo];
+            matches.Add((matchedBase, j));
+            lastBase = matchedBase;
+        }
+
+        // Merge consecutive matched pairs into copy runs.
+        var runs = new List<(int baseI, int newI, int count)>();
+        int k = 0;
+        while (k < matches.Count)
+        {
+            int bStart = matches[k].baseI, nStart = matches[k].newI, cnt = 1;
+            while (k + cnt < matches.Count &&
+                   matches[k + cnt].baseI == bStart + cnt &&
+                   matches[k + cnt].newI == nStart + cnt)
+                cnt++;
+            runs.Add((bStart, nStart, cnt));
+            k += cnt;
+        }
+
+        // Emit delete/insert/copy operations.
+        int prevBase = 0, prevNew = 0;
+        foreach (var (bI, nI, cnt) in runs)
+        {
+            int gapBase = bI - prevBase;
+            int gapNew = nI - prevNew;
+            if (gapBase > 0) sb.Append("@-").Append(gapBase).Append('\n');
+            if (gapNew > 0) AppendInsertBlock(sb, newLines, newOffset + prevNew, gapNew);
+            sb.Append("@=").Append(cnt).Append('\n');
+            prevBase = bI + cnt;
+            prevNew = nI + cnt;
+        }
+
+        // Remaining tail.
+        int remBase = baseCount - prevBase;
+        int remNew = newCount - prevNew;
+        if (remBase > 0) sb.Append("@-").Append(remBase).Append('\n');
+        if (remNew > 0) AppendInsertBlock(sb, newLines, newOffset + prevNew, remNew);
+    }
+
+    private static void AppendInsertBlock(StringBuilder sb, string[] lines, int start, int count)
+    {
+        sb.Append("@+").Append(count).Append('\n');
+        for (int i = 0; i < count; i++)
+        {
+            var line = lines[start + i];
+            if (line.Length > 0 && line[0] == '@')
+                sb.Append('@'); // escape leading '@'
+            sb.Append(line).Append('\n');
+        }
+    }
+
+    private static string[] SplitLines(string content)
+        => content.Replace("\r\n", "\n").Replace("\r", "\n").Split('\n');
 
     public override string ToString()
     {
