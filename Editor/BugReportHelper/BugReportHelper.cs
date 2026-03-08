@@ -127,6 +127,7 @@ internal class BugReportHelper : EditorWindow
                 if (!string.IsNullOrEmpty(savePath))
                 {
                     var reportFile = RunBuild(targetAvatar, tracing);
+                    reportFile.DiffCompress();
                     var contents = reportFile.ToString();
                     // compress with GZip
                     {
@@ -160,6 +161,7 @@ internal class BugReportHelper : EditorWindow
             try
             {
                 var reportFile = RunBuild(targetAvatar, tracing);
+                reportFile.DiffCompress();
                 GUIUtility.systemCopyBuffer = reportFile.ToString();
                 EditorUtility.DisplayDialog("Bug Report Copied", "Bug report has been copied to clipboard successfully.", "OK");
             }
@@ -976,18 +978,298 @@ internal class ReportFile
         Fields.Add(new KeyValuePair<string, string>(key, value));
     }
 
+    // Returns the first dot-separated segment of a filename, e.g. "AvatarInfo" from "AvatarInfo.PreBuild.tree.txt".
+    private static string? GetFilePrefix(string fileName)
+    {
+        var dot = fileName.IndexOf('.');
+        return dot > 0 ? fileName.Substring(0, dot) : null;
+    }
+
+    // Extracts the filename from a blob's Content-Disposition header, or null if absent.
+    private static string? GetBlobFileName(ReportBlob blob)
+    {
+        foreach (var header in blob.Headers)
+        {
+            if (!header.Key.Equals("Content-Disposition", StringComparison.OrdinalIgnoreCase)) continue;
+            var value = header.Value;
+            var idx = value.IndexOf("filename=\"", StringComparison.OrdinalIgnoreCase);
+            if (idx < 0) continue;
+            idx += "filename=\"".Length;
+            var end = value.IndexOf('"', idx);
+            if (end < 0) continue;
+            return value.Substring(idx, end - idx);
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Adds a file to the report.
+    /// </summary>
     public void AddFile(string fileName, string content)
     {
         var headers = new List<KeyValuePair<string, string>>
         {
             new KeyValuePair<string, string>("Content-Disposition", $"attachment; filename=\"{fileName}\""),
         };
-        Blobs.Add(new ReportBlob
-        {
-            Headers = headers,
-            Content = content,
-        });
+        Blobs.Add(new ReportBlob { Headers = headers, Content = content });
     }
+
+    /// <summary>
+    /// Post-processes all blobs added via <see cref="AddFile"/> and replaces adjacent
+    /// files that share a filename prefix with ed-script diffs when doing so produces
+    /// a smaller blob.  Call this once, after all files have been added and before
+    /// calling <see cref="ToString"/>.
+    /// </summary>
+    public void DiffCompress()
+    {
+        var lastFileByPrefix = new Dictionary<string, (string fileName, string resolvedContent)>();
+        for (int i = 0; i < Blobs.Count; i++)
+        {
+            var blob = Blobs[i];
+            var fileName = GetBlobFileName(blob);
+            if (fileName == null) continue;
+
+            var originalContent = blob.Content;
+            var prefix = GetFilePrefix(fileName);
+            if (prefix != null && lastFileByPrefix.TryGetValue(prefix, out var baseInfo))
+            {
+                var diff = CreateLineDiff(baseInfo.resolvedContent, originalContent);
+                if (diff.Length < originalContent.Length)
+                {
+                    blob.Headers.Add(new KeyValuePair<string, string>("Content-Encoding", $"ed-script base=\"{baseInfo.fileName}\""));
+                    blob.Content = diff;
+                    Blobs[i] = blob;
+                }
+            }
+
+            if (prefix != null)
+                lastFileByPrefix[prefix] = (fileName, originalContent);
+        }
+    }
+
+    /// <summary>
+    /// Produces an ed-script diff from <paramref name="baseContent"/> to
+    /// <paramref name="newContent"/> that can be applied with <see cref="ApplyLineDiff"/>.
+    /// <para>
+    /// The output follows the standard <c>diff -e</c> ed-script format:
+    /// commands are emitted in <em>reverse</em> file order so they can be applied
+    /// sequentially without adjusting line numbers.
+    /// <list type="bullet">
+    ///   <item><c>addr1[,addr2]d</c> – delete the specified 1-based line range.</item>
+    ///   <item><c>addr1[,addr2]c</c> – replace the specified lines with the following
+    ///     text block, terminated by a line containing only <c>.</c>.</item>
+    ///   <item><c>addra</c> – append (insert after line <c>addr</c>, where 0 means
+    ///     before the first line) the following text block, terminated by <c>.</c>.</item>
+    /// </list>
+    /// </para>
+    /// </summary>
+    internal static string CreateLineDiff(string baseContent, string newContent)
+    {
+        var baseLines = SplitLines(baseContent);
+        var newLines = SplitLines(newContent);
+        int n = baseLines.Length, m = newLines.Length;
+
+        // Compute matching runs with absolute positions:
+        // 1. Strip a common prefix and suffix for efficiency.
+        int pfx = 0;
+        while (pfx < n && pfx < m && baseLines[pfx] == newLines[pfx])
+            pfx++;
+
+        int sfx = 0;
+        while (sfx < n - pfx && sfx < m - pfx &&
+               baseLines[n - 1 - sfx] == newLines[m - 1 - sfx])
+            sfx++;
+
+        // 2. Run greedy matching on the middle section, then prepend/append the
+        //    fixed-point runs for prefix and suffix.
+        var runs = new List<(int baseI, int newI, int count)>();
+        if (pfx > 0)
+            runs.Add((0, 0, pfx));
+
+        int midN = n - pfx - sfx;
+        int midM = m - pfx - sfx;
+        if (midN > 0 || midM > 0)
+        {
+            foreach (var (bi, ni, cnt) in ComputeGreedyRuns(baseLines, pfx, midN, newLines, pfx, midM))
+                runs.Add((pfx + bi, pfx + ni, cnt));
+        }
+
+        if (sfx > 0)
+            runs.Add((n - sfx, m - sfx, sfx));
+
+        // 3. Derive hunks (differing regions between runs).
+        var hunks = new List<(int bStart, int bEnd, int nStart, int nEnd)>();
+        int prevB = 0, prevN = 0;
+        foreach (var (bI, nI, cnt) in runs)
+        {
+            if (bI > prevB || nI > prevN)
+                hunks.Add((prevB, bI, prevN, nI));
+            prevB = bI + cnt;
+            prevN = nI + cnt;
+        }
+        if (prevB < n || prevN < m)
+            hunks.Add((prevB, n, prevN, m));
+
+        // 4. Emit ed script in reverse file order.
+        var sb = new StringBuilder();
+        for (int i = hunks.Count - 1; i >= 0; i--)
+        {
+            var (bStart, bEnd, nStart, nEnd) = hunks[i];
+            bool hasDel = bEnd > bStart;
+            bool hasIns = nEnd > nStart;
+
+            if (hasDel && hasIns)
+            {
+                AppendEdAddress(sb, bStart + 1, bEnd);
+                sb.Append("c\n");
+                for (int j = nStart; j < nEnd; j++)
+                    sb.Append(newLines[j]).Append('\n');
+                sb.Append(".\n");
+            }
+            else if (hasDel)
+            {
+                AppendEdAddress(sb, bStart + 1, bEnd);
+                sb.Append("d\n");
+            }
+            else // insert only
+            {
+                // 'a' appends after line bStart (0 = before first line).
+                sb.Append(bStart).Append("a\n");
+                for (int j = nStart; j < nEnd; j++)
+                    sb.Append(newLines[j]).Append('\n');
+                sb.Append(".\n");
+            }
+        }
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Reconstructs the original content from a base file and an ed-script diff
+    /// produced by <see cref="CreateLineDiff"/>.
+    /// Commands are applied in the order given (reverse file order), so each
+    /// operation targets a region that is unaffected by previous operations.
+    /// </summary>
+    internal static string ApplyLineDiff(string baseContent, string diffContent)
+    {
+        var lines = new List<string>(SplitLines(baseContent));
+        var diffLines = SplitLines(diffContent);
+        int i = 0;
+
+        while (i < diffLines.Length)
+        {
+            var cmdLine = diffLines[i];
+            if (string.IsNullOrEmpty(cmdLine)) { i++; continue; }
+
+            char cmd = cmdLine[cmdLine.Length - 1];
+            if (cmd != 'a' && cmd != 'd' && cmd != 'c') { i++; continue; }
+
+            var addrPart = cmdLine.Substring(0, cmdLine.Length - 1);
+            int addr1, addr2;
+            int comma = addrPart.IndexOf(',');
+            if (comma >= 0)
+            {
+                addr1 = int.Parse(addrPart.Substring(0, comma));
+                addr2 = int.Parse(addrPart.Substring(comma + 1));
+            }
+            else
+            {
+                addr1 = int.Parse(addrPart);
+                addr2 = addr1;
+            }
+            i++;
+
+            switch (cmd)
+            {
+                case 'd':
+                    lines.RemoveRange(addr1 - 1, addr2 - addr1 + 1);
+                    break;
+                case 'a':
+                case 'c':
+                    var insertLines = new List<string>();
+                    while (i < diffLines.Length && diffLines[i] != ".")
+                        insertLines.Add(diffLines[i++]);
+                    if (i < diffLines.Length) i++; // skip '.'
+
+                    if (cmd == 'c')
+                    {
+                        lines.RemoveRange(addr1 - 1, addr2 - addr1 + 1);
+                        lines.InsertRange(addr1 - 1, insertLines);
+                    }
+                    else // 'a': insert after addr1 (addr1=0 means before first line)
+                    {
+                        lines.InsertRange(addr1, insertLines);
+                    }
+                    break;
+            }
+        }
+
+        return string.Join("\n", lines);
+    }
+
+    // Greedy forward-scan LCS approximation: builds a hash index of base lines and
+    // matches each new line to the earliest available base position strictly after
+    // the last match.  Consecutive matched pairs are merged into copy runs.
+    // Returns runs with positions relative to the supplied offsets.
+    private static List<(int baseI, int newI, int count)> ComputeGreedyRuns(
+        string[] baseLines, int baseOffset, int baseCount,
+        string[] newLines, int newOffset, int newCount)
+    {
+        var baseIndex = new Dictionary<string, List<int>>();
+        for (int i = 0; i < baseCount; i++)
+        {
+            var line = baseLines[baseOffset + i];
+            if (!baseIndex.TryGetValue(line, out var positions))
+                baseIndex[line] = positions = new List<int>();
+            positions.Add(i);
+        }
+
+        var matches = new List<(int baseI, int newI)>();
+        int lastBase = -1;
+        for (int j = 0; j < newCount; j++)
+        {
+            var line = newLines[newOffset + j];
+            if (!baseIndex.TryGetValue(line, out var positions)) continue;
+
+            // Binary search: first index where positions[idx] > lastBase.
+            int lo = 0, hi = positions.Count;
+            while (lo < hi)
+            {
+                int mid = (lo + hi) / 2;
+                if (positions[mid] > lastBase) hi = mid;
+                else lo = mid + 1;
+            }
+            if (lo >= positions.Count) continue;
+
+            int matchedBase = positions[lo];
+            matches.Add((matchedBase, j));
+            lastBase = matchedBase;
+        }
+
+        var runs = new List<(int baseI, int newI, int count)>();
+        int k = 0;
+        while (k < matches.Count)
+        {
+            int bStart = matches[k].baseI, nStart = matches[k].newI, cnt = 1;
+            while (k + cnt < matches.Count &&
+                   matches[k + cnt].baseI == bStart + cnt &&
+                   matches[k + cnt].newI == nStart + cnt)
+                cnt++;
+            runs.Add((bStart, nStart, cnt));
+            k += cnt;
+        }
+
+        return runs;
+    }
+
+    private static void AppendEdAddress(StringBuilder sb, int start, int end)
+    {
+        sb.Append(start);
+        if (start != end) sb.Append(',').Append(end);
+    }
+
+    private static string[] SplitLines(string content)
+        => content.Replace("\r\n", "\n").Replace("\r", "\n").Split('\n');
 
     public override string ToString()
     {

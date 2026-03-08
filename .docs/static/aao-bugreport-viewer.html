@@ -355,6 +355,14 @@
             background: #4a5cc5;
         }
 
+        .file-action-btn.active {
+            background: #4a5cc5;
+        }
+
+        .file-action-btn.active:hover {
+            background: #3e50b8;
+        }
+
         #file-headers {
             display: none;
             background: #f8f9fa;
@@ -661,6 +669,7 @@
                         </div>
                         <button id="copy-file-btn" class="file-action-btn" title="Copy file contents to clipboard">📋 Copy</button>
                         <button id="download-file-btn" class="file-action-btn" title="Download file">⬇️ Download</button>
+                        <button id="raw-diff-btn" class="file-action-btn" style="display: none;" title="Toggle raw ed-script diff view">📄 Raw Diff</button>
                         <button id="file-headers-toggle" style="display: none;">Show File Headers</button>
                     </div>
                 </div>
@@ -701,6 +710,7 @@
         const reportFilenameSpan = document.getElementById('report-filename');
         const copyFileBtn = document.getElementById('copy-file-btn');
         const downloadFileBtn = document.getElementById('download-file-btn');
+        const rawDiffBtn = document.getElementById('raw-diff-btn');
 
         // Parser
         class AAOBugReportParser {
@@ -799,11 +809,89 @@
                     }
                 }
 
+                // Resolve any diff-encoded files so that file.content always
+                // contains the fully-restored text before the caller sees it.
+                this._resolveDiffs(files);
+
                 return {
                     globalHeaders,
                     boundary,
                     files
                 };
+            }
+
+            // Resolve Content-Encoding: ed-script base="..." for every file in order.
+            // Because a diff always references an earlier file the single forward
+            // pass is sufficient.
+            _resolveDiffs(files) {
+                const filesByName = new Map();
+                for (const file of files) {
+                    const contentEncoding = file.headers.find(
+                        h => h.key.toLowerCase() === 'content-encoding'
+                    );
+                    if (contentEncoding) {
+                        const match = contentEncoding.value.match(/ed-script\s+base="([^"]+)"/);
+                        if (match) {
+                            const baseFile = filesByName.get(match[1]);
+                            if (baseFile) {
+                                file.rawDiff = file.content;
+                                file.content = this._applyLineDiff(baseFile.content, file.content);
+                            }
+                        }
+                    }
+                    filesByName.set(file.filename, file);
+                }
+            }
+
+            // Apply an ed-script diff (produced by ReportFile.CreateLineDiff in C#) to
+            // baseContent and return the reconstructed new content.
+            // Commands are in reverse file order so they can be applied sequentially
+            // without adjusting line numbers.
+            // Operations:
+            //   addr1[,addr2]d  – delete 1-based line range
+            //   addr1[,addr2]c  – replace lines with following text block (terminated by '.')
+            //   addr1a          – append text block after line addr1 (0 = before first line)
+            _applyLineDiff(baseContent, diffContent) {
+                const lines = baseContent.split('\n');
+                const diffLines = diffContent.split('\n');
+                let i = 0;
+
+                while (i < diffLines.length) {
+                    const cmdLine = diffLines[i];
+                    if (!cmdLine) { i++; continue; }
+
+                    const cmd = cmdLine[cmdLine.length - 1];
+                    if (cmd !== 'a' && cmd !== 'd' && cmd !== 'c') { i++; continue; }
+
+                    const addrPart = cmdLine.substring(0, cmdLine.length - 1);
+                    const commaIdx = addrPart.indexOf(',');
+                    let addr1, addr2;
+                    if (commaIdx >= 0) {
+                        addr1 = parseInt(addrPart.substring(0, commaIdx), 10);
+                        addr2 = parseInt(addrPart.substring(commaIdx + 1), 10);
+                    } else {
+                        addr1 = parseInt(addrPart, 10);
+                        addr2 = addr1;
+                    }
+                    i++;
+
+                    if (cmd === 'd') {
+                        lines.splice(addr1 - 1, addr2 - addr1 + 1);
+                    } else { // 'a' or 'c'
+                        const newLines = [];
+                        while (i < diffLines.length && diffLines[i] !== '.')
+                            newLines.push(diffLines[i++]);
+                        if (i < diffLines.length) i++; // skip '.'
+
+                        if (cmd === 'c') {
+                            lines.splice(addr1 - 1, addr2 - addr1 + 1, ...newLines);
+                        } else { // 'a': insert after addr1 (0 = before first line)
+                            lines.splice(addr1, 0, ...newLines);
+                        }
+                    }
+                }
+
+                return lines.join('\n');
             }
         }
 
@@ -863,7 +951,7 @@
                 div.className = 'file-item';
                 div.innerHTML = `
                     <div class="file-name">${escapeHtml(file.filename)}</div>
-                    <div class="file-info">${formatFileSize(file.content.length)}</div>
+                    <div class="file-info">${formatFileSize(file.content.length)}${file.rawDiff != null ? ` (diff: ${formatFileSize(file.rawDiff.length)})` : ""}</div>
                 `;
                 div.addEventListener('click', () => selectFile(index));
                 fileList.appendChild(div);
@@ -891,6 +979,9 @@
             fileHeadersToggle.style.display = 'inline-block';
             copyFileBtn.style.display = 'inline-block';
             downloadFileBtn.style.display = 'inline-block';
+            rawDiffBtn.style.display = file.rawDiff != null ? 'inline-block' : 'none';
+            rawDiffBtn.classList.remove('active');
+            rawDiffBtn.textContent = '📄 Raw Diff';
             
             // Display file headers
             displayFileHeaders(file.headers);
@@ -940,6 +1031,7 @@
             fileHeadersToggle.style.display = 'none';
             copyFileBtn.style.display = 'none';
             downloadFileBtn.style.display = 'none';
+            rawDiffBtn.style.display = 'none';
             fileHeaders.classList.remove('visible');
             document.getElementById('tree-view-controls').style.display = 'none';
             document.getElementById('show-global-headers-btn').classList.add('active');
@@ -2229,6 +2321,23 @@
             document.body.removeChild(a);
             // Revoke URL after click event is processed
             setTimeout(() => URL.revokeObjectURL(url), 100);
+        });
+
+        // Toggle raw ed-script diff view
+        rawDiffBtn.addEventListener('click', () => {
+            if (currentFileIndex === -1) return;
+            const file = parsedData.files[currentFileIndex];
+            if (file.rawDiff == null) return;
+
+            if (rawDiffBtn.classList.contains('active')) {
+                // Switch back to resolved view without pushing a new history entry
+                selectFile(currentFileIndex, /* updateHistory= */ false);
+            } else {
+                rawDiffBtn.classList.add('active');
+                rawDiffBtn.textContent = '📄 Resolved';
+                document.getElementById('tree-view-controls').style.display = 'none';
+                contentViewer.innerHTML = `<pre id="content-text">${escapeHtml(file.rawDiff)}</pre>`;
+            }
         });
 
         // Handle browser back/forward navigation

@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog].
   - In particular, the decisions made by T&O during optimization are now recorded as tracing logs, and all tracing logs are included in bug reports.
 
 ### Changed
+- Reduced size of report file a little `#1695`
+  - With add information, the overall size may be increased, but report file should be smaller with same information as before.
 
 ### Deprecated
 
