@@ -2330,8 +2330,8 @@
             if (!file.rawDiff) return;
 
             if (rawDiffBtn.classList.contains('active')) {
-                // Switch back to resolved view
-                selectFile(currentFileIndex, false);
+                // Switch back to resolved view without pushing a new history entry
+                selectFile(currentFileIndex, /* updateHistory= */ false);
             } else {
                 rawDiffBtn.classList.add('active');
                 rawDiffBtn.textContent = '📄 Resolved';

@@ -127,6 +127,7 @@ internal class BugReportHelper : EditorWindow
                 if (!string.IsNullOrEmpty(savePath))
                 {
                     var reportFile = RunBuild(targetAvatar, tracing);
+                    reportFile.DiffCompress();
                     var contents = reportFile.ToString();
                     // compress with GZip
                     {
@@ -160,6 +161,7 @@ internal class BugReportHelper : EditorWindow
             try
             {
                 var reportFile = RunBuild(targetAvatar, tracing);
+                reportFile.DiffCompress();
                 GUIUtility.systemCopyBuffer = reportFile.ToString();
                 EditorUtility.DisplayDialog("Bug Report Copied", "Bug report has been copied to clipboard successfully.", "OK");
             }
@@ -976,10 +978,6 @@ internal class ReportFile
         Fields.Add(new KeyValuePair<string, string>(key, value));
     }
 
-    // Tracks the most recently added file per filename prefix (for diff base selection).
-    // The value holds the file name and its fully-resolved content (not a diff).
-    private readonly Dictionary<string, (string fileName, string resolvedContent)> _lastFileByPrefix = new();
-
     // Returns the first dot-separated segment of a filename, e.g. "AvatarInfo" from "AvatarInfo.PreBuild.tree.txt".
     private static string? GetFilePrefix(string fileName)
     {
@@ -987,14 +985,25 @@ internal class ReportFile
         return dot > 0 ? fileName.Substring(0, dot) : null;
     }
 
+    // Extracts the filename from a blob's Content-Disposition header, or null if absent.
+    private static string? GetBlobFileName(ReportBlob blob)
+    {
+        foreach (var header in blob.Headers)
+        {
+            if (!header.Key.Equals("Content-Disposition", StringComparison.OrdinalIgnoreCase)) continue;
+            var value = header.Value;
+            var idx = value.IndexOf("filename=\"", StringComparison.OrdinalIgnoreCase);
+            if (idx < 0) continue;
+            idx += "filename=\"".Length;
+            var end = value.IndexOf('"', idx);
+            if (end < 0) continue;
+            return value.Substring(idx, end - idx);
+        }
+        return null;
+    }
+
     /// <summary>
-    /// Adds a file to the report.  When a file with the same filename prefix (the
-    /// part before the first <c>.</c>) has already been added, the content is
-    /// automatically stored as a line-based diff against that earlier file if doing
-    /// so produces a smaller blob.  The diff is indicated with a
-    /// <c>Content-Encoding: ed-script base="&lt;baseFilename&gt;"</c> header so that
-    /// <see cref="AAOBugReportParser"/> (JS viewer) and <see cref="ApplyLineDiff"/>
-    /// can reconstruct the original content.
+    /// Adds a file to the report.
     /// </summary>
     public void AddFile(string fileName, string content)
     {
@@ -1002,23 +1011,40 @@ internal class ReportFile
         {
             new KeyValuePair<string, string>("Content-Disposition", $"attachment; filename=\"{fileName}\""),
         };
-
-        var prefix = GetFilePrefix(fileName);
-        if (prefix != null && _lastFileByPrefix.TryGetValue(prefix, out var baseInfo))
-        {
-            var diff = CreateLineDiff(baseInfo.resolvedContent, content);
-            if (diff.Length < content.Length)
-            {
-                headers.Add(new KeyValuePair<string, string>("Content-Encoding", $"ed-script base=\"{baseInfo.fileName}\""));
-                Blobs.Add(new ReportBlob { Headers = headers, Content = diff });
-                _lastFileByPrefix[prefix] = (fileName, content);
-                return;
-            }
-        }
-
         Blobs.Add(new ReportBlob { Headers = headers, Content = content });
-        if (prefix != null)
-            _lastFileByPrefix[prefix] = (fileName, content);
+    }
+
+    /// <summary>
+    /// Post-processes all blobs added via <see cref="AddFile"/> and replaces adjacent
+    /// files that share a filename prefix with ed-script diffs when doing so produces
+    /// a smaller blob.  Call this once, after all files have been added and before
+    /// calling <see cref="ToString"/>.
+    /// </summary>
+    public void DiffCompress()
+    {
+        var lastFileByPrefix = new Dictionary<string, (string fileName, string resolvedContent)>();
+        for (int i = 0; i < Blobs.Count; i++)
+        {
+            var blob = Blobs[i];
+            var fileName = GetBlobFileName(blob);
+            if (fileName == null) continue;
+
+            var originalContent = blob.Content;
+            var prefix = GetFilePrefix(fileName);
+            if (prefix != null && lastFileByPrefix.TryGetValue(prefix, out var baseInfo))
+            {
+                var diff = CreateLineDiff(baseInfo.resolvedContent, originalContent);
+                if (diff.Length < originalContent.Length)
+                {
+                    blob.Headers.Add(new KeyValuePair<string, string>("Content-Encoding", $"ed-script base=\"{baseInfo.fileName}\""));
+                    blob.Content = diff;
+                    Blobs[i] = blob;
+                }
+            }
+
+            if (prefix != null)
+                lastFileByPrefix[prefix] = (fileName, originalContent);
+        }
     }
 
     /// <summary>
