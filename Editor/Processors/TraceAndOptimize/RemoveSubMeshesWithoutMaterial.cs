@@ -25,6 +25,8 @@ class RemoveSubMeshesWithoutMaterial : TraceAndOptimizePass<RemoveSubMeshesWitho
                 // Removing subMeshes without materials was performed in MeshInfo2 until 1.8.7 (inclusive).
                 // However, it broke particle system shape module with SkinnedMeshRenderer so we have to check
                 // for dependencies here.
+                Tracing.Trace(TracingArea.TraceAndOptimizeDecision, 
+                    $"Removing subMeshes without materials from {renderer.name} because it is only used by itself.");
                 meshInfo2.SubMeshes.RemoveAll(x => x.SharedMaterials.Length == 0);
             }
         }

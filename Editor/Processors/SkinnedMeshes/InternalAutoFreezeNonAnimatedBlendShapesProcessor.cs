@@ -26,6 +26,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 {
                     unchanged.Add(name);
                     target.BlendShapes[i] = (name, newWeight);
+                    Tracing.Trace(TracingArea.TraceAndOptimizeDecision, 
+                        $"Automatically freezing blendShape '{name}' of {TargetGeneric.name} because it is not animated.");
                 }
             }
 

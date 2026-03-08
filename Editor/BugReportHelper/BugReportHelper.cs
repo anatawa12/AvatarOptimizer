@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
+using Anatawa12.AvatarOptimizer.Processors;
 using nadena.dev.ndmf;
 using nadena.dev.ndmf.platform;
 using Newtonsoft.Json;
@@ -49,6 +50,15 @@ internal class BugReportHelper : EditorWindow
     }
 
     public GameObject? targetAvatar;
+    public TracingArea tracing = TracingArea.All;
+    public bool tracingOpen;
+
+    private static TracingArea[] TracingAreas = (TracingArea[])Enum.GetValues(typeof(TracingArea));
+
+    private static class Styles
+    {
+        public static GUIStyle wrapLabel = new GUIStyle(EditorStyles.label) { wordWrap = true };
+    }
 
     private void OnGUI()
     {
@@ -59,7 +69,28 @@ internal class BugReportHelper : EditorWindow
 
         GUILayout.Space(10);
 
-        GUILayout.Label(AAOL10N.Tr("BugReportHelper:description"));
+        GUILayout.Label(AAOL10N.Tr("BugReportHelper:description"), Styles.wrapLabel);
+
+        // label
+        tracingOpen = EditorGUILayout.Foldout(tracingOpen, "Detailed Log Settings");
+        if (tracingOpen)
+        {
+            EditorGUI.indentLevel++;
+            GUILayout.Label(AAOL10N.Tr("BugReportHelper:tracing-log"), Styles.wrapLabel);
+            foreach (var value in TracingAreas)
+            {
+                if (value == TracingArea.None || value == TracingArea.All) continue;
+                var enabled = (tracing & value) != 0;
+                var newEnabled = EditorGUILayout.ToggleLeft($"{value}", enabled);
+                if (enabled != newEnabled)
+                {
+                    if (newEnabled) tracing |= value;
+                    else tracing &= ~value;
+                }
+            }
+            EditorGUI.indentLevel--;
+
+        }
 
         GUILayout.Space(10);
 
@@ -95,7 +126,7 @@ internal class BugReportHelper : EditorWindow
                 var savePath = EditorUtility.SaveFilePanel("Save Bug Report", "", "AAO-BugReport.gz", "gz");
                 if (!string.IsNullOrEmpty(savePath))
                 {
-                    var reportFile = RunBuild(targetAvatar);
+                    var reportFile = RunBuild(targetAvatar, tracing);
                     var contents = reportFile.ToString();
                     // compress with GZip
                     {
@@ -128,7 +159,7 @@ internal class BugReportHelper : EditorWindow
 
             try
             {
-                var reportFile = RunBuild(targetAvatar);
+                var reportFile = RunBuild(targetAvatar, tracing);
                 GUIUtility.systemCopyBuffer = reportFile.ToString();
                 EditorUtility.DisplayDialog("Bug Report Copied", "Bug report has been copied to clipboard successfully.", "OK");
             }
@@ -144,11 +175,13 @@ internal class BugReportHelper : EditorWindow
         EditorGUI.EndDisabledGroup();
     }
 
-    public static ReportFile RunBuild(GameObject avatar)
+    public static ReportFile RunBuild(GameObject avatar, TracingArea tracing)
     {
         var clonedAvatar = Instantiate(avatar);
+        var tracingConfig = Tracing.Enabled;
         try
         {
+            Tracing.Enabled = tracing;
             var reportFile = new ReportFile();
 
             // collect project information
@@ -215,6 +248,7 @@ internal class BugReportHelper : EditorWindow
         }
         finally
         {
+            Tracing.Enabled = tracingConfig;
             DestroyImmediate(clonedAvatar);
         }
     }
@@ -819,6 +853,63 @@ internal class BugReportHelper : EditorWindow
             }
         }
     }
+
+    public static string MaterialInformation(Transform avatarRoot, IEnumerable<MaterialInformation> materialInformations)
+    {
+        var builder = new StringBuilder();
+        foreach (var information in materialInformations)
+        {
+            builder.AppendLine($"{information.Material.name} ({information.Material.shader.name}):");
+            builder.AppendLine($"  UserRenderers:");
+            foreach (var renderer in information.UserRenderers)
+                if (renderer)
+                    builder.AppendLine($"    {Utils.RelativePath(avatarRoot, renderer.transform)}({renderer.GetType()})");
+                else
+                    builder.AppendLine($"    destroyed renderer");
+            AddShaderInformationResult(builder, "DefaultResult", information.DefaultResult);
+            AddShaderInformationResult(builder, "FallbackResult", information.FallbackResult);
+        }
+        return builder.ToString();
+
+        void AddShaderInformationResult(StringBuilder builder, string label, MaterialInformation.ShaderInformationResult? result)
+        {
+            if (result != null)
+            {
+                builder.AppendLine($"  {label}:");
+                builder.AppendLine($"    OtherUVUsage: {result.OtherUVUsage}");
+                builder.AppendLine($"    UseVertexIndex: {result.UseVertexIndex}");
+                if (result.TextureUsageInformationList == null)
+                {
+                    builder.AppendLine($"    TextureUsageInformationList: null");
+                }
+                else
+                {
+                    builder.AppendLine($"    TextureUsageInformationList");
+                    foreach (var usageInformation in result.TextureUsageInformationList)
+                    {
+                        builder.AppendLine($"      {usageInformation.MaterialPropertyName}:");
+                        builder.AppendLine($"        UVChannel: {usageInformation.UVChannel}");
+                        builder.AppendLine($"        WrapModeU: {usageInformation.WrapModeU}");
+                        builder.AppendLine($"        WrapModeV: {usageInformation.WrapModeV}");
+                        if (usageInformation.UVMatrix is { } matrix)
+                        {
+                            builder.AppendLine($"        UVMatrix: ");
+                            builder.AppendLine($"          {matrix.M00,-10} {matrix.M01,-10} {matrix.M02,-10}");
+                            builder.AppendLine($"          {matrix.M10,-10} {matrix.M11,-10} {matrix.M12,-10}");
+                        }
+                        else
+                        {
+                            builder.AppendLine($"        UVMatrix: null");
+                        }
+                    }
+                }
+            }
+            else
+            {
+                builder.AppendLine($"  {label}: null");
+            }
+        }
+    }
 }
 
 /// <summary>
@@ -842,10 +933,12 @@ internal class Context
         ReportFile.AddFile("RawAnimations.tree.txt", BugReportHelper.RawAnimationInfo(context.AvatarRootObject));
     }
 
-    public void AddGcDebugInfo(InternalGcDebugPosition position, string collectDataToString, GameObject root)
+    public void AddGcDebugInfo(InternalGcDebugPosition position, string collectDataToString, GameObject root, IEnumerable<MaterialInformation> materials)
     {
         ReportFile.AddFile($"GCDebug.{position}.tree.txt", collectDataToString);
         ReportFile.AddFile($"AvatarInfo.{position}.tree.txt", BugReportHelper.CollectAvatarInfo(root));
+        ReportFile.AddFile($"MaterialInformation.{position}.tree.txt", 
+            BugReportHelper.MaterialInformation(root.transform, materials));
     }
 }
 

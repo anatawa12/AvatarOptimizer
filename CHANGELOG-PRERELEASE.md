@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- More debug information `#1694`
+  - In particular, the decisions made by T&O during optimization are now recorded as tracing logs, and all tracing logs are included in bug reports.
 
 ### Changed
 

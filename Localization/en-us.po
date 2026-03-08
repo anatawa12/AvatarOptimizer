@@ -1300,6 +1300,11 @@ msgstr ""
 "- Some information of mesh\n"
 "- Some animator information\n"
 
+msgid "BugReportHelper:tracing-log"
+msgstr ""
+"You can disable detailed logs to reduce the size of the report, but including detailed logs is recommended to help resolve the issue.\n"
+"Unless you have a specific reason to disable them, or the logs are too large to provide, please keep detailed logging enabled."
+
 msgid "BugReportHelper:play-mode"
 msgstr "Report generation cannot be run in Play Mode. Please exit Play Mode and try again."
 
