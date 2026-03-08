@@ -34,7 +34,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             if (MappingBuilder == null) return;
 
-            Tracing.Trace(TracingArea.ApplyObjectMapping, "Deactivating ObjectMappingContext");
+            Tracing.Trace(TracingArea.ApplyObjectMapping, $"Deactivating ObjectMappingContext");
 
             var mapping = MappingBuilder.BuildObjectMapping();
             var mappingSource = new MappingSourceImpl(mapping);

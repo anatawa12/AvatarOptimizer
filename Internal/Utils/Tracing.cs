@@ -32,11 +32,6 @@ public static class Tracing
 
     public static bool IsEnabled(TracingArea area) => (Enabled & area) != 0;
 
-    public static void Trace(TracingArea area, string msg)
-    {
-        if (IsEnabled(area)) Debug.Log(msg);
-    }
-
     public static void Trace(TracingArea area,
         [InterpolatedStringHandlerArgument("area")] TracingInterpolatedStringHandler builder)
     {
