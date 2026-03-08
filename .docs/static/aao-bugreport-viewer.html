@@ -355,6 +355,14 @@
             background: #4a5cc5;
         }
 
+        .file-action-btn.active {
+            background: #4a5cc5;
+        }
+
+        .file-action-btn.active:hover {
+            background: #3e50b8;
+        }
+
         #file-headers {
             display: none;
             background: #f8f9fa;
@@ -661,6 +669,7 @@
                         </div>
                         <button id="copy-file-btn" class="file-action-btn" title="Copy file contents to clipboard">📋 Copy</button>
                         <button id="download-file-btn" class="file-action-btn" title="Download file">⬇️ Download</button>
+                        <button id="raw-diff-btn" class="file-action-btn" style="display: none;" title="Toggle raw ed-script diff view">📄 Raw Diff</button>
                         <button id="file-headers-toggle" style="display: none;">Show File Headers</button>
                     </div>
                 </div>
@@ -701,6 +710,7 @@
         const reportFilenameSpan = document.getElementById('report-filename');
         const copyFileBtn = document.getElementById('copy-file-btn');
         const downloadFileBtn = document.getElementById('download-file-btn');
+        const rawDiffBtn = document.getElementById('raw-diff-btn');
 
         // Parser
         class AAOBugReportParser {
@@ -824,6 +834,7 @@
                         if (match) {
                             const baseFile = filesByName.get(match[1]);
                             if (baseFile) {
+                                file.rawDiff = file.content;
                                 file.content = this._applyLineDiff(baseFile.content, file.content);
                             }
                         }
@@ -968,6 +979,9 @@
             fileHeadersToggle.style.display = 'inline-block';
             copyFileBtn.style.display = 'inline-block';
             downloadFileBtn.style.display = 'inline-block';
+            rawDiffBtn.style.display = file.rawDiff ? 'inline-block' : 'none';
+            rawDiffBtn.classList.remove('active');
+            rawDiffBtn.textContent = '📄 Raw Diff';
             
             // Display file headers
             displayFileHeaders(file.headers);
@@ -1017,6 +1031,7 @@
             fileHeadersToggle.style.display = 'none';
             copyFileBtn.style.display = 'none';
             downloadFileBtn.style.display = 'none';
+            rawDiffBtn.style.display = 'none';
             fileHeaders.classList.remove('visible');
             document.getElementById('tree-view-controls').style.display = 'none';
             document.getElementById('show-global-headers-btn').classList.add('active');
@@ -2306,6 +2321,23 @@
             document.body.removeChild(a);
             // Revoke URL after click event is processed
             setTimeout(() => URL.revokeObjectURL(url), 100);
+        });
+
+        // Toggle raw ed-script diff view
+        rawDiffBtn.addEventListener('click', () => {
+            if (currentFileIndex === -1) return;
+            const file = parsedData.files[currentFileIndex];
+            if (!file.rawDiff) return;
+
+            if (rawDiffBtn.classList.contains('active')) {
+                // Switch back to resolved view
+                selectFile(currentFileIndex, false);
+            } else {
+                rawDiffBtn.classList.add('active');
+                rawDiffBtn.textContent = '📄 Resolved';
+                document.getElementById('tree-view-controls').style.display = 'none';
+                contentViewer.innerHTML = `<pre id="content-text">${escapeHtml(file.rawDiff)}</pre>`;
+            }
         });
 
         // Handle browser back/forward navigation
