@@ -951,7 +951,7 @@
                 div.className = 'file-item';
                 div.innerHTML = `
                     <div class="file-name">${escapeHtml(file.filename)}</div>
-                    <div class="file-info">${formatFileSize(file.content.length)}</div>
+                    <div class="file-info">${formatFileSize(file.content.length)}${file.rawDiff != null ? ` (diff: ${formatFileSize(file.rawDiff.length)})` : ""}</div>
                 `;
                 div.addEventListener('click', () => selectFile(index));
                 fileList.appendChild(div);
@@ -979,7 +979,7 @@
             fileHeadersToggle.style.display = 'inline-block';
             copyFileBtn.style.display = 'inline-block';
             downloadFileBtn.style.display = 'inline-block';
-            rawDiffBtn.style.display = file.rawDiff ? 'inline-block' : 'none';
+            rawDiffBtn.style.display = file.rawDiff != null ? 'inline-block' : 'none';
             rawDiffBtn.classList.remove('active');
             rawDiffBtn.textContent = '📄 Raw Diff';
             
@@ -2327,7 +2327,7 @@
         rawDiffBtn.addEventListener('click', () => {
             if (currentFileIndex === -1) return;
             const file = parsedData.files[currentFileIndex];
-            if (!file.rawDiff) return;
+            if (file.rawDiff == null) return;
 
             if (rawDiffBtn.classList.contains('active')) {
                 // Switch back to resolved view without pushing a new history entry
