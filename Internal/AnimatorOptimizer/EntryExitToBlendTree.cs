@@ -100,8 +100,19 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             
             // Change parameter types to float
             foreach (ref var parameter in parameters.AsSpan())
+            {
                 if (layerByParameter.ContainsKey(parameter.name))
+                {
+                    parameter.defaultFloat = parameter.type switch
+                    {
+                        AnimatorControllerParameterType.Float => parameter.defaultFloat,
+                        AnimatorControllerParameterType.Int => parameter.defaultInt,
+                        AnimatorControllerParameterType.Bool => parameter.defaultBool ? 1f : 0f,
+                        var t => throw new InvalidOperationException($"Unexpected parameter type {t} for parameter {parameter.name} in controller {controller}"),
+                    };
                     parameter.type = AnimatorControllerParameterType.Float;
+                }
+            }
 
 #if AAO_VRCSDK3_AVATARS
             // Correct parameter drivers to preserve behavior after type change

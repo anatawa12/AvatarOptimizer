@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- The default values for each parameter may be reset to zero `#1698`
+  - This may change behavior if parameter is not controlled by VRC Expressions Parameter
 
 ### Security
 
