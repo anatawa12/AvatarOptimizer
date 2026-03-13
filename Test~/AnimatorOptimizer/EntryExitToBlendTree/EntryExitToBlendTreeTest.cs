@@ -196,6 +196,8 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
         }
 #endif
 
+        #region Issue861
+
         // https://github.com/anatawa12/AvatarOptimizer/issues/861
         // Test conversion with time-dependent clips WITH motion time parameter (should convert)
         [Test]
@@ -524,6 +526,22 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             clip.SetCurve("Body", typeof(GameObject), "m_IsActive", curve);
             
             return clip;
+        }
+
+        #endregion
+
+        // https://github.com/anatawa12/AvatarOptimizer/issues/1697
+        // Default value for animator must be preserved (converted) when converting non-float parameters to float
+        // for entry/exit to blend tree, otherwise it can cause issues with animator parameters without 
+        // VRC Expression Parameter (other default value sources).
+        [Test]
+        public void AnimatorDefaultValueMustBePreserved()
+        {
+            var controller = LoadCloneAnimatorController("AnimatorParameterDefaultValue");
+            controller.name = "AnimatorParameterDefaultValue.converted";
+            EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
+            var except = LoadAnimatorController("AnimatorParameterDefaultValue.converted");
+            RecursiveCheckEquals(except, controller);
         }
     }
 }
