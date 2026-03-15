@@ -86,3 +86,6 @@ AAO will update minimum version of VRChat SDK or Unity in minor version of AAO.\
 AAO will add support for newer version of VRChat SDK or Unity in patch release of AAO.
 
 Dropping older version of VRChat SDK or Unity will be documented in the release notes.
+
+We might remove 'NDMF', VRCSDK or other dependant libraries from dependency when it becomes reasonable to do so
+(like discontinuity of NDMF or VRChat) so do not rely on transitive dependencies of AAO.
