@@ -1363,7 +1363,7 @@ internal struct OptimizeTextureImpl {
             var indexToUv = new List<Vector2>();
             var uvToIndex = new Dictionary<Vector2, int>();
             //var inputVertToUniqueIndex = new List<int>();
-            var vertexToUniqueIndex = new Dictionary<Vertex, int>();
+            var vertexToUniqueIndex = new Dictionary<(Vertex v, int uvChannel), int>();
             {
                 var uniqueUv = 0;
                 foreach (var triangle in triangles)
@@ -1378,7 +1378,15 @@ internal struct OptimizeTextureImpl {
                         }
 
                         //inputVertToUniqueIndex.Add(uvVert);
-                        vertexToUniqueIndex[vertex] = uvVert;
+                        if (vertexToUniqueIndex.TryGetValue((vertex, triangle.UVIndex), out var existingUvVert))
+                        {
+                            if (existingUvVert != uvVert)
+                                throw new InvalidOperationException($"Vertex {vertex} has different UVs: {indexToUv[existingUvVert]} and {uv} (channel {triangle.UVIndex})");
+                        }
+                        else
+                        {
+                            vertexToUniqueIndex.Add((vertex, triangle.UVIndex), uvVert);
+                        }
                     }
                 }
             }
@@ -1396,9 +1404,9 @@ internal struct OptimizeTextureImpl {
             Profiler.BeginSample("Merge vertices");
             foreach (var tri in triangles)
             {
-                int idx_a = vertexToUniqueIndex[tri.zero];
-                int idx_b = vertexToUniqueIndex[tri.one];
-                int idx_c = vertexToUniqueIndex[tri.two];
+                int idx_a = vertexToUniqueIndex[(tri.zero, tri.UVIndex)];
+                int idx_b = vertexToUniqueIndex[(tri.one, tri.UVIndex)];
+                int idx_c = vertexToUniqueIndex[(tri.two, tri.UVIndex)];
 
                 // 三角面に該当するノードを併合
                 VertNode.Merge(nodes, idx_a, idx_b);
@@ -1416,7 +1424,7 @@ internal struct OptimizeTextureImpl {
             Profiler.BeginSample("Add triangles to islands");
             foreach (var tri in triangles)
             {
-                int idx = vertexToUniqueIndex[tri.zero];
+                int idx = vertexToUniqueIndex[(tri.zero, tri.UVIndex)];
 
                 nodes[VertNode.Find(nodes, idx)].AddTriangle(tri, islands);
             }
