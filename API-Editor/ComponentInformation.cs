@@ -149,29 +149,55 @@ namespace Anatawa12.AvatarOptimizer.API
         }
 
         /// <summary>
+        /// <para>
         /// Marks this component as EntryPoint component.
+        /// </para>
         ///
+        /// <para>
         /// Avatar Optimizer will recognize EntryPoint compponents as components that have side effects to outside the avatar. 
         /// Therefore, Avatar Optimizer will not remove such a components if the component can be active and enabled.
         /// Please note that Avatar Optimizer may remove the component if the component is not active or enabled.
+        /// </para>
+        ///
+        /// <para>
+        /// If your component does NOT have checkbox on the inspector (i.e. the component does not have Start / Update event functions),
+        /// your component will be treated as enabled regardless of the enabled property to prevent confusion.
+        /// </para>
+        ///
+        /// <para>
+        /// If your component needs to be kept regardless of the enabled state, you should mark your component dependency
+        /// component of avatar root GameObject with <see cref="AddDependency(UnityEngine.Component?,UnityEngine.Component?)"/>
+        /// instead of marking as EntryPoint.
+        /// EntryPoint components will be removed if the component is not active or enabled as mentioned above.
+        /// </para>
+        /// </summary>
         /// 
+        /// <example>
+        /// <para>
         /// For example, Renderer components have side effects because it renders something.
         /// VRC Contacts have some effects to other avatars in the instance, so they have side effects.
+        /// </para>
         /// 
+        /// <para>
         /// If your component has some effects only for some specific component(s) in the avatar,
         /// you should not mark your component as EntryPoint.
         /// You should declare dependency relationship from affecting component to your component instead.
         /// This allows Avatar Optimizer to remove your component if the affecting component is removed.
+        /// </para>
         /// 
+        /// <para>
         /// One of components that is not EntryPoint is VRCPhysBone without animating parameters.
         /// VRCPhysBone only affects a specific subset of the transforms in the avatar.
         /// Therefore, VRCPhysBone has no effects if the affected transforms are not used by any Renderers or some other EntryPoint components.
         /// So, VRCPhysBone are not marked as EntryPoint and they declare bidirectional dependency relationship between
         /// PhysBone and PhysBone-affected transforms.
+        /// </para>
         ///
+        /// <para>
         /// With same reasons, Constraints are not treated as EntryPoint, they have bidirectional
         /// dependency relationship between Constraints and transform instead.
-        /// </summary>
+        /// </para>
+        /// </example>
         [PublicAPI]
         public abstract void MarkEntrypoint();
 
