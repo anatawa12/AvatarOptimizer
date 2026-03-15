@@ -154,19 +154,19 @@ namespace Anatawa12.AvatarOptimizer.API
         /// </para>
         ///
         /// <para>
-        /// Avatar Optimizer will recognize EntryPoint compponents as components that have side effects to outside the avatar. 
+        /// Avatar Optimizer will recognize EntryPoint components as components that have side effects to outside the avatar. 
         /// Therefore, Avatar Optimizer will not remove such a components if the component can be active and enabled.
         /// Please note that Avatar Optimizer may remove the component if the component is not active or enabled.
         /// </para>
         ///
         /// <para>
-        /// If your component does NOT have checkbox on the inspector (i.e. the component does not have Start / Update event functions),
+        /// If your component does NOT have an enabled checkbox in the Inspector (i.e. the component is not toggleable),
         /// your component will be treated as enabled regardless of the enabled property to prevent confusion.
         /// </para>
         ///
         /// <para>
         /// If your component needs to be kept regardless of the enabled state, you should mark your component dependency
-        /// component of avatar root GameObject with <see cref="AddDependency(UnityEngine.Component?,UnityEngine.Component?)"/>
+        /// component of avatar root GameObject with <see cref="AddDependency(UnityEngine.Component,UnityEngine.Component)"/>
         /// instead of marking as EntryPoint.
         /// EntryPoint components will be removed if the component is not active or enabled as mentioned above.
         /// </para>
