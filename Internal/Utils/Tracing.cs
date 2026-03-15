@@ -37,6 +37,12 @@ public static class Tracing
     {
         if (IsEnabled(area)) Debug.Log(builder.GetFormattedText());
     }
+
+    public static void TraceError(TracingArea area,
+        [InterpolatedStringHandlerArgument("area")] TracingInterpolatedStringHandler builder)
+    {
+        if (IsEnabled(area)) Debug.LogError(builder.GetFormattedText());
+    }
 }
 
 [Flags]
@@ -46,6 +52,8 @@ public enum TracingArea : uint
     BuildObjectMapping = 2,
     AnimatorParser = 4,
     TraceAndOptimizeDecision = 8,
+    OptimizeTexture = 16,
+    Assertions = 32,
     None = 0,
     All = uint.MaxValue,
 }

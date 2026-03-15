@@ -523,7 +523,7 @@ internal struct OptimizeTextureImpl {
                                 vertex = originalVertex.Clone();
                                 newVertexMap.Add(originalVertex, vertex);
                                 meshInfo2.VerticesMutable.Add(vertex);
-                                TraceLog("Duplicating vertex");
+                                Tracing.Trace(TracingArea.OptimizeTexture, $"Duplicating vertex");
                             }
 
                             foreach (var (uvChannel, newUV) in newUVList)
@@ -557,12 +557,6 @@ internal struct OptimizeTextureImpl {
             var possibleValues = animation.Value.PossibleValues;
             return (safeToMerge: false, materials: possibleValues.OfType<Material>());
         }
-    }
-
-    [Conditional("AAO_OPTIMIZE_TEXTURE_TRACE_LOG")]
-    private static void TraceLog(string message)
-    {
-        Debug.Log(message);
     }
 
     internal struct AtlasResult
@@ -605,7 +599,7 @@ internal struct OptimizeTextureImpl {
 
         if (AfterAtlasSizesSmallToBig(atlasIslands) is not {} atlasSizes)
         {
-            TraceLog($"{string.Join(", ", textures)} will not merged because island size does not fit criteria");
+            Tracing.Trace(TracingArea.OptimizeTexture, $"{string.Join(", ", textures)} will not merged because island size does not fit criteria");
             return AtlasResult.Empty;
         }
 
@@ -614,12 +608,12 @@ internal struct OptimizeTextureImpl {
             if (TryAtlasTexture(atlasIslands, atlasSize))
             {
                 // Good News! We did it!
-                TraceLog($"Good News! We did it!: {atlasSize}");
+                Tracing.Trace(TracingArea.OptimizeTexture, $"Good News! We did it!: {atlasSize}");
                 return BuildAtlasResult(atlasIslands, atlasSize, textures, useBlockCopying: true);
             }
             else
             {
-                TraceLog($"Failed to atlas with {atlasSize}");
+                Tracing.Trace(TracingArea.OptimizeTexture, $"Failed to atlas with {atlasSize}");
             }
         }
 
@@ -653,6 +647,20 @@ internal struct OptimizeTextureImpl {
         var triangles = users.SelectMany(TrianglesByUVID).ToList();
         var islands = IslandUtility.UVtoIsland(triangles);
 
+        if (Tracing.IsEnabled(TracingArea.Assertions))
+        {
+            foreach (var island in islands)
+            {
+                if (island.triangles.Count == 0) Tracing.TraceError(TracingArea.Assertions, $"Island with no triangle found");
+                if (island.triangles.Any(x => x.Any(v =>
+                    {
+                        var uv = (Vector2)v.GetTexCoord(x.UVIndex);
+                        return island.MinPos.x > uv.x || uv.x > island.MaxPos.x || island.MinPos.y > uv.y || uv.y > island.MaxPos.y;
+                    })))
+                    Tracing.TraceError(TracingArea.Assertions, $"Island with triangle outside of bounding box found (min: {island.MinPos}, max: {island.MaxPos}, triangles: {string.Join(", ", island.triangles.Select(x => $"({string.Join(", ", x.Select(v => (Vector2)v.GetTexCoord(x.UVIndex)))})"))})");
+            }
+        }
+
         var atlasIslands = new List<AtlasIsland>(islands.Count);
 
         foreach (var island in islands)
@@ -673,7 +681,7 @@ internal struct OptimizeTextureImpl {
                 var currentTileY = Mathf.FloorToInt(vertex.GetTexCoord(islandTriangle.UVIndex).y);
                 if (currentTileX != tileU || currentTileY != tileV)
                 {
-                    TraceLog($"{string.Join(", ", users)} will not merged because UV is not in same tile");
+                    Tracing.Trace(TracingArea.OptimizeTexture, $"{string.Join(", ", users)} will not merged because UV is not in same tile");
                     return null;
                 }
             }
@@ -685,21 +693,21 @@ internal struct OptimizeTextureImpl {
                     case null:
                         if (tile != 0)
                         {
-                            TraceLog($"{string.Join(", ", users)} will not merged because UV is tile-ed but wrap mode is unknown");
+                            Tracing.Trace(TracingArea.OptimizeTexture, $"{string.Join(", ", users)} will not merged because UV is tile-ed but wrap mode is unknown");
                             return null;
                         }
                         break;
                     case TextureWrapMode.Clamp:
                         if (tile != 0)
                         {
-                            TraceLog($"{string.Join(", ", users)} will not merged because UV is tile-ed and wrap mode is clamp");
+                            Tracing.Trace(TracingArea.OptimizeTexture, $"{string.Join(", ", users)} will not merged because UV is tile-ed and wrap mode is clamp");
                             return null;
                         }
                         break;
                     case TextureWrapMode.MirrorOnce:
                         if (tile is not -1 and not 0)
                         {
-                            TraceLog($"{string.Join(", ", users)} will not merged because UV is tile-ed and wrap mode is MirrorOnce");
+                            Tracing.Trace(TracingArea.OptimizeTexture, $"{string.Join(", ", users)} will not merged because UV is tile-ed and wrap mode is MirrorOnce");
                             return null;
                         }
                         break;
@@ -765,7 +773,7 @@ internal struct OptimizeTextureImpl {
 
             if (!width.IsPowerOfTwo() || !height.IsPowerOfTwo())
             {
-                TraceLog($"{string.Join(", ", textures)} will not merged because {texture2D} is not power of two");
+                Tracing.Trace(TracingArea.OptimizeTexture, $"{string.Join(", ", textures)} will not merged because {texture2D} is not power of two");
                 return null;
             }
 
@@ -802,7 +810,7 @@ internal struct OptimizeTextureImpl {
         var blockSizeRatioY = (float)blockSizeY / maxResolution;
         var paddingRatio = (float)paddingSize / maxResolution;
 
-        TraceLog($"blockSizeX: {blockSizeX}, blockSizeY: {blockSizeY}");
+        Tracing.Trace(TracingArea.OptimizeTexture, $"blockSizeX: {blockSizeX}, blockSizeY: {blockSizeY}");
 
         return (blockSizeRatioX, blockSizeRatioY, paddingRatio);
     }
@@ -866,7 +874,7 @@ internal struct OptimizeTextureImpl {
                 var destTextureData = new byte[(int)destMipmapSize];
                 var destTextureDataSpan = destTextureData.AsSpan();
 
-                TraceLog($"MipmapSize for {newWidth}x{newHeight} is {destMipmapSize} and data is {sourceTextureData.Length}");
+                Tracing.Trace(TracingArea.OptimizeTexture, $"MipmapSize for {newWidth}x{newHeight} is {destMipmapSize} and data is {sourceTextureData.Length}");
 
                 var blockWidth = (int)GraphicsFormatUtility.GetBlockWidth(texture2D.format);
                 var blockHeight = (int)GraphicsFormatUtility.GetBlockHeight(texture2D.format);
@@ -919,7 +927,7 @@ internal struct OptimizeTextureImpl {
             else
             {
                 var format = Utils.GetRenderingFormatForTexture(texture2D.format, isSRGB: texture2D.isDataSRGB);
-                TraceLog($"Using format {format} ({texture2D.format})");
+                Tracing.Trace(TracingArea.OptimizeTexture, $"Using format {format} ({texture2D.format})");
                 using var tempTexture = Utils.TemporaryRenderTexture(newWidth, newHeight, depthBuffer: 0, format: format);
                 HelperMaterial.SetTexture(MainTexProp, texture2D);
                 HelperMaterial.SetInt(NoClipProp, 1);
@@ -1073,7 +1081,7 @@ internal struct OptimizeTextureImpl {
         var maxIslandSizeX = islands.Max(x => x.Size.x);
         var maxIslandSizeY = islands.Max(x => x.Size.y);
 
-        TraceLog($"Starting Atlas with maxX: {maxIslandSizeX}, maxY: {maxIslandSizeY}");
+        Tracing.Trace(TracingArea.OptimizeTexture, $"Starting Atlas with maxX: {maxIslandSizeX}, maxY: {maxIslandSizeY}");
 
         return AfterAtlasSizesSmallToBigGenerator(totalIslandSize, new Vector2(maxIslandSizeX, maxIslandSizeY));
     }
@@ -1271,6 +1279,16 @@ internal struct OptimizeTextureImpl {
                     island.MaxPos = max;
                 }
 
+                if (Tracing.IsEnabled(TracingArea.Assertions))
+                {
+                    foreach (var vertex in idx)
+                    {
+                        var uv = (Vector2)vertex.GetTexCoord(idx.UVIndex);
+                        if (island.MinPos.x > uv.x || uv.x > island.MaxPos.x || island.MinPos.y > uv.y || uv.y > island.MaxPos.y)
+                            Tracing.TraceError(TracingArea.Assertions, $"Adding triangle outside of bounding box to island: {island.MinPos}, {island.MaxPos}, triangle: ({string.Join(", ", idx.Select(v => (Vector2)v.GetTexCoord(idx.UVIndex)))})");
+                    }
+                }
+
                 island.triangles.Add(idx);
             }
         }
@@ -1345,7 +1363,7 @@ internal struct OptimizeTextureImpl {
             var indexToUv = new List<Vector2>();
             var uvToIndex = new Dictionary<Vector2, int>();
             //var inputVertToUniqueIndex = new List<int>();
-            var vertexToUniqueIndex = new Dictionary<Vertex, int>();
+            var vertexToUniqueIndex = new Dictionary<(Vertex v, int uvChannel), int>();
             {
                 var uniqueUv = 0;
                 foreach (var triangle in triangles)
@@ -1360,7 +1378,15 @@ internal struct OptimizeTextureImpl {
                         }
 
                         //inputVertToUniqueIndex.Add(uvVert);
-                        vertexToUniqueIndex[vertex] = uvVert;
+                        if (vertexToUniqueIndex.TryGetValue((vertex, triangle.UVIndex), out var existingUvVert))
+                        {
+                            if (existingUvVert != uvVert)
+                                throw new InvalidOperationException($"Vertex {vertex} has different UVs: {indexToUv[existingUvVert]} and {uv} (channel {triangle.UVIndex})");
+                        }
+                        else
+                        {
+                            vertexToUniqueIndex.Add((vertex, triangle.UVIndex), uvVert);
+                        }
                     }
                 }
             }
@@ -1378,9 +1404,9 @@ internal struct OptimizeTextureImpl {
             Profiler.BeginSample("Merge vertices");
             foreach (var tri in triangles)
             {
-                int idx_a = vertexToUniqueIndex[tri.zero];
-                int idx_b = vertexToUniqueIndex[tri.one];
-                int idx_c = vertexToUniqueIndex[tri.two];
+                int idx_a = vertexToUniqueIndex[(tri.zero, tri.UVIndex)];
+                int idx_b = vertexToUniqueIndex[(tri.one, tri.UVIndex)];
+                int idx_c = vertexToUniqueIndex[(tri.two, tri.UVIndex)];
 
                 // 三角面に該当するノードを併合
                 VertNode.Merge(nodes, idx_a, idx_b);
@@ -1398,7 +1424,7 @@ internal struct OptimizeTextureImpl {
             Profiler.BeginSample("Add triangles to islands");
             foreach (var tri in triangles)
             {
-                int idx = vertexToUniqueIndex[tri.zero];
+                int idx = vertexToUniqueIndex[(tri.zero, tri.UVIndex)];
 
                 nodes[VertNode.Find(nodes, idx)].AddTriangle(tri, islands);
             }
