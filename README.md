@@ -87,5 +87,5 @@ AAO will add support for newer version of VRChat SDK or Unity in patch release o
 
 Dropping older version of VRChat SDK or Unity will be documented in the release notes.
 
-We might remove 'NDMF', VRCSDK or other dependent libraries from dependency when it becomes reasonable to do so
-(like discontinuity of NDMF or VRChat) so do not rely on transitive dependencies of AAO.
+We might stop listing 'NDMF', VRCSDK, or other libraries as direct dependencies of AAO when it becomes reasonable to do so
+(for example, if NDMF or VRChat is discontinued), so do not rely on transitive dependencies of AAO and instead declare any required dependencies explicitly in your own project.
