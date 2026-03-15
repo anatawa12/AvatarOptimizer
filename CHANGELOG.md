@@ -21,6 +21,8 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - The default values for each parameter may be reset to zero `#1698`
   - This may change behavior if parameter is not controlled by VRC Expressions Parameter
+- Optimize Texture may break textures with multiple UV channel used by same texture `#1700`
+  - This was longstanding issue but 1.9.7 relaxed condition to apply to Optimize Texture, which made this issue more likely to be encountered.
 
 ### Security
 
