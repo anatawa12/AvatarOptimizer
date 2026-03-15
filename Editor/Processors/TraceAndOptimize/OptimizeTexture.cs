@@ -647,6 +647,20 @@ internal struct OptimizeTextureImpl {
         var triangles = users.SelectMany(TrianglesByUVID).ToList();
         var islands = IslandUtility.UVtoIsland(triangles);
 
+        if (Tracing.IsEnabled(TracingArea.Assertions))
+        {
+            foreach (var island in islands)
+            {
+                if (island.triangles.Count == 0) Tracing.TraceError(TracingArea.Assertions, $"Island with no triangle found");
+                if (island.triangles.Any(x => x.Any(v =>
+                    {
+                        var uv = (Vector2)v.GetTexCoord(x.UVIndex);
+                        return island.MinPos.x > uv.x || uv.x > island.MaxPos.x || island.MinPos.y > uv.y || uv.y > island.MaxPos.y;
+                    })))
+                    Tracing.TraceError(TracingArea.Assertions, $"Island with triangle outside of bounding box found (min: {island.MinPos}, max: {island.MaxPos}, triangles: {string.Join(", ", island.triangles.Select(x => $"({string.Join(", ", x.Select(v => (Vector2)v.GetTexCoord(x.UVIndex)))})"))})");
+            }
+        }
+
         var atlasIslands = new List<AtlasIsland>(islands.Count);
 
         foreach (var island in islands)
@@ -1263,6 +1277,16 @@ internal struct OptimizeTextureImpl {
 
                     island.MinPos = min;
                     island.MaxPos = max;
+                }
+
+                if (Tracing.IsEnabled(TracingArea.Assertions))
+                {
+                    foreach (var vertex in idx)
+                    {
+                        var uv = (Vector2)vertex.GetTexCoord(idx.UVIndex);
+                        if (island.MinPos.x > uv.x || uv.x > island.MaxPos.x || island.MinPos.y > uv.y || uv.y > island.MaxPos.y)
+                            Tracing.TraceError(TracingArea.Assertions, $"Adding triangle outside of bounding box to island: {island.MinPos}, {island.MaxPos}, triangle: ({string.Join(", ", idx.Select(v => (Vector2)v.GetTexCoord(idx.UVIndex)))})");
+                    }
                 }
 
                 island.triangles.Add(idx);
