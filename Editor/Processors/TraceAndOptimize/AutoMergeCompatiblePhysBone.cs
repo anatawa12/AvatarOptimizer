@@ -24,6 +24,9 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
 
     protected override void Execute(BuildContext context, TraceAndOptimizeState state)
     {
+        var map = DependantMap.CreateEntrypointsMap(context);
+        var componentInfos = context.Extension<GCComponentInfoContext>();
+
         var physBonesByKey = new Dictionary<PbInfo, List<VRCPhysBone>>();
         foreach (var physBone in context.GetComponents<VRCPhysBone>()
                      .GroupBy(x => x.GetTarget())
@@ -41,6 +44,14 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
 
             // If the physBone is toggled by toggling the GameObject, it cannot be merged.
             if (toggleRoot == physBone.gameObject)
+                continue;
+
+            var rootTransform = physBone.GetTarget();   
+            // If the root transform is not allowed to be renamed, creating new root is not allowed thus skip merging.
+            // typical case is humanoid bone mapping of animator (physbones on humanoid is not supported though).
+            // We don't need to check all dependencies because no children will be changed by merge; only root transform is.
+            // https://github.com/anatawa12/AvatarOptimizer/issues/1703
+            if ((map.MergedUsages(componentInfos.GetInfo(rootTransform)) & GCComponentInfo.DependencyType.ObjectName) != 0)
                 continue;
 
             var key = new PbInfo(physBone, toggleRoot);
