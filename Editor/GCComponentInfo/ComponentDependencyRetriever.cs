@@ -472,7 +472,7 @@ namespace Anatawa12.AvatarOptimizer
                     }
 
                     foreach (var dependency in _dependencies)
-                        _dependantInformation.AddDependency(dependency, GCComponentInfo.DependencyType.Normal);
+                        _dependantInformation.AddDependency(dependency, GCComponentInfo.DependencyType.ObjectName);
                 }
 
                 public override API.PathDependencyInfo EvenIfDependantDisabled()

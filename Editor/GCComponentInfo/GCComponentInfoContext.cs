@@ -158,6 +158,7 @@ namespace Anatawa12.AvatarOptimizer
         public void AddDependency(Component? dependency, DependencyType addType = DependencyType.Normal)
         {
             if (dependency == null) return;
+            if (addType == DependencyType.ObjectName && !(dependency is Transform)) throw new ArgumentException("ObjectName dependency is only valid for Transform", nameof(addType));
 
             Dependencies.TryGetValue(dependency, out var type);
             Dependencies[dependency] = type | addType;
@@ -188,6 +189,7 @@ namespace Anatawa12.AvatarOptimizer
             ComponentToTransform = 1 << 2,
             Bone = 1 << 3,
             PhysBone = 1 << 4,
+            ObjectName = 1 << 5, // part of path dependency, parent should not be changed and name should not be changed. only valid for Transform
         }
 
         public override string ToString() => "GCComponentInfo(" + Component.GetType().Name + " on " + Component.gameObject.name + ")";
