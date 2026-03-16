@@ -11,7 +11,7 @@ The format is based on [Keep a Changelog].
 
 ### Changed
 - Reduced size of log part of report file `#1705`
-  - There were many unnecessary stack trace elements in the report. This release removes meaningless part of stack trace.
+  - There were many unnecessary stack trace elements in the report. This release removes meaningless parts of the stack trace.
 
 ### Deprecated
 
