@@ -25,7 +25,7 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
     protected override void Execute(BuildContext context, TraceAndOptimizeState state)
     {
         var map = DependantMap.CreateEntrypointsMap(context);
-        var componentInfos = context.ActivateExtensionContext<GCComponentInfoContext>();
+        var componentInfos = context.Extension<GCComponentInfoContext>();
 
         var physBonesByKey = new Dictionary<PbInfo, List<VRCPhysBone>>();
         foreach (var physBone in context.GetComponents<VRCPhysBone>()
