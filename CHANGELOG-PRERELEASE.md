@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Reduced size of log part of report file `#1705`
+  - There were many unnecessary stack trace elements in the report. This release removes meaningless part of stack trace.
 
 ### Deprecated
 

@@ -11,8 +11,8 @@ The format is based on [Keep a Changelog].
 - More debug information `#1689` `#1694`
 
 ### Changed
-- Reduced size of report file a little `#1695`
-  - With add information, the overall size may be increased, but report file should be smaller with same information as before.
+- Reduced size of report file a little `#1695` `#1705`
+  - With information added in this release, the overall size may be increased, but report file should be smaller with same information as before.
 
 ### Deprecated
 
