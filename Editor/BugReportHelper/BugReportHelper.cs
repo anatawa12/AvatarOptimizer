@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -14,6 +15,7 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 using VRC.Dynamics;
+using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.BugReportHelper;
@@ -676,15 +678,21 @@ internal class BugReportHelper : EditorWindow
     {
         ILogHandler? _upstream;
         StringBuilder _builder = new StringBuilder();
+        private readonly StackTrace _stacktrace;
 
-        public BugReporterLogHandler(ILogHandler? upstream) => _upstream = upstream;
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public BugReporterLogHandler(ILogHandler? upstream, int skipFrames = 0)
+        {
+            _upstream = upstream;
+            _stacktrace = new StackTrace(skipFrames: skipFrames + 1);
+        }
 
         public void LogFormat(LogType logType, Object context, string format, params object[] args)
         {
             _upstream?.LogFormat(logType, context, format, args);
             // log with timestamp, logtype, message, and stacktrace
             _builder.AppendLine($"[{DateTime.Now:HH:mm:ss.fff}] [{logType}] {string.Format(format, args)}");
-            _builder.AppendLine(Environment.StackTrace);
+            _builder.AppendLine(GetStackTrace());
             _builder.AppendLine();
         }
 
@@ -695,6 +703,57 @@ internal class BugReportHelper : EditorWindow
             _builder.AppendLine($"[{DateTime.Now:HH:mm:ss.fff}] [Exception] {exception}");
             _builder.AppendLine(exception.StackTrace);
             _builder.AppendLine();
+        }
+
+        private string GetStackTrace()
+        {
+            var current = new StackTrace();
+            // we generally expect this is called from UnityEngine.Debug class so top few frames are not useful.
+            // we only keep last top 'UnityEngine.Debug' frame and frames after that.
+            // also, we generally expect this is called from the location BugReporterHelper is created, and 
+            // several bottom frames are not useful too. we compare with _stacktrace and remove frames from the bottom until we find a different frame.
+
+            var currentFrames = (current.GetFrames() ?? Array.Empty<StackFrame>()).AsSpan();
+            var baseFrames = (_stacktrace.GetFrames() ?? Array.Empty<StackFrame>()).AsSpan();
+
+            // trim bottom
+            while ((currentFrames.Length != 0 && baseFrames.Length != 0)
+                   && currentFrames[^1].ToString() == baseFrames[^1].ToString())
+            {
+                currentFrames = currentFrames[..^1];
+                baseFrames = baseFrames[..^1];
+            }
+
+            // trim head (UnityEngine.Debug frames)
+            for (var firstDebugFrameIndex = 0; firstDebugFrameIndex < currentFrames.Length; firstDebugFrameIndex++)
+            {
+                var currentFrame = currentFrames[firstDebugFrameIndex];
+                if (currentFrame.GetMethod().DeclaringType?.FullName == typeof(Debug).FullName)
+                {
+                    // we found first Debug frame, we find next frame which is not Debug frame and trim head until that frame
+                    for (var firstNonDebugFrameIndex = firstDebugFrameIndex + 1; firstNonDebugFrameIndex < currentFrames.Length; firstNonDebugFrameIndex++)
+                    {
+                        var nonDebugFrame = currentFrames[firstNonDebugFrameIndex];
+                        if (nonDebugFrame.GetMethod().DeclaringType?.FullName != typeof(Debug).FullName)
+                        {
+                            // we want to keep single Debug frame, so we trim until firstNonDebugFrameIndex - 1
+                            currentFrames = currentFrames[(firstNonDebugFrameIndex - 1)..];
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+
+            // convert to string
+            // use internal constructor with StackFrame[] to create StackTrace, and call ToString() to get formatted stack trace string.
+            // TODO(unity6000): When unity moved to coreclr, move to IEnumerable<StackFrame> public constructor instead of using internal constructor.
+            var trimmedStackTrace = (StackTrace)System.Activator.CreateInstance(typeof(StackTrace), 
+                bindingAttr: System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, 
+                binder: null, 
+                args: new object[] { currentFrames.ToArray() }, 
+                culture: null)!;
+            return trimmedStackTrace.ToString();
         }
 
         public string GetLog()
