@@ -10,22 +10,27 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Reduced size of log part of report file `#1705`
-  - There were many unnecessary stack trace elements in the report. This release removes meaningless parts of the stack trace.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- The default values for each parameter may be reset to zero `#1698`
-  - This may change behavior if parameter is not controlled by VRC Expressions Parameter
-- Optimize Texture may break textures with multiple UV channel used by same texture `#1700`
-  - This was longstanding issue but 1.9.7 relaxed condition to apply to Optimize Texture, which made this issue more likely to be encountered.
-- Auto Merge PhysBone may break humanoid bone mapping if there are PhysBones targeting humanoid bones `#1704`
-  - PhysBones targeting humanoid bones are not supported by VRChat, but we added support since some avatars have them and working in some cases.
 
 ### Security
+
+## [1.9.8-beta.3] - 2026-03-16
+### Changed
+- Reduced size of log part of report file [`#1705`](https://github.com/anatawa12/AvatarOptimizer/pull/1705)
+  - There were many unnecessary stack trace elements in the report. This release removes meaningless parts of the stack trace.
+
+### Fixed
+- The default values for each parameter may be reset to zero [`#1698`](https://github.com/anatawa12/AvatarOptimizer/pull/1698)
+  - This may change behavior if parameter is not controlled by VRC Expressions Parameter
+- Optimize Texture may break textures with multiple UV channel used by same texture [`#1700`](https://github.com/anatawa12/AvatarOptimizer/pull/1700)
+  - This was longstanding issue but 1.9.7 relaxed condition to apply to Optimize Texture, which made this issue more likely to be encountered.
+- Auto Merge PhysBone may break humanoid bone mapping if there are PhysBones targeting humanoid bones [`#1704`](https://github.com/anatawa12/AvatarOptimizer/pull/1704)
+  - PhysBones targeting humanoid bones are not supported by VRChat, but we added support since some avatars have them and working in some cases.
 
 ## [1.9.8-beta.2] - 2026-03-08
 ### Added
@@ -2209,7 +2214,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.8-beta.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.8-beta.3...HEAD
+[1.9.8-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.8-beta.2...v1.9.8-beta.3
 [1.9.8-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.8-beta.1...v1.9.8-beta.2
 [1.9.8-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.7...v1.9.8-beta.1
 [1.9.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.6...v1.9.7
