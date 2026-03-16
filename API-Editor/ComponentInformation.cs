@@ -165,9 +165,9 @@ namespace Anatawa12.AvatarOptimizer.API
         /// </para>
         ///
         /// <para>
-        /// If your component needs to be kept regardless of the enabled state, you should mark your component dependency
-        /// component of avatar root GameObject with <see cref="AddDependency(UnityEngine.Component,UnityEngine.Component)"/>
-        /// instead of marking as EntryPoint.
+        /// If your component needs to be kept regardless of the enabled state, you should mark your component
+        /// as dependency component of avatar root GameObject
+        /// with <see cref="AddDependency(UnityEngine.Component,UnityEngine.Component)"/> instead of marking as EntryPoint.
         /// EntryPoint components will be removed when the component is not active or not enabled, as mentioned above.
         /// </para>
         /// </summary>
