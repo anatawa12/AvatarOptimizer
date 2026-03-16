@@ -728,13 +728,17 @@ internal class BugReportHelper : EditorWindow
             for (var firstDebugFrameIndex = 0; firstDebugFrameIndex < currentFrames.Length; firstDebugFrameIndex++)
             {
                 var currentFrame = currentFrames[firstDebugFrameIndex];
-                if (currentFrame.GetMethod().DeclaringType?.FullName == typeof(Debug).FullName)
+                var frameMethodType = currentFrame.GetMethod()?.DeclaringType;
+                if (frameMethodType == null) break;
+                if (frameMethodType.FullName == typeof(Debug).FullName)
                 {
                     // we found first Debug frame, we find next frame which is not Debug frame and trim head until that frame
                     for (var firstNonDebugFrameIndex = firstDebugFrameIndex + 1; firstNonDebugFrameIndex < currentFrames.Length; firstNonDebugFrameIndex++)
                     {
                         var nonDebugFrame = currentFrames[firstNonDebugFrameIndex];
-                        if (nonDebugFrame.GetMethod().DeclaringType?.FullName != typeof(Debug).FullName)
+                        var nonDebugFrameMethodType = nonDebugFrame.GetMethod()?.DeclaringType;
+                        if (nonDebugFrameMethodType == null) break; // we don't expect to have non-native or non-class frame between this and debug frame.
+                        if (nonDebugFrameMethodType.FullName != typeof(Debug).FullName)
                         {
                             // we want to keep single Debug frame, so we trim until firstNonDebugFrameIndex - 1
                             currentFrames = currentFrames[(firstNonDebugFrameIndex - 1)..];
