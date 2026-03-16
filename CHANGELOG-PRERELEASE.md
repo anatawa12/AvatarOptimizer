@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog].
   - This may change behavior if parameter is not controlled by VRC Expressions Parameter
 - Optimize Texture may break textures with multiple UV channel used by same texture `#1700`
   - This was longstanding issue but 1.9.7 relaxed condition to apply to Optimize Texture, which made this issue more likely to be encountered.
+- Auto Merge PhysBone may break humanoid bone mapping if there are PhysBones targeting humanoid bones `#1704`
+  - PhysBones targeting humanoid bones are not supported by VRChat, but we added support since some avatars have them and working in some cases.
 
 ### Security
 
