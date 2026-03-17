@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.9.8] - 2026-03-17
 ## [1.9.8-beta.3] - 2026-03-16
 ### Changed
 - Reduced size of log part of report file [`#1705`](https://github.com/anatawa12/AvatarOptimizer/pull/1705)
@@ -2214,7 +2215,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.8-beta.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.8...HEAD
+[1.9.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.8-beta.3...v1.9.8
 [1.9.8-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.8-beta.2...v1.9.8-beta.3
 [1.9.8-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.8-beta.1...v1.9.8-beta.2
 [1.9.8-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.7...v1.9.8-beta.1

@@ -8,25 +8,32 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- More debug information `#1689` `#1694`
 
 ### Changed
-- Reduced size of report file a little `#1695` `#1705`
-  - With information added in this release, the overall size may be increased, but report file should be smaller with same information as before.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- The default values for each parameter may be reset to zero `#1698`
-  - This may change behavior if parameter is not controlled by VRC Expressions Parameter
-- Optimize Texture may break textures with multiple UV channel used by same texture `#1700`
-  - This was longstanding issue but 1.9.7 relaxed condition to apply to Optimize Texture, which made this issue more likely to be encountered.
-- Auto Merge PhysBone may break humanoid bone mapping if there are PhysBones targeting humanoid bones `#1704`
-  - PhysBones targeting humanoid bones are not supported by VRChat, but we added support since some avatars have them and working in some cases.
 
 ### Security
+
+## [1.9.8] - 2026-03-17
+### Added
+- More debug information [`#1689`](https://github.com/anatawa12/AvatarOptimizer/pull/1689) [`#1694`](https://github.com/anatawa12/AvatarOptimizer/pull/1694)
+
+### Changed
+- Reduced size of report file a little [`#1695`](https://github.com/anatawa12/AvatarOptimizer/pull/1695) [`#1705`](https://github.com/anatawa12/AvatarOptimizer/pull/1705)
+  - With information added in this release, the overall size may be increased, but report file should be smaller with same information as before.
+
+### Fixed
+- The default values for each parameter may be reset to zero [`#1698`](https://github.com/anatawa12/AvatarOptimizer/pull/1698)
+  - This may change behavior if parameter is not controlled by VRC Expressions Parameter
+- Optimize Texture may break textures with multiple UV channel used by same texture [`#1700`](https://github.com/anatawa12/AvatarOptimizer/pull/1700)
+  - This was longstanding issue but 1.9.7 relaxed condition to apply to Optimize Texture, which made this issue more likely to be encountered.
+- Auto Merge PhysBone may break humanoid bone mapping if there are PhysBones targeting humanoid bones [`#1704`](https://github.com/anatawa12/AvatarOptimizer/pull/1704)
+  - PhysBones targeting humanoid bones are not supported by VRChat, but we added support since some avatars have them and working in some cases.
 
 ## [1.9.7] - 2026-02-22
 ### Fixed
@@ -1424,7 +1431,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.7...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.8...HEAD
+[1.9.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.7...v1.9.8
 [1.9.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.6...v1.9.7
 [1.9.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.5...v1.9.6
 [1.9.5]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.4...v1.9.5
