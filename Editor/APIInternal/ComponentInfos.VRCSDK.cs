@@ -645,5 +645,49 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         {
         }
     }
+
+#if AAO_VRCSDK3_AVATARS_VRC_RAYCAST
+    [ComponentInformation(typeof(VRCRaycast))]
+    internal class VRCRaycastInformation : ComponentInformation<VRCRaycast>
+    {
+        protected override void CollectDependency(VRCRaycast component, ComponentDependencyCollector collector)
+        {
+            var transform = GetResultTransform(component);
+            if (transform == null) return; // Raycast do nothing if target is null
+            collector.AddDependency(transform, component);
+        }
+
+        protected override void CollectMutations(VRCRaycast component, ComponentMutationsCollector collector)
+        {
+            var transform = GetResultTransform(component);
+            if (transform == null) return; // Raycast do nothing if target is null
+            collector.TransformPosition(transform);
+            if (GetApplyRotation(component))
+                collector.TransformRotation(transform);
+            if (DisableOnMiss(component))
+                collector.ModifyProperties(transform.gameObject, new [] { "m_IsActive" });
+        }
+
+        // fields are private for now
+        // See canny: https://feedback.vrchat.com/open-beta/p/sdk-3103-beta1-please-expose-vrcraycast-configuration-fields-as-public
+        private static Transform? GetResultTransform(VRCRaycast component)
+        {
+            using var serialized = new UnityEditor.SerializedObject(component);
+            return serialized.FindProperty("resultTransform")?.objectReferenceValue as Transform;
+        }
+
+        private static bool GetApplyRotation(VRCRaycast component)
+        {
+            using var serialized = new UnityEditor.SerializedObject(component);
+            return serialized.FindProperty("applyRotation")?.boolValue ?? false;
+        }
+
+        private static bool DisableOnMiss(VRCRaycast component)
+        {
+            using var serialized = new UnityEditor.SerializedObject(component);
+            return serialized.FindProperty("disableOnMiss")?.boolValue ?? false;
+        }
+    }
+#endif
 }
 #endif

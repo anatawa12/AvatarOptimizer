@@ -394,6 +394,7 @@ namespace Anatawa12.AvatarOptimizer.API
 
         // requests AAO to preserve the properties. This is internally used to preserve some blendshapes.
         internal abstract void PreserveProperties(Component component, IEnumerable<string> properties);
+        internal abstract void ModifyProperties(GameObject go, IEnumerable<string> properties);
     }
 
     /// <summary>
