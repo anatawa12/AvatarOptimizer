@@ -167,6 +167,12 @@ class VRCSDKToonStandardShaderInformation : ShaderInformation
             Register("_HueShiftMask", UsingUVChannels.UV0);
         }
 
+        // New added in 3.10.3
+        if (matInfo.IsShaderKeywordEnabled("USE_COLOR_MASK") != false)
+        {
+            Register("_ColorMask", UsingUVChannels.UV0);
+        }
+
         if (withOutline)
         {
             // note: this does not require the mipmap
