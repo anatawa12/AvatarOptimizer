@@ -66,7 +66,7 @@
         },
         {
             "name": "com.vrchat.avatars",
-            "expression": "3.10.3-beta.1",
+            "expression": "3.10.3-beta.2",
             "define": "AAO_VRCSDK3_AVATARS_VRC_RAYCAST"
         },
         {

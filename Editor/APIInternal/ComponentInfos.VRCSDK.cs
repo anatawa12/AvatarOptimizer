@@ -652,40 +652,37 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
     {
         protected override void CollectDependency(VRCRaycast component, ComponentDependencyCollector collector)
         {
-            var transform = GetResultTransform(component);
-            if (transform == null) return; // Raycast do nothing if target is null
-            collector.AddDependency(transform, component);
+            var transform = component.ResultTransform;
+            if (transform != null) // Raycast do nothing if target is null
+            {
+                collector.AddDependency(transform, component);
+                collector.MarkBehaviour();
+            }
+
+            // if the component drives parameter that is used, 
+            // we need to keep the raycast
+            if (new[]
+                {
+                    component.Parameter + VRCRaycast.PARAM_DISTANCE,
+                    component.Parameter + VRCRaycast.PARAM_HIT,
+                    component.Parameter + VRCRaycast.PARAM_RATIO,
+                }.Any(collector.IsParameterUsed))
+            {
+                collector.MarkEntrypoint();
+            }
         }
 
         protected override void CollectMutations(VRCRaycast component, ComponentMutationsCollector collector)
         {
-            var transform = GetResultTransform(component);
-            if (transform == null) return; // Raycast do nothing if target is null
-            collector.TransformPosition(transform);
-            if (GetApplyRotation(component))
-                collector.TransformRotation(transform);
-            if (DisableOnMiss(component))
-                collector.ModifyProperties(transform.gameObject, new [] { "m_IsActive" });
-        }
-
-        // fields are private for now
-        // See canny: https://feedback.vrchat.com/open-beta/p/sdk-3103-beta1-please-expose-vrcraycast-configuration-fields-as-public
-        private static Transform? GetResultTransform(VRCRaycast component)
-        {
-            using var serialized = new UnityEditor.SerializedObject(component);
-            return serialized.FindProperty("resultTransform")?.objectReferenceValue as Transform;
-        }
-
-        private static bool GetApplyRotation(VRCRaycast component)
-        {
-            using var serialized = new UnityEditor.SerializedObject(component);
-            return serialized.FindProperty("applyRotation")?.boolValue ?? false;
-        }
-
-        private static bool DisableOnMiss(VRCRaycast component)
-        {
-            using var serialized = new UnityEditor.SerializedObject(component);
-            return serialized.FindProperty("disableOnMiss")?.boolValue ?? false;
+            var transform = component.ResultTransform;
+            if (transform != null) // Raycast do nothing if target is null
+            {
+                collector.TransformPosition(transform);
+                if (component.ApplyRotation)
+                    collector.TransformRotation(transform);
+                if (component.DisableOnMiss)
+                    collector.ModifyProperties(transform.gameObject, new[] { "m_IsActive" });
+            }
         }
     }
 #endif
