@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Added support for `VRCRaycast` component added in VRCSDK 3.10.3 `#1706`
 
 ### Changed
 
