@@ -255,6 +255,9 @@ internal static class OptimizationMetricsImpl
             Add(AvatarPerformanceCategory.TextureMegabytes, s => ToStringMegabytes(s.textureMegabytes));
             Add(AvatarPerformanceCategory.ConstraintsCount, s => ToStringCount(s.constraintsCount));
             Add(AvatarPerformanceCategory.ConstraintDepth, s => ToStringCount(s.constraintDepth));
+#if AAO_VRCSDK3_AVATARS_VRC_RAYCAST
+            Add(AvatarPerformanceCategory.RaycastCount, s => ToStringCount(s.raycastCount));
+#endif
             return dict;
         }
     }

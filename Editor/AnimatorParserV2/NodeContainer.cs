@@ -59,7 +59,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             }
         }
 
-        public void Add(Component component, string prop, ComponentPropModNodeBase<FloatValueInfo> node, ApplyState applyState)
+        public void Add(ComponentOrGameObject component, string prop, ComponentPropModNodeBase<FloatValueInfo> node, ApplyState applyState)
         {
             var key = (component, prop);
             if (!FloatNodes.TryGetValue(key, out var root))
@@ -67,7 +67,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             root.Add(node, applyState);
         }
 
-        public void Add(Component component, string prop, ComponentPropModNodeBase<ObjectValueInfo> node, ApplyState applyState)
+        public void Add(ComponentOrGameObject component, string prop, ComponentPropModNodeBase<ObjectValueInfo> node, ApplyState applyState)
         {
             var key = (component, prop);
             if (!_objectNodes.TryGetValue(key, out var root))

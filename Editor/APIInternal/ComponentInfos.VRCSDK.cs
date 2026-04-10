@@ -645,5 +645,47 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         {
         }
     }
+
+#if AAO_VRCSDK3_AVATARS_VRC_RAYCAST
+    [ComponentInformation(typeof(VRCRaycast))]
+    internal class VRCRaycastInformation : ComponentInformation<VRCRaycast>
+    {
+        protected override void CollectDependency(VRCRaycast component, ComponentDependencyCollector collector)
+        {
+            var transform = component.ResultTransform;
+            if (transform != null) // Raycast do nothing if target is null
+            {
+                collector.AddDependency(transform);
+                collector.AddDependency(transform, component);
+                collector.MarkBehaviour();
+            }
+
+            // if the component drives parameter that is used, 
+            // we need to keep the raycast
+            if (new[]
+                {
+                    component.Parameter + VRCRaycast.PARAM_DISTANCE,
+                    component.Parameter + VRCRaycast.PARAM_HIT,
+                    component.Parameter + VRCRaycast.PARAM_RATIO,
+                }.Any(collector.IsParameterUsed))
+            {
+                collector.MarkEntrypoint();
+            }
+        }
+
+        protected override void CollectMutations(VRCRaycast component, ComponentMutationsCollector collector)
+        {
+            var transform = component.ResultTransform;
+            if (transform != null) // Raycast do nothing if target is null
+            {
+                collector.TransformPosition(transform);
+                if (component.ApplyRotation)
+                    collector.TransformRotation(transform);
+                if (component.DisableOnMiss)
+                    collector.ModifyProperties(transform.gameObject, new[] { Props.IsActive });
+            }
+        }
+    }
+#endif
 }
 #endif
