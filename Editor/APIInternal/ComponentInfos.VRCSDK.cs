@@ -655,6 +655,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             var transform = component.ResultTransform;
             if (transform != null) // Raycast do nothing if target is null
             {
+                collector.AddDependency(transform);
                 collector.AddDependency(transform, component);
                 collector.MarkBehaviour();
             }
@@ -681,7 +682,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                 if (component.ApplyRotation)
                     collector.TransformRotation(transform);
                 if (component.DisableOnMiss)
-                    collector.ModifyProperties(transform.gameObject, new[] { "m_IsActive" });
+                    collector.ModifyProperties(transform.gameObject, new[] { Props.IsActive });
             }
         }
     }
