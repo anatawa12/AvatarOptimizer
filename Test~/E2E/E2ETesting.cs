@@ -578,6 +578,8 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             makeChildren.executeEarly = true;
             makeChildren.children.AddRange(new[] { child.transform });
 
+            TestUtils.SetFxLayer(avatar, new AnimatorController());
+
             // Should complete without throwing an exception
             AvatarProcessor.ProcessAvatar(avatar);
 
