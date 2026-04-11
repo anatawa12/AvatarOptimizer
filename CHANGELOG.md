@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Early mode of MakeChildren is not working `#1709`
 
 ### Security
 
