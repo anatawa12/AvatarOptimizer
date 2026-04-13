@@ -28,11 +28,11 @@ namespace Anatawa12.AvatarOptimizer
         // - Track merging Components
         // - Track VrmFirstPersonFlags
 
-        private readonly IReadOnlyDictionary<int, BeforeGameObjectTree> _beforeGameObjectInfos;
+        private readonly IReadOnlyDictionary<EntityId, BeforeGameObjectTree> _beforeGameObjectInfos;
 
         // key: instanceId
-        private readonly Dictionary<int, BuildingComponentInfo> _originalComponentInfos = new();
-        private readonly Dictionary<int, BuildingComponentInfo> _componentInfos = new();
+        private readonly Dictionary<EntityId, BuildingComponentInfo> _originalComponentInfos = new();
+        private readonly Dictionary<EntityId, BuildingComponentInfo> _componentInfos = new();
 
         public ObjectMappingBuilder(GameObject rootObject)
         {
@@ -40,18 +40,18 @@ namespace Anatawa12.AvatarOptimizer
             var transforms = rootObject.GetComponentsInChildren<Transform>(true);
 
             _beforeGameObjectInfos = transforms
-                .ToDictionary(t => t.gameObject.GetInstanceID(), t => new BeforeGameObjectTree(t.gameObject));
+                .ToDictionary(t => t.gameObject.GetEntityIDCompatible(), t => new BeforeGameObjectTree(t.gameObject));
 
             foreach (var transform in transforms)
             {
                 if (!transform.parent) continue;
-                if (!_beforeGameObjectInfos.TryGetValue(transform.parent.gameObject.GetInstanceID(),
+                if (!_beforeGameObjectInfos.TryGetValue(transform.parent.gameObject.GetEntityIDCompatible(),
                         out var parentInfo)) continue;
-                var selfInfo = _beforeGameObjectInfos[transform.gameObject.GetInstanceID()];
+                var selfInfo = _beforeGameObjectInfos[transform.gameObject.GetEntityIDCompatible()];
                 parentInfo.Children[transform.GetSiblingIndex()] = selfInfo;
             }
 
-            _beforeGameObjectInfos[rootObject.GetInstanceID()].InitializeRecursive();
+            _beforeGameObjectInfos[rootObject.GetEntityIDCompatible()].InitializeRecursive();
             
 #if AAO_VRM0
             if (rootObject.TryGetComponent<VRMFirstPerson>(out var firstPerson)
@@ -99,17 +99,17 @@ namespace Anatawa12.AvatarOptimizer
         public void RecordMergeComponent<T>(T from, T mergeTo) where T: Component
         {
             Tracing.Trace(TracingArea.BuildObjectMapping, $"RecordMergeComponent: {from} -> {mergeTo}");
-            if (!_componentInfos.TryGetValue(mergeTo.GetInstanceID(), out var mergeToInfo))
+            if (!_componentInfos.TryGetValue(mergeTo.GetEntityIDCompatible(), out var mergeToInfo))
             {
                 var newMergeToInfo = new BuildingComponentInfo(mergeTo);
-                _originalComponentInfos.Add(mergeTo.GetInstanceID(), newMergeToInfo);
-                _componentInfos.Add(mergeTo.GetInstanceID(), newMergeToInfo);
+                _originalComponentInfos.Add(mergeTo.GetEntityIDCompatible(), newMergeToInfo);
+                _componentInfos.Add(mergeTo.GetEntityIDCompatible(), newMergeToInfo);
                 GetComponentInfo(from).MergedTo(newMergeToInfo);
             }
             else
             {
                 var newMergeToInfo = new BuildingComponentInfo(mergeTo);
-                _componentInfos[mergeTo.GetInstanceID()]= newMergeToInfo;
+                _componentInfos[mergeTo.GetEntityIDCompatible()]= newMergeToInfo;
                 mergeToInfo.MergedTo(newMergeToInfo);
                 GetComponentInfo(from).MergedTo(newMergeToInfo);
             }
@@ -275,7 +275,7 @@ namespace Anatawa12.AvatarOptimizer
 
         class BuildingComponentInfo : AnimationComponentInfo<TPropInfo>
         {
-            internal readonly int InstanceId;
+            internal readonly EntityId InstanceId;
             internal readonly Type Type;
 
             // id in this -> id in merged
@@ -377,7 +377,7 @@ namespace Anatawa12.AvatarOptimizer
                 get
                 {
                     if (_mergedInto != null) throw new Exception("Already Merged");
-                    var instance = EditorUtility.InstanceIDToObject(InstanceId);
+                    var instance = UnityObjectIDHelper.EntityIdToObject(InstanceId);
                     return new ComponentOrGameObject(instance ? instance : null);
                 }
             }

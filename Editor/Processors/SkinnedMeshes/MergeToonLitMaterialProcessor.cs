@@ -7,6 +7,9 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using Object = UnityEngine.Object;
+#if UNITY_6000_4_OR_NEWER
+using FormatUsage = UnityEngine.Experimental.Rendering.GraphicsFormatUsage;
+#endif
 
 namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 {

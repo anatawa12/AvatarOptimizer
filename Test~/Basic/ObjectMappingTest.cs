@@ -71,7 +71,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var resolvedGameObjectId = builder.ResolvePath(testPath)?.InstanceId;
             var expectedGameObjectId = transform ? transform.gameObject.GetInstanceID() : (int?)null;
 
-            var resolvedName = resolvedGameObjectId is int id ? EditorUtility.InstanceIDToObject(id).name: "null";
+            var resolvedName = resolvedGameObjectId is int id ? UnityObjectIDHelper.EntityIdToObject(id).name: "null";
             Assert.That(resolvedGameObjectId, Is.EqualTo(expectedGameObjectId),
                 $"Expected {(transform ? transform.name : "null")} but was {resolvedName}");
         }

@@ -1,7 +1,9 @@
 using System;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
-
+#if UNITY_6000_4_OR_NEWER
+using FormatUsage = UnityEngine.Experimental.Rendering.GraphicsFormatUsage;
+#endif
 namespace Anatawa12.AvatarOptimizer;
 
 partial class Utils
@@ -24,14 +26,12 @@ partial class Utils
             useDynamicScale = useDynamicScale
         });
     }
-
+    [Obsolete]
     internal static GraphicsFormat GetDepthStencilFormatLegacy(
         int depthBits,
         GraphicsFormat colorFormat)
     {
-#pragma warning disable CS0618 // Type or member is obsolete
         return colorFormat == GraphicsFormat.ShadowAuto
-#pragma warning restore CS0618 // Type or member is obsolete
             ? GraphicsFormatUtility.GetDepthStencilFormat(depthBits, 0)
             : GraphicsFormatUtility.GetDepthStencilFormat(depthBits, 8);
     }
@@ -61,10 +61,10 @@ partial class Utils
       VRTextureUsage vrUsage = VRTextureUsage.None,
       bool useDynamicScale = false)
     {
-      var compatibleFormat = GetCompatibleFormat(format, readWrite);
-      var stencilFormatLegacy = GetDepthStencilFormatLegacy(depthBuffer, format);
+        var compatibleFormat = GetCompatibleFormat(format, readWrite);
+        var stencilFormatLegacy = GetDepthStencilFormatLegacy(depthBuffer, format);
 
-      return TemporaryRenderTextureImpl(width, height, stencilFormatLegacy, compatibleFormat, antiAliasing, memorylessMode, vrUsage, useDynamicScale);
+        return TemporaryRenderTextureImpl(width, height, stencilFormatLegacy, compatibleFormat, antiAliasing, memorylessMode, vrUsage, useDynamicScale);
     }
 
     public static TemporaryRenderTextureScope TemporaryRenderTexture(
@@ -77,7 +77,10 @@ partial class Utils
       VRTextureUsage vrUsage = VRTextureUsage.None,
       bool useDynamicScale = false)
     {
-      return TemporaryRenderTextureImpl(width, height, GetDepthStencilFormatLegacy(depthBuffer, format), format, antiAliasing, memorylessMode, vrUsage, useDynamicScale);
+#pragma warning disable CS0612 // it is obsolete
+        var depthStencilFormat = GetDepthStencilFormatLegacy(depthBuffer, format);
+#pragma warning restore CS0612 // it is obsolete
+        return TemporaryRenderTextureImpl(width, height, depthStencilFormat, format, antiAliasing, memorylessMode, vrUsage, useDynamicScale);
     }
 
     private static GraphicsFormat GetCompatibleFormat(
