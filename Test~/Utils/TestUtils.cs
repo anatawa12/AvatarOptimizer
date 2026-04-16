@@ -31,6 +31,17 @@ namespace Anatawa12.AvatarOptimizer.Test
         public static void SetFxLayer(GameObject root, RuntimeAnimatorController controller)
         {
 #if AAO_VRCSDK3_AVATARS
+            InitializeAvatarDescriptor(root);
+            SetPlayableLayer(root, VRC.SDK3.Avatars.Components.VRCAvatarDescriptor.AnimLayerType.FX, controller);
+#else
+            var animator = root.GetComponent<Animator>();
+            animator.runtimeAnimatorController = controller;
+#endif
+        }
+
+#if AAO_VRCSDK3_AVATARS
+        public static void InitializeAvatarDescriptor(GameObject root)
+        {
             var descriptor = root.GetComponent<VRC.SDK3.Avatars.Components.VRCAvatarDescriptor>();
             descriptor.customizeAnimationLayers = true;
             descriptor.specialAnimationLayers ??= new VRC.SDK3.Avatars.Components.VRCAvatarDescriptor.CustomAnimLayer[]
@@ -63,18 +74,20 @@ namespace Anatawa12.AvatarOptimizer.Test
                     type = VRC.SDK3.Avatars.Components.VRCAvatarDescriptor.AnimLayerType.FX,
                 },
             };
-            var index = Array.FindIndex(descriptor.baseAnimationLayers,
-                x => x.type == VRC.SDK3.Avatars.Components.VRCAvatarDescriptor.AnimLayerType.FX);
-            if (index <= 0)
-                throw new InvalidOperationException("FX Layer not found");
+        }
+
+        public static void SetPlayableLayer(GameObject root,
+            VRC.SDK3.Avatars.Components.VRCAvatarDescriptor.AnimLayerType layer, RuntimeAnimatorController controller)
+        {
+            var descriptor = root.GetComponent<VRC.SDK3.Avatars.Components.VRCAvatarDescriptor>();
+            var index = Array.FindIndex(descriptor.baseAnimationLayers, x => x.type == layer);
+            if (index < 0)
+                throw new InvalidOperationException($"{layer} Layer not found");
 
             descriptor.baseAnimationLayers[index].animatorController = controller;
             descriptor.baseAnimationLayers[index].isDefault = false;
-#else
-            var animator = root.GetComponent<Animator>();
-            animator.runtimeAnimatorController = controller;
-#endif
         }
+#endif
 
         public static GameObject AddChild(this GameObject parent, 
             string name,
