@@ -21,8 +21,13 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 {
                     if (makeChildren.executeEarly != _early) continue;
                     foreach (var makeChildrenChild in makeChildren.children.GetAsSet().Where(x => x))
-                        context.Extension<GCComponentInfoContext>()
-                            .SetParent(makeChildrenChild, makeChildren.transform);
+                    {
+                        if (_early)
+                            makeChildrenChild.parent = makeChildren.transform;
+                        else
+                            context.Extension<GCComponentInfoContext>()
+                                .SetParent(makeChildrenChild, makeChildren.transform);
+                    }
                     DestroyTracker.DestroyImmediate(makeChildren);
                 }
             }

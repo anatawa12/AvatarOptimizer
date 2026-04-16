@@ -563,6 +563,30 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
         }
 #endif
 
+        // https://github.com/anatawa12/AvatarOptimizer/issues/1708
+        [Test]
+        public void Issue1708_MakeChildrenEarlyDoesNotThrowGCComponentInfoContextNotActive()
+        {
+            // Create an avatar with a MakeChildren component configured to run early (executeEarly = true).
+            // Before the fix this threw "Extension GCComponentInfoContext not active" because the early
+            // pass runs in the Resolving phase before GCComponentInfoContext is initialized.
+            var avatar = TestUtils.NewAvatar();
+            var parent = Utils.NewGameObject("Parent", avatar.transform);
+            var child = Utils.NewGameObject("Child", avatar.transform);
+
+            var makeChildren = parent.AddComponent<MakeChildren>();
+            makeChildren.executeEarly = true;
+            makeChildren.children.AddRange(new[] { child.transform });
+
+            TestUtils.SetFxLayer(avatar, new AnimatorController());
+
+            // Should complete without throwing an exception
+            AvatarProcessor.ProcessAvatar(avatar);
+
+            // The child should have been reparented to the parent
+            Assert.That(child.transform.parent, Is.EqualTo(parent.transform));
+        }
+
         #endregion
     }
 }
