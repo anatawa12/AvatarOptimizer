@@ -20,7 +20,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Early mode of MakeChildren is not working `#1709`
-- FX Layer animations are ignored if Gesture layer has animation reverts ones `#1710`
+- FX Layer animations are ignored if the Gesture layer contains animations that revert properties `#1710`
 
 ### Security
 

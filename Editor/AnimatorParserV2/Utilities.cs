@@ -164,7 +164,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public static ComponentNodeContainer ComponentFromPlayableLayers(Animator animator,
             IEnumerable<(AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer)>
-                playableLayersReversed) =>
+                playableLayers) =>
             Merge<
                 ComponentNodeContainer, ComponentPropModNodeBase<FloatValueInfo>, ComponentPropModNodeBase<ObjectValueInfo>,
                 PlayableLayerNodeInfo<FloatValueInfo>, PlayableLayerNodeInfo<ObjectValueInfo>,
@@ -172,7 +172,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 AnimatorControllerNodeContainer, AnimatorControllerPropModNode<FloatValueInfo>,
                 AnimatorControllerPropModNode<ObjectValueInfo>,
                 PlayableLayerMerger
-            >(playableLayersReversed, new PlayableLayerMerger(animator));
+            >(playableLayers, new PlayableLayerMerger(animator));
 
         readonly struct PlayableLayerMerger : IMergeProperty1<
             ComponentNodeContainer, ComponentPropModNodeBase<FloatValueInfo>, ComponentPropModNodeBase<ObjectValueInfo>,
