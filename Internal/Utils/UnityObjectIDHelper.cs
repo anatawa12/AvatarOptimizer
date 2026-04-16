@@ -19,7 +19,7 @@ public static class UnityObjectIDHelper
 #if UNITY_6000_4_OR_NEWER
         return EditorUtility.EntityIdToObject(entityId);
 #else
-        return UnityObjectIDHelper.EntityIdToObject(entityId);
+        return EditorUtility.InstanceIDToObject(entityId.InstanceID);
 #endif
     }
 
