@@ -164,7 +164,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         public static ComponentNodeContainer ComponentFromPlayableLayers(Animator animator,
             IEnumerable<(AnimatorWeightState, AnimatorLayerBlendingMode, AnimatorControllerNodeContainer)>
-                playableLayers) =>
+                playableLayersReversed) =>
             Merge<
                 ComponentNodeContainer, ComponentPropModNodeBase<FloatValueInfo>, ComponentPropModNodeBase<ObjectValueInfo>,
                 PlayableLayerNodeInfo<FloatValueInfo>, PlayableLayerNodeInfo<ObjectValueInfo>,
@@ -172,7 +172,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 AnimatorControllerNodeContainer, AnimatorControllerPropModNode<FloatValueInfo>,
                 AnimatorControllerPropModNode<ObjectValueInfo>,
                 PlayableLayerMerger
-            >(playableLayers, new PlayableLayerMerger(animator));
+            >(playableLayersReversed, new PlayableLayerMerger(animator));
 
         readonly struct PlayableLayerMerger : IMergeProperty1<
             ComponentNodeContainer, ComponentPropModNodeBase<FloatValueInfo>, ComponentPropModNodeBase<ObjectValueInfo>,
@@ -201,11 +201,17 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 AnimatorControllerPropModNode<ObjectValueInfo> node, int index) =>
                 new(source.Item1, source.Item2, node, index);
 
-            public ComponentPropModNodeBase<FloatValueInfo> MergeNode(List<PlayableLayerNodeInfo<FloatValueInfo>> nodes, int sourceCount) =>
-                new AnimatorPropModNode<FloatValueInfo>(_animator, nodes);
+            public ComponentPropModNodeBase<FloatValueInfo> MergeNode(List<PlayableLayerNodeInfo<FloatValueInfo>> nodes, int sourceCount)
+            {
+                nodes.Reverse();
+                return new AnimatorPropModNode<FloatValueInfo>(_animator, nodes);
+            }
 
-            public ComponentPropModNodeBase<ObjectValueInfo> MergeNode(List<PlayableLayerNodeInfo<ObjectValueInfo>> nodes, int sourceCount) =>
-                new AnimatorPropModNode<ObjectValueInfo>(_animator, nodes);
+            public ComponentPropModNodeBase<ObjectValueInfo> MergeNode(List<PlayableLayerNodeInfo<ObjectValueInfo>> nodes, int sourceCount)
+            {
+                nodes.Reverse();
+                return new AnimatorPropModNode<ObjectValueInfo>(_animator, nodes);
+            }
         }
 
         internal static AnimatorControllerNodeContainer AnimatorControllerFromAnimatorLayers(
