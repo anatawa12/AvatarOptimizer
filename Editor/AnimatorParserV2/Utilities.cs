@@ -201,11 +201,17 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 AnimatorControllerPropModNode<ObjectValueInfo> node, int index) =>
                 new(source.Item1, source.Item2, node, index);
 
-            public ComponentPropModNodeBase<FloatValueInfo> MergeNode(List<PlayableLayerNodeInfo<FloatValueInfo>> nodes, int sourceCount) =>
-                new AnimatorPropModNode<FloatValueInfo>(_animator, nodes);
+            public ComponentPropModNodeBase<FloatValueInfo> MergeNode(List<PlayableLayerNodeInfo<FloatValueInfo>> nodes, int sourceCount)
+            {
+                nodes.Reverse();
+                return new AnimatorPropModNode<FloatValueInfo>(_animator, nodes);
+            }
 
-            public ComponentPropModNodeBase<ObjectValueInfo> MergeNode(List<PlayableLayerNodeInfo<ObjectValueInfo>> nodes, int sourceCount) =>
-                new AnimatorPropModNode<ObjectValueInfo>(_animator, nodes);
+            public ComponentPropModNodeBase<ObjectValueInfo> MergeNode(List<PlayableLayerNodeInfo<ObjectValueInfo>> nodes, int sourceCount)
+            {
+                nodes.Reverse();
+                return new AnimatorPropModNode<ObjectValueInfo>(_animator, nodes);
+            }
         }
 
         internal static AnimatorControllerNodeContainer AnimatorControllerFromAnimatorLayers(
