@@ -37,7 +37,7 @@ namespace Anatawa12.AvatarOptimizer
         // GameObject-like properties
         public GameObject gameObject => _object as GameObject ?? ((Component)_object).gameObject;
         public Transform transform => gameObject.transform;
-        public EntityId GetInstanceID() => ((Object)this).GetEntityId();
+        public EntityId GetEntityId() => ((Object)this).GetEntityId();
         // ReSharper restore InconsistentNaming
         public Object Value => _object;
 

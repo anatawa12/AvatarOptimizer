@@ -169,15 +169,15 @@ namespace Anatawa12.AvatarOptimizer
             _componentInfos.Values.Where(x => !x.IsMerged);
 
         public VrmFirstPersonFlag? GetVrmFirstPersonFlag(ComponentOrGameObject component)
-            => _componentInfos.TryGetValue(component.GetInstanceID(), out var info) ? info.VrmFirstPersonFlag : null;
+            => _componentInfos.TryGetValue(component.GetEntityId(), out var info) ? info.VrmFirstPersonFlag : null;
 
         private BuildingComponentInfo GetComponentInfo(ComponentOrGameObject component)
         {
-            if (!_componentInfos.TryGetValue(component.GetInstanceID(), out var info))
+            if (!_componentInfos.TryGetValue(component.GetEntityId(), out var info))
             {
                 info = new BuildingComponentInfo(component);
-                _originalComponentInfos.Add(component.GetInstanceID(), info);
-                _componentInfos.Add(component.GetInstanceID(), info);
+                _originalComponentInfos.Add(component.GetEntityId(), info);
+                _componentInfos.Add(component.GetEntityId(), info);
             }
             return info;
         }
@@ -289,7 +289,7 @@ namespace Anatawa12.AvatarOptimizer
 
             public BuildingComponentInfo(ComponentOrGameObject component)
             {
-                InstanceId = component.GetInstanceID();
+                InstanceId = component.GetEntityId();
                 Type = component.Value.GetType();
             }
 
