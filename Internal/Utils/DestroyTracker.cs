@@ -39,7 +39,6 @@ namespace Anatawa12.AvatarOptimizer
 
         public static void DestroyImmediate(Object? obj)
         {
-            // ここで null 調べてるし ... これは null 許容であると考えていいよね ... ? by Reina_Sakiria
             if (obj == null) return;
             var instanceId = obj.GetEntityId();
             Object.DestroyImmediate(obj);
