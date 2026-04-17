@@ -411,7 +411,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
 
         private void OnDestroy(EntityId objectId)
         {
-            _children.RemoveAll(x => x.Component.GetEntityIDCompatible() == objectId);
+            _children.RemoveAll(x => x.Component.GetEntityId() == objectId);
         }
 
         public void Remove(Component sourceComponent)

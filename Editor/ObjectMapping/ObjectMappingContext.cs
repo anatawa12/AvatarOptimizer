@@ -130,7 +130,7 @@ namespace Anatawa12.AvatarOptimizer
 
         private MappedComponentInfo<T> GetMappedInternal<T>(T component) where T : Object
         {
-            var componentInfo = _mapping.GetComponentMapping(component.GetEntityIDCompatible());
+            var componentInfo = _mapping.GetComponentMapping(component.GetEntityId());
             if (componentInfo == null) return new OriginalComponentInfo<T>(component);
             return new ComponentInfo<T>(componentInfo);
         }

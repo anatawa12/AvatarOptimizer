@@ -5,14 +5,13 @@ namespace Anatawa12.AvatarOptimizer;
 
 public static class UnityObjectIDHelper
 {
-    public static EntityId GetEntityIDCompatible(this UnityEngine.Object unityObject)
+
+#if !UNITY_6000_4_OR_NEWER
+    public static EntityId GetEntityId(this UnityEngine.Object unityObject)
     {
-#if UNITY_6000_4_OR_NEWER
-        return unityObject.GetEntityId();
-#else
        return new (unityObject.GetInstanceID());
-#endif
     }
+#endif
 
     public static UnityEngine.Object EntityIdToObject(EntityId entityId)
     {

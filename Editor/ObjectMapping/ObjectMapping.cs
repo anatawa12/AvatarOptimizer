@@ -48,7 +48,7 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         internal BeforeGameObjectTree? GetBeforeGameObjectTree(GameObject rootGameObject) =>
-            _beforeTree.TryGetValue(rootGameObject.GetEntityIDCompatible(), out var tree) ? tree : null;
+            _beforeTree.TryGetValue(rootGameObject.GetEntityId(), out var tree) ? tree : null;
 
         // null means nothing to map
         public ComponentInfo? GetComponentMapping(EntityId instanceId) =>
@@ -56,7 +56,7 @@ namespace Anatawa12.AvatarOptimizer
 
         public AnimationObjectMapper CreateAnimationMapper(GameObject rootGameObject)
         {
-            if (!_beforeTree.TryGetValue(rootGameObject.GetEntityIDCompatible(), out var beforeTree))
+            if (!_beforeTree.TryGetValue(rootGameObject.GetEntityId(), out var beforeTree))
                 throw new InvalidOperationException($"rootGameObject {rootGameObject} is not in the mapping");
             return new AnimationObjectMapper(rootGameObject, beforeTree, this);
         }
@@ -75,13 +75,13 @@ namespace Anatawa12.AvatarOptimizer
         public BeforeGameObjectTree(GameObject gameObject)
         {
             var parentTransform = gameObject.transform.parent;
-            InstanceId = gameObject.GetEntityIDCompatible();
+            InstanceId = gameObject.GetEntityId();
             Name = gameObject.name;
-            ParentInstanceId = parentTransform ? parentTransform.gameObject.GetEntityIDCompatible() : EntityId.None;
+            ParentInstanceId = parentTransform ? parentTransform.gameObject.GetEntityId() : EntityId.None;
             Children = new BeforeGameObjectTree[gameObject.transform.childCount];
 
             var components = gameObject.GetComponents<Component>();
-            ComponentInstanceIds = components.Select(x => x.GetEntityIDCompatible()).ToArray();
+            ComponentInstanceIds = components.Select(x => x.GetEntityId()).ToArray();
             
             var componentByType = new Dictionary<Type, EntityId>();
             foreach (var component in components)
@@ -92,7 +92,7 @@ namespace Anatawa12.AvatarOptimizer
                 while (type != typeof(Component))
                 {
                     if (!componentByType.ContainsKey(type))
-                        componentByType.Add(type, component.GetEntityIDCompatible());
+                        componentByType.Add(type, component.GetEntityId());
                     type = type.BaseType;
                     if (type == null)
                         throw new InvalidOperationException("logic failure: component which doesn't extend Component");

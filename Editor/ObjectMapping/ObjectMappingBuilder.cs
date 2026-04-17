@@ -40,18 +40,18 @@ namespace Anatawa12.AvatarOptimizer
             var transforms = rootObject.GetComponentsInChildren<Transform>(true);
 
             _beforeGameObjectInfos = transforms
-                .ToDictionary(t => t.gameObject.GetEntityIDCompatible(), t => new BeforeGameObjectTree(t.gameObject));
+                .ToDictionary(t => t.gameObject.GetEntityId(), t => new BeforeGameObjectTree(t.gameObject));
 
             foreach (var transform in transforms)
             {
                 if (!transform.parent) continue;
-                if (!_beforeGameObjectInfos.TryGetValue(transform.parent.gameObject.GetEntityIDCompatible(),
+                if (!_beforeGameObjectInfos.TryGetValue(transform.parent.gameObject.GetEntityId(),
                         out var parentInfo)) continue;
-                var selfInfo = _beforeGameObjectInfos[transform.gameObject.GetEntityIDCompatible()];
+                var selfInfo = _beforeGameObjectInfos[transform.gameObject.GetEntityId()];
                 parentInfo.Children[transform.GetSiblingIndex()] = selfInfo;
             }
 
-            _beforeGameObjectInfos[rootObject.GetEntityIDCompatible()].InitializeRecursive();
+            _beforeGameObjectInfos[rootObject.GetEntityId()].InitializeRecursive();
             
 #if AAO_VRM0
             if (rootObject.TryGetComponent<VRMFirstPerson>(out var firstPerson)
@@ -99,17 +99,17 @@ namespace Anatawa12.AvatarOptimizer
         public void RecordMergeComponent<T>(T from, T mergeTo) where T: Component
         {
             Tracing.Trace(TracingArea.BuildObjectMapping, $"RecordMergeComponent: {from} -> {mergeTo}");
-            if (!_componentInfos.TryGetValue(mergeTo.GetEntityIDCompatible(), out var mergeToInfo))
+            if (!_componentInfos.TryGetValue(mergeTo.GetEntityId(), out var mergeToInfo))
             {
                 var newMergeToInfo = new BuildingComponentInfo(mergeTo);
-                _originalComponentInfos.Add(mergeTo.GetEntityIDCompatible(), newMergeToInfo);
-                _componentInfos.Add(mergeTo.GetEntityIDCompatible(), newMergeToInfo);
+                _originalComponentInfos.Add(mergeTo.GetEntityId(), newMergeToInfo);
+                _componentInfos.Add(mergeTo.GetEntityId(), newMergeToInfo);
                 GetComponentInfo(from).MergedTo(newMergeToInfo);
             }
             else
             {
                 var newMergeToInfo = new BuildingComponentInfo(mergeTo);
-                _componentInfos[mergeTo.GetEntityIDCompatible()]= newMergeToInfo;
+                _componentInfos[mergeTo.GetEntityId()] = newMergeToInfo;
                 mergeToInfo.MergedTo(newMergeToInfo);
                 GetComponentInfo(from).MergedTo(newMergeToInfo);
             }

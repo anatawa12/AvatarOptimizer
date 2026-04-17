@@ -20,7 +20,7 @@ namespace Anatawa12.AvatarOptimizer
             var tracker = _tracker;
             if (tracker == null) return;
 
-            var instanceId = obj.GetEntityIDCompatible();
+            var instanceId = obj.GetEntityId();
             if (tracker._handlers.TryGetValue(instanceId, out var oldHandler))
                 tracker._handlers[instanceId] = oldHandler + handler;
             else
@@ -32,7 +32,7 @@ namespace Anatawa12.AvatarOptimizer
             var tracker = _tracker;
             if (tracker == null) return;
 
-            var instanceId = obj.GetEntityIDCompatible();
+            var instanceId = obj.GetEntityId();
             if (tracker._handlers.TryGetValue(instanceId, out var oldHandler))
                 tracker._handlers[instanceId] = oldHandler - handler;
         }
@@ -41,7 +41,7 @@ namespace Anatawa12.AvatarOptimizer
         {
             // ここで null 調べてるし ... これは null 許容であると考えていいよね ... ? by Reina_Sakiria
             if (obj == null) return;
-            var instanceId = obj.GetEntityIDCompatible();
+            var instanceId = obj.GetEntityId();
             Object.DestroyImmediate(obj);
             var tracker = _tracker;
             if (tracker != null)
