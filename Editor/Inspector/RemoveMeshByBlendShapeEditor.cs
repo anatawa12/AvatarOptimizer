@@ -87,7 +87,6 @@ namespace Anatawa12.AvatarOptimizer
                         element.SetExistence(existence);
                         if (automaticallySetWeightWhenToggle && _renderer != null)
                         {
-                            // ここ null じゃないこと信じるように書き換えたけど大丈夫かな ... ? by Reina_Sakiria
                             var shapeIndex = _renderer.sharedMesh!.GetBlendShapeIndex(shapeKeyName);
                             if (shapeIndex != -1)
                             {
