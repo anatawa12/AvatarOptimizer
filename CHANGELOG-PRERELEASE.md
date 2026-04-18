@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Incompatibility with VRCSDK 3.10.3 `#1712`
-  - They removed single property from `VRCRaycast` component on stabilization of 3.10.3 witch caused error in AAO. This is fixed now.
 
 ### Security
+
+## [1.9.10] - 2026-04-18
+### Fixed
+- Incompatibility with VRCSDK 3.10.3 [`#1712`](https://github.com/anatawa12/AvatarOptimizer/pull/1712)
+  - They removed single property from `VRCRaycast` component on stabilization of 3.10.3 witch caused error in AAO. This is fixed now.
 
 ## [1.9.9] - 2026-04-18
 ## [1.9.9-beta.1] - 2026-04-16
@@ -2228,7 +2231,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.9...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.10...HEAD
+[1.9.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.9...v1.9.10
 [1.9.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.9-beta.1...v1.9.9
 [1.9.9-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.8...v1.9.9-beta.1
 [1.9.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.8-beta.3...v1.9.8
