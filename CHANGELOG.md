@@ -8,9 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Added support for `VRCRaycast` component added in VRCSDK 3.10.3 `#1706`
-  - This also add support for `RaycastCount` performance category `#1706`
-- Added support for ToonStandard `ColorMask` property `#1706`
 
 ### Changed
 
@@ -19,10 +16,18 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Early mode of MakeChildren is not working `#1709`
-- FX Layer animations are ignored if the Gesture layer contains animations that revert properties `#1710`
 
 ### Security
+
+## [1.9.9] - 2026-04-18
+### Added
+- Added support for `VRCRaycast` component added in VRCSDK 3.10.3 [`#1706`](https://github.com/anatawa12/AvatarOptimizer/pull/1706)
+  - This also add support for `RaycastCount` performance category [`#1706`](https://github.com/anatawa12/AvatarOptimizer/pull/1706)
+- Added support for ToonStandard `ColorMask` property [`#1706`](https://github.com/anatawa12/AvatarOptimizer/pull/1706)
+
+### Fixed
+- Early mode of MakeChildren is not working [`#1709`](https://github.com/anatawa12/AvatarOptimizer/pull/1709)
+- FX Layer animations are ignored if the Gesture layer contains animations that revert properties [`#1710`](https://github.com/anatawa12/AvatarOptimizer/pull/1710)
 
 ## [1.9.8] - 2026-03-17
 ### Added
@@ -1436,7 +1441,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.8...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.9...HEAD
+[1.9.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.8...v1.9.9
 [1.9.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.7...v1.9.8
 [1.9.7]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.6...v1.9.7
 [1.9.6]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.5...v1.9.6

@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.9.9] - 2026-04-18
 ## [1.9.9-beta.1] - 2026-04-16
 ### Added
 - Added support for `VRCRaycast` component added in VRCSDK 3.10.3 [`#1706`](https://github.com/anatawa12/AvatarOptimizer/pull/1706)
@@ -2225,7 +2226,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.9-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.9...HEAD
+[1.9.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.9-beta.1...v1.9.9
 [1.9.9-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.8...v1.9.9-beta.1
 [1.9.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.8-beta.3...v1.9.8
 [1.9.8-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.8-beta.2...v1.9.8-beta.3
