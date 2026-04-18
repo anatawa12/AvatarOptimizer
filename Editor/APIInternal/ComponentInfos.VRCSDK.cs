@@ -681,8 +681,6 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                 collector.TransformPosition(transform);
                 if (component.ApplyRotation)
                     collector.TransformRotation(transform);
-                if (component.DisableOnMiss)
-                    collector.ModifyProperties(transform.gameObject, new[] { Props.IsActive });
             }
         }
     }

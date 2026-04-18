@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Incompatibility with VRCSDK 3.10.3 `#1712`  
+  - They removed single property from `VRCRaycast` component on stabilization of 3.10.3 witch caused error in AAO. This is fixed now.
 
 ### Security
 
