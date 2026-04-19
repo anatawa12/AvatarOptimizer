@@ -157,6 +157,8 @@ namespace Anatawa12.AvatarOptimizer
             public bool skipReplaceEndBoneWithEndpointPosition;
             [ToggleLeft]
             public bool skipOptimizationWarnings;
+            [ToggleLeft]
+            public bool skipMirrorIgnoreOtherPhysBonesToIgnoreTransform;
         }
     }
     

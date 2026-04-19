@@ -16,6 +16,10 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Remove Unused Objects Automatically broke Ignore Other PhysBones behavior `#1715`
+  - Ignore Other PhysBones implicitly adds transforms controlled by other PhysBones, including disabled ones.
+  - Since Remove Unused Objects removes disabled PhysBones, this caused unexpected changes to Ignore Other PhysBones behavior.
+  - This release fixes the issue by adding such transforms to the Ignore Transforms list before most of the AAO processes.
 
 ### Security
 

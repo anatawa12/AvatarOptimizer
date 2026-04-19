@@ -9,6 +9,46 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
+    // Related issue: https://github.com/anatawa12/AvatarOptimizer/issues/1713
+    //
+    // The ignoreOtherPhysBones behaves like adding rootTransforms of all other VRCPhysBones to ignoreTransforms of the PhysBone.
+    // This includes disabled VRCPhysBones so removing disabled VRCPhysBones may break behavior if nested.
+    //
+    // This pass fixes the problem by mirroring ignoreOtherPhysBones behavior to ignoreTransforms,
+    // so that we can safely remove disabled VRCPhysBone components.
+    internal class MirrorIgnoreOtherPhysBonesToIgnoreTransform : TraceAndOptimizePass<MirrorIgnoreOtherPhysBonesToIgnoreTransform>
+    {
+        public override string DisplayName => "T&O (enabled by default): Configure ignoreTransform for ignoreOtherPhysBones settings";
+
+        protected override bool Enabled(TraceAndOptimizeState state) =>
+            state.MirrorIgnoreOtherPhysBonesToIgnoreTransform;
+
+        protected override void Execute(BuildContext context, TraceAndOptimizeState state)
+        {
+            var physBones = context.GetComponents<VRCPhysBoneBase>();
+            var physBoneByTarget = physBones.GroupBy(x => x.GetTarget())
+                .ToDictionary(x => x.Key, x => x.ToHashSet());
+
+            foreach (var physBone in physBones)
+            {
+                if (physBone.ignoreOtherPhysBones)
+                {
+                    var ignores = new HashSet<Transform>(physBone.ignoreTransforms);
+                    foreach (var affectedTransform in physBone.GetAffectedTransforms(ignores))
+                    {
+                        if (physBoneByTarget.TryGetValue(affectedTransform, out var target)
+                            && target.Any(x => x != physBone))
+                        {
+                            // The transform is controlled by other PhysBones so add to ignore transform
+                            if (ignores.Add(affectedTransform))
+                                physBone.ignoreTransforms.Add(affectedTransform);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     internal class MergePhysBoneCollider : TraceAndOptimizePass<MergePhysBoneCollider>
     {
         public override string DisplayName => "T&O: Merge PhysBone Colliders";
