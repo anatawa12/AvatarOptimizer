@@ -20,6 +20,9 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
     // If the test does not have issue, use PR number that fixes the error and add comment with link to the PR.
     public class E2ETesting
     {
+        [OneTimeSetUp]
+        public void SetupAddFormatter() => TestUtils.AddValueFormatters();
+
         #region Issue or Regression Testing
 
         [Test]
@@ -588,23 +591,6 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
         }
 
 #if AAO_VRCSDK3_AVATARS
-        [OneTimeSetUp]
-        public void SetupPhysboneBoneFormatter()
-        {
-            TestUtils.TryAddCustomValueFormatter<VRCPhysBoneBase.Bone>(bone =>
-                $"transform={Utils.RelativePath(root: null, bone.transform)}, " +
-                $"parentIndex={bone.parentIndex}, " +
-                $"childIndex={bone.childIndex}, " +
-                $"boneChainIndex={bone.boneChainIndex}, " +
-                $"childCount={bone.childCount}, " +
-                $"averageChildPos={bone.averageChildPos:G}, " +
-                $"restPosition={bone.restPosition}, " +
-                $"restRotation={bone.restRotation.eulerAngles:G}, " +
-                $"restScale={bone.restScale:G}, " +
-                $"localGravityDirection={bone.localGravityDirection:G}, " +
-                $"sphereCollision: {bone.sphereCollision}");
-        }
-
         // The problematic case: We broke ignore other PhysBones
         // https://github.com/anatawa12/AvatarOptimizer/issues/1713
         [Test]
