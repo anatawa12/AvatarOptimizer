@@ -26,23 +26,14 @@ partial class Utils
             useDynamicScale = useDynamicScale
         });
     }
-    [Obsolete]
-    internal static GraphicsFormat GetDepthStencilFormatLegacy(
-        int depthBits,
-        GraphicsFormat colorFormat)
-    {
-        return colorFormat == GraphicsFormat.ShadowAuto
-            ? GraphicsFormatUtility.GetDepthStencilFormat(depthBits, 0)
-            : GraphicsFormatUtility.GetDepthStencilFormat(depthBits, 8);
-    }
-    
+
     internal static GraphicsFormat GetDepthStencilFormatLegacy(
         int depthBits,
         RenderTextureFormat format)
     {
         return GetDepthStencilFormatLegacy(depthBits, format == RenderTextureFormat.Shadowmap);
     }
-    
+
     internal static GraphicsFormat GetDepthStencilFormatLegacy(
         int depthBits,
         bool requestedShadowMap)
@@ -76,13 +67,7 @@ partial class Utils
       RenderTextureMemoryless memorylessMode = RenderTextureMemoryless.None,
       VRTextureUsage vrUsage = VRTextureUsage.None,
       bool useDynamicScale = false)
-    {
-#pragma warning disable CS0612 // it is obsolete
-        var depthStencilFormat = GetDepthStencilFormatLegacy(depthBuffer, format);
-#pragma warning restore CS0612 // it is obsolete
-        return TemporaryRenderTextureImpl(width, height, depthStencilFormat, format, antiAliasing, memorylessMode, vrUsage, useDynamicScale);
-    }
-
+    => new(RenderTexture.GetTemporary(width, height, depthBuffer, format, antiAliasing, memorylessMode, vrUsage, useDynamicScale));
     private static GraphicsFormat GetCompatibleFormat(
         RenderTextureFormat renderTextureFormat,
         RenderTextureReadWrite readWrite)
