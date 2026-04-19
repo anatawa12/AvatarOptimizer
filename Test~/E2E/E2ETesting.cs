@@ -600,7 +600,7 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
                 $"averageChildPos={bone.averageChildPos:G}, " +
                 $"restPosition={bone.restPosition}, " +
                 $"restRotation={bone.restRotation.eulerAngles:G}, " +
-                $"restScale={bone.restScale:G}" +
+                $"restScale={bone.restScale:G}, " +
                 $"localGravityDirection={bone.localGravityDirection:G}, " +
                 $"sphereCollision: {bone.sphereCollision}");
         }
