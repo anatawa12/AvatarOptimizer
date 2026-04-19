@@ -25,6 +25,7 @@ The format is based on [Keep a Changelog].
   - This bug occurs especially when the parent PhysBone has angle limits affecting the identity transform.
   - This fix is applied iff any of the source PhysBones should be added to the parent PhysBone’s Ignore Transforms.
   - This also affects Automatic Merge PhysBone, since it uses Merge PhysBone internally.
+- Automatic Merge PhysBone may not be applied on entering play mode `#1718`
 
 ### Security
 

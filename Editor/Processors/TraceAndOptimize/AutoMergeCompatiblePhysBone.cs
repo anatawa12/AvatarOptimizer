@@ -186,7 +186,8 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
 
         public PbInfo(VRCPhysBone physBone, GameObject? toggleRoot)
         {
-            IsActiveAndEnabled = physBone.isActiveAndEnabled;
+            // https://discussions.unity.com/t/ui-button-isactiveandenabled-false-even-if-enabled-and-gameobject-active-isactiveandenabled-false-even-tho-everything-is-true/248002/2
+            IsActiveAndEnabled = physBone.enabled && physBone.gameObject.activeInHierarchy;
             Version = physBone.version;
             ToggleRoot = toggleRoot;
             // transform
