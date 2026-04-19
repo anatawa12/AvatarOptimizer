@@ -587,6 +587,94 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             Assert.That(child.transform.parent, Is.EqualTo(parent.transform));
         }
 
+#if AAO_VRCSDK3_AVATARS
+        [OneTimeSetUp]
+        public void SetupPhysboneBoneFormatter()
+        {
+            TestUtils.TryAddCustomValueFormatter<VRCPhysBoneBase.Bone>(bone =>
+                $"transform={Utils.RelativePath(root: null, bone.transform)}, " +
+                $"parentIndex={bone.parentIndex}, " +
+                $"childIndex={bone.childIndex}, " +
+                $"boneChainIndex={bone.boneChainIndex}, " +
+                $"childCount={bone.childCount}, " +
+                $"averageChildPos={bone.averageChildPos:G}, " +
+                $"restPosition={bone.restPosition}, " +
+                $"restRotation={bone.restRotation.eulerAngles:G}, " +
+                $"restScale={bone.restScale:G}" +
+                $"localGravityDirection={bone.localGravityDirection:G}, " +
+                $"sphereCollision: {bone.sphereCollision}");
+        }
+
+        // The problematic case: We broke ignore other PhysBones
+        // https://github.com/anatawa12/AvatarOptimizer/issues/1713
+        [Test]
+        public void Issue1713_RemovingDisabledPhysBoneBreaksIgnoreOtherPhysBone()
+        {
+            var avatar = TestUtils.NewAvatar();
+            TestUtils.SetFxLayer(avatar, new AnimatorController());
+            avatar.AddComponent<TraceAndOptimize>();
+
+            var parentPhysBoneRoot = Utils.NewGameObject("ParentPhysBoneRoot", avatar.transform);
+            var pbChain1 = Utils.NewGameObject("PBChain1", parentPhysBoneRoot.transform);
+            var pbChain2 = Utils.NewGameObject("PBChain2", pbChain1.transform);
+            var pbChain3 = Utils.NewGameObject("PBChain3", pbChain2.transform);
+            var parentPhysBone = parentPhysBoneRoot.AddComponent<VRCPhysBone>();
+            parentPhysBone.ignoreOtherPhysBones = true;
+            parentPhysBone.maxStretch = 1; // Prevent ReplaceEndBone with Endpoint Position
+            var childPhysBone = pbChain2.AddComponent<VRCPhysBone>();
+            childPhysBone.enabled = false; // To be removed
+            // To make those component entrypoint
+            pbChain3.AddComponent<SkinnedMeshRenderer>().sharedMesh = TestUtils.NewCubeMesh();
+
+            parentPhysBone.InitTransforms(force: true);
+            var beforeBones = parentPhysBone.bones.ToList();
+
+            Assert.That(beforeBones.Count, Is.EqualTo(2));
+
+            AvatarProcessor.ProcessAvatar(avatar);
+
+            parentPhysBone.InitTransforms(force: true);
+            var afterBones = parentPhysBone.bones.ToList();
+            Assert.That(afterBones, Is.EqualTo(beforeBones));
+        }
+
+        // Same but with externally configured physbones
+        // https://github.com/anatawa12/AvatarOptimizer/issues/1713
+        [Test]
+        public void Issue1713_RemovingDisabledPhysBoneBreaksIgnoreOtherPhysBone_ExternallyConfigured()
+        {
+            var avatar = TestUtils.NewAvatar();
+            TestUtils.SetFxLayer(avatar, new AnimatorController());
+            avatar.AddComponent<TraceAndOptimize>();
+
+            var parentPhysBoneRoot = Utils.NewGameObject("ParentPhysBoneRoot", avatar.transform);
+            var pbChain1 = Utils.NewGameObject("PBChain1", parentPhysBoneRoot.transform);
+            var pbChain2 = Utils.NewGameObject("PBChain2", pbChain1.transform);
+            var pbChain3 = Utils.NewGameObject("PBChain3", pbChain2.transform);
+            var parentPhysBone = parentPhysBoneRoot.AddComponent<VRCPhysBone>();
+            parentPhysBone.ignoreOtherPhysBones = true;
+            parentPhysBone.maxStretch = 1; // Prevent ReplaceEndBone with Endpoint Position
+            var pbPlace = Utils.NewGameObject("PBPlace", avatar.transform);
+            var childPhysBone = pbPlace.AddComponent<VRCPhysBone>();
+            childPhysBone.enabled = false; // To be removed
+            childPhysBone.rootTransform = pbChain2.transform;
+            // To make those component entrypoint
+            pbChain3.AddComponent<SkinnedMeshRenderer>().sharedMesh = TestUtils.NewCubeMesh();
+
+            parentPhysBone.InitTransforms(force: true);
+            var beforeBones = parentPhysBone.bones.ToList();
+
+            // Externally configured VRCPhysBones are not considered in ignoreOtherPhysBones
+            Assert.That(beforeBones.Count, Is.EqualTo(2));
+
+            AvatarProcessor.ProcessAvatar(avatar);
+
+            parentPhysBone.InitTransforms(force: true);
+            var afterBones = parentPhysBone.bones.ToList();
+            Assert.That(afterBones, Is.EqualTo(beforeBones));
+        }
+#endif
+
         #endregion
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework.Constraints;
+using NUnit.Framework.Internal;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -308,6 +309,11 @@ namespace Anatawa12.AvatarOptimizer.Test
 
                 return true;
             }
+        }
+
+        public static void TryAddCustomValueFormatter<T>(Func<T, string> formatter)
+        {
+            TestExecutionContext.CurrentContext?.AddFormatter(downstream => (value) => value is T t ? formatter(t) : downstream(value));
         }
     }
 }
