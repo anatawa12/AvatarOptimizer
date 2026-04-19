@@ -37,11 +37,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     foreach (var affectedTransform in physBone.GetAffectedTransforms(ignores))
                     {
                         if (physBoneByTarget.TryGetValue(affectedTransform, out var target)
-                            && target.Except(new[] { physBone }).Any())
+                            && target.Any(x => x != physBone))
                         {
                             // The transform is controlled by other PhysBones so add to ignore transform
-                            physBone.ignoreTransforms.Add(affectedTransform);
-                            ignores.Add(affectedTransform); // Adding to ignores would prevent processing children of the transform
+                            if (ignores.Add(affectedTransform))
+                                physBone.ignoreTransforms.Add(affectedTransform);
                         }
                     }
                 }
