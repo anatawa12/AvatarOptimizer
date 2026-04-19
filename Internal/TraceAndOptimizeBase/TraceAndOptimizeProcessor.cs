@@ -53,6 +53,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool ReplaceEndBoneWithEndpointPosition;
         public bool OptimizationWarnings;
 
+        // Since this pass is necessary for most of Avatar Optimizer process, this pass is enabled by default.
+        public bool MirrorIgnoreOtherPhysBonesToIgnoreTransform = true;
+
         public Dictionary<SkinnedMeshRenderer, HashSet<string>> PreserveBlendShapes =
             new Dictionary<SkinnedMeshRenderer, HashSet<string>>();
 
@@ -65,6 +68,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             Exclusions = new HashSet<GameObject?>(config.debugOptions.exclusions ?? Array.Empty<GameObject?>());
             GCDebug = (int)config.debugOptions.gcDebug;
+
+            MirrorIgnoreOtherPhysBonesToIgnoreTransform = !config.debugOptions.skipMirrorIgnoreOtherPhysBonesToIgnoreTransform;
 
             if (config.optimizeBlendShape && settings.optimizeBlendShape)
             {

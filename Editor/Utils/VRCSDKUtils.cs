@@ -16,9 +16,15 @@ namespace Anatawa12.AvatarOptimizer
         public static Transform GetTarget(this VRCPhysBoneBase physBoneBase) =>
             physBoneBase.rootTransform ? physBoneBase.rootTransform : physBoneBase.transform;
 
-        public static IEnumerable<Transform> GetAffectedTransforms(this VRCPhysBoneBase physBoneBase)
+        public static IEnumerable<Transform> GetAffectedTransforms(this VRCPhysBoneBase physBoneBase) =>
+            GetAffectedTransforms(physBoneBase, new HashSet<Transform>(physBoneBase.ignoreTransforms));
+
+        public static IEnumerable<Transform> GetAffectedTransforms(this VRCPhysBoneBase physBoneBase, HashSet<Transform> ignores)
         {
-            var ignores = new HashSet<Transform>(physBoneBase.ignoreTransforms);
+            // this function does not process 'ignoreOtherPhysBones' option but
+            // MirrorIgnoreOtherPhysBonesToIgnoreTransform should already have mapped to ignoreTransforms
+            // so this function does not need to consider the option.
+
             var queue = new Queue<Transform>();
             queue.Enqueue(physBoneBase.GetTarget());
 
@@ -26,6 +32,9 @@ namespace Anatawa12.AvatarOptimizer
             {
                 var transform = queue.Dequeue();
                 yield return transform;
+
+                // External may have added the transform to ignores set.
+                if (ignores.Contains(transform)) continue;
 
                 foreach (var child in transform.DirectChildrenEnumerable())
                     if (!ignores.Contains(child))
