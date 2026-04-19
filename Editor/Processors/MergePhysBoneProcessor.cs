@@ -20,21 +20,35 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
         protected override void Execute(BuildContext context)
         {
+            // We need to replace ignoreTransfrom to new PhysBoneRoot object if any of source root is ignored
+            // so we create PhysBone lookup table from ignore transform
+            var pbByIgnoreTransform = MakePBMap(context);
+
             foreach (var mergePhysBone in context.GetComponents<MergePhysBone>())
             {
                 using (ErrorReport.WithContextObject(mergePhysBone))
                 {
-                    DoMerge(mergePhysBone, context);
+                    DoMerge(mergePhysBone, context, pbByIgnoreTransform);
                     DestroyTracker.DestroyImmediate(mergePhysBone);
                 }
             }
         }
 
+        internal static Dictionary<Transform, List<VRCPhysBoneBase>> MakePBMap(BuildContext context) => context
+            .GetComponents<VRCPhysBoneBase>()
+            .SelectMany(pb => pb.ignoreTransforms.Select(ignore => (ignore, pb)))
+            .Where(x => x.ignore != null)
+            .GroupBy(x => x.ignore)
+            .ToDictionary(x => x.Key, x => x.Select(y => y.pb).ToList());
+
         private static bool SetEq<T>(IEnumerable<T> a, IEnumerable<T> b) => 
             new HashSet<T>(a).SetEquals(b);
 
-        internal static void DoMerge(MergePhysBone merge, BuildContext? context)
+        internal static void DoMerge(MergePhysBone merge, BuildContext? context,
+            Dictionary<Transform, List<VRCPhysBoneBase>>? pbByIgnoreTransform = null)
         {
+            pbByIgnoreTransform ??= new Dictionary<Transform, List<VRCPhysBoneBase>>();
+
             var sourceComponents = merge.componentsSet.GetAsList();
             if (sourceComponents.Count == 0) return;
 
@@ -87,6 +101,16 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         var oldParent = physBone.GetTarget().parent;
                         physBone.GetTarget().parent = root;
                         context?.Extension<GCComponentInfoContext>()?.ReplaceParent(physBone.GetTarget(), root, oldParent);
+                    }
+                    
+                    // we remove original source targets to shrink the list and add our new root. 
+                    foreach (var physBoneIgnoringTarget in sourceComponents.SelectMany(x =>
+                                 pbByIgnoreTransform.GetValueOrDefault(x.GetTarget(), new List<VRCPhysBoneBase>()))
+                                 .Distinct())
+                    {
+                        // both ignoreTransforms and sourceComponents list is likely to be small so we use simple linear search)
+                        physBoneIgnoringTarget.ignoreTransforms.RemoveAll(x => sourceComponents.Any(pb => pb.GetTarget() == x));
+                        physBoneIgnoringTarget.ignoreTransforms.Add(root);
                     }
                 }
             }

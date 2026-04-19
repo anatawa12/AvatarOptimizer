@@ -20,6 +20,11 @@ The format is based on [Keep a Changelog].
   - Ignore Other PhysBones implicitly adds transforms controlled by other PhysBones, including disabled ones.
   - Since Remove Unused Objects removes disabled PhysBones, this caused unexpected changes to Ignore Other PhysBones behavior.
   - This release fixes the issue by adding such transforms to the Ignore Transforms list before most of the AAO processes.
+- (Automatic) Merge PhysBone may change the behavior of a PhysBone if there is a parent PhysBone `#1717`
+  - The new root should be added to the parent PhysBone’s Ignore Transforms to prevent it from being animated, but this was not implemented.
+  - This bug occurs especially when the parent PhysBone has angle limits affecting the identity transform.
+  - This fix is applied iff any of the source PhysBones should be added to the parent PhysBone’s Ignore Transforms.
+  - This also affects Automatic Merge PhysBone, since it uses Merge PhysBone internally.
 
 ### Security
 

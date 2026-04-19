@@ -1,8 +1,10 @@
 #if AAO_VRCSDK3_AVATARS
 
 using System;
+using System.Linq;
 using Anatawa12.AvatarOptimizer.PrefabSafeSet;
 using Anatawa12.AvatarOptimizer.Processors;
+using nadena.dev.ndmf;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -14,6 +16,9 @@ namespace Anatawa12.AvatarOptimizer.Test
 {
     public class MergePhysBoneTest
     {
+        [OneTimeSetUp]
+        public void SetupAddFormatter() => TestUtils.AddValueFormatters();
+
         private MergePhysBone CreateMergePhysBone(GameObject target, params VRCPhysBone[] sources)
         {
             var mergePhysBone = target.AddComponent<MergePhysBone>();
@@ -275,6 +280,40 @@ namespace Anatawa12.AvatarOptimizer.Test
                 physBone.collisionFilter.allowSelf = Random.Range(0, 1) == 0;
                 return physBone;
             }
+        }
+
+        // https://github.com/anatawa12/AvatarOptimizer/issues/1716
+        [Test]
+        public void Issue1716_MergedRootAffectedByParentPhysBone()
+        {
+            var root = TestUtils.NewAvatar();
+            var pbRoot = Utils.NewGameObject("pbRoot", root.transform);
+            var chain11 = Utils.NewGameObject("chain1_1", pbRoot.transform);
+            var chain12 = Utils.NewGameObject("chain1_2", chain11.transform);
+            var chain21 = Utils.NewGameObject("chain2_1", pbRoot.transform);
+            var chain22 = Utils.NewGameObject("chain2_2", chain21.transform);
+            var chain31 = Utils.NewGameObject("chain3_1", pbRoot.transform);
+            var chain32 = Utils.NewGameObject("chain3_2", chain31.transform);
+
+            var rootPhysBone = pbRoot.AddComponent<VRCPhysBone>();
+            rootPhysBone.ignoreOtherPhysBones = false; // Important
+            rootPhysBone.ignoreTransforms.Add(chain11.transform);
+            rootPhysBone.ignoreTransforms.Add(chain21.transform);
+            var chain1PB = chain11.AddComponent<VRCPhysBone>();
+            var chain2PB = chain21.AddComponent<VRCPhysBone>();
+
+            var merged = Utils.NewGameObject("merged", root.transform);
+            var mergePhysBone = CreateMergePhysBone(merged, chain1PB, chain2PB);
+
+            rootPhysBone.InitTransforms(force: true);
+            var rootPhysBoneChain = rootPhysBone.bones.ToList();
+
+            MergePhysBoneProcessor.DoMerge(mergePhysBone, null, MergePhysBoneProcessor.MakePBMap(new BuildContext(root, null)));
+
+            rootPhysBone.InitTransforms(force: true);
+            var newChain = rootPhysBone.bones.ToList();
+
+            Assert.That(newChain, Is.EqualTo(rootPhysBoneChain));
         }
     }
 }
