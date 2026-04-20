@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.9.11] - 2026-04-20
 ## [1.9.11-beta.1] - 2026-04-19
 ### Fixed
 - Remove Unused Objects Automatically broke Ignore Other PhysBones behavior [`#1715`](https://github.com/anatawa12/AvatarOptimizer/pull/1715)
@@ -2244,7 +2245,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.11-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.11...HEAD
+[1.9.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.11-beta.1...v1.9.11
 [1.9.11-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.10...v1.9.11-beta.1
 [1.9.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.9...v1.9.10
 [1.9.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.9-beta.1...v1.9.9

@@ -16,18 +16,21 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Remove Unused Objects Automatically broke Ignore Other PhysBones behavior `#1715`
+
+### Security
+
+## [1.9.11] - 2026-04-20
+### Fixed
+- Remove Unused Objects Automatically broke Ignore Other PhysBones behavior [`#1715`](https://github.com/anatawa12/AvatarOptimizer/pull/1715)
   - Ignore Other PhysBones implicitly adds transforms controlled by other PhysBones, including disabled ones.
   - Since Remove Unused Objects removes disabled PhysBones, this caused unexpected changes to Ignore Other PhysBones behavior.
   - This release fixes the issue by adding such transforms to the Ignore Transforms list before most of the AAO processes.
-- (Automatic) Merge PhysBone may change the behavior of a PhysBone if there is a parent PhysBone `#1717`
+- (Automatic) Merge PhysBone may change the behavior of a PhysBone if there is a parent PhysBone [`#1717`](https://github.com/anatawa12/AvatarOptimizer/pull/1717)
   - The new root should be added to the parent PhysBone’s Ignore Transforms to prevent it from being animated, but this was not implemented.
   - This bug occurs especially when the parent PhysBone has angle limits affecting the identity transform.
   - This fix is applied iff any of the source PhysBones should be added to the parent PhysBone’s Ignore Transforms.
   - This also affects Automatic Merge PhysBone, since it uses Merge PhysBone internally.
-- Automatic Merge PhysBone may not be applied on entering play mode `#1718`
-
-### Security
+- Automatic Merge PhysBone may not be applied on entering play mode [`#1718`](https://github.com/anatawa12/AvatarOptimizer/pull/1718)
 
 ## [1.9.10] - 2026-04-18
 ### Fixed
@@ -1456,7 +1459,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.10...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.11...HEAD
+[1.9.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.10...v1.9.11
 [1.9.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.9...v1.9.10
 [1.9.9]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.8...v1.9.9
 [1.9.8]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.7...v1.9.8
