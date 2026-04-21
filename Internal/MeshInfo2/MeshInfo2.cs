@@ -32,6 +32,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public IReadOnlyList<Vertex> Vertices => VerticesMutable;
 
         private readonly Mesh? _originalMesh;
+        internal Mesh? OriginalMesh => _originalMesh;
 
         // TexCoordStatus which is 3 bits x 8 = 24 bits
         private uint _texCoordStatus;
@@ -939,6 +940,29 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                     targetRenderer.sharedMesh = mesh;
                 }
 
+                for (var i = 0; i < BlendShapes.Count; i++)
+                    targetRenderer.SetBlendShapeWeight(i, BlendShapes[i].weight);
+                targetRenderer.sharedMaterials = SubMeshes.SelectMany(x => x.SharedMaterials).ToArray();
+                targetRenderer.bones = Bones.Select(x => x.Transform).ToArray();
+
+                targetRenderer.rootBone = RootBone;
+                var offscreen = targetRenderer.updateWhenOffscreen;
+                targetRenderer.updateWhenOffscreen = false;
+                if (Bounds != default)
+                    targetRenderer.localBounds = Bounds;
+                targetRenderer.updateWhenOffscreen = offscreen;
+            }
+        }
+
+        /// <summary>
+        /// Writes renderer-specific data (blendshape weights, materials, bones, rootBone, bounds)
+        /// to the target renderer, without creating or assigning a new mesh.
+        /// Used when multiple renderers share the same output mesh.
+        /// </summary>
+        internal void ApplyRendererChanges(SkinnedMeshRenderer targetRenderer)
+        {
+            using (ErrorReport.WithContextObject(targetRenderer))
+            {
                 for (var i = 0; i < BlendShapes.Count; i++)
                     targetRenderer.SetBlendShapeWeight(i, BlendShapes[i].weight);
                 targetRenderer.sharedMaterials = SubMeshes.SelectMany(x => x.SharedMaterials).ToArray();
