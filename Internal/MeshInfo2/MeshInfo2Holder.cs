@@ -221,6 +221,11 @@ namespace Anatawa12.AvatarOptimizer.Processors
         /// The key includes vertex count, submesh count, and blendshape (name, weight) pairs.
         /// Using exact blendshape weights ensures renderers that froze blendshapes at different
         /// weights (producing different baked vertices) are correctly placed in separate groups.
+        ///
+        /// Blendshape ordering: MeshInfo2.BlendShapes preserves the original source-mesh order;
+        /// processors only remove entries (via RemoveAll, which is stable) and never reorder them.
+        /// Therefore order-based comparison is correct and consistent across all renderers that
+        /// share the same source mesh.
         /// </summary>
         private readonly struct MeshStructureKey : IEquatable<MeshStructureKey>
         {
@@ -255,6 +260,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 unchecked
                 {
                     int hash = HashCode.Combine(_vertexCount, _subMeshCount, _blendShapes.Length);
+                    // Blendshapes are always in source-mesh order (processors only remove, never reorder),
+                    // so iterating in order gives a stable, consistent hash.
                     foreach (var (name, weight) in _blendShapes)
                         hash = HashCode.Combine(hash, name, weight);
                     return hash;
