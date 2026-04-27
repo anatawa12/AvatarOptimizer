@@ -58,7 +58,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             var collidersByTransform = new Dictionary<(
                 Transform rootTransformAnimated,
-                VRCPhysBoneColliderBase.ShapeType shapeType
+                VRCPhysBoneColliderBase.ShapeType shapeType,
+                Transform targetToggleRoot,
+                Transform colliderToggleRoot
                 ), List<VRCPhysBoneColliderBase>>();
 
             foreach (var collider in context.GetComponents<VRCPhysBoneColliderBase>())
@@ -68,21 +70,32 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     continue;
 
                 var rootTransform = collider.GetRootTransform();
-                var transform = rootTransform;
-                while (transform != null && transform != context.AvatarRootTransform && !IsAnimated())
-                    transform = transform.parent;
-                if (transform == null) continue; // it's PhysBone about the bone itself
 
-                bool IsAnimated()
-                {
-                    if (Properties.TransformProperties.Any(context.GetAnimationComponent(transform).IsAnimatedFloat))
-                        return true;
-                    if (context.GetAnimationComponent(transform.gameObject).IsAnimatedFloat(Props.IsActive))
-                        return true;
-                    return false;
-                }
+                // Find the first ancestor of the target hierarchy that has transform property animation
+                // (position/rotation/scale). This determines whether two colliders can have a different
+                // physical shape at runtime.
+                var rootTransformAnimated = rootTransform;
+                while (rootTransformAnimated != null && rootTransformAnimated != context.AvatarRootTransform
+                       && !Properties.TransformProperties.Any(context.GetAnimationComponent(rootTransformAnimated).IsAnimatedFloat))
+                    rootTransformAnimated = rootTransformAnimated.parent;
+                if (rootTransformAnimated == null) continue; // target is outside of the avatar hierarchy
 
-                var key = (transform, collider.shapeType);
+                // Find the first ancestor of the target hierarchy that has IsActive animation.
+                // This determines whether two colliders can be toggled differently via the target bone.
+                var targetToggleRoot = rootTransform;
+                while (targetToggleRoot != null && targetToggleRoot != context.AvatarRootTransform
+                       && !context.GetAnimationComponent(targetToggleRoot.gameObject).IsAnimatedFloat(Props.IsActive))
+                    targetToggleRoot = targetToggleRoot.parent;
+
+                // Find the first ancestor of the collider's own hierarchy that has IsActive animation.
+                // This ensures colliders with different toggle states are not merged together,
+                // even when they target the same external bone.
+                var colliderToggleRoot = collider.transform;
+                while (colliderToggleRoot != null && colliderToggleRoot != context.AvatarRootTransform
+                       && !context.GetAnimationComponent(colliderToggleRoot.gameObject).IsAnimatedFloat(Props.IsActive))
+                    colliderToggleRoot = colliderToggleRoot.parent;
+
+                var key = (rootTransformAnimated, collider.shapeType, targetToggleRoot, colliderToggleRoot);
                 if (!collidersByTransform.TryGetValue(key, out var list))
                     collidersByTransform.Add(key, list = new List<VRCPhysBoneColliderBase>());
 
@@ -91,7 +104,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             var mergedColliders = new Dictionary<VRCPhysBoneColliderBase, VRCPhysBoneColliderBase>();
 
-            foreach (var ((_, shapeType), colliders) in collidersByTransform)
+            foreach (var ((_, shapeType, _, _), colliders) in collidersByTransform)
             {
                 if (colliders.Count <= 1) continue;
 

@@ -660,6 +660,68 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             Assert.That(afterBones, Is.EqualTo(beforeBones));
         }
 
+        // https://github.com/anatawa12/AvatarOptimizer/issues/1722
+        // MergePhysBoneCollider was checking IsActive animation only on the target bone's hierarchy,
+        // so colliders targeting the same external bone but with different toggle states on their own
+        // parent GameObjects were incorrectly merged.
+        [Test]
+        public void Issue1722_MergePhysBoneCollider_ShouldNotMerge_DifferentlyToggled_CollidersTargetingExternalBone()
+        {
+            var avatar = TestUtils.NewAvatar();
+
+            // Target bone inside the avatar at root level — no toggle animation on it.
+            // This is the "external" bone both colliders point to (external to their own sub-trees).
+            var targetBone = Utils.NewGameObject("TargetBone", avatar.transform);
+            var targetBoneChild = Utils.NewGameObject("TargetBoneChild", targetBone.transform);
+            var targetBoneGrandChild = Utils.NewGameObject("TargetBoneGrandChild", targetBoneChild.transform);
+
+            // Parent GameObjects for the two colliders, each toggled by a separate animation layer.
+            var colliderParent1 = Utils.NewGameObject("ColliderParent1", avatar.transform);
+            var colliderParent2 = Utils.NewGameObject("ColliderParent2", avatar.transform);
+
+            // Both colliders target the same external bone with identical shape parameters.
+            var collider1 = colliderParent1.AddComponent<VRCPhysBoneCollider>();
+            collider1.rootTransform = targetBone.transform;
+            collider1.shapeType = VRCPhysBoneColliderBase.ShapeType.Sphere;
+            collider1.radius = 0.1f;
+
+            var collider2 = colliderParent2.AddComponent<VRCPhysBoneCollider>();
+            collider2.rootTransform = targetBone.transform;
+            collider2.shapeType = VRCPhysBoneColliderBase.ShapeType.Sphere;
+            collider2.radius = 0.1f;
+
+            // PhysBone on the target bone, referencing both colliders, with a rendered mesh to
+            // keep the bone chain (and thus the PhysBone and its colliders) alive after GC.
+            var physBone = targetBone.AddComponent<VRCPhysBone>();
+            physBone.colliders.Add(collider1);
+            physBone.colliders.Add(collider2);
+            var smr = targetBoneGrandChild.AddComponent<SkinnedMeshRenderer>();
+            smr.sharedMesh = TestUtils.NewCubeMesh();
+
+            // Layer1 toggles ColliderParent1, Layer2 independently toggles ColliderParent2.
+            TestUtils.SetFxLayer(avatar, new AnimatorControllerBuilder("")
+                .AddLayer("Layer1", sm =>
+                {
+                    sm.NewClipState("State1", clip => clip
+                        .AddPropertyBinding("ColliderParent1", typeof(GameObject), "m_IsActive",
+                            new Keyframe(0, 0), new Keyframe(1, 1)));
+                })
+                .AddLayer("Layer2", sm =>
+                {
+                    sm.NewClipState("State2", clip => clip
+                        .AddPropertyBinding("ColliderParent2", typeof(GameObject), "m_IsActive",
+                            new Keyframe(0, 0), new Keyframe(1, 1)));
+                })
+                .Build());
+            avatar.AddComponent<TraceAndOptimize>();
+
+            AvatarProcessor.ProcessAvatar(avatar);
+
+            // Both colliders must still exist because they can be independently toggled.
+            Assert.That(avatar.GetComponentsInChildren<VRCPhysBoneCollider>(true), Has.Length.EqualTo(2),
+                "Colliders with different toggle animations targeting the same external bone should NOT be merged");
+        }
+
         // Regression test: when the root transform is listed in ignoreTransforms, the PhysBone should not be removed.
         [Test]
         public void Issue1720_IgnoreTransform_Root_Removed_Incorrectly()
