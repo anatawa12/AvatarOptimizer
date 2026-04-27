@@ -34,8 +34,8 @@ namespace Anatawa12.AvatarOptimizer
                 var transform = queue.Dequeue();
                 yield return transform;
 
-                // External may have added the transform to ignores set,
-                // but we should not process root transform
+                // External code may have added the root transform to the ignores set,
+                // but the root should always be included and traversed.
                 if (root != transform && ignores.Contains(transform)) continue;
 
                 foreach (var child in transform.DirectChildrenEnumerable())

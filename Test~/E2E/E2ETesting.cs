@@ -660,7 +660,7 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             Assert.That(afterBones, Is.EqualTo(beforeBones));
         }
 
-        // We incorrectly proceed ignore transform for root transform
+        // Regression test: when the root transform is listed in ignoreTransforms, the PhysBone should not be removed.
         [Test]
         public void Issue1720_IgnoreTransform_Root_Removed_Incorrectly()
         {
@@ -686,7 +686,7 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
 
             AvatarProcessor.ProcessAvatar(avatar);
 
-            Assert.That(pb != null, "The physbone with root transform itself is not removed.");
+            Assert.That(pb != null, "PhysBone with its root transform in Ignore Transforms should not be removed");
         }
 
 #endif
