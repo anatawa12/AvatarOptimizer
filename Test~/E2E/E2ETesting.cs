@@ -659,6 +659,36 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             var afterBones = parentPhysBone.bones.ToList();
             Assert.That(afterBones, Is.EqualTo(beforeBones));
         }
+
+        // Regression test: when the root transform is listed in ignoreTransforms, the PhysBone should not be removed.
+        [Test]
+        public void Issue1720_IgnoreTransform_Root_Removed_Incorrectly()
+        {
+            var avatar = TestUtils.NewAvatar();
+            TestUtils.SetFxLayer(avatar, new AnimatorController());
+            avatar.AddComponent<TraceAndOptimize>();
+
+            var physBoneRoot = Utils.NewGameObject("PhysBoneRoot", avatar.transform);
+            var pbChain11 = Utils.NewGameObject("PBChain11", physBoneRoot.transform);
+            var pbChain12 = Utils.NewGameObject("PBChain12", pbChain11.transform);
+            var pbChain13 = Utils.NewGameObject("PBChain13", pbChain12.transform);
+            var pbChain21 = Utils.NewGameObject("PBChain21", physBoneRoot.transform);
+            var pbChain22 = Utils.NewGameObject("PBChain22", pbChain21.transform);
+            var pbChain23 = Utils.NewGameObject("PBChain23", pbChain22.transform);
+            var cube1 = Utils.NewGameObject("Cube", avatar.transform).AddComponent<SkinnedMeshRenderer>();
+            cube1.sharedMesh = TestUtils.NewCubeMesh();
+            cube1.rootBone = pbChain13.transform;
+            var cube2 = Utils.NewGameObject("Cube", avatar.transform).AddComponent<SkinnedMeshRenderer>();
+            cube2.sharedMesh = TestUtils.NewCubeMesh();
+            cube2.rootBone = pbChain23.transform;
+            var pb = physBoneRoot.AddComponent<VRCPhysBone>();
+            pb.ignoreTransforms.Add(physBoneRoot.transform);
+
+            AvatarProcessor.ProcessAvatar(avatar);
+
+            Assert.That(pb != null, "PhysBone with its root transform in Ignore Transforms should not be removed");
+        }
+
 #endif
 
         #endregion
