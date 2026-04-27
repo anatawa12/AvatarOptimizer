@@ -26,15 +26,17 @@ namespace Anatawa12.AvatarOptimizer
             // so this function does not need to consider the option.
 
             var queue = new Queue<Transform>();
-            queue.Enqueue(physBoneBase.GetTarget());
+            var root = physBoneBase.GetTarget();
+            queue.Enqueue(root);
 
             while (queue.Count != 0)
             {
                 var transform = queue.Dequeue();
                 yield return transform;
 
-                // External may have added the transform to ignores set.
-                if (ignores.Contains(transform)) continue;
+                // External may have added the transform to ignores set,
+                // but we should not process root transform
+                if (root != transform && ignores.Contains(transform)) continue;
 
                 foreach (var child in transform.DirectChildrenEnumerable())
                     if (!ignores.Contains(child))
