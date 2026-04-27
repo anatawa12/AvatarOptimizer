@@ -59,7 +59,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var collidersByTransform = new Dictionary<(
                 Transform rootTransformAnimated,
                 VRCPhysBoneColliderBase.ShapeType shapeType,
-                Transform toggleRoot
+                Transform? toggleRoot
                 ), List<VRCPhysBoneColliderBase>>();
 
             foreach (var collider in context.GetComponents<VRCPhysBoneColliderBase>())
@@ -67,28 +67,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // if any of the property is animated, we do not merge the collider.
                 if (Properties.PhysBoneColliderProperties.Any(context.GetAnimationComponent(collider).IsAnimatedFloat))
                     continue;
-
+                
                 var rootTransform = collider.GetRootTransform();
                 var transform = rootTransform;
-                while (transform != null && transform != context.AvatarRootTransform && !IsAnimated())
+                while (transform != null && transform != context.AvatarRootTransform
+                        && !Properties.TransformProperties.Any(context.GetAnimationComponent(transform).IsAnimatedFloat))
                     transform = transform.parent;
-                if (transform == null) continue; // target is outside of the avatar hierarchy
-
-                bool IsAnimated()
-                {
-                    if (Properties.TransformProperties.Any(context.GetAnimationComponent(transform).IsAnimatedFloat))
-                        return true;
-                    if (context.GetAnimationComponent(transform.gameObject).IsAnimatedFloat(Props.IsActive))
-                        return true;
-                    return false;
-                }
+                if (transform == null) continue; // target is outside the avatar hierarchy
 
                 // Find the first ancestor of the collider's own hierarchy that has IsActive animation.
                 // This ensures colliders with different toggle states are not merged together,
                 // even when they target the same external bone.
-                var toggleRoot = collider.transform;
+                Transform toggleRoot = collider.transform;
                 while (toggleRoot != null && toggleRoot != context.AvatarRootTransform
-                       && !context.GetAnimationComponent(toggleRoot.gameObject).IsAnimatedFloat(Props.IsActive))
+                        && !context.GetAnimationComponent(toggleRoot.gameObject).IsAnimatedFloat(Props.IsActive))
                     toggleRoot = toggleRoot.parent;
 
                 var key = (transform, collider.shapeType, toggleRoot);
