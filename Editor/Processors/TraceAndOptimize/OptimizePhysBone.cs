@@ -78,7 +78,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // Find the first ancestor of the collider's own hierarchy that has IsActive animation.
                 // This ensures colliders with different toggle states are not merged together,
                 // even when they target the same external bone.
-                Transform toggleRoot = collider.transform;
+                Transform? toggleRoot = collider.transform;
                 while (toggleRoot != null && toggleRoot != context.AvatarRootTransform
                         && !context.GetAnimationComponent(toggleRoot.gameObject).IsAnimatedFloat(Props.IsActive))
                     toggleRoot = toggleRoot.parent;
