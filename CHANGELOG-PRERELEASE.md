@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.9.12] - 2026-04-28
 ## [1.9.12-beta.1] - 2026-04-27
 ### Fixed
 - Ignore Transform is incorrectly applied for root transform [`#1721`](https://github.com/anatawa12/AvatarOptimizer/pull/1721)
@@ -2252,7 +2253,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.12-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.12...HEAD
+[1.9.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.12-beta.1...v1.9.12
 [1.9.12-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.11...v1.9.12-beta.1
 [1.9.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.11-beta.1...v1.9.11
 [1.9.11-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.10...v1.9.11-beta.1
