@@ -1,6 +1,9 @@
 using System;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
+#if UNITY_6000_4_OR_NEWER
+using FormatUsage = UnityEngine.Experimental.Rendering.GraphicsFormatUsage;
+#endif
 
 namespace Anatawa12.AvatarOptimizer
 {

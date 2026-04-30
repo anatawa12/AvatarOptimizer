@@ -10,27 +10,27 @@ namespace Anatawa12.AvatarOptimizer
 {
     internal class ObjectMapping
     {
-        private readonly IReadOnlyDictionary<int, BeforeGameObjectTree> _beforeTree;
-        private readonly IReadOnlyDictionary<int, ComponentInfo> _componentMapping;
+        private readonly IReadOnlyDictionary<EntityId, BeforeGameObjectTree> _beforeTree;
+        private readonly IReadOnlyDictionary<EntityId, ComponentInfo> _componentMapping;
 
         public ObjectMapping(
-            IReadOnlyDictionary<int, BeforeGameObjectTree> beforeTree, 
-            IReadOnlyDictionary<int, ComponentInfo> componentMapping)
+            IReadOnlyDictionary<EntityId, BeforeGameObjectTree> beforeTree,
+            IReadOnlyDictionary<EntityId, ComponentInfo> componentMapping)
         {
             _beforeTree = beforeTree;
             _componentMapping = componentMapping;
         }
 
-        public bool MapComponentInstance(int instanceId, out Component? component)
+        public bool MapComponentInstance(EntityId instanceId, out Component? component)
         {
-            if (instanceId == 0)
+            if (instanceId == EntityId.None)
             {
                 component = null;
                 return false;
             }
             var mergedInto = _componentMapping.TryGetValue(instanceId, out var info) ? info.MergedInto : instanceId;
 
-            var found = EditorUtility.InstanceIDToObject(mergedInto);
+            var found = UnityObjectIDHelper.EntityIdToObject(mergedInto);
             if (!found)
             {
                 component = null;
@@ -48,26 +48,26 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         internal BeforeGameObjectTree? GetBeforeGameObjectTree(GameObject rootGameObject) =>
-            _beforeTree.TryGetValue(rootGameObject.GetInstanceID(), out var tree) ? tree : null;
+            _beforeTree.TryGetValue(rootGameObject.GetEntityId(), out var tree) ? tree : null;
 
         // null means nothing to map
-        public ComponentInfo? GetComponentMapping(int instanceId) =>
+        public ComponentInfo? GetComponentMapping(EntityId instanceId) =>
             _componentMapping.TryGetValue(instanceId, out var info) ? info : null;
 
         public AnimationObjectMapper CreateAnimationMapper(GameObject rootGameObject)
         {
-            if (!_beforeTree.TryGetValue(rootGameObject.GetInstanceID(), out var beforeTree))
+            if (!_beforeTree.TryGetValue(rootGameObject.GetEntityId(), out var beforeTree))
                 throw new InvalidOperationException($"rootGameObject {rootGameObject} is not in the mapping");
             return new AnimationObjectMapper(rootGameObject, beforeTree, this);
         }
     }
     class BeforeGameObjectTree
     {
-        public readonly int InstanceId;
-        public readonly int ParentInstanceId;
+        public readonly EntityId InstanceId;
+        public readonly EntityId ParentInstanceId;
         public readonly string Name;
-        public readonly IReadOnlyDictionary<Type, int> ComponentInstanceIdByType;
-        public readonly int[] ComponentInstanceIds;
+        public readonly IReadOnlyDictionary<Type, EntityId> ComponentInstanceIdByType;
+        public readonly EntityId[] ComponentInstanceIds;
         public readonly BeforeGameObjectTree[] Children;
         public bool HasSlashInNameInDirectChildren { get; private set; }
         public bool HasSlashInNameInChildren { get; private set; }
@@ -75,15 +75,15 @@ namespace Anatawa12.AvatarOptimizer
         public BeforeGameObjectTree(GameObject gameObject)
         {
             var parentTransform = gameObject.transform.parent;
-            InstanceId = gameObject.GetInstanceID();
+            InstanceId = gameObject.GetEntityId();
             Name = gameObject.name;
-            ParentInstanceId = parentTransform ? parentTransform.gameObject.GetInstanceID() : 0;
+            ParentInstanceId = parentTransform ? parentTransform.gameObject.GetEntityId() : EntityId.None;
             Children = new BeforeGameObjectTree[gameObject.transform.childCount];
 
             var components = gameObject.GetComponents<Component>();
-            ComponentInstanceIds = components.Select(x => x.GetInstanceID()).ToArray();
+            ComponentInstanceIds = components.Select(x => x.GetEntityId()).ToArray();
             
-            var componentByType = new Dictionary<Type, int>();
+            var componentByType = new Dictionary<Type, EntityId>();
             foreach (var component in components)
             {
                 // some animation may affects to base class. e.g.
@@ -92,7 +92,7 @@ namespace Anatawa12.AvatarOptimizer
                 while (type != typeof(Component))
                 {
                     if (!componentByType.ContainsKey(type))
-                        componentByType.Add(type, component.GetInstanceID());
+                        componentByType.Add(type, component.GetEntityId());
                     type = type.BaseType;
                     if (type == null)
                         throw new InvalidOperationException("logic failure: component which doesn't extend Component");
@@ -122,13 +122,13 @@ namespace Anatawa12.AvatarOptimizer
 
     class ComponentInfo
     {
-        public readonly int InstanceId;
-        public readonly int MergedInto;
+        public readonly EntityId InstanceId;
+        public readonly EntityId MergedInto;
         public readonly Type Type;
         public readonly IReadOnlyDictionary<string, MappedPropertyInfo> PropertyMapping;
         public readonly VrmFirstPersonFlag? VrmFirstPersonFlag;
 
-        public ComponentInfo(int instanceId, int mergedInto, Type type,
+        public ComponentInfo(EntityId instanceId, EntityId mergedInto, Type type,
             IReadOnlyDictionary<string, MappedPropertyInfo> propertyMapping,
             VrmFirstPersonFlag? vrmFirstPersonFlag)
         {
@@ -143,11 +143,11 @@ namespace Anatawa12.AvatarOptimizer
     readonly struct PropertyDescriptor : IEquatable<PropertyDescriptor>
     {
         public static readonly PropertyDescriptor Removed = default;
-        public readonly int InstanceId;
+        public readonly EntityId InstanceId;
         public readonly Type Type;
         public readonly string Name;
 
-        public PropertyDescriptor(int instanceId, Type type, string name)
+        public PropertyDescriptor(EntityId instanceId, Type type, string name)
         {
             InstanceId = instanceId;
             Type = type;
@@ -176,7 +176,7 @@ namespace Anatawa12.AvatarOptimizer
             _copiedTo = copiedTo;
         }
 
-        public MappedPropertyInfo(int mappedInstanceId, Type mappedType, string mappedName) : this(
+        public MappedPropertyInfo(EntityId mappedInstanceId, Type mappedType, string mappedName) : this(
             new PropertyDescriptor(mappedInstanceId, mappedType, mappedName))
         {
         }

@@ -69,9 +69,9 @@ namespace Anatawa12.AvatarOptimizer.Test
             var transform = (Transform) AnimationUtility.GetAnimatedObject(root,
                 EditorCurveBinding.FloatCurve(testPath, typeof(Transform), "m_LocalPosition.x"));
             var resolvedGameObjectId = builder.ResolvePath(testPath)?.InstanceId;
-            var expectedGameObjectId = transform ? transform.gameObject.GetInstanceID() : (int?)null;
+            var expectedGameObjectId = transform ? transform.gameObject.GetEntityId() : (EntityId?)null;
 
-            var resolvedName = resolvedGameObjectId is int id ? EditorUtility.InstanceIDToObject(id).name: "null";
+            var resolvedName = resolvedGameObjectId is EntityId id ? UnityObjectIDHelper.EntityIdToObject(id).name: "null";
             Assert.That(resolvedGameObjectId, Is.EqualTo(expectedGameObjectId),
                 $"Expected {(transform ? transform.name : "null")} but was {resolvedName}");
         }
@@ -87,13 +87,13 @@ namespace Anatawa12.AvatarOptimizer.Test
                 .GetBeforeGameObjectTree(root);
 
             Assert.That(builder.ResolvePath("child/with/slash")?.InstanceId,
-                Is.EqualTo(childWithSlash.GetInstanceID()));
-            Assert.That(builder.ResolvePath("child/with/slash/son")?.InstanceId, Is.EqualTo(son.GetInstanceID()));
+                Is.EqualTo(childWithSlash.GetEntityId()));
+            Assert.That(builder.ResolvePath("child/with/slash/son")?.InstanceId, Is.EqualTo(son.GetEntityId()));
 
-            Assert.That(Utils.ResolveAnimationPath(root.transform, "child/with/slash")?.GetInstanceID(),
-                Is.EqualTo(childWithSlash.transform.GetInstanceID()));
-            Assert.That(Utils.ResolveAnimationPath(root.transform, "child/with/slash/son")?.GetInstanceID(),
-                Is.EqualTo(son.transform.GetInstanceID()));
+            Assert.That(Utils.ResolveAnimationPath(root.transform, "child/with/slash")?.GetEntityId(),
+                Is.EqualTo(childWithSlash.transform.GetEntityId()));
+            Assert.That(Utils.ResolveAnimationPath(root.transform, "child/with/slash/son")?.GetEntityId(),
+                Is.EqualTo(son.transform.GetEntityId()));
 
             // tests for Unity's problem
             Assert.That(root.transform.Find("child/with/slash"), Is.Null);
@@ -167,11 +167,11 @@ namespace Anatawa12.AvatarOptimizer.Test
 
             var builder = new ObjectMappingBuilder<DummyPropInfo>(root).BuildObjectMapping().GetBeforeGameObjectTree(root);
 
-            Assert.That(builder.ResolvePath("child/with/slash")?.InstanceId, Is.EqualTo(childWithSlash.GetInstanceID()));
-            Assert.That(builder.ResolvePath("child/with/slash/son")?.InstanceId, Is.EqualTo(firstSon.GetInstanceID()));
+            Assert.That(builder.ResolvePath("child/with/slash")?.InstanceId, Is.EqualTo(childWithSlash.GetEntityId()));
+            Assert.That(builder.ResolvePath("child/with/slash/son")?.InstanceId, Is.EqualTo(firstSon.GetEntityId()));
 
-            Assert.That(Utils.ResolveAnimationPath(root.transform, "child/with/slash")?.GetInstanceID(), Is.EqualTo(childWithSlash.transform.GetInstanceID()));
-            Assert.That(Utils.ResolveAnimationPath(root.transform, "child/with/slash/son")?.GetInstanceID(), Is.EqualTo(firstSon.transform.GetInstanceID()));
+            Assert.That(Utils.ResolveAnimationPath(root.transform, "child/with/slash")?.GetEntityId(), Is.EqualTo(childWithSlash.transform.GetEntityId()));
+            Assert.That(Utils.ResolveAnimationPath(root.transform, "child/with/slash/son")?.GetEntityId(), Is.EqualTo(firstSon.transform.GetEntityId()));
 
             // tests for Unity's problem
             Assert.That(root.transform.Find("child/with/slash"), Is.Null);
@@ -306,7 +306,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
             builder.RecordMergeComponent(child1Component, child2Component);
             Object.DestroyImmediate(child1Component);
-            var child1ComponentId = child1Component.GetInstanceID();
+            var child1ComponentId = child1Component.GetEntityId();
 
             var built = builder.BuildObjectMapping();
 
@@ -335,7 +335,7 @@ namespace Anatawa12.AvatarOptimizer.Test
 
             var builder = new ObjectMappingBuilder<DummyPropInfo>(root);
             Object.DestroyImmediate(child1Component);
-            var child1ComponentId = child1Component.GetInstanceID(); 
+            var child1ComponentId = child1Component.GetEntityId(); 
 
             var built = builder.BuildObjectMapping();
 
@@ -524,7 +524,7 @@ namespace Anatawa12.AvatarOptimizer.Test
                 rootMapper.MapBinding("child1/child11", typeof(SkinnedMeshRenderer), "blendShapes.moved"),
                 Is.EquivalentTo(new[]{B("child2/child11", typeof(SkinnedMeshRenderer), "blendShapes.movedChanged", 0)}));
 
-            Assert.That(built.MapComponentInstance(child11Component.GetInstanceID(), out var component), Is.False);
+            Assert.That(built.MapComponentInstance(child11Component.GetEntityId(), out var component), Is.False);
         }
 
         [Test]
@@ -540,7 +540,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             builder.RecordRemoveProperty(child1Component, Props.EnabledFor(child1Component));
             builder.RecordMergeComponent(child1Component, child2Component);
             Object.DestroyImmediate(child1Component);
-            var child1ComponentId = child1Component.GetInstanceID();
+            var child1ComponentId = child1Component.GetEntityId();
 
             var built = builder.BuildObjectMapping();
 
@@ -582,7 +582,7 @@ namespace Anatawa12.AvatarOptimizer.Test
                 rootMapper.MapBinding("child1/child11", typeof(SkinnedMeshRenderer), "blendShapes.moved"),
                 Is.EquivalentTo(new[]{B("child2/child11", typeof(SkinnedMeshRenderer), "blendShapes.movedChanged", 0)}));
 
-            Assert.That(built.MapComponentInstance(child11Component.GetInstanceID(), out var component), Is.False);
+            Assert.That(built.MapComponentInstance(child11Component.GetEntityId(), out var component), Is.False);
         }
 
         [Test]

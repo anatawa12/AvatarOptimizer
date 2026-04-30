@@ -36,7 +36,7 @@ namespace Anatawa12.AvatarOptimizer
             }
             else
             {
-                var foundGameObject = EditorUtility.InstanceIDToObject(tree.InstanceId) as GameObject;
+                var foundGameObject = UnityObjectIDHelper.EntityIdToObject(tree.InstanceId) as GameObject;
                 var newPath = foundGameObject != null
                     ? Utils.RelativePath(_rootGameObject.transform, foundGameObject.transform)
                     : null;
@@ -64,7 +64,7 @@ namespace Anatawa12.AvatarOptimizer
                 _tree = tree;
             }
 
-            public (int instanceId, ComponentInfo?) GetComponentByType(Type type)
+            public (EntityId instanceId, ComponentInfo?) GetComponentByType(Type type)
             {
                 if (!_tree.ComponentInstanceIdByType.TryGetValue(type, out var instanceId))
                     return (instanceId, null); // Nothing to map
@@ -81,7 +81,7 @@ namespace Anatawa12.AvatarOptimizer
 
             if (componentInfo != null)
             {
-                var component = new ComponentOrGameObject(EditorUtility.InstanceIDToObject(componentInfo.MergedInto));
+                var component = new ComponentOrGameObject(UnityObjectIDHelper.EntityIdToObject(componentInfo.MergedInto));
                 // there's mapping about component.
                 // this means the component is merged or some prop has mapping
                 if (!component) return null; // this means removed.
@@ -94,7 +94,7 @@ namespace Anatawa12.AvatarOptimizer
             else
             {
                 // The component is not merged & no prop mapping so process GameObject mapping
-                var component = EditorUtility.InstanceIDToObject(instanceId);
+                var component = UnityObjectIDHelper.EntityIdToObject(instanceId);
                 if (!component) return null; // this means removed
 
                 if (gameObjectInfo.NewPath == null) return null;
@@ -141,7 +141,7 @@ namespace Anatawa12.AvatarOptimizer
                     foreach (var descriptor in newProp.AllCopiedTo)
                     {
                         var component =
-                            new ComponentOrGameObject(EditorUtility.InstanceIDToObject(descriptor.InstanceId));
+                            new ComponentOrGameObject(UnityObjectIDHelper.EntityIdToObject(descriptor.InstanceId));
                         // this means removed.
                         if (!component)
                             continue;
@@ -169,7 +169,7 @@ namespace Anatawa12.AvatarOptimizer
                 else
                 {
                     var component =
-                        new ComponentOrGameObject(EditorUtility.InstanceIDToObject(componentInfo.MergedInto));
+                        new ComponentOrGameObject(UnityObjectIDHelper.EntityIdToObject(componentInfo.MergedInto));
                     if (!component)
                         return Array.Empty<(string path, Type type, string propertyName, int index)>(); // this means removed.
 
@@ -185,7 +185,7 @@ namespace Anatawa12.AvatarOptimizer
             {
                 // The component is not merged & no prop mapping so process GameObject mapping
 
-                var component = EditorUtility.InstanceIDToObject(instanceId);
+                var component = UnityObjectIDHelper.EntityIdToObject(instanceId);
                 if (!component)
                 {
 #if AAO_VRCSDK3_AVATARS
@@ -197,7 +197,7 @@ namespace Anatawa12.AvatarOptimizer
                     if (type == typeof(BoxCollider) || type == typeof(Collider))
                     {
                         var (stationInstanceId, _) = gameObjectInfo.GetComponentByType(typeof(VRC.SDK3.Avatars.Components.VRCStation));
-                        if (EditorUtility.InstanceIDToObject(stationInstanceId) != null)
+                        if (UnityObjectIDHelper.EntityIdToObject(stationInstanceId) != null)
                         {
                             goto componentLive;
                         }
