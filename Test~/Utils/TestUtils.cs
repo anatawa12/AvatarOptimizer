@@ -327,6 +327,7 @@ namespace Anatawa12.AvatarOptimizer.Test
                 $"localGravityDirection={bone.localGravityDirection:G}, " +
                 $"sphereCollision: {bone.sphereCollision}");
 #endif
+            TryAddCustomValueFormatter<Transform>(bone => $"Transform({Utils.RelativePath(root: null, bone.transform)})");
         }
 
         public static void TryAddCustomValueFormatter<T>(Func<T, string> formatter)

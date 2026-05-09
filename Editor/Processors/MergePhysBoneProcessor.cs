@@ -87,7 +87,8 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     return;
                 }
 
-                if (sourceComponents.Count == pb.GetTarget().parent.childCount)
+                if (sourceComponents.Count == pb.GetTarget().parent.childCount
+                    && !IsTransformAnimated(pb.GetTarget().parent, context))
                 {
                     root = pb.GetTarget().parent;
                 }
@@ -112,6 +113,16 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         physBoneIgnoringTarget.ignoreTransforms.RemoveAll(x => sourceComponents.Any(pb => pb.GetTarget() == x));
                         physBoneIgnoringTarget.ignoreTransforms.Add(root);
                     }
+                }
+
+                bool IsTransformAnimated(Transform parent, BuildContext? buildContext)
+                {
+                    if (buildContext == null) return false;
+                    var component = buildContext.GetAnimationComponent(parent);
+                    foreach (var property in TransformRotationAndPositionAnimationKeys)
+                        if (component.IsAnimatedFloat(property))
+                            return true;
+                    return false;
                 }
             }
 

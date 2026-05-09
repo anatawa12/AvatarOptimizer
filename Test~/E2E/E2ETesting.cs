@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using nadena.dev.ndmf;
 using NUnit.Framework;
 using UnityEditor;
@@ -9,7 +10,9 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using VRC.Dynamics;
 using Debug = UnityEngine.Debug;
+using Object = System.Object;
 #if AAO_VRCSDK3_AVATARS
+using UnityEngine.Animations;
 using VRC.SDK3.Dynamics.PhysBone.Components;
 #endif
 
@@ -749,6 +752,102 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             AvatarProcessor.ProcessAvatar(avatar);
 
             Assert.That(pb != null, "PhysBone with its root transform in Ignore Transforms should not be removed");
+        }
+
+        // AAO previously breaks the avatar behavior if:
+        // - the parent of PhysBone has mergeable PhysBone children only
+        //   - in other words, the PhysBones are merged to parent transform in previous conditions
+        // - the parent of PhysBone is animated in some way
+        //   - this includes other components like Constraints. original case uses constraint so this test will also use constraints.
+        [Test]
+        public void Issue1725_MergePhysBone_And_Animated_Parent()
+        {
+            var avatar = TestUtils.NewAvatar();
+            TestUtils.SetFxLayer(avatar, new AnimatorController());
+            avatar.AddComponent<TraceAndOptimize>();
+
+            var pbParent = Utils.NewGameObject("PBParent", avatar.transform);
+            var pbChain11 = Utils.NewGameObject("PBChain11", pbParent.transform);
+            var pbChain12 = Utils.NewGameObject("PBChain12", pbChain11.transform);
+            var pbChain13 = Utils.NewGameObject("PBChain13", pbChain12.transform);
+            var pbChain21 = Utils.NewGameObject("PBChain21", pbParent.transform);
+            var pbChain22 = Utils.NewGameObject("PBChain22", pbChain21.transform);
+            var pbChain23 = Utils.NewGameObject("PBChain23", pbChain22.transform);
+            var pb1 = pbChain11.AddComponent<VRCPhysBone>();
+            var pb2 = pbChain21.AddComponent<VRCPhysBone>();
+            pb1.allowGrabbing = pb2.allowGrabbing = VRCPhysBoneBase.AdvancedBool.False;
+            pb1.allowCollision = pb2.allowCollision = VRCPhysBoneBase.AdvancedBool.False;
+            pb1.allowPosing = pb2.allowPosing = VRCPhysBoneBase.AdvancedBool.False;
+            var cube1 = Utils.NewGameObject("Cube", avatar.transform).AddComponent<SkinnedMeshRenderer>();
+            cube1.sharedMesh = TestUtils.NewCubeMesh();
+            cube1.rootBone = pbChain13.transform;
+            var cube2 = Utils.NewGameObject("Cube", avatar.transform).AddComponent<SkinnedMeshRenderer>();
+            cube2.sharedMesh = TestUtils.NewCubeMesh();
+            cube2.rootBone = pbChain23.transform;
+
+            var pbParentConstraint = pbParent.AddComponent<PositionConstraint>();
+            pbParentConstraint.AddSource(new ConstraintSource()
+            {
+                weight = 1,
+                sourceTransform = pbParent.transform
+            });
+            pbParentConstraint.weight = 0.4f;
+            pbParentConstraint.GetType().GetMethod("ActivateAndPreserveOffset",
+                    BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!
+                .Invoke(pbParentConstraint, Array.Empty<Object>());
+
+            AvatarProcessor.ProcessAvatar(avatar);
+
+            Assert.That(pb1 == null);
+            Assert.That(pb2 == null);
+            Assert.That(pbChain11.transform.parent, Is.Not.EqualTo(pbParent.transform), "PB Chain 1 parent should be changed");
+            Assert.That(pbChain21.transform.parent, Is.Not.EqualTo(pbParent.transform), "PB Chain 2 parent should be changed");
+            var pb = avatar.GetComponentsInChildren<VRCPhysBone>();
+            Assert.That(pb, Has.Length.EqualTo(1));
+            Assert.That(pb[0].GetTarget(), Is.Not.EqualTo(pbParent.transform));
+            Assert.That(pb[0].GetTarget().parent, Is.EqualTo(pbParent.transform));
+            Assert.That(pb[0].GetTarget(), Is.EqualTo(pbChain11.transform.parent), "PB Chain 1 parent should be pb target");
+            Assert.That(pb[0].GetTarget(), Is.EqualTo(pbChain21.transform.parent), "PB Chain 2 parent should be pb target");
+        }
+
+        // This negative to issue 1725; we should merge to parent transform if nothing prevents them
+        [Test]
+        public void Issue1725_MergePhysBone_MergeToParent()
+        {
+            var avatar = TestUtils.NewAvatar();
+            TestUtils.SetFxLayer(avatar, new AnimatorController());
+            avatar.AddComponent<TraceAndOptimize>();
+
+            var pbParent = Utils.NewGameObject("PBParent", avatar.transform);
+            var pbChain11 = Utils.NewGameObject("PBChain11", pbParent.transform);
+            var pbChain12 = Utils.NewGameObject("PBChain12", pbChain11.transform);
+            var pbChain13 = Utils.NewGameObject("PBChain13", pbChain12.transform);
+            var pbChain21 = Utils.NewGameObject("PBChain21", pbParent.transform);
+            var pbChain22 = Utils.NewGameObject("PBChain22", pbChain21.transform);
+            var pbChain23 = Utils.NewGameObject("PBChain23", pbChain22.transform);
+            var pb1 = pbChain11.AddComponent<VRCPhysBone>();
+            var pb2 = pbChain21.AddComponent<VRCPhysBone>();
+            pb1.allowGrabbing = pb2.allowGrabbing = VRCPhysBoneBase.AdvancedBool.False;
+            pb1.allowCollision = pb2.allowCollision = VRCPhysBoneBase.AdvancedBool.False;
+            pb1.allowPosing = pb2.allowPosing = VRCPhysBoneBase.AdvancedBool.False;
+            var cube1 = Utils.NewGameObject("Cube", avatar.transform).AddComponent<SkinnedMeshRenderer>();
+            cube1.sharedMesh = TestUtils.NewCubeMesh();
+            cube1.rootBone = pbChain13.transform;
+            var cube2 = Utils.NewGameObject("Cube", avatar.transform).AddComponent<SkinnedMeshRenderer>();
+            cube2.sharedMesh = TestUtils.NewCubeMesh();
+            cube2.rootBone = pbChain23.transform;
+
+            AvatarProcessor.ProcessAvatar(avatar);
+
+            Assert.That(pb1 == null);
+            Assert.That(pb2 == null);
+            Assert.That(pbChain11.transform.parent, Is.EqualTo(pbParent.transform), "PB Chain 1 parent should be changed");
+            Assert.That(pbChain21.transform.parent, Is.EqualTo(pbParent.transform), "PB Chain 2 parent should be changed");
+            var pb = avatar.GetComponentsInChildren<VRCPhysBone>();
+            Assert.That(pb, Has.Length.EqualTo(1));
+            Assert.That(pb[0].GetTarget(), Is.EqualTo(pbParent.transform));
+            Assert.That(pb[0].GetTarget(), Is.EqualTo(pbChain11.transform.parent), "PB Chain 1 parent should be pb target");
+            Assert.That(pb[0].GetTarget(), Is.EqualTo(pbChain21.transform.parent), "PB Chain 2 parent should be pb target");
         }
 
 #endif
