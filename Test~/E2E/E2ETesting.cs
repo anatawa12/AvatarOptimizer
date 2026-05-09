@@ -758,7 +758,7 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
         // - the parent of PhysBone has mergeable PhysBone children only
         //   - in other words, the PhysBones are merged to parent transform in previous conditions
         // - the parent of PhysBone is animated in some way
-        //   - this includes other components like Constraints. original case uses constraint so this test will also use constriants.
+        //   - this includes other components like Constraints. original case uses constraint so this test will also use constraints.
         [Test]
         public void Issue1725_MergePhysBone_And_Animated_Parent()
         {

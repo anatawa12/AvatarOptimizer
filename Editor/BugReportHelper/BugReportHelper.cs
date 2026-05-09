@@ -506,7 +506,7 @@ internal class BugReportHelper : EditorWindow
                         builder.AppendLine($"    upVector: {constraint.upVector:G9}");
                         builder.AppendLine($"    worldUpVector: {constraint.worldUpVector:G9}");
                         builder.AppendLine($"    worldUpObject: {ComponentPath(constraint.worldUpObject)}");
-                        builder.AppendLine($"    worldUpType: {constraint.worldUpType:G9}");
+                        builder.AppendLine($"    worldUpType: {constraint.worldUpType}");
                         break;
                     case UnityEngine.Animations.LookAtConstraint constraint:
                         Constraint(constraint);
@@ -608,7 +608,7 @@ internal class BugReportHelper : EditorWindow
                         builder.AppendLine($"    UpAxis: {constraint.UpAxis:G9}");
                         builder.AppendLine($"    WorldUpVector: {constraint.WorldUpVector:G9}");
                         builder.AppendLine($"    WorldUpTransform: {ComponentPath(constraint.WorldUpTransform)}");
-                        builder.AppendLine($"    WorldUp: {constraint.WorldUp:G9}");
+                        builder.AppendLine($"    WorldUp: {constraint.WorldUp:G}");
                         break;
                     case VRC.Dynamics.ManagedTypes.VRCLookAtConstraintBase constraint:
                         VRCConstraint(constraint);
