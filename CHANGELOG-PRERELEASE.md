@@ -16,11 +16,14 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Merge PhysBone could break behavior when merging all children of a source component's parent if the parent transform was animated by other components `#1726`
-  - This bug also occurs if the parent has constraint components
-  - This bug also affected Optimize PhysBone in Trace and Optimize
 
 ### Security
+
+## [1.9.13-beta.1] - 2026-05-09
+### Fixed
+- Merge PhysBone could break behavior when merging all children of a source component's parent if the parent transform was animated by other components [`#1726`](https://github.com/anatawa12/AvatarOptimizer/pull/1726)
+  - This bug also occurs if the parent has constraint components
+  - This bug also affected Optimize PhysBone in Trace and Optimize
 
 ## [1.9.12] - 2026-04-28
 ## [1.9.12-beta.1] - 2026-04-27
@@ -2256,7 +2259,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.12...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.13-beta.1...HEAD
+[1.9.13-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.12...v1.9.13-beta.1
 [1.9.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.12-beta.1...v1.9.12
 [1.9.12-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.11...v1.9.12-beta.1
 [1.9.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.11-beta.1...v1.9.11
