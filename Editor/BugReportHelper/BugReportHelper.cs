@@ -1149,6 +1149,8 @@ internal class BugReportHelper : EditorWindow
             public void AppendLiteral(string s) => _builder._sb.Append(s);
             public void AppendFormatted(string? t) => _builder._sb.Append(t);
             public void AppendFormatted(bool t) => _builder._sb.Append(t);
+            public void AppendFormatted(int t) => _builder._sb.Append(t);
+            public void AppendFormatted(long t) => _builder._sb.Append(t);
             public void AppendFormatted(float t) => _builder._sb.Append(t.ToString(FloatFormat));
             public void AppendFormatted(Vector2 t) => _builder._sb.Append(t.ToString(FloatFormat));
             public void AppendFormatted(Vector3 t) => _builder._sb.Append(t.ToString(FloatFormat));
@@ -1171,8 +1173,6 @@ internal class BugReportHelper : EditorWindow
                     return "scene:" + Utils.RelativePath(null, c.transform);
                 return "non-scene:" + Utils.RelativePath(null, c.transform);
             }
-
-            private static TOut As<TIn, TOut>(TIn t) => __refvalue(__makeref(t), TOut);
         }
     }
 }
