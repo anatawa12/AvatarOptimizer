@@ -25,6 +25,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
+#if AAO_VRCSDK3_AVATARS_IGNORE_OTHER_PHYSBONE
             var physBones = context.GetComponents<VRCPhysBoneBase>();
             var physBoneByTarget = physBones.GroupBy(x => x.GetTarget())
                 .ToDictionary(x => x.Key, x => x.ToHashSet());
@@ -46,6 +47,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     }
                 }
             }
+#endif
         }
     }
 
