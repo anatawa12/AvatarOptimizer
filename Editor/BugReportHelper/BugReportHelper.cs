@@ -27,7 +27,7 @@ namespace Anatawa12.AvatarOptimizer.BugReportHelper;
 // - OSの情報
 // - ターゲットプラットフォームとそれの設定
 // - AnimatorParserの結果
-// - アバターのヒエラルキー情報(EditモードとAAO実行直前の二回)
+// - アバターのヒエラルキー情報
 //   - ヒエラルキー構造
 //   - コンポーネントの付与情報
 //     - AAOの設定値
@@ -445,6 +445,9 @@ internal class BugReportHelper : EditorWindow
                 {
                     case Transform t:
                         builder.AppendLine($"    activeSelf: {t.gameObject.activeSelf}");
+                        builder.AppendLine($"    position: {t.position:G9}");
+                        builder.AppendLine($"    rotation: {t.rotation:G9}");
+                        builder.AppendLine($"    scale: {t.localScale:G9}");
                         break;
                     case Behaviour b:
                         builder.AppendLine($"    enabled: {b.enabled}");
@@ -494,6 +497,57 @@ internal class BugReportHelper : EditorWindow
                         Renderer(meshRenderer);
                         break;
 
+                    case UnityEngine.Animations.AimConstraint constraint:
+                        Constraint(constraint);
+                        builder.AppendLine($"    rotationAtRest: {constraint.rotationAtRest:G9}");
+                        builder.AppendLine($"    rotationOffset: {constraint.rotationOffset:G9}");
+                        builder.AppendLine($"    rotationAxis: {constraint.rotationAxis}");
+                        builder.AppendLine($"    aimVector: {constraint.aimVector:G9}");
+                        builder.AppendLine($"    upVector: {constraint.upVector:G9}");
+                        builder.AppendLine($"    worldUpVector: {constraint.worldUpVector:G9}");
+                        builder.AppendLine($"    worldUpObject: {ComponentPath(constraint.worldUpObject)}");
+                        builder.AppendLine($"    worldUpType: {constraint.worldUpType:G9}");
+                        break;
+                    case UnityEngine.Animations.LookAtConstraint constraint:
+                        Constraint(constraint);
+                        builder.AppendLine($"    roll: {constraint.roll:G9}");
+                        builder.AppendLine($"    rotationAtRest: {constraint.rotationAtRest:G9}");
+                        builder.AppendLine($"    rotationOffset: {constraint.rotationOffset:G9}");
+                        builder.AppendLine($"    worldUpObject: {ComponentPath(constraint.worldUpObject)}");
+                        builder.AppendLine($"    useUpObject: {constraint.useUpObject}");
+                        break;
+                    case UnityEngine.Animations.ParentConstraint constraint:
+                        Constraint(constraint);
+                        builder.AppendLine($"    translationAtRest: {constraint.translationAtRest:G9}");
+                        builder.AppendLine($"    rotationAtRest: {constraint.rotationAtRest:G9}");
+                        builder.AppendLine($"    translationOffsets: {constraint.translationOffsets.Length}");
+                        for (var i = 0; i < constraint.translationOffsets.Length; i++)
+                            builder.AppendLine($"      translationOffsets[{i}]: {constraint.GetTranslationOffset(i):G9}");
+                        builder.AppendLine($"    rotationOffsets: {constraint.rotationOffsets.Length}");
+                        for (var i = 0; i < constraint.rotationOffsets.Length; i++)
+                            builder.AppendLine($"      rotationOffsets[{i}]: {constraint.GetRotationOffset(i):G9}");
+                        builder.AppendLine($"    translationAxis: {constraint.translationAxis}");
+                        builder.AppendLine($"    rotationAxis: {constraint.rotationAxis}");
+                        break;
+                    case UnityEngine.Animations.RotationConstraint constraint:
+                        Constraint(constraint);
+                        builder.AppendLine($"    rotationAtRest: {constraint.rotationAtRest:G9}");
+                        builder.AppendLine($"    rotationOffset: {constraint.rotationOffset:G9}");
+                        builder.AppendLine($"    rotationAxis: {constraint.rotationAxis}");
+                        break;
+                    case UnityEngine.Animations.PositionConstraint constraint:
+                        Constraint(constraint);
+                        builder.AppendLine($"    translationAtRest: {constraint.translationAtRest:G9}");
+                        builder.AppendLine($"    translationOffset: {constraint.translationOffset:G9}");
+                        builder.AppendLine($"    translationAxis: {constraint.translationAxis}");
+                        break;
+                    case UnityEngine.Animations.ScaleConstraint constraint:
+                        Constraint(constraint);
+                        builder.AppendLine($"    scaleAtRest: {constraint.scaleAtRest:G9}");
+                        builder.AppendLine($"    scaleOffset: {constraint.scaleOffset:G9}");
+                        builder.AppendLine($"    scalingAxis: {constraint.scalingAxis}");
+                        break;
+
 #if AAO_VRCSDK3_AVATARS
                     case VRCPhysBoneBase physBone:
                         builder.AppendLine($"    version: {physBone.version}");
@@ -541,6 +595,63 @@ internal class BugReportHelper : EditorWindow
                         builder.AppendLine($"    isAnimated: {physBone.isAnimated}");
                         builder.AppendLine($"    resetWhenDisabled: {physBone.resetWhenDisabled}");
                         builder.AppendLine($"    parameter: '{physBone.parameter}'");
+                        break;
+
+                    case VRC.Dynamics.ManagedTypes.VRCAimConstraintBase constraint:
+                        VRCConstraint(constraint);
+                        builder.AppendLine($"    RotationAtRest: {constraint.RotationAtRest:G9}");
+                        builder.AppendLine($"    RotationOffset: {constraint.RotationOffset:G9}");
+                        builder.AppendLine($"    AffectsRotationX: {constraint.AffectsRotationX}");
+                        builder.AppendLine($"    AffectsRotationY: {constraint.AffectsRotationY}");
+                        builder.AppendLine($"    AffectsRotationZ: {constraint.AffectsRotationZ}");
+                        builder.AppendLine($"    AimAxis: {constraint.AimAxis:G9}");
+                        builder.AppendLine($"    UpAxis: {constraint.UpAxis:G9}");
+                        builder.AppendLine($"    WorldUpVector: {constraint.WorldUpVector:G9}");
+                        builder.AppendLine($"    WorldUpTransform: {ComponentPath(constraint.WorldUpTransform)}");
+                        builder.AppendLine($"    WorldUp: {constraint.WorldUp:G9}");
+                        break;
+                    case VRC.Dynamics.ManagedTypes.VRCLookAtConstraintBase constraint:
+                        VRCConstraint(constraint);
+                        builder.AppendLine($"    Roll: {constraint.Roll:G9}");
+                        builder.AppendLine($"    RotationAtRest: {constraint.RotationAtRest:G9}");
+                        builder.AppendLine($"    RotationOffset: {constraint.RotationOffset:G9}");
+                        builder.AppendLine($"    WorldUpTransform: {ComponentPath(constraint.WorldUpTransform)}");
+                        builder.AppendLine($"    UseUpTransform: {constraint.UseUpTransform}");
+                        break;
+                    case VRC.Dynamics.ManagedTypes.VRCParentConstraintBase constraint:
+                        VRCConstraint(constraint);
+                        builder.AppendLine($"    PositionAtRest: {constraint.PositionAtRest:G9}");
+                        builder.AppendLine($"    RotationAtRest: {constraint.RotationAtRest:G9}");
+                        builder.AppendLine($"    AffectsPositionX: {constraint.AffectsPositionX}");
+                        builder.AppendLine($"    AffectsPositionY: {constraint.AffectsPositionY}");
+                        builder.AppendLine($"    AffectsPositionZ: {constraint.AffectsPositionZ}");
+                        builder.AppendLine($"    AffectsRotationX: {constraint.AffectsRotationX}");
+                        builder.AppendLine($"    AffectsRotationY: {constraint.AffectsRotationY}");
+                        builder.AppendLine($"    AffectsRotationZ: {constraint.AffectsRotationZ}");
+                        break;
+                    case VRC.Dynamics.ManagedTypes.VRCRotationConstraintBase constraint:
+                        VRCConstraint(constraint);
+                        builder.AppendLine($"    RotationAtRest: {constraint.RotationAtRest:G9}");
+                        builder.AppendLine($"    RotationOffset: {constraint.RotationOffset:G9}");
+                        builder.AppendLine($"    AffectsRotationX: {constraint.AffectsRotationX}");
+                        builder.AppendLine($"    AffectsRotationY: {constraint.AffectsRotationY}");
+                        builder.AppendLine($"    AffectsRotationZ: {constraint.AffectsRotationZ}");
+                        break;
+                    case VRC.Dynamics.ManagedTypes.VRCPositionConstraintBase constraint:
+                        VRCConstraint(constraint);
+                        builder.AppendLine($"    PositionAtRest: {constraint.PositionAtRest:G9}");
+                        builder.AppendLine($"    PositionOffset: {constraint.PositionOffset:G9}");
+                        builder.AppendLine($"    AffectsPositionX: {constraint.AffectsPositionX}");
+                        builder.AppendLine($"    AffectsPositionY: {constraint.AffectsPositionY}");
+                        builder.AppendLine($"    AffectsPositionZ: {constraint.AffectsPositionZ}");
+                        break;
+                    case VRC.Dynamics.ManagedTypes.VRCScaleConstraintBase constraint:
+                        VRCConstraint(constraint);
+                        builder.AppendLine($"    ScaleAtRest: {constraint.ScaleAtRest:G9}");
+                        builder.AppendLine($"    ScaleOffset: {constraint.ScaleOffset:G9}");
+                        builder.AppendLine($"    AffectsScaleX: {constraint.AffectsScaleX}");
+                        builder.AppendLine($"    AffectsScaleY: {constraint.AffectsScaleY}");
+                        builder.AppendLine($"    AffectsScaleZ: {constraint.AffectsScaleZ}");
                         break;
 #endif
 
@@ -661,6 +772,38 @@ internal class BugReportHelper : EditorWindow
                         }
                     }
                 }
+
+                void Constraint<T>(T constraint) where T : Behaviour, UnityEngine.Animations.IConstraint
+                {
+                    builder.AppendLine($"    constraintActive: {constraint.constraintActive}");
+                    builder.AppendLine($"    weight: {constraint.weight:G9}");
+                    builder.AppendLine($"    locked: {constraint.locked}");
+                    builder.AppendLine($"    sources: {constraint.sourceCount}");
+                    for (var i = 0; i < constraint.sourceCount; i++)
+                    {
+                        var source = constraint.GetSource(i);
+                        builder.AppendLine($"      sources[{i}].weight = {source.weight:G9}");
+                        builder.AppendLine($"      sources[{i}].transform = {ComponentPath(source.sourceTransform)}");
+                    }
+                }
+
+#if AAO_VRCSDK3_AVATARS
+                void VRCConstraint<T>(T constraint) where T : VRC.Dynamics.VRCConstraintBase
+                {
+                    builder.AppendLine($"    IsActive: {constraint.IsActive}");
+                    builder.AppendLine($"    GlobalWeight: {constraint.GlobalWeight:G9}");
+                    builder.AppendLine($"    Locked: {constraint.Locked}");
+                    builder.AppendLine($"    sources: {constraint.Sources.Count}");
+                    for (var i = 0; i < constraint.Sources.Count; i++)
+                    {
+                        var source = constraint.Sources[i];
+                        builder.AppendLine($"      sources[{i}].Weight = {source.Weight:G9}");
+                        builder.AppendLine($"      sources[{i}].SourceTransform = {ComponentPath(source.SourceTransform)}");
+                        builder.AppendLine($"      sources[{i}].ParentPositionOffset = {source.ParentPositionOffset:G9}");
+                        builder.AppendLine($"      sources[{i}].ParentRotationOffset = {source.ParentRotationOffset:G9}");
+                    }
+                }
+#endif
 
                 // simple hash function to avoid leaking exact values
                 string Hashed(string input)
