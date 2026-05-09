@@ -19,6 +19,8 @@ The format is based on [Keep a Changelog].
 - Merge PhysBone could break behavior when merging all children of a source component's parent if the parent transform was animated by other components `#1726`
   - This bug also occurs if the parent has constraint components
   - This bug also affected Optimize PhysBone in Trace and Optimize
+- Avatar Optimizer unexpectedly requires VRCSDK 3.8.0 or later `#1728`
+  - Avatar Optimizer officially supports 3.7.0 but 1.9.11 and 1.9.12 unexpectedly requires 3.8.0 or later.
 
 ### Security
 
