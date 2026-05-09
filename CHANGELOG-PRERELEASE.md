@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Avatar Optimizer unexpectedly requires VRCSDK 3.8.0 or later `#1728`
+  - Avatar Optimizer officially supports 3.7.0 but 1.9.11 and 1.9.12 unexpectedly require 3.8.0 or later.
 
 ### Security
 
