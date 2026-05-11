@@ -21,6 +21,9 @@ The format is based on [Keep a Changelog].
   - This bug also affected Optimize PhysBone in Trace and Optimize
 - Avatar Optimizer unexpectedly requires VRCSDK 3.8.0 or later `#1728`
   - Avatar Optimizer officially supports 3.7.0 but 1.9.11 and 1.9.12 unexpectedly require 3.8.0 or later.
+- EyeLook could stop working if either eye bone was unused `#1729`
+  - I found that if only one eye bone remained assigned, VRChat would stop animating both eye bones.
+  - This is now fixed by preserving both eye bones whenever either one is used by another component.
 
 ### Security
 
