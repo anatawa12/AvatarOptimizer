@@ -16,13 +16,16 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Avatar Optimizer unexpectedly requires VRCSDK 3.8.0 or later `#1728`
-  - Avatar Optimizer officially supports 3.7.0 but 1.9.11 and 1.9.12 unexpectedly require 3.8.0 or later.
-- EyeLook could stop working if either eye bone was unused `#1729`
-  - I found that if only one eye bone remained assigned, VRChat would stop animating both eye bones.
-  - This is now fixed by preserving both eye bones whenever either one is used by another component.
 
 ### Security
+
+## [1.9.13-beta.2] - 2026-05-11
+### Fixed
+- Avatar Optimizer unexpectedly requires VRCSDK 3.8.0 or later [`#1728`](https://github.com/anatawa12/AvatarOptimizer/pull/1728)
+  - Avatar Optimizer officially supports 3.7.0 but 1.9.11 and 1.9.12 unexpectedly require 3.8.0 or later.
+- EyeLook could stop working if either eye bone was unused [`#1729`](https://github.com/anatawa12/AvatarOptimizer/pull/1729)
+  - I found that if only one eye bone remained assigned, VRChat would stop animating both eye bones.
+  - This is now fixed by preserving both eye bones whenever either one is used by another component.
 
 ## [1.9.13-beta.1] - 2026-05-09
 ### Fixed
@@ -2264,7 +2267,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.13-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.13-beta.2...HEAD
+[1.9.13-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.13-beta.1...v1.9.13-beta.2
 [1.9.13-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.12...v1.9.13-beta.1
 [1.9.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.12-beta.1...v1.9.12
 [1.9.12-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.11...v1.9.12-beta.1
