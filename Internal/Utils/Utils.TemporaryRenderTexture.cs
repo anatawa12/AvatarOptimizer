@@ -1,7 +1,9 @@
 using System;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
-
+#if UNITY_6000_4_OR_NEWER
+using FormatUsage = UnityEngine.Experimental.Rendering.GraphicsFormatUsage;
+#endif
 namespace Anatawa12.AvatarOptimizer;
 
 partial class Utils
@@ -27,22 +29,11 @@ partial class Utils
 
     internal static GraphicsFormat GetDepthStencilFormatLegacy(
         int depthBits,
-        GraphicsFormat colorFormat)
-    {
-#pragma warning disable CS0618 // Type or member is obsolete
-        return colorFormat == GraphicsFormat.ShadowAuto
-#pragma warning restore CS0618 // Type or member is obsolete
-            ? GraphicsFormatUtility.GetDepthStencilFormat(depthBits, 0)
-            : GraphicsFormatUtility.GetDepthStencilFormat(depthBits, 8);
-    }
-    
-    internal static GraphicsFormat GetDepthStencilFormatLegacy(
-        int depthBits,
         RenderTextureFormat format)
     {
         return GetDepthStencilFormatLegacy(depthBits, format == RenderTextureFormat.Shadowmap);
     }
-    
+
     internal static GraphicsFormat GetDepthStencilFormatLegacy(
         int depthBits,
         bool requestedShadowMap)
@@ -61,10 +52,10 @@ partial class Utils
       VRTextureUsage vrUsage = VRTextureUsage.None,
       bool useDynamicScale = false)
     {
-      var compatibleFormat = GetCompatibleFormat(format, readWrite);
-      var stencilFormatLegacy = GetDepthStencilFormatLegacy(depthBuffer, format);
+        var compatibleFormat = GetCompatibleFormat(format, readWrite);
+        var stencilFormatLegacy = GetDepthStencilFormatLegacy(depthBuffer, format);
 
-      return TemporaryRenderTextureImpl(width, height, stencilFormatLegacy, compatibleFormat, antiAliasing, memorylessMode, vrUsage, useDynamicScale);
+        return TemporaryRenderTextureImpl(width, height, stencilFormatLegacy, compatibleFormat, antiAliasing, memorylessMode, vrUsage, useDynamicScale);
     }
 
     public static TemporaryRenderTextureScope TemporaryRenderTexture(
@@ -76,10 +67,7 @@ partial class Utils
       RenderTextureMemoryless memorylessMode = RenderTextureMemoryless.None,
       VRTextureUsage vrUsage = VRTextureUsage.None,
       bool useDynamicScale = false)
-    {
-      return TemporaryRenderTextureImpl(width, height, GetDepthStencilFormatLegacy(depthBuffer, format), format, antiAliasing, memorylessMode, vrUsage, useDynamicScale);
-    }
-
+    => new(RenderTexture.GetTemporary(width, height, depthBuffer, format, antiAliasing, memorylessMode, vrUsage, useDynamicScale));
     private static GraphicsFormat GetCompatibleFormat(
         RenderTextureFormat renderTextureFormat,
         RenderTextureReadWrite readWrite)

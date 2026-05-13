@@ -717,7 +717,7 @@ internal class BugReportHelper : EditorWindow
                         var sharedMaterial = renderer.sharedMaterials[i];
                         if (sharedMaterial != null)
                         {
-                            builder.AppendLine($"    sharedMaterials[{i}]: {sharedMaterial.name} ({sharedMaterial.shader.name}) ({sharedMaterial.GetInstanceID()})");
+                            builder.AppendLine($"    sharedMaterials[{i}]: {sharedMaterial.name} ({sharedMaterial.shader.name}) ({sharedMaterial.GetEntityId()})");
                             MaterialInfo(sharedMaterial, "      ");
                         }
                         else
@@ -1031,7 +1031,7 @@ internal class BugReportHelper : EditorWindow
         {
             var clip = grouping.Key;
 
-            builder.Append($"  {clip.name}: ({clip.GetInstanceID()}) (Used in:");
+            builder.Append($"  {clip.name}: ({clip.GetEntityId()}) (Used in:");
             foreach (var state in grouping.Select(x => x.state))
                 builder.Append($" {state.name}");
             builder.AppendLine(")");

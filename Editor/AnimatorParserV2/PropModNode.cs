@@ -409,9 +409,9 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                 Add(child.Node, child.ApplyState);
         }
 
-        private void OnDestroy(int objectId)
+        private void OnDestroy(EntityId objectId)
         {
-            _children.RemoveAll(x => x.Component.GetInstanceID() == objectId);
+            _children.RemoveAll(x => x.Component.GetEntityId() == objectId);
         }
 
         public void Remove(Component sourceComponent)
