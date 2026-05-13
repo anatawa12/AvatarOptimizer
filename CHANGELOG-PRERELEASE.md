@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.9.13] - 2026-05-13
 ## [1.9.13-beta.2] - 2026-05-11
 ### Fixed
 - Avatar Optimizer unexpectedly requires VRCSDK 3.8.0 or later [`#1728`](https://github.com/anatawa12/AvatarOptimizer/pull/1728)
@@ -2267,7 +2268,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.13-beta.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.13...HEAD
+[1.9.13]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.13-beta.2...v1.9.13
 [1.9.13-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.13-beta.1...v1.9.13-beta.2
 [1.9.13-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.12...v1.9.13-beta.1
 [1.9.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.12-beta.1...v1.9.12

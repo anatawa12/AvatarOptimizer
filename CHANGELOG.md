@@ -16,16 +16,19 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Merge PhysBone could break behavior when merging all children of a source component's parent if the parent transform was animated by other components `#1726`
-  - This bug also occurs if the parent has constraint components
-  - This bug also affected Optimize PhysBone in Trace and Optimize
-- Avatar Optimizer unexpectedly requires VRCSDK 3.8.0 or later `#1728`
-  - Avatar Optimizer officially supports 3.7.0 but 1.9.11 and 1.9.12 unexpectedly require 3.8.0 or later.
-- EyeLook could stop working if either eye bone was unused `#1729`
-  - I found that if only one eye bone remained assigned, VRChat would stop animating both eye bones.
-  - This is now fixed by preserving both eye bones whenever either one is used by another component.
 
 ### Security
+
+## [1.9.13] - 2026-05-13
+### Fixed
+- Merge PhysBone could break behavior when merging all children of a source component's parent if the parent transform was animated by other components [`#1726`](https://github.com/anatawa12/AvatarOptimizer/pull/1726)
+  - This bug also occurs if the parent has constraint components
+  - This bug also affected Optimize PhysBone in Trace and Optimize
+- Avatar Optimizer unexpectedly requires VRCSDK 3.8.0 or later [`#1728`](https://github.com/anatawa12/AvatarOptimizer/pull/1728)
+  - Avatar Optimizer officially supports 3.7.0 but 1.9.11 and 1.9.12 unexpectedly require 3.8.0 or later.
+- EyeLook could stop working if either eye bone was unused [`#1729`](https://github.com/anatawa12/AvatarOptimizer/pull/1729)
+  - I found that if only one eye bone remained assigned, VRChat would stop animating both eye bones.
+  - This is now fixed by preserving both eye bones whenever either one is used by another component.
 
 ## [1.9.12] - 2026-04-28
 ### Fixed
@@ -1474,7 +1477,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.12...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.13...HEAD
+[1.9.13]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.12...v1.9.13
 [1.9.12]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.11...v1.9.12
 [1.9.11]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.10...v1.9.11
 [1.9.10]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.9...v1.9.10
