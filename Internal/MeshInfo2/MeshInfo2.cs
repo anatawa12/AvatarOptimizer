@@ -42,7 +42,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
         public readonly List<Bone> Bones = new List<Bone>();
 
-        public bool HasColor { get; set; }
+        public ColorStatus HasColor { get; set; }
         public bool HasNormals { get; set; }
         public bool HasTangent { get; set; }
 
@@ -243,9 +243,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 setHasAttribute: _ => HasTangent = true,
                 assign: (x, v) => x.Tangent = v);
 
-            // TODO: this may lost precision or HDR color
-            CopyVertexAttr(mesh, VertexAttribute.Color, vertexBuffers, DataParsers.Color32Provider,
-                setHasAttribute: _ => HasColor = true,
+            CopyVertexAttr(mesh, VertexAttribute.Color, vertexBuffers, DataParsers.ColorProvider,
+                setHasAttribute: _ =>
+                {
+                    HasColor = mesh.GetVertexAttributeFormat(VertexAttribute.Color) == VertexAttributeFormat.UNorm8
+                        ? ColorStatus.UNorm8Color
+                        : ColorStatus.FloatColor;
+                },
                 assign: (x, v) => x.Color = v);
 
             for (var uvChannel = 0; uvChannel <= 7; uvChannel++)
@@ -383,14 +387,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 }
             }
 
-            public static DataParser<Color32> Color32Provider(VertexAttributeFormat format, int dimension)
+            public static DataParser<Color> ColorProvider(VertexAttributeFormat format, int dimension)
             {
                 var vector4Parser = Vector4Provider(format, dimension);
                 return (data, offset) =>
                 {
-                    var color = vector4Parser(data, offset);
-                    color *= byte.MaxValue;
-                    return new Color32((byte)color.x, (byte)color.y, (byte)color.z, (byte)color.w);
+                    return vector4Parser(data, offset);
                 };
             }
 
@@ -482,7 +484,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             SubMeshes.Clear();
             BlendShapes.Clear();
             Bones.Clear();
-            HasColor = false;
+            HasColor = ColorStatus.NoColor;
             HasNormals = false;
             HasTangent = false;
         }
@@ -616,14 +618,32 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             }
 
             // color
-            if (HasColor)
+            switch (HasColor)
             {
-                Profiler.BeginSample($"Vertex Color");
-                var colors = new Color32[Vertices.Count];
-                for (var i = 0; i < Vertices.Count; i++)
-                    colors[i] = Vertices[i].Color;
-                destMesh.colors32 = colors;
-                Profiler.EndSample();
+                case ColorStatus.NoColor:
+                    break;
+                case ColorStatus.UNorm8Color:
+                {
+                    Profiler.BeginSample($"Vertex Color rgba32");
+                    var colors = new Color32[Vertices.Count];
+                    for (var i = 0; i < Vertices.Count; i++)
+                        colors[i] = Vertices[i].Color;
+                    destMesh.colors32 = colors;
+                    Profiler.EndSample();
+                    break;
+                }
+                case ColorStatus.FloatColor:
+                {
+                    Profiler.BeginSample($"Vertex Color Float");
+                    var colors = new Color[Vertices.Count];
+                    for (var i = 0; i < Vertices.Count; i++)
+                        colors[i] = Vertices[i].Color;
+                    destMesh.colors = colors;
+                    Profiler.EndSample();
+                    break;
+                }
+                default:
+                    throw new InvalidOperationException($"Unknown color format: {HasColor}");
             }
 
             // bones
@@ -1119,7 +1139,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         public Vector4 TexCoord6 { get; set; }
         public Vector4 TexCoord7 { get; set; }
 
-        public Color32 Color { get; set; } = new Color32(0xff, 0xff, 0xff, 0xff);
+        public Color Color { get; set; } = Color.white;
 
         // SkinnedMesh related
         public List<(Bone bone, float weight)> BoneWeights = new List<(Bone, float)>();
@@ -1283,6 +1303,13 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
         Vector2 = 1,
         Vector3 = 2,
         Vector4 = 3,
+    }
+
+    public enum ColorStatus
+    {
+        NoColor,
+        UNorm8Color,
+        FloatColor,
     }
     
     /// <summary>

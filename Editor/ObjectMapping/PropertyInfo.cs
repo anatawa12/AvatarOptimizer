@@ -12,7 +12,9 @@ namespace Anatawa12.AvatarOptimizer
         private RootPropModNode<ObjectValueInfo>? _objectNode;
 
         public RootPropModNode<FloatValueInfo> FloatNode => _floatNode ??= new RootPropModNode<FloatValueInfo>();
+        public RootPropModNode<FloatValueInfo>? FloatNodeOpt => _floatNode;
         public RootPropModNode<ObjectValueInfo> ObjectNode => _objectNode ??= new RootPropModNode<ObjectValueInfo>();
+        public RootPropModNode<ObjectValueInfo>? ObjectNodeOpt => _objectNode;
 
         public void MergeTo(ref PropertyInfo property)
         {

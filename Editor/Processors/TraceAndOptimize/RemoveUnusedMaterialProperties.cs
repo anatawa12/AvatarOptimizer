@@ -42,7 +42,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     {
                         // Non-2D textures are not supported by ShaderInformation yet.
                         if (!usedProperties.Contains(property) && material.GetTexture(property) is Texture2D or RenderTexture { dimension: TextureDimension.Tex2D })
+                        {
+                            Tracing.Trace(TracingArea.TraceAndOptimizeDecision, $"Removing '{property}' of material {material} since reported as not used and is 2d texture");
                             material.SetTexture(property, null);
+                        }
                     }
                 }
             }
@@ -67,6 +70,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     {
                         if (context.IsTemporaryAsset(m))
                             RemoveUnusedProperties(m);
+                        else
+                            Tracing.Trace(TracingArea.TraceAndOptimizeDecision, $"Skipping cleaning of material {m} since not a temporary asset");
                         cleaned.Add(m);
                     }
                 }
@@ -179,8 +184,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             )
             {
                 var propertyName = srcIter.FindPropertyRelative("first");
-                
-                if (shaderInfo.HasProperty(propertyName))
+
+                var hasProperty = shaderInfo.HasProperty(propertyName);
+                Tracing.Trace(TracingArea.TraceAndOptimizeDecision, $"DeleteUnusedProperties: {material} has property {propertyName.stringValue}, hasProperty: {hasProperty}");
+                if (hasProperty)
                 {
                     if (destIndex != srcIndex)
                     {

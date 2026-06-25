@@ -9,6 +9,48 @@ using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
+    // Related issue: https://github.com/anatawa12/AvatarOptimizer/issues/1713
+    //
+    // The ignoreOtherPhysBones behaves like adding rootTransforms of all other VRCPhysBones to ignoreTransforms of the PhysBone.
+    // This includes disabled VRCPhysBones so removing disabled VRCPhysBones may break behavior if nested.
+    //
+    // This pass fixes the problem by mirroring ignoreOtherPhysBones behavior to ignoreTransforms,
+    // so that we can safely remove disabled VRCPhysBone components.
+    internal class MirrorIgnoreOtherPhysBonesToIgnoreTransform : TraceAndOptimizePass<MirrorIgnoreOtherPhysBonesToIgnoreTransform>
+    {
+        public override string DisplayName => "T&O (enabled by default): Configure ignoreTransform for ignoreOtherPhysBones settings";
+
+        protected override bool Enabled(TraceAndOptimizeState state) =>
+            state.MirrorIgnoreOtherPhysBonesToIgnoreTransform;
+
+        protected override void Execute(BuildContext context, TraceAndOptimizeState state)
+        {
+#if AAO_VRCSDK3_AVATARS_IGNORE_OTHER_PHYSBONE
+            var physBones = context.GetComponents<VRCPhysBoneBase>();
+            var physBoneByTarget = physBones.GroupBy(x => x.GetTarget())
+                .ToDictionary(x => x.Key, x => x.ToHashSet());
+
+            foreach (var physBone in physBones)
+            {
+                if (physBone.ignoreOtherPhysBones)
+                {
+                    var ignores = new HashSet<Transform>(physBone.ignoreTransforms);
+                    foreach (var affectedTransform in physBone.GetAffectedTransforms(ignores))
+                    {
+                        if (physBoneByTarget.TryGetValue(affectedTransform, out var target)
+                            && target.Any(x => x != physBone))
+                        {
+                            // The transform is controlled by other PhysBones so add to ignore transform
+                            if (ignores.Add(affectedTransform))
+                                physBone.ignoreTransforms.Add(affectedTransform);
+                        }
+                    }
+                }
+            }
+#endif
+        }
+    }
+
     internal class MergePhysBoneCollider : TraceAndOptimizePass<MergePhysBoneCollider>
     {
         public override string DisplayName => "T&O: Merge PhysBone Colliders";
@@ -16,33 +58,30 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         protected override void Execute(BuildContext context, TraceAndOptimizeState state)
         {
-            var collidersByTransform = new Dictionary<(
-                Transform rootTransformAnimated,
-                VRCPhysBoneColliderBase.ShapeType shapeType
-                ), List<VRCPhysBoneColliderBase>>();
+            var collidersByTransform = new Dictionary<ColliderBaseCharacteristics, List<VRCPhysBoneColliderBase>>();
 
             foreach (var collider in context.GetComponents<VRCPhysBoneColliderBase>())
             {
                 // if any of the property is animated, we do not merge the collider.
                 if (Properties.PhysBoneColliderProperties.Any(context.GetAnimationComponent(collider).IsAnimatedFloat))
                     continue;
-
+                
                 var rootTransform = collider.GetRootTransform();
                 var transform = rootTransform;
-                while (transform != null && transform != context.AvatarRootTransform && !IsAnimated())
+                while (transform != null && transform != context.AvatarRootTransform
+                        && !Properties.TransformProperties.Any(context.GetAnimationComponent(transform).IsAnimatedFloat))
                     transform = transform.parent;
-                if (transform == null) continue; // it's PhysBone about the bone itself
+                if (transform == null) continue; // target is outside the avatar hierarchy
 
-                bool IsAnimated()
-                {
-                    if (Properties.TransformProperties.Any(context.GetAnimationComponent(transform).IsAnimatedFloat))
-                        return true;
-                    if (context.GetAnimationComponent(transform.gameObject).IsAnimatedFloat(Props.IsActive))
-                        return true;
-                    return false;
-                }
+                // Find the first ancestor of the collider's own hierarchy that has IsActive animation.
+                // This ensures colliders with different toggle states are not merged together,
+                // even when they target the same external bone.
+                Transform? toggleRoot = collider.transform;
+                while (toggleRoot != null && toggleRoot != context.AvatarRootTransform
+                        && !context.GetAnimationComponent(toggleRoot.gameObject).IsAnimatedFloat(Props.IsActive))
+                    toggleRoot = toggleRoot.parent;
 
-                var key = (transform, collider.shapeType);
+                var key = new ColliderBaseCharacteristics(transform, toggleRoot, collider);
                 if (!collidersByTransform.TryGetValue(key, out var list))
                     collidersByTransform.Add(key, list = new List<VRCPhysBoneColliderBase>());
 
@@ -51,11 +90,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             var mergedColliders = new Dictionary<VRCPhysBoneColliderBase, VRCPhysBoneColliderBase>();
 
-            foreach (var ((_, shapeType), colliders) in collidersByTransform)
+            foreach (var (characteristics, colliders) in collidersByTransform)
             {
                 if (colliders.Count <= 1) continue;
 
-                switch (shapeType)
+                switch (characteristics.shapeType)
                 {
                     case VRCPhysBoneColliderBase.ShapeType.Sphere:
                         MergeColliders(colliders, mergedColliders, collider =>
@@ -107,7 +146,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                         break;
                     default:
                         BuildLog.LogWarning("TraceAndOptimize:Properties:UnknownPhysBoneColliderShape",
-                            shapeType.ToString(), colliders);
+                            characteristics.shapeType.ToString(), colliders);
                         break;
                 }
             }
@@ -136,6 +175,52 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             foreach (var colliderBase in mergedColliders.Keys.ToList())
                 DestroyTracker.DestroyImmediate(colliderBase);
+        }
+
+        struct ColliderBaseCharacteristics : IEquatable<ColliderBaseCharacteristics>
+        {
+            public ColliderBaseCharacteristics(Transform rootTransformAnimated,
+                Transform? toggleRoot,
+                VRCPhysBoneColliderBase collider)
+            {
+                this.rootTransformAnimated = rootTransformAnimated;
+                this.toggleRoot = toggleRoot;
+                shapeType = collider.shapeType;
+#if AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER
+                globalCollisionFlags = collider.globalCollisionFlags;
+#endif
+            }
+
+            public Transform rootTransformAnimated;
+            public Transform? toggleRoot;
+            public VRCPhysBoneColliderBase.ShapeType shapeType;
+#if AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER
+            public DynamicsUsageFlags globalCollisionFlags;
+#endif
+
+            public bool Equals(ColliderBaseCharacteristics other) => 
+                rootTransformAnimated.Equals(other.rootTransformAnimated) 
+                && Equals(toggleRoot, other.toggleRoot) 
+                && shapeType == other.shapeType
+#if AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER
+                && globalCollisionFlags == other.globalCollisionFlags
+#endif
+
+                ;
+
+            public override bool Equals(object? obj) => obj is ColliderBaseCharacteristics other && Equals(other);
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(
+                    rootTransformAnimated, 
+                    toggleRoot, 
+                    (int)shapeType
+#if AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER
+                    , (int)globalCollisionFlags
+#endif
+                );
+            }
         }
 
         void MergeColliders<TKey>(IEnumerable<VRCPhysBoneColliderBase> colliders,

@@ -36,11 +36,15 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
             if (BugReportHelper.Context.Current is { } reportCtx)
             {
+                if (_position == InternalGcDebugPosition.AtTheBeginning)
+                    reportCtx.AddTraceAndOptimizeStateReport(context);
+
                 var place = new GameObject();
                 try
                 {
                     var gcDebugRoot = AddGCDebugInfo(context, place);
                     reportCtx.AddGcDebugInfo(_position, gcDebugRoot.CollectDataToString(), context.AvatarRootObject,
+                        context.TryGetMeshInfoFor,
                         context.GetState<MaterialInformationState>().MaterialInformationByMaterial.Values);
                 }
                 finally

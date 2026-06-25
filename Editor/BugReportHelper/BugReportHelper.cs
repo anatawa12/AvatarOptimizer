@@ -8,9 +8,12 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
 using Anatawa12.AvatarOptimizer.Processors;
+using Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes;
+using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 using nadena.dev.ndmf;
 using nadena.dev.ndmf.platform;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -29,7 +32,7 @@ namespace Anatawa12.AvatarOptimizer.BugReportHelper;
 // - OSの情報
 // - ターゲットプラットフォームとそれの設定
 // - AnimatorParserの結果
-// - アバターのヒエラルキー情報(EditモードとAAO実行直前の二回)
+// - アバターのヒエラルキー情報
 //   - ヒエラルキー構造
 //   - コンポーネントの付与情報
 //     - AAOの設定値
@@ -181,12 +184,22 @@ internal class BugReportHelper : EditorWindow
         EditorGUI.EndDisabledGroup();
     }
 
+    private enum Progress
+    {
+        CollectingEnvInfo,
+        BuildingAvatar,
+        Finalizing,
+        Count,
+    }
+
     public static ReportFile RunBuild(GameObject avatar, TracingArea tracing)
     {
         var clonedAvatar = Instantiate(avatar);
         var tracingConfig = Tracing.Enabled;
         try
         {
+            EditorUtility.DisplayProgressBar("Bug Report Helper", "Collecting environment information",
+                (float)Progress.CollectingEnvInfo / (float)(Progress.Count - 1));
             Tracing.Enabled = tracing;
             var reportFile = new ReportFile();
 
@@ -226,6 +239,8 @@ internal class BugReportHelper : EditorWindow
                 Debug.unityLogger.logEnabled = true;
                 Debug.unityLogger.filterLogType = LogType.Log;
                 Context.Current = new Context(reportFile);
+                EditorUtility.DisplayProgressBar("Bug Report Helper", "Building Avatar",
+                    (float)Progress.BuildingAvatar / (float)(Progress.Count - 1));
                 AvatarProcessor.ProcessAvatar(clonedAvatar);
             }
             finally
@@ -235,6 +250,9 @@ internal class BugReportHelper : EditorWindow
                 Debug.unityLogger.filterLogType = preLogType;
                 Context.Current = null;
             }
+
+            EditorUtility.DisplayProgressBar("Bug Report Helper", "Finalizing Report",
+                (float)Progress.Finalizing / (float)(Progress.Count - 1));
 
             reportFile.AddFile("BuildLog.log.txt", bugReporterLogHandler.GetLog());
 
@@ -256,6 +274,7 @@ internal class BugReportHelper : EditorWindow
         {
             Tracing.Enabled = tracingConfig;
             DestroyImmediate(clonedAvatar);
+            EditorUtility.ClearProgressBar();
         }
     }
 
@@ -416,8 +435,9 @@ internal class BugReportHelper : EditorWindow
     }
 #endif
 
-    public static string CollectAvatarInfo(GameObject clonedAvatar)
+    public static string CollectAvatarInfo(GameObject clonedAvatar, Func<Renderer, MeshInfo2?>? tryGetMeshInfoFor = null)
     {
+        tryGetMeshInfoFor ??= _ => null;
         // Avatr Info file consists is something like:
         // Path/Of/GameObject:
         //   ComponentType1
@@ -425,7 +445,7 @@ internal class BugReportHelper : EditorWindow
         //   SkinnedMeshRenderer
         //     Additional Component Info if needed
 
-        var builder = new StringBuilder();
+        var builder = new AvatarInfoBuilder(clonedAvatar);
 
         foreach (var transform in clonedAvatar.GetComponentsInChildren<Transform>(includeInactive: true))
         {
@@ -447,6 +467,9 @@ internal class BugReportHelper : EditorWindow
                 {
                     case Transform t:
                         builder.AppendLine($"    activeSelf: {t.gameObject.activeSelf}");
+                        builder.AppendLine($"    position: {t.position}");
+                        builder.AppendLine($"    rotation: {t.rotation}");
+                        builder.AppendLine($"    scale: {t.localScale}");
                         break;
                     case Behaviour b:
                         builder.AppendLine($"    enabled: {b.enabled}");
@@ -474,46 +497,99 @@ internal class BugReportHelper : EditorWindow
                         break;
                     case SkinnedMeshRenderer skinnedMeshRenderer:
                         MeshInfo(skinnedMeshRenderer.sharedMesh);
+                        builder.AppendLine($"    bones: {skinnedMeshRenderer.bones.Length}");
                         for (var i = 0; i < skinnedMeshRenderer.bones.Length; i++)
                         {
                             var bone = skinnedMeshRenderer.bones[i];
-                            builder.AppendLine($"    bone[{i}]: {ComponentPath(bone)}");
+                            builder.AppendLine($"      bone[{i}]: {bone}");
                         }
                         // blendshape weights
+                        builder.AppendLine($"    blendShapeWeight:{skinnedMeshRenderer.sharedMesh?.blendShapeCount ?? 0}");
                         for (var i = 0; i < skinnedMeshRenderer.sharedMesh?.blendShapeCount; i++)
                         {
                             var weight = skinnedMeshRenderer.GetBlendShapeWeight(i);
                             var blendShapeName = skinnedMeshRenderer.sharedMesh.GetBlendShapeName(i);
-                            builder.AppendLine($"    blendShapeWeight[{i}]: {blendShapeName} = {weight}");
+                            builder.AppendLine($"      blendShapeWeight[{i}]: {blendShapeName} = {weight}");
                         }
                         // root bone
-                        builder.AppendLine($"    rootBone: {ComponentPath(skinnedMeshRenderer.rootBone)}");
+                        builder.AppendLine($"    rootBone: {skinnedMeshRenderer.rootBone}");
                         // anchor related
-                        builder.AppendLine($"    probeAnchor: {ComponentPath(skinnedMeshRenderer.probeAnchor)}");
+                        builder.AppendLine($"    probeAnchor: {skinnedMeshRenderer.probeAnchor}");
                         Renderer(skinnedMeshRenderer);
                         break;
                     case MeshRenderer meshRenderer:
                         Renderer(meshRenderer);
                         break;
 
+                    case UnityEngine.Animations.AimConstraint constraint:
+                        Constraint(constraint);
+                        builder.AppendLine($"    rotationAtRest: {constraint.rotationAtRest}");
+                        builder.AppendLine($"    rotationOffset: {constraint.rotationOffset}");
+                        builder.AppendLine($"    rotationAxis: {constraint.rotationAxis}");
+                        builder.AppendLine($"    aimVector: {constraint.aimVector}");
+                        builder.AppendLine($"    upVector: {constraint.upVector}");
+                        builder.AppendLine($"    worldUpVector: {constraint.worldUpVector}");
+                        builder.AppendLine($"    worldUpObject: {constraint.worldUpObject}");
+                        builder.AppendLine($"    worldUpType: {constraint.worldUpType}");
+                        break;
+                    case UnityEngine.Animations.LookAtConstraint constraint:
+                        Constraint(constraint);
+                        builder.AppendLine($"    roll: {constraint.roll}");
+                        builder.AppendLine($"    rotationAtRest: {constraint.rotationAtRest}");
+                        builder.AppendLine($"    rotationOffset: {constraint.rotationOffset}");
+                        builder.AppendLine($"    worldUpObject: {constraint.worldUpObject}");
+                        builder.AppendLine($"    useUpObject: {constraint.useUpObject}");
+                        break;
+                    case UnityEngine.Animations.ParentConstraint constraint:
+                        Constraint(constraint);
+                        builder.AppendLine($"    translationAtRest: {constraint.translationAtRest}");
+                        builder.AppendLine($"    rotationAtRest: {constraint.rotationAtRest}");
+                        builder.AppendLine($"    translationOffsets: {constraint.translationOffsets.Length}");
+                        for (var i = 0; i < constraint.translationOffsets.Length; i++)
+                            builder.AppendLine($"      translationOffsets[{i}]: {constraint.GetTranslationOffset(i)}");
+                        builder.AppendLine($"    rotationOffsets: {constraint.rotationOffsets.Length}");
+                        for (var i = 0; i < constraint.rotationOffsets.Length; i++)
+                            builder.AppendLine($"      rotationOffsets[{i}]: {constraint.GetRotationOffset(i)}");
+                        builder.AppendLine($"    translationAxis: {constraint.translationAxis}");
+                        builder.AppendLine($"    rotationAxis: {constraint.rotationAxis}");
+                        break;
+                    case UnityEngine.Animations.RotationConstraint constraint:
+                        Constraint(constraint);
+                        builder.AppendLine($"    rotationAtRest: {constraint.rotationAtRest}");
+                        builder.AppendLine($"    rotationOffset: {constraint.rotationOffset}");
+                        builder.AppendLine($"    rotationAxis: {constraint.rotationAxis}");
+                        break;
+                    case UnityEngine.Animations.PositionConstraint constraint:
+                        Constraint(constraint);
+                        builder.AppendLine($"    translationAtRest: {constraint.translationAtRest}");
+                        builder.AppendLine($"    translationOffset: {constraint.translationOffset}");
+                        builder.AppendLine($"    translationAxis: {constraint.translationAxis}");
+                        break;
+                    case UnityEngine.Animations.ScaleConstraint constraint:
+                        Constraint(constraint);
+                        builder.AppendLine($"    scaleAtRest: {constraint.scaleAtRest}");
+                        builder.AppendLine($"    scaleOffset: {constraint.scaleOffset}");
+                        builder.AppendLine($"    scalingAxis: {constraint.scalingAxis}");
+                        break;
+
 #if AAO_VRCSDK3_AVATARS
                     case VRCPhysBoneBase physBone:
                         builder.AppendLine($"    version: {physBone.version}");
                         builder.AppendLine($"    integrationType: {physBone.integrationType}");
-                        builder.AppendLine($"    rootTransform: {ComponentPath(physBone.rootTransform)}");
+                        builder.AppendLine($"    rootTransform: {physBone.rootTransform}");
                         for (var i = 0; i < physBone.ignoreTransforms.Count; i++)
                         {
                             var t = physBone.ignoreTransforms[i];
-                            builder.AppendLine($"    ignoreTransform[{i}]: {ComponentPath(t)}");
+                            builder.AppendLine($"    ignoreTransform[{i}]: {t}");
                         }
                         builder.AppendLine($"    endpointPosition: {physBone.endpointPosition}");
                         builder.AppendLine($"    multiChildType: {physBone.multiChildType}");
-                        builder.AppendLine($"    pull: {physBone.pull:G9}, curve: {physBone.pullCurve?.keys?.Length ?? 0}");
-                        builder.AppendLine($"    spring: {physBone.spring:G9}, curve: {physBone.springCurve?.keys?.Length ?? 0}");
-                        builder.AppendLine($"    stiffness: {physBone.stiffness:G9}, curve: {physBone.stiffnessCurve?.keys?.Length ?? 0}");
-                        builder.AppendLine($"    gravity: {physBone.gravity:G9}, curve: {physBone.gravityCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    pull: {physBone.pull}, curve: {physBone.pullCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    spring: {physBone.spring}, curve: {physBone.springCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    stiffness: {physBone.stiffness}, curve: {physBone.stiffnessCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    gravity: {physBone.gravity}, curve: {physBone.gravityCurve?.keys?.Length ?? 0}");
                         builder.AppendLine($"    immobileType: {physBone.immobileType}");
-                        builder.AppendLine($"    immobile: {physBone.immobile:G9}, curve: {physBone.immobileCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    immobile: {physBone.immobile}, curve: {physBone.immobileCurve?.keys?.Length ?? 0}");
                         builder.AppendLine($"    allowCollision: {physBone.allowCollision}");
                         builder.AppendLine($"    collisionFilter.allowSelf: {physBone.collisionFilter.allowSelf}");
                         builder.AppendLine($"    collisionFilter.allowOthers: {physBone.collisionFilter.allowOthers}");
@@ -521,14 +597,14 @@ internal class BugReportHelper : EditorWindow
                         for (var i = 0; i < physBone.colliders.Count; i++)
                         {
                             var collider = physBone.colliders[i];
-                            builder.AppendLine($"    collider[{i}]: {ComponentPath(collider)}");
+                            builder.AppendLine($"    collider[{i}]: {collider}");
                         }
                         builder.AppendLine($"    limitType: {physBone.limitType}");
-                        builder.AppendLine($"    maxAngleX: {physBone.maxAngleX:G9}, curve: {physBone.maxAngleXCurve?.keys?.Length ?? 0}");
-                        builder.AppendLine($"    maxAngleZ: {physBone.maxAngleZ:G9}, curve: {physBone.maxAngleZCurve?.keys?.Length ?? 0}");
-                        builder.AppendLine($"    limitRotation.x: {physBone.limitRotation.x:G9}, curve: {physBone.limitRotationXCurve?.keys?.Length ?? 0}");
-                        builder.AppendLine($"    limitRotation.y: {physBone.limitRotation.y:G9}, curve: {physBone.limitRotationYCurve?.keys?.Length ?? 0}");
-                        builder.AppendLine($"    limitRotation.z: {physBone.limitRotation.z:G9}, curve: {physBone.limitRotationZCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    maxAngleX: {physBone.maxAngleX}, curve: {physBone.maxAngleXCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    maxAngleZ: {physBone.maxAngleZ}, curve: {physBone.maxAngleZCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    limitRotation.x: {physBone.limitRotation.x}, curve: {physBone.limitRotationXCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    limitRotation.y: {physBone.limitRotation.y}, curve: {physBone.limitRotationYCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    limitRotation.z: {physBone.limitRotation.z}, curve: {physBone.limitRotationZCurve?.keys?.Length ?? 0}");
                         builder.AppendLine($"    allowGrabbing: {physBone.allowGrabbing}");
                         builder.AppendLine($"    grabFilter.allowSelf: {physBone.grabFilter.allowSelf}");
                         builder.AppendLine($"    grabFilter.allowOthers: {physBone.grabFilter.allowOthers}");
@@ -536,13 +612,70 @@ internal class BugReportHelper : EditorWindow
                         builder.AppendLine($"    poseFilter.allowSelf: {physBone.poseFilter.allowSelf}");
                         builder.AppendLine($"    poseFilter.allowOthers: {physBone.poseFilter.allowOthers}");
                         builder.AppendLine($"    snapToHand: {physBone.snapToHand}");
-                        builder.AppendLine($"    grabMovement: {physBone.grabMovement:G9}");
-                        builder.AppendLine($"    maxStretch: {physBone.maxStretch:G9}, curve: {physBone.maxStretchCurve?.keys?.Length ?? 0}");
-                        builder.AppendLine($"    maxSquish: {physBone.maxSquish:G9}, curve: {physBone.maxSquishCurve?.keys?.Length ?? 0}");
-                        builder.AppendLine($"    stretchMotion: {physBone.stretchMotion:G9}, curve: {physBone.stretchMotionCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    grabMovement: {physBone.grabMovement}");
+                        builder.AppendLine($"    maxStretch: {physBone.maxStretch}, curve: {physBone.maxStretchCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    maxSquish: {physBone.maxSquish}, curve: {physBone.maxSquishCurve?.keys?.Length ?? 0}");
+                        builder.AppendLine($"    stretchMotion: {physBone.stretchMotion}, curve: {physBone.stretchMotionCurve?.keys?.Length ?? 0}");
                         builder.AppendLine($"    isAnimated: {physBone.isAnimated}");
                         builder.AppendLine($"    resetWhenDisabled: {physBone.resetWhenDisabled}");
                         builder.AppendLine($"    parameter: '{physBone.parameter}'");
+                        break;
+
+                    case VRC.Dynamics.ManagedTypes.VRCAimConstraintBase constraint:
+                        VRCConstraint(constraint);
+                        builder.AppendLine($"    RotationAtRest: {constraint.RotationAtRest}");
+                        builder.AppendLine($"    RotationOffset: {constraint.RotationOffset}");
+                        builder.AppendLine($"    AffectsRotationX: {constraint.AffectsRotationX}");
+                        builder.AppendLine($"    AffectsRotationY: {constraint.AffectsRotationY}");
+                        builder.AppendLine($"    AffectsRotationZ: {constraint.AffectsRotationZ}");
+                        builder.AppendLine($"    AimAxis: {constraint.AimAxis}");
+                        builder.AppendLine($"    UpAxis: {constraint.UpAxis}");
+                        builder.AppendLine($"    WorldUpVector: {constraint.WorldUpVector}");
+                        builder.AppendLine($"    WorldUpTransform: {constraint.WorldUpTransform}");
+                        builder.AppendLine($"    WorldUp: {constraint.WorldUp}");
+                        break;
+                    case VRC.Dynamics.ManagedTypes.VRCLookAtConstraintBase constraint:
+                        VRCConstraint(constraint);
+                        builder.AppendLine($"    Roll: {constraint.Roll}");
+                        builder.AppendLine($"    RotationAtRest: {constraint.RotationAtRest}");
+                        builder.AppendLine($"    RotationOffset: {constraint.RotationOffset}");
+                        builder.AppendLine($"    WorldUpTransform: {constraint.WorldUpTransform}");
+                        builder.AppendLine($"    UseUpTransform: {constraint.UseUpTransform}");
+                        break;
+                    case VRC.Dynamics.ManagedTypes.VRCParentConstraintBase constraint:
+                        VRCConstraint(constraint);
+                        builder.AppendLine($"    PositionAtRest: {constraint.PositionAtRest}");
+                        builder.AppendLine($"    RotationAtRest: {constraint.RotationAtRest}");
+                        builder.AppendLine($"    AffectsPositionX: {constraint.AffectsPositionX}");
+                        builder.AppendLine($"    AffectsPositionY: {constraint.AffectsPositionY}");
+                        builder.AppendLine($"    AffectsPositionZ: {constraint.AffectsPositionZ}");
+                        builder.AppendLine($"    AffectsRotationX: {constraint.AffectsRotationX}");
+                        builder.AppendLine($"    AffectsRotationY: {constraint.AffectsRotationY}");
+                        builder.AppendLine($"    AffectsRotationZ: {constraint.AffectsRotationZ}");
+                        break;
+                    case VRC.Dynamics.ManagedTypes.VRCRotationConstraintBase constraint:
+                        VRCConstraint(constraint);
+                        builder.AppendLine($"    RotationAtRest: {constraint.RotationAtRest}");
+                        builder.AppendLine($"    RotationOffset: {constraint.RotationOffset}");
+                        builder.AppendLine($"    AffectsRotationX: {constraint.AffectsRotationX}");
+                        builder.AppendLine($"    AffectsRotationY: {constraint.AffectsRotationY}");
+                        builder.AppendLine($"    AffectsRotationZ: {constraint.AffectsRotationZ}");
+                        break;
+                    case VRC.Dynamics.ManagedTypes.VRCPositionConstraintBase constraint:
+                        VRCConstraint(constraint);
+                        builder.AppendLine($"    PositionAtRest: {constraint.PositionAtRest}");
+                        builder.AppendLine($"    PositionOffset: {constraint.PositionOffset}");
+                        builder.AppendLine($"    AffectsPositionX: {constraint.AffectsPositionX}");
+                        builder.AppendLine($"    AffectsPositionY: {constraint.AffectsPositionY}");
+                        builder.AppendLine($"    AffectsPositionZ: {constraint.AffectsPositionZ}");
+                        break;
+                    case VRC.Dynamics.ManagedTypes.VRCScaleConstraintBase constraint:
+                        VRCConstraint(constraint);
+                        builder.AppendLine($"    ScaleAtRest: {constraint.ScaleAtRest}");
+                        builder.AppendLine($"    ScaleOffset: {constraint.ScaleOffset}");
+                        builder.AppendLine($"    AffectsScaleX: {constraint.AffectsScaleX}");
+                        builder.AppendLine($"    AffectsScaleY: {constraint.AffectsScaleY}");
+                        builder.AppendLine($"    AffectsScaleZ: {constraint.AffectsScaleZ}");
                         break;
 #endif
 
@@ -550,16 +683,6 @@ internal class BugReportHelper : EditorWindow
                     case TraceAndOptimize traceAndOptimize:
                         builder.AppendLine($"    SettingsJSON: {JsonUtility.ToJson(traceAndOptimize)}");
                         break;
-                }
-
-                string ComponentPath(Component? c)
-                {
-                    if (c == null) return "<None or Missing>";
-                    if (c.transform.IsChildOf(clonedAvatar.transform))
-                        return "avatar:" + Utils.RelativePath(clonedAvatar.transform, c.transform);
-                    if (c.gameObject.scene.IsValid())
-                        return "scene:" + Utils.RelativePath(null, c.transform);
-                    return "non-scene:" + Utils.RelativePath(null, c.transform);
                 }
 
                 void MeshInfo(Mesh mesh)
@@ -590,7 +713,7 @@ internal class BugReportHelper : EditorWindow
                     {
                         var blendShapeName = mesh.GetBlendShapeName(i);
                         var frameCount = mesh.GetBlendShapeFrameCount(i);
-                        builder.AppendLine($"      blendShape[{i}]: {blendShapeName} (frames: {frameCount})");
+                        builder.AppendLine($"        blendShape[{i}]: {blendShapeName} (frames: {frameCount})");
                     }
                     // submeshes
                     var subMeshCount = mesh.subMeshCount;
@@ -604,6 +727,45 @@ internal class BugReportHelper : EditorWindow
                     builder.AppendLine($"      boneWeights: total={mesh.GetAllBoneWeights().Length}, bonesPerVertex={mesh.GetBonesPerVertex().Length}");
                 }
 
+                void MeshInfo2(MeshInfo2 mesh)
+                {
+                    if (mesh == null)
+                    {
+                        builder.AppendLine("  Mesh: <Missing or None>");
+                        return;
+                    }
+
+                    builder.AppendLine($"    MeshInfo2:");
+                    builder.AppendLine($"      vertexCount: {mesh.Vertices.Count}");
+                    builder.AppendLine($"      bindposes: {mesh.Bones.Count}");
+                    builder.AppendLine($"      hasTangent: {mesh.HasTangent}");
+                    builder.AppendLine($"      hasNormals: {mesh.HasNormals}");
+                    builder.AppendLine($"      hasColor: {mesh.HasColor}");
+                    builder.AppendLine($"      bounds: {mesh.Bounds}");
+                    builder.AppendLine($"      blendShapeCount: {mesh.BlendShapes.Count}");
+                    foreach (var meshBlendShape in mesh.BlendShapes)
+                        builder.AppendLine($"        blendShape[]: {meshBlendShape.name} (weight: {meshBlendShape.weight})");
+                    builder.AppendLine($"      subMeshCount: {mesh.SubMeshes.Count}");
+                    for (var i = 0; i < mesh.SubMeshes.Count; i++)
+                    {
+                        var subMesh = mesh.SubMeshes[i];
+                        builder.AppendLine($"        subMesh[{i}]: topology={subMesh.Topology}, indexCount={subMesh.Vertices.Count}");
+                        for (var j = 0; j < subMesh.SharedMaterials.Length; j++)
+                        {
+                            var sharedMaterial = subMesh.SharedMaterials[j];
+                            if (sharedMaterial != null)
+                            {
+                                builder.AppendLine($"          sharedMaterials[{j}]: {sharedMaterial.name} ({sharedMaterial.shader.name}) ({sharedMaterial.GetInstanceID()})");
+                                MaterialInfo(sharedMaterial, "            ");
+                            }
+                            else
+                            {
+                                builder.AppendLine($"          sharedMaterials[{j}]: <Missing / None>");
+                            }
+                        }
+                    }
+                }
+
                 void Renderer(Renderer renderer)
                 {
                     builder.AppendLine($"    enabled: {renderer.enabled}");
@@ -613,18 +775,24 @@ internal class BugReportHelper : EditorWindow
                     builder.AppendLine($"    reflectionProbeUsage: {renderer.reflectionProbeUsage}");
                     builder.AppendLine($"    sortingLayerID: {renderer.sortingLayerID}");
                     builder.AppendLine($"    sortingOrder: {renderer.sortingOrder}");
+                    builder.AppendLine($"    sharedMaterials:");
                     for (var i = 0; i < renderer.sharedMaterials.Length; i++)
                     {
                         var sharedMaterial = renderer.sharedMaterials[i];
                         if (sharedMaterial != null)
                         {
-                            builder.AppendLine($"    sharedMaterials[{i}]: {sharedMaterial.name} ({sharedMaterial.shader.name}) ({sharedMaterial.GetEntityId()})");
-                            MaterialInfo(sharedMaterial, "      ");
+                            builder.AppendLine($"      sharedMaterials[{i}]: {sharedMaterial.name} ({sharedMaterial.shader.name}) ({sharedMaterial.GetEntityId()})");
+                            MaterialInfo(sharedMaterial, "        ");
                         }
                         else
                         {
-                            builder.AppendLine($"    sharedMaterials[{i}]: <Missing / None>");
+                            builder.AppendLine($"      sharedMaterials[{i}]: <Missing / None>");
                         }
+                    }
+
+                    if (tryGetMeshInfoFor(renderer) is {} meshInfo2)
+                    {
+                        MeshInfo2(meshInfo2);
                     }
                 }
 
@@ -657,12 +825,58 @@ internal class BugReportHelper : EditorWindow
                                 break;
                             case UnityEngine.Rendering.ShaderPropertyType.Texture:
                                 var texture = material.GetTexture(propertyName);
-                                builder.AppendLine(
-                                    $"{indent}property[{i}]: {propertyName} (Texture) = {(texture != null ? texture.name : "<Missing>")}");
+                                builder.AppendLine($"{indent}property[{i}]: {propertyName} (Texture) = {TextureInfo(texture)}");
                                 break;
                         }
                     }
                 }
+
+                string TextureInfo(Texture texture)
+                {
+                    if (texture == null) return "<NoneOrMissing>";
+                    var builder = new StringBuilder();
+                    builder.Append("instance: ").Append(texture.GetInstanceID()).Append(", ");
+                    builder.Append("name: '").Append(texture.name).Append("', ");
+                    builder.Append("format: ").Append(texture.graphicsFormat).Append(", ");
+                    builder.Append("dimension: ").Append(texture.dimension).Append(", ");
+                    builder.Append("width: ").Append(texture.width).Append(", ");
+                    builder.Append("height: ").Append(texture.height).Append(", ");
+                    if (texture is Texture3D texture3D)
+                        builder.Append("depth: ").Append(texture3D.depth).Append(", ");
+                    return builder.ToString();
+                }
+
+                void Constraint<T>(T constraint) where T : Behaviour, UnityEngine.Animations.IConstraint
+                {
+                    builder.AppendLine($"    constraintActive: {constraint.constraintActive}");
+                    builder.AppendLine($"    weight: {constraint.weight}");
+                    builder.AppendLine($"    locked: {constraint.locked}");
+                    builder.AppendLine($"    sources: {constraint.sourceCount}");
+                    for (var i = 0; i < constraint.sourceCount; i++)
+                    {
+                        var source = constraint.GetSource(i);
+                        builder.AppendLine($"      sources[{i}].weight = {source.weight}");
+                        builder.AppendLine($"      sources[{i}].transform = {source.sourceTransform}");
+                    }
+                }
+
+#if AAO_VRCSDK3_AVATARS
+                void VRCConstraint<T>(T constraint) where T : VRC.Dynamics.VRCConstraintBase
+                {
+                    builder.AppendLine($"    IsActive: {constraint.IsActive}");
+                    builder.AppendLine($"    GlobalWeight: {constraint.GlobalWeight}");
+                    builder.AppendLine($"    Locked: {constraint.Locked}");
+                    builder.AppendLine($"    sources: {constraint.Sources.Count}");
+                    for (var i = 0; i < constraint.Sources.Count; i++)
+                    {
+                        var source = constraint.Sources[i];
+                        builder.AppendLine($"      sources[{i}].Weight = {source.Weight}");
+                        builder.AppendLine($"      sources[{i}].SourceTransform = {source.SourceTransform}");
+                        builder.AppendLine($"      sources[{i}].ParentPositionOffset = {source.ParentPositionOffset}");
+                        builder.AppendLine($"      sources[{i}].ParentRotationOffset = {source.ParentRotationOffset}");
+                    }
+                }
+#endif
 
                 // simple hash function to avoid leaking exact values
                 string Hashed(string input)
@@ -977,6 +1191,74 @@ internal class BugReportHelper : EditorWindow
             }
         }
     }
+
+    private readonly struct AvatarInfoBuilder
+    {
+        private readonly StringBuilder _sb;
+        private readonly GameObject _avatarRoot;
+
+        public AvatarInfoBuilder(GameObject avatarRoot)
+        {
+            _sb = new StringBuilder();
+            _avatarRoot = avatarRoot;
+        }
+
+        public void AppendLine(string builder)
+        {
+            _sb.AppendLine(builder);
+        }
+
+        public void AppendLine([InterpolatedStringHandlerArgument("")] InterpolatedStringHandler builder)
+        {
+            // the builder do what we need
+            _sb.AppendLine();
+        }
+
+        public override string ToString() => _sb.ToString();
+
+        [InterpolatedStringHandler]
+        public readonly struct InterpolatedStringHandler
+        {
+            // Storage for the built-up string
+            private readonly AvatarInfoBuilder _builder;
+
+            public InterpolatedStringHandler(int literalLength, int formattedCount, AvatarInfoBuilder builder)
+            {
+                _builder = builder;
+            }
+
+            private const string FloatFormat = "G9";
+
+            public void AppendLiteral(string s) => _builder._sb.Append(s);
+            public void AppendFormatted(string? t) => _builder._sb.Append(t);
+            public void AppendFormatted(bool t) => _builder._sb.Append(t);
+            public void AppendFormatted(int t) => _builder._sb.Append(t);
+            public void AppendFormatted(long t) => _builder._sb.Append(t);
+            public void AppendFormatted(float t) => _builder._sb.Append(t.ToString(FloatFormat));
+            public void AppendFormatted(Vector2 t) => _builder._sb.Append(t.ToString(FloatFormat));
+            public void AppendFormatted(Vector3 t) => _builder._sb.Append(t.ToString(FloatFormat));
+            public void AppendFormatted(Vector4 t) => _builder._sb.Append(t.ToString(FloatFormat));
+            public void AppendFormatted(Quaternion t) => _builder._sb.Append(t.ToString(FloatFormat));
+            public void AppendFormatted(Color t) => _builder._sb.Append(t.ToString(FloatFormat));
+            public void AppendFormatted(Color32 t) => _builder._sb.Append(t);
+            public void AppendFormatted(Bounds t) => _builder._sb.Append(t.ToString(FloatFormat));
+            public void AppendFormatted(Component t) => _builder._sb.Append(ComponentPath(t));
+            public void AppendFormatted(GameObject t) => _builder._sb.Append(ComponentPath(t.transform));
+            public void AppendFormatted(UnityEngine.Rendering.VertexAttributeDescriptor t) => _builder._sb.Append(t.ToString());
+            public void AppendFormatted<T>(T t) where T : struct, Enum => _builder._sb.Append(t);
+
+            string ComponentPath(Component? c)
+            {
+                if (c is null) return "<None>";
+                if (c == null) return "<Missing>";
+                if (c.transform.IsChildOf(_builder._avatarRoot.transform))
+                    return "avatar:" + Utils.RelativePath(_builder._avatarRoot.transform, c.transform);
+                if (c.gameObject.scene.IsValid())
+                    return "scene:" + Utils.RelativePath(null, c.transform);
+                return "non-scene:" + Utils.RelativePath(null, c.transform);
+            }
+        }
+    }
 }
 
 /// <summary>
@@ -1000,12 +1282,78 @@ internal class Context
         ReportFile.AddFile("RawAnimations.tree.txt", BugReportHelper.RawAnimationInfo(context.AvatarRootObject));
     }
 
-    public void AddGcDebugInfo(InternalGcDebugPosition position, string collectDataToString, GameObject root, IEnumerable<MaterialInformation> materials)
+    public void AddGcDebugInfo(InternalGcDebugPosition position, string collectDataToString, GameObject root,
+        Func<Renderer, MeshInfo2?> tryGetMeshInfoFor, IEnumerable<MaterialInformation> materials)
     {
         ReportFile.AddFile($"GCDebug.{position}.tree.txt", collectDataToString);
-        ReportFile.AddFile($"AvatarInfo.{position}.tree.txt", BugReportHelper.CollectAvatarInfo(root));
+        ReportFile.AddFile($"AvatarInfo.{position}.tree.txt", BugReportHelper.CollectAvatarInfo(root, tryGetMeshInfoFor));
         ReportFile.AddFile($"MaterialInformation.{position}.tree.txt", 
             BugReportHelper.MaterialInformation(root.transform, materials));
+    }
+
+    public void AddTraceAndOptimizeStateReport(BuildContext context)
+    {
+        try
+        {
+            var state = context.GetState<TraceAndOptimizeState>();
+            var avatarRoot = context.AvatarRootObject;
+
+            string GetGoPath(GameObject? go) =>
+                go == null ? "<null>" : Utils.RelativePath(avatarRoot.transform, go.transform) ?? go.name;
+
+            string GetSmrPath(SkinnedMeshRenderer smr) =>
+                smr == null ? "<null>" : Utils.RelativePath(avatarRoot.transform, smr.transform) ?? smr.gameObject.name;
+
+            var settings = new JsonSerializerSettings
+            {
+                Formatting = Formatting.Indented,
+                ContractResolver = new ExcludeUnityObjectsContractResolver(),
+            };
+
+            var sb = new StringBuilder();
+            sb.AppendLine(JsonConvert.SerializeObject(state, settings));
+
+            // Path-based section for fields excluded from JSON (Unity object references)
+            sb.AppendLine("Exclusions:");
+            foreach (var path in state.Exclusions.Select(GetGoPath).OrderBy(s => s))
+                sb.AppendLine($"  {path}");
+
+            sb.AppendLine("PreserveBlendShapes:");
+            foreach (var kvp in state.PreserveBlendShapes.OrderBy(kvp => GetSmrPath(kvp.Key)))
+            {
+                sb.AppendLine($"  {GetSmrPath(kvp.Key)}:");
+                foreach (var shape in kvp.Value.OrderBy(s => s))
+                    sb.AppendLine($"    {shape}");
+            }
+
+            ReportFile.AddFile("TraceAndOptimizeState.AtTheBeginning.json", sb.ToString());
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
+    }
+
+    private class ExcludeUnityObjectsContractResolver : DefaultContractResolver
+    {
+        protected override JsonProperty CreateProperty(System.Reflection.MemberInfo member, MemberSerialization memberSerialization)
+        {
+            var property = base.CreateProperty(member, memberSerialization);
+            if (ContainsUnityObject(property.PropertyType))
+                property.Ignored = true;
+            return property;
+        }
+
+        private static bool ContainsUnityObject(Type? type)
+        {
+            if (type == null) return false;
+            if (typeof(UnityEngine.Object).IsAssignableFrom(type)) return true;
+            if (type.IsArray)
+                return ContainsUnityObject(type.GetElementType());
+            if (type.IsGenericType)
+                return type.GetGenericArguments().Any(ContainsUnityObject);
+            return false;
+        }
     }
 }
 

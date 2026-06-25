@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework.Constraints;
+using NUnit.Framework.Internal;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -308,6 +309,30 @@ namespace Anatawa12.AvatarOptimizer.Test
 
                 return true;
             }
+        }
+
+        public static void AddValueFormatters()
+        {
+#if AAO_VRCSDK3_AVATARS
+            TryAddCustomValueFormatter<VRC.Dynamics.VRCPhysBoneBase.Bone>(bone =>
+                $"transform={Utils.RelativePath(root: null, bone.transform)}, " +
+                $"parentIndex={bone.parentIndex}, " +
+                $"childIndex={bone.childIndex}, " +
+                $"boneChainIndex={bone.boneChainIndex}, " +
+                $"childCount={bone.childCount}, " +
+                $"averageChildPos={bone.averageChildPos:G}, " +
+                $"restPosition={bone.restPosition}, " +
+                $"restRotation={bone.restRotation.eulerAngles:G}, " +
+                $"restScale={bone.restScale:G}, " +
+                $"localGravityDirection={bone.localGravityDirection:G}, " +
+                $"sphereCollision: {bone.sphereCollision}");
+#endif
+            TryAddCustomValueFormatter<Transform>(bone => $"Transform({Utils.RelativePath(root: null, bone.transform)})");
+        }
+
+        public static void TryAddCustomValueFormatter<T>(Func<T, string> formatter)
+        {
+            TestExecutionContext.CurrentContext?.AddFormatter(downstream => (value) => value is T t ? formatter(t) : downstream(value));
         }
     }
 }

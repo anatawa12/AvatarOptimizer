@@ -70,6 +70,11 @@
             "define": "AAO_VRCSDK3_AVATARS_VRC_RAYCAST"
         },
         {
+            "name": "com.vrchat.avatars",
+            "expression": "3.10.4-beta.1",
+            "define": "AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER"
+        },
+        {
             "name": "com.vrmc.univrm",
             "expression": "",
             "define": "AAO_VRM0"

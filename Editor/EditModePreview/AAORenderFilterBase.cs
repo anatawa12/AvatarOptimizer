@@ -51,6 +51,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 list.Add(component);
             }
 
+#pragma warning disable CS0618 // Type or member is obsolete
             return componentsByRenderer
                 .Where(x => SupportsMultiple() ? x.Value.Count >= 1 : x.Value.Count == 1)
                 .Select(pair => RenderGroup.For(pair.Key)
@@ -61,6 +62,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 #endif
                 )
                 .ToImmutableList();
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         public async Task<IRenderFilterNode?> Instantiate(RenderGroup group,

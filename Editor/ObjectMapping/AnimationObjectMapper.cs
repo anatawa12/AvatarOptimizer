@@ -150,7 +150,11 @@ namespace Anatawa12.AvatarOptimizer
 
                         // this means moved to out of the animator scope
                         // TODO: add warning
-                        if (newPath == null) return Array.Empty<(string path, Type type, string propertyName, int index)>();
+                        if (newPath == null)
+                        {
+                            Debug.LogWarning($"Object is moved to out of path reposition root for path '{path}', object at '{Utils.RelativePath(null, component.transform)}'");
+                            return Array.Empty<(string path, Type type, string propertyName, int index)>();
+                        }
 
                         var componentIndex = ComponentIndex(new ComponentOrGameObject(component));
                         var binding = (newPath, descriptor.Type, descriptor.Name, componentIndex);

@@ -306,6 +306,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             TexCoordStatus TexCoordStatusMax(TexCoordStatus x, TexCoordStatus y) =>
                 (TexCoordStatus)Math.Max((int)x, (int)y);
 
+            ColorStatus ColorStatusMax(ColorStatus x, ColorStatus y) =>
+                (ColorStatus)Math.Max((int)x, (int)y);
+
             var mappings = new List<(string, string)>();
 
             var rendererPrefixes = BlendShapePrefixComputer.Create();
@@ -395,7 +398,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 target.Bones.AddRange(meshInfo.Bones);
 
-                target.HasColor |= meshInfo.HasColor;
+                target.HasColor = ColorStatusMax(target.HasColor, meshInfo.HasColor);
                 target.HasNormals |= meshInfo.HasNormals;
                 target.HasTangent |= meshInfo.HasTangent;
 

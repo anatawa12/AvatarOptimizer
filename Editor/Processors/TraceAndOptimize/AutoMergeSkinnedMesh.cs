@@ -178,7 +178,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             var mappingBuilder = context.GetMappingBuilder();
 
-            foreach (var (key, meshInfos) in categorizedMeshes)
+            foreach (var (key, meshInfosBeforeAnimator) in categorizedMeshes)
+            foreach (var (meshInfos, animatorRoot) in CategorizeByAnimatorRoots(context, meshInfosBeforeAnimator))
             {
                 if (key.RendererAnimationLocations.Count != 0 && !state.MergeMaterialAnimatingSkinnedMesh)
                     continue;
@@ -187,14 +188,14 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 {
                     if (state.MergeStaticSkinnedMesh)
                     {
-                        MergeStaticSkinnedMesh(context, gameObjectFactory, key, meshInfos, createSubMeshes);
+                        MergeStaticSkinnedMesh(context, gameObjectFactory, key, meshInfos, animatorRoot, createSubMeshes);
                     }
                 }
                 else
                 {
                     if (state.MergeAnimatingSkinnedMesh)
                     {
-                        MergeAnimatingSkinnedMesh(context, gameObjectFactory, key, meshInfos, createSubMeshes,
+                        MergeAnimatingSkinnedMesh(context, gameObjectFactory, key, meshInfos, animatorRoot, createSubMeshes,
                             mappingBuilder);
                     }
                 }
@@ -203,18 +204,80 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             Profiler.EndSample();
         }
 
+        // We need to keep the Skinned Mesh Renderer under Animator GameObject
+        private static List<(List<MeshInfo2>, Transform animator)> CategorizeByAnimatorRoots(
+            BuildContext context, List<MeshInfo2> meshes)
+        {
+            if (meshes.Count <= 1) return new() { (meshes, context.AvatarRootTransform) };
+            var byAnimator = new Dictionary<Transform, List<MeshInfo2>>();
+            var innermostNodes = new List<Transform?>();
+
+            foreach (var meshInfo2 in meshes)
+            {
+                var component = context.GetAnimationComponent(meshInfo2.SourceRenderer);
+                var changes = component.GetAllPropertyInfo
+                    .Where(x => x.name != Props.EnabledFor(meshInfo2.SourceRenderer))
+                    .SelectMany(x =>
+                        (x.info.FloatNodeOpt?.SourceComponents.Where(x => x is Animator or Animation)
+                            .Select(x => x.transform) ?? Array.Empty<Transform>())
+                        .Concat(x.info.ObjectNodeOpt?.SourceComponents.Where(x => x is Animator or Animation)
+                            .Select(x => x.transform) ?? Array.Empty<Transform>()))
+                    .ToHashSet();
+                var innermost = changes.FirstOrDefault(c =>
+                                    changes.All(x => x == c || c.transform.IsChildOf(x.transform)))
+                                ?? context.AvatarRootTransform!;
+
+                if (!byAnimator.TryGetValue(innermost, out var list))
+                    byAnimator.Add(innermost, list = new List<MeshInfo2>());
+
+                list.Add(meshInfo2);
+
+                if (!innermostNodes.Any(e => e!.transform.IsChildOf(innermost.transform)))
+                {
+                    // Remove parents of current innermost, and add current instead.
+                    innermostNodes.RemoveAll(x => innermost.transform.IsChildOf(x!.transform));
+                    innermostNodes.Add(innermost);
+                }
+            }
+
+            var result = new List<(List<MeshInfo2>, Transform)>();
+
+            while (innermostNodes.Any(x => x != null))
+            {
+                var (index, rendererPairs) = innermostNodes.Select((transform, index) =>
+                {
+                    var renderers = transform == null ? new List<KeyValuePair<Transform, List<MeshInfo2>>>() : byAnimator.Where(x => x.Key == transform || transform.IsChildOf(x.Key)).ToList();
+                    return (index, renderers);
+                }).MaxBy(x => x.renderers.Sum(y => y.Value.Count));
+
+                foreach (var keyValuePair in rendererPairs)
+                    byAnimator.Remove(keyValuePair.Key);
+
+                var renderers = rendererPairs.SelectMany(x => x.Value).ToList();
+
+                if (renderers.Count <= 1) break;
+
+                result.Add((renderers, innermostNodes[index]!));
+                innermostNodes[index] = null;
+            }
+
+            return result;
+        }
+
         private static void MergeStaticSkinnedMesh(
             BuildContext context,
             Func<bool, GameObject> gameObjectFactory,
             CategorizationKey key,
             List<MeshInfo2> meshInfos,
+            Transform animatorRoot,
             Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes
         )
         {
             Tracing.Trace(TracingArea.TraceAndOptimizeDecision, $"Merging non-toggled skinned meshes: {string.Join(", ", meshInfos.Select(x => x.SourceRenderer != null ? x.SourceRenderer.name : "unknown renderer"))} into one.");
-            // if there's no activeness animation, we merge them at root
-            var newSkinnedMeshRenderer = CreateNewRenderer(gameObjectFactory, context.AvatarRootTransform, key);
+            // if there's no activeness animation, we merge them at animator root
+            var newSkinnedMeshRenderer = CreateNewRenderer(gameObjectFactory, animatorRoot, key);
             newSkinnedMeshRenderer.gameObject.SetActive(key.Activeness == Activeness.AlwaysActive);
+            newSkinnedMeshRenderer.gameObject.layer = GetMostCommonLayer(meshInfos);
             var newMeshInfo = context.GetMeshInfoFor(newSkinnedMeshRenderer);
             var meshInfosArray = meshInfos.ToArray();
 
@@ -236,6 +299,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             Func<bool, GameObject> gameObjectFactory,
             CategorizationKey key,
             List<MeshInfo2> meshInfos,
+            Transform animatorRoot,
             Func<MeshInfo2[], (int[][], List<(MeshTopology, Material?)>)> createSubMeshes,
             ObjectMappingBuilder<PropertyInfo> mappingBuilder)
         {
@@ -243,6 +307,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             // if there is activeness animation, we have to decide the parent of merged mesh
 
             var commonParent = ComputeCommonParent(meshInfos, context.AvatarRootTransform);
+
+            // We need to ensure the renderer is under animator root.
+            if (!commonParent.IsChildOf(animatorRoot)) commonParent = animatorRoot;
 
             var activenessAnimatingProperties =
                 GetActivenessAnimationPropertiesNotAffectsCommonParent(context, meshInfos[0], commonParent);
@@ -252,7 +319,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 commonParent, keepPropertyCount: 2);
 
             var newSkinnedMeshRenderer = CreateNewRenderer(gameObjectFactory, commonParent, key);
-
+            newSkinnedMeshRenderer.gameObject.layer = GetMostCommonLayer(meshInfos);
             // process rest activeness animation
             if (activenessAnimatingProperties.Count > 0)
             {
@@ -460,6 +527,24 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             // note: unset will fallback to Auto
             return context.GetMappingBuilder().GetVrmFirstPersonFlag(component) ?? VrmFirstPersonFlag.Auto;
+        }
+        private static int GetMostCommonLayer(List<MeshInfo2> meshInfos)
+        {
+            var layerCounts = new Dictionary<int, int>();
+
+            foreach (var meshInfo in meshInfos)
+            {
+                var layer = meshInfo.SourceRenderer.gameObject.layer;
+                layerCounts.TryGetValue(layer, out var count);
+                layerCounts[layer] = count + 1;
+            }
+
+            // note: If multiple layers have the same count, use the lowest layer number.
+            return layerCounts
+                .OrderByDescending(x => x.Value)
+                .ThenBy(x => x.Key)
+                .First()
+                .Key;
         }
 
         private static SkinnedMeshRenderer CreateNewRenderer(

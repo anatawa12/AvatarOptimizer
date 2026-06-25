@@ -80,6 +80,9 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                     seq.Run("Validation", (ctx) => ComponentValidation.ValidateAll(ctx.AvatarRootObject))
                         .Then.Run(Processors.TraceAndOptimizes.LoadTraceAndOptimizeConfiguration.Instance)
                         .Then.Run(Processors.TraceAndOptimizes.OptimizationWarnings.Instance)
+#if AAO_VRCSDK3_AVATARS
+                        .Then.Run(Processors.TraceAndOptimizes.MirrorIgnoreOtherPhysBonesToIgnoreTransform.Instance)
+#endif
                         .Then.Run(Processors.DupliacteAssets.Instance)
                         .Then.Run(Processors.ParseAnimator.Instance)
                         .Then.Run(Processors.GatherShaderMaterialInformation.Instance)

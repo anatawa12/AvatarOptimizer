@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using nadena.dev.ndmf;
 using NUnit.Framework;
 using UnityEditor;
@@ -9,7 +10,9 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using VRC.Dynamics;
 using Debug = UnityEngine.Debug;
+using Object = System.Object;
 #if AAO_VRCSDK3_AVATARS
+using UnityEngine.Animations;
 using VRC.SDK3.Dynamics.PhysBone.Components;
 #endif
 
@@ -20,6 +23,9 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
     // If the test does not have issue, use PR number that fixes the error and add comment with link to the PR.
     public class E2ETesting
     {
+        [OneTimeSetUp]
+        public void SetupAddFormatter() => TestUtils.AddValueFormatters();
+
         #region Issue or Regression Testing
 
         [Test]
@@ -585,6 +591,557 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
 
             // The child should have been reparented to the parent
             Assert.That(child.transform.parent, Is.EqualTo(parent.transform));
+        }
+
+#if AAO_VRCSDK3_AVATARS
+        // The problematic case: We broke ignore other PhysBones
+        // https://github.com/anatawa12/AvatarOptimizer/issues/1713
+        [Test]
+        public void Issue1713_RemovingDisabledPhysBoneBreaksIgnoreOtherPhysBone()
+        {
+            var avatar = TestUtils.NewAvatar();
+            TestUtils.SetFxLayer(avatar, new AnimatorController());
+            avatar.AddComponent<TraceAndOptimize>();
+
+            var parentPhysBoneRoot = Utils.NewGameObject("ParentPhysBoneRoot", avatar.transform);
+            var pbChain1 = Utils.NewGameObject("PBChain1", parentPhysBoneRoot.transform);
+            var pbChain2 = Utils.NewGameObject("PBChain2", pbChain1.transform);
+            var pbChain3 = Utils.NewGameObject("PBChain3", pbChain2.transform);
+            var parentPhysBone = parentPhysBoneRoot.AddComponent<VRCPhysBone>();
+            parentPhysBone.ignoreOtherPhysBones = true;
+            parentPhysBone.maxStretch = 1; // Prevent ReplaceEndBone with Endpoint Position
+            var childPhysBone = pbChain2.AddComponent<VRCPhysBone>();
+            childPhysBone.enabled = false; // To be removed
+            // To make those component entrypoint
+            pbChain3.AddComponent<SkinnedMeshRenderer>().sharedMesh = TestUtils.NewCubeMesh();
+
+            parentPhysBone.InitTransforms(force: true);
+            var beforeBones = parentPhysBone.bones.ToList();
+
+            Assert.That(beforeBones.Count, Is.EqualTo(2));
+
+            AvatarProcessor.ProcessAvatar(avatar);
+
+            parentPhysBone.InitTransforms(force: true);
+            var afterBones = parentPhysBone.bones.ToList();
+            Assert.That(afterBones, Is.EqualTo(beforeBones));
+        }
+
+        // Same but with externally configured physbones
+        // https://github.com/anatawa12/AvatarOptimizer/issues/1713
+        [Test]
+        public void Issue1713_RemovingDisabledPhysBoneBreaksIgnoreOtherPhysBone_ExternallyConfigured()
+        {
+            var avatar = TestUtils.NewAvatar();
+            TestUtils.SetFxLayer(avatar, new AnimatorController());
+            avatar.AddComponent<TraceAndOptimize>();
+
+            var parentPhysBoneRoot = Utils.NewGameObject("ParentPhysBoneRoot", avatar.transform);
+            var pbChain1 = Utils.NewGameObject("PBChain1", parentPhysBoneRoot.transform);
+            var pbChain2 = Utils.NewGameObject("PBChain2", pbChain1.transform);
+            var pbChain3 = Utils.NewGameObject("PBChain3", pbChain2.transform);
+            var parentPhysBone = parentPhysBoneRoot.AddComponent<VRCPhysBone>();
+            parentPhysBone.ignoreOtherPhysBones = true;
+            parentPhysBone.maxStretch = 1; // Prevent ReplaceEndBone with Endpoint Position
+            var pbPlace = Utils.NewGameObject("PBPlace", avatar.transform);
+            var childPhysBone = pbPlace.AddComponent<VRCPhysBone>();
+            childPhysBone.enabled = false; // To be removed
+            childPhysBone.rootTransform = pbChain2.transform;
+            // To make those component entrypoint
+            pbChain3.AddComponent<SkinnedMeshRenderer>().sharedMesh = TestUtils.NewCubeMesh();
+
+            parentPhysBone.InitTransforms(force: true);
+            var beforeBones = parentPhysBone.bones.ToList();
+
+            // Externally configured VRCPhysBones are not considered in ignoreOtherPhysBones
+            Assert.That(beforeBones.Count, Is.EqualTo(2));
+
+            AvatarProcessor.ProcessAvatar(avatar);
+
+            parentPhysBone.InitTransforms(force: true);
+            var afterBones = parentPhysBone.bones.ToList();
+            Assert.That(afterBones, Is.EqualTo(beforeBones));
+        }
+
+        // https://github.com/anatawa12/AvatarOptimizer/issues/1722
+        // MergePhysBoneCollider was checking IsActive animation only on the target bone's hierarchy,
+        // so colliders targeting the same external bone but with different toggle states on their own
+        // parent GameObjects were incorrectly merged.
+        [Test]
+        public void Issue1722_MergePhysBoneCollider_ShouldNotMerge_DifferentlyToggled_CollidersTargetingExternalBone()
+        {
+            var avatar = TestUtils.NewAvatar();
+
+            // Target bone inside the avatar at root level — no toggle animation on it.
+            // This is the "external" bone both colliders point to (external to their own sub-trees).
+            var targetBone = Utils.NewGameObject("TargetBone", avatar.transform);
+            var targetBoneChild = Utils.NewGameObject("TargetBoneChild", targetBone.transform);
+            var targetBoneGrandChild = Utils.NewGameObject("TargetBoneGrandChild", targetBoneChild.transform);
+
+            // Parent GameObjects for the two colliders, each toggled by a separate animation layer.
+            var colliderParent1 = Utils.NewGameObject("ColliderParent1", avatar.transform);
+            var colliderParent2 = Utils.NewGameObject("ColliderParent2", avatar.transform);
+
+            // Both colliders target the same external bone with identical shape parameters.
+            var collider1 = colliderParent1.AddComponent<VRCPhysBoneCollider>();
+            collider1.rootTransform = targetBone.transform;
+            collider1.shapeType = VRCPhysBoneColliderBase.ShapeType.Sphere;
+            collider1.radius = 0.1f;
+
+            var collider2 = colliderParent2.AddComponent<VRCPhysBoneCollider>();
+            collider2.rootTransform = targetBone.transform;
+            collider2.shapeType = VRCPhysBoneColliderBase.ShapeType.Sphere;
+            collider2.radius = 0.1f;
+
+            // PhysBone on the target bone, referencing both colliders, with a rendered mesh to
+            // keep the bone chain (and thus the PhysBone and its colliders) alive after GC.
+            var physBone = targetBone.AddComponent<VRCPhysBone>();
+            physBone.colliders.Add(collider1);
+            physBone.colliders.Add(collider2);
+            var smr = targetBoneGrandChild.AddComponent<SkinnedMeshRenderer>();
+            smr.sharedMesh = TestUtils.NewCubeMesh();
+
+            // Layer1 toggles ColliderParent1, Layer2 independently toggles ColliderParent2.
+            TestUtils.SetFxLayer(avatar, new AnimatorControllerBuilder("")
+                .AddLayer("Layer1", sm =>
+                {
+                    sm.NewClipState("State1", clip => clip
+                        .AddPropertyBinding("ColliderParent1", typeof(GameObject), "m_IsActive",
+                            new Keyframe(0, 0), new Keyframe(1, 1)));
+                })
+                .AddLayer("Layer2", sm =>
+                {
+                    sm.NewClipState("State2", clip => clip
+                        .AddPropertyBinding("ColliderParent2", typeof(GameObject), "m_IsActive",
+                            new Keyframe(0, 0), new Keyframe(1, 1)));
+                })
+                .Build());
+            avatar.AddComponent<TraceAndOptimize>();
+
+            AvatarProcessor.ProcessAvatar(avatar);
+
+            // Both colliders must still exist because they can be independently toggled.
+            Assert.That(avatar.GetComponentsInChildren<VRCPhysBoneCollider>(true), Has.Length.EqualTo(2),
+                "Colliders with different toggle animations targeting the same external bone should NOT be merged");
+        }
+
+        // Regression test: when the root transform is listed in ignoreTransforms, the PhysBone should not be removed.
+        [Test]
+        public void Issue1720_IgnoreTransform_Root_Removed_Incorrectly()
+        {
+            var avatar = TestUtils.NewAvatar();
+            TestUtils.SetFxLayer(avatar, new AnimatorController());
+            avatar.AddComponent<TraceAndOptimize>();
+
+            var physBoneRoot = Utils.NewGameObject("PhysBoneRoot", avatar.transform);
+            var pbChain11 = Utils.NewGameObject("PBChain11", physBoneRoot.transform);
+            var pbChain12 = Utils.NewGameObject("PBChain12", pbChain11.transform);
+            var pbChain13 = Utils.NewGameObject("PBChain13", pbChain12.transform);
+            var pbChain21 = Utils.NewGameObject("PBChain21", physBoneRoot.transform);
+            var pbChain22 = Utils.NewGameObject("PBChain22", pbChain21.transform);
+            var pbChain23 = Utils.NewGameObject("PBChain23", pbChain22.transform);
+            var cube1 = Utils.NewGameObject("Cube", avatar.transform).AddComponent<SkinnedMeshRenderer>();
+            cube1.sharedMesh = TestUtils.NewCubeMesh();
+            cube1.rootBone = pbChain13.transform;
+            var cube2 = Utils.NewGameObject("Cube", avatar.transform).AddComponent<SkinnedMeshRenderer>();
+            cube2.sharedMesh = TestUtils.NewCubeMesh();
+            cube2.rootBone = pbChain23.transform;
+            var pb = physBoneRoot.AddComponent<VRCPhysBone>();
+            pb.ignoreTransforms.Add(physBoneRoot.transform);
+
+            AvatarProcessor.ProcessAvatar(avatar);
+
+            Assert.That(pb != null, "PhysBone with its root transform in Ignore Transforms should not be removed");
+        }
+
+        // AAO previously breaks the avatar behavior if:
+        // - the parent of PhysBone has mergeable PhysBone children only
+        //   - in other words, the PhysBones are merged to parent transform in previous conditions
+        // - the parent of PhysBone is animated in some way
+        //   - this includes other components like Constraints. original case uses constraint so this test will also use constraints.
+        [Test]
+        public void Issue1725_MergePhysBone_And_Animated_Parent()
+        {
+            var avatar = TestUtils.NewAvatar();
+            TestUtils.SetFxLayer(avatar, new AnimatorController());
+            avatar.AddComponent<TraceAndOptimize>();
+
+            var pbParent = Utils.NewGameObject("PBParent", avatar.transform);
+            var pbChain11 = Utils.NewGameObject("PBChain11", pbParent.transform);
+            var pbChain12 = Utils.NewGameObject("PBChain12", pbChain11.transform);
+            var pbChain13 = Utils.NewGameObject("PBChain13", pbChain12.transform);
+            var pbChain21 = Utils.NewGameObject("PBChain21", pbParent.transform);
+            var pbChain22 = Utils.NewGameObject("PBChain22", pbChain21.transform);
+            var pbChain23 = Utils.NewGameObject("PBChain23", pbChain22.transform);
+            var pb1 = pbChain11.AddComponent<VRCPhysBone>();
+            var pb2 = pbChain21.AddComponent<VRCPhysBone>();
+            pb1.allowGrabbing = pb2.allowGrabbing = VRCPhysBoneBase.AdvancedBool.False;
+            pb1.allowCollision = pb2.allowCollision = VRCPhysBoneBase.AdvancedBool.False;
+            pb1.allowPosing = pb2.allowPosing = VRCPhysBoneBase.AdvancedBool.False;
+            var cube1 = Utils.NewGameObject("Cube", avatar.transform).AddComponent<SkinnedMeshRenderer>();
+            cube1.sharedMesh = TestUtils.NewCubeMesh();
+            cube1.rootBone = pbChain13.transform;
+            var cube2 = Utils.NewGameObject("Cube", avatar.transform).AddComponent<SkinnedMeshRenderer>();
+            cube2.sharedMesh = TestUtils.NewCubeMesh();
+            cube2.rootBone = pbChain23.transform;
+
+            var pbParentConstraint = pbParent.AddComponent<PositionConstraint>();
+            pbParentConstraint.AddSource(new ConstraintSource()
+            {
+                weight = 1,
+                sourceTransform = pbParent.transform
+            });
+            pbParentConstraint.weight = 0.4f;
+            pbParentConstraint.GetType().GetMethod("ActivateAndPreserveOffset",
+                    BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!
+                .Invoke(pbParentConstraint, Array.Empty<Object>());
+
+            AvatarProcessor.ProcessAvatar(avatar);
+
+            Assert.That(pb1 == null);
+            Assert.That(pb2 == null);
+            Assert.That(pbChain11.transform.parent, Is.Not.EqualTo(pbParent.transform), "PB Chain 1 parent should be changed");
+            Assert.That(pbChain21.transform.parent, Is.Not.EqualTo(pbParent.transform), "PB Chain 2 parent should be changed");
+            var pb = avatar.GetComponentsInChildren<VRCPhysBone>();
+            Assert.That(pb, Has.Length.EqualTo(1));
+            Assert.That(pb[0].GetTarget(), Is.Not.EqualTo(pbParent.transform));
+            Assert.That(pb[0].GetTarget().parent, Is.EqualTo(pbParent.transform));
+            Assert.That(pb[0].GetTarget(), Is.EqualTo(pbChain11.transform.parent), "PB Chain 1 parent should be pb target");
+            Assert.That(pb[0].GetTarget(), Is.EqualTo(pbChain21.transform.parent), "PB Chain 2 parent should be pb target");
+        }
+
+        // This negative to issue 1725; we should merge to parent transform if nothing prevents them
+        [Test]
+        public void Issue1725_MergePhysBone_MergeToParent()
+        {
+            var avatar = TestUtils.NewAvatar();
+            TestUtils.SetFxLayer(avatar, new AnimatorController());
+            avatar.AddComponent<TraceAndOptimize>();
+
+            var pbParent = Utils.NewGameObject("PBParent", avatar.transform);
+            var pbChain11 = Utils.NewGameObject("PBChain11", pbParent.transform);
+            var pbChain12 = Utils.NewGameObject("PBChain12", pbChain11.transform);
+            var pbChain13 = Utils.NewGameObject("PBChain13", pbChain12.transform);
+            var pbChain21 = Utils.NewGameObject("PBChain21", pbParent.transform);
+            var pbChain22 = Utils.NewGameObject("PBChain22", pbChain21.transform);
+            var pbChain23 = Utils.NewGameObject("PBChain23", pbChain22.transform);
+            var pb1 = pbChain11.AddComponent<VRCPhysBone>();
+            var pb2 = pbChain21.AddComponent<VRCPhysBone>();
+            pb1.allowGrabbing = pb2.allowGrabbing = VRCPhysBoneBase.AdvancedBool.False;
+            pb1.allowCollision = pb2.allowCollision = VRCPhysBoneBase.AdvancedBool.False;
+            pb1.allowPosing = pb2.allowPosing = VRCPhysBoneBase.AdvancedBool.False;
+            var cube1 = Utils.NewGameObject("Cube", avatar.transform).AddComponent<SkinnedMeshRenderer>();
+            cube1.sharedMesh = TestUtils.NewCubeMesh();
+            cube1.rootBone = pbChain13.transform;
+            var cube2 = Utils.NewGameObject("Cube", avatar.transform).AddComponent<SkinnedMeshRenderer>();
+            cube2.sharedMesh = TestUtils.NewCubeMesh();
+            cube2.rootBone = pbChain23.transform;
+
+            AvatarProcessor.ProcessAvatar(avatar);
+
+            Assert.That(pb1 == null);
+            Assert.That(pb2 == null);
+            Assert.That(pbChain11.transform.parent, Is.EqualTo(pbParent.transform), "PB Chain 1 parent should be changed");
+            Assert.That(pbChain21.transform.parent, Is.EqualTo(pbParent.transform), "PB Chain 2 parent should be changed");
+            var pb = avatar.GetComponentsInChildren<VRCPhysBone>();
+            Assert.That(pb, Has.Length.EqualTo(1));
+            Assert.That(pb[0].GetTarget(), Is.EqualTo(pbParent.transform));
+            Assert.That(pb[0].GetTarget(), Is.EqualTo(pbChain11.transform.parent), "PB Chain 1 parent should be pb target");
+            Assert.That(pb[0].GetTarget(), Is.EqualTo(pbChain21.transform.parent), "PB Chain 2 parent should be pb target");
+        }
+
+#endif
+
+        [Test]
+        public void Issue1741_AutoMergeSkinnedMesh_SingleAnimator_NoToggle()
+        {
+            // SMR0 is not animated, SMR1 is animated by root animator,
+            // SMR2 is animated by other animator thus moved under the animator
+            var avatar = TestUtils.NewAvatar();
+            avatar.AddComponent<TraceAndOptimize>();
+            var armature = Utils.NewGameObject("Armature", avatar.transform);
+            var root = Utils.NewGameObject("Root", armature.transform);
+            var bone0 = Utils.NewGameObject("Bone0", root.transform);
+            var bone1 = Utils.NewGameObject("Bone1", root.transform);
+            var bone2 = Utils.NewGameObject("Bone2", root.transform);
+            var smr0Object = Utils.NewGameObject("SMR0", avatar.transform);
+            var smr0 = smr0Object.AddComponent<SkinnedMeshRenderer>();
+            var smr0Mesh = TestUtils.NewCubeMeshWithBone();
+            smr0Mesh.AddBlendShapeFrame("test", 100, TestUtils.NewCubeBlendShapeFrame((0, Vector3.up)), null, null);
+            smr0.sharedMesh = smr0Mesh;
+            smr0.bones = new[] { bone0.transform };
+            smr0.rootBone = root.transform;
+            smr0.probeAnchor = root.transform;
+            smr0.localBounds = new Bounds(Vector3.zero, Vector3.one);
+            var smr1Object = Utils.NewGameObject("SMR1", avatar.transform);
+            var smr1 = smr1Object.AddComponent<SkinnedMeshRenderer>();
+            var smr1Mesh = TestUtils.NewCubeMeshWithBone();
+            smr1Mesh.AddBlendShapeFrame("test", 100, TestUtils.NewCubeBlendShapeFrame((1, Vector3.up)), null, null);
+            smr1.sharedMesh = smr1Mesh;
+            smr1.bones = new[] { bone1.transform };
+            smr1.rootBone = root.transform;
+            smr1.probeAnchor = root.transform;
+            smr1.localBounds = new Bounds(Vector3.zero, Vector3.one);
+            var otherAnimatorObject = Utils.NewGameObject("OtherAnimator", avatar.transform);
+            var otherAnimator = otherAnimatorObject.AddComponent<Animator>();
+            var smr2Object = Utils.NewGameObject("SMR2", otherAnimatorObject.transform);
+            var smr2 = smr2Object.AddComponent<SkinnedMeshRenderer>();
+            var smr2Mesh = TestUtils.NewCubeMeshWithBone();
+            smr2Mesh.AddBlendShapeFrame("test", 100, TestUtils.NewCubeBlendShapeFrame((2, Vector3.up)), null, null);
+            smr2.sharedMesh = smr2Mesh;
+            smr2.bones = new[] { bone2.transform };
+            smr2.rootBone = root.transform;
+            smr2.probeAnchor = root.transform;
+            smr2.localBounds = new Bounds(Vector3.zero, Vector3.one);
+
+            TestUtils.SetFxLayer(avatar, 
+            new AnimatorControllerBuilder("RootAnimator")
+                .AddLayer("Test", b => b
+                    .NewClipState("Test", c => c
+                        .AddPropertyBinding("SMR0", typeof(SkinnedMeshRenderer), "blendShape.test")))
+                .Build());
+
+            otherAnimator.runtimeAnimatorController = new AnimatorControllerBuilder("OtherAnimator")
+                .AddLayer("Test", b => b
+                    .NewClipState("Test", c => c
+                        .AddPropertyBinding("SMR2", typeof(SkinnedMeshRenderer), "blendShape.test")))
+                .Build();
+
+            AvatarProcessor.ProcessAvatar(avatar);
+
+            var renderers = avatar.GetComponentsInChildren<SkinnedMeshRenderer>();
+            Assert.That(renderers, Has.Length.EqualTo(1));
+            var afterMerged = renderers[0];
+            Assert.That(afterMerged.transform.IsChildOf(otherAnimator.transform), Is.True);
+        }
+
+        [Test]
+        public void Issue1741_AutoMergeSkinnedMesh_SingleAnimator_Toggle()
+        {
+            // SMR0 is animated by root animator, SMR1 is not animated,
+            // SMR2 is animated by other animator thus moved under the animator
+            var avatar = TestUtils.NewAvatar();
+            avatar.AddComponent<TraceAndOptimize>();
+            var armature = Utils.NewGameObject("Armature", avatar.transform);
+            var root = Utils.NewGameObject("Root", armature.transform);
+            var bone0 = Utils.NewGameObject("Bone0", root.transform);
+            var bone1 = Utils.NewGameObject("Bone1", root.transform);
+            var bone2 = Utils.NewGameObject("Bone2", root.transform);
+            var smr0Object = Utils.NewGameObject("SMR0", avatar.transform);
+            var smr0 = smr0Object.AddComponent<SkinnedMeshRenderer>();
+            var smr0Mesh = TestUtils.NewCubeMeshWithBone();
+            smr0Mesh.AddBlendShapeFrame("test", 100, TestUtils.NewCubeBlendShapeFrame((0, Vector3.up)), null, null);
+            smr0.sharedMesh = smr0Mesh;
+            smr0.bones = new[] { bone0.transform };
+            smr0.rootBone = root.transform;
+            smr0.probeAnchor = root.transform;
+            smr0.localBounds = new Bounds(Vector3.zero, Vector3.one);
+            var smr1Object = Utils.NewGameObject("SMR1", avatar.transform);
+            var smr1 = smr1Object.AddComponent<SkinnedMeshRenderer>();
+            var smr1Mesh = TestUtils.NewCubeMeshWithBone();
+            smr1Mesh.AddBlendShapeFrame("test", 100, TestUtils.NewCubeBlendShapeFrame((1, Vector3.up)), null, null);
+            smr1.sharedMesh = smr1Mesh;
+            smr1.bones = new[] { bone1.transform };
+            smr1.rootBone = root.transform;
+            smr1.probeAnchor = root.transform;
+            smr1.localBounds = new Bounds(Vector3.zero, Vector3.one);
+            var otherAnimatorObject = Utils.NewGameObject("OtherAnimator", avatar.transform);
+            var otherAnimator = otherAnimatorObject.AddComponent<Animator>();
+            var smr2Object = Utils.NewGameObject("SMR2", otherAnimatorObject.transform);
+            var smr2 = smr2Object.AddComponent<SkinnedMeshRenderer>();
+            var smr2Mesh = TestUtils.NewCubeMeshWithBone();
+            smr2Mesh.AddBlendShapeFrame("test", 100, TestUtils.NewCubeBlendShapeFrame((2, Vector3.up)), null, null);
+            smr2.sharedMesh = smr2Mesh;
+            smr2.bones = new[] { bone2.transform };
+            smr2.rootBone = root.transform;
+            smr2.probeAnchor = root.transform;
+            smr2.localBounds = new Bounds(Vector3.zero, Vector3.one);
+
+            TestUtils.SetFxLayer(avatar, 
+            new AnimatorControllerBuilder("RootAnimator")
+                .AddLayer("Test", b => b
+                    .NewClipState("Test", c => c
+                        .AddPropertyBinding("SMR0", typeof(SkinnedMeshRenderer), "blendShape.test")))
+                .AddLayer("Test", b => b
+                    .NewClipState("Test", c => c
+                        .AddPropertyBinding("SMR0", typeof(SkinnedMeshRenderer), "m_Enabled",
+                            AnimationCurve.Linear(0, 0, 1, 1))
+                        .AddPropertyBinding("SMR1", typeof(SkinnedMeshRenderer), "m_Enabled",
+                            AnimationCurve.Linear(0, 0, 1, 1))
+                        .AddPropertyBinding("OtherAnimator/SMR2", typeof(SkinnedMeshRenderer), "m_Enabled",
+                            AnimationCurve.Linear(0, 0, 1, 1))))
+                .Build());
+
+            otherAnimator.runtimeAnimatorController = new AnimatorControllerBuilder("OtherAnimator")
+                .AddLayer("Test", b => b
+                    .NewClipState("Test", c => c
+                        .AddPropertyBinding("SMR2", typeof(SkinnedMeshRenderer), "blendShape.test")))
+                .Build();
+
+            AvatarProcessor.ProcessAvatar(avatar);
+
+            var renderers = avatar.GetComponentsInChildren<SkinnedMeshRenderer>();
+            Assert.That(renderers, Has.Length.EqualTo(1));
+            var afterMerged = renderers[0];
+            Assert.That(afterMerged.transform.IsChildOf(otherAnimator.transform), Is.True);
+        }
+
+        [Test]
+        public void Issue1741_AutoMergeSkinnedMesh_MultipleAnimator_NoToggle()
+        {
+            // SMR0 is not animated, SMR1 is animated by root animator,
+            // SMR2 and SMR3 is animated by non-root animator
+            // SMR4 and SMR5 is animated by non-root animator
+            var avatar = TestUtils.NewAvatar();
+            avatar.AddComponent<TraceAndOptimize>();
+            var armature = Utils.NewGameObject("Armature", avatar.transform);
+            var root = Utils.NewGameObject("Root", armature.transform);
+            NewRenderer("SMR0", 0, avatar);
+            NewRenderer("SMR1", 1, avatar);
+            var otherAnimator0Object = Utils.NewGameObject("OtherAnimator0", avatar.transform);
+            var otherAnimator0 = otherAnimator0Object.AddComponent<Animator>();
+            var otherAnimator1Object = Utils.NewGameObject("OtherAnimator1", avatar.transform);
+            var otherAnimator1 = otherAnimator1Object.AddComponent<Animator>();
+            NewRenderer("SMR2", 2, otherAnimator0Object);
+            NewRenderer("SMR3", 3, otherAnimator0Object);
+            NewRenderer("SMR4", 4, otherAnimator1Object);
+            NewRenderer("SMR5", 5, otherAnimator1Object);
+
+            TestUtils.SetFxLayer(avatar, 
+            new AnimatorControllerBuilder("RootAnimator")
+                .AddLayer("Test", b => b
+                    .NewClipState("Test", c => c
+                        .AddPropertyBinding("SMR0", typeof(SkinnedMeshRenderer), "blendShape.test")))
+                .Build());
+
+            otherAnimator0.runtimeAnimatorController = new AnimatorControllerBuilder("OtherAnimator0")
+                .AddLayer("Test", b => b
+                    .NewClipState("Test", c => c
+                        .AddPropertyBinding("SMR2", typeof(SkinnedMeshRenderer), "blendShape.test")
+                        .AddPropertyBinding("SMR3", typeof(SkinnedMeshRenderer), "blendShape.test")))
+                .Build();
+
+            otherAnimator1.runtimeAnimatorController = new AnimatorControllerBuilder("OtherAnimator1")
+                .AddLayer("Test", b => b
+                    .NewClipState("Test", c => c
+                        .AddPropertyBinding("SMR4", typeof(SkinnedMeshRenderer), "blendShape.test")
+                        .AddPropertyBinding("SMR5", typeof(SkinnedMeshRenderer), "blendShape.test")))
+                .Build();
+
+            AvatarProcessor.ProcessAvatar(avatar);
+
+            var renderers = avatar.GetComponentsInChildren<SkinnedMeshRenderer>();
+            Assert.That(renderers, Has.Length.EqualTo(2));
+            var afterMerged0 = renderers[0];
+            var afterMerged1 = renderers[1];
+            Assert.That(afterMerged0.transform.IsChildOf(otherAnimator0.transform), Is.True);
+            Assert.That(afterMerged1.transform.IsChildOf(otherAnimator1.transform), Is.True);
+
+            GameObject NewRenderer(string name, int index, GameObject parent)
+            {
+                var smrObject = Utils.NewGameObject(name, parent.transform);
+                var smr = smrObject.AddComponent<SkinnedMeshRenderer>();
+                var smrMesh = TestUtils.NewCubeMeshWithBone();
+                smrMesh.AddBlendShapeFrame("test", 100, TestUtils.NewCubeBlendShapeFrame((index, Vector3.up)), null, null);
+                smr.sharedMesh = smrMesh;
+                smr.bones = new[] { root.transform };
+                smr.rootBone = root.transform;
+                smr.probeAnchor = root.transform;
+                smr.localBounds = new Bounds(Vector3.zero, Vector3.one);
+                return smrObject;
+            }
+        }
+
+        // While fixing this issue, we introduced a bug in the logic for selecting the
+        // innermost animator: we mistakenly selected the outermost animator instead.
+        // This test verifies that the bug does not reappear in future versions.
+        [Test]
+        public void Issue1741_AutoMergeSkinnedMesh_SingleAnimator_AllRenderersAreBoth()
+        {
+            // SMR0 is not animated, SMR1 is animated by root animator,
+            // SMR2 is animated by other animator thus moved under the animator
+            var avatar = TestUtils.NewAvatar();
+            avatar.AddComponent<TraceAndOptimize>();
+            var armature = Utils.NewGameObject("Armature", avatar.transform);
+            var root = Utils.NewGameObject("Root", armature.transform);
+            NewRenderer("SMR0", 0, avatar);
+            NewRenderer("SMR1", 1, avatar);
+            var otherAnimatorObject = Utils.NewGameObject("OtherAnimator", avatar.transform);
+            var otherAnimator = otherAnimatorObject.AddComponent<Animator>();
+            NewRenderer("SMR2", 2, otherAnimatorObject);
+
+            TestUtils.SetFxLayer(avatar, 
+            new AnimatorControllerBuilder("RootAnimator")
+                .AddLayer("Test", b => b
+                    .NewClipState("Test", c => c
+                        .AddPropertyBinding("SMR0", typeof(SkinnedMeshRenderer), "blendShape.test", AnimationCurve.Linear(0, 0, 1, 1))
+                        .AddPropertyBinding("SMR1", typeof(SkinnedMeshRenderer), "blendShape.test", AnimationCurve.Linear(0, 0, 1, 1))
+                        .AddPropertyBinding("OtherAnimator/SMR2", typeof(SkinnedMeshRenderer), "blendShape.test", AnimationCurve.Linear(0, 0, 1, 1))))
+                .Build());
+
+            otherAnimator.runtimeAnimatorController = new AnimatorControllerBuilder("OtherAnimator")
+                .AddLayer("Test", b => b
+                    .NewClipState("Test", c => c
+                        .AddPropertyBinding("SMR2", typeof(SkinnedMeshRenderer), "blendShape.test1", AnimationCurve.Linear(0, 0, 1, 1))))
+                .Build();
+
+            AvatarProcessor.ProcessAvatar(avatar);
+
+            var renderers = avatar.GetComponentsInChildren<SkinnedMeshRenderer>();
+            Assert.That(renderers, Has.Length.EqualTo(1));
+            var afterMerged = renderers[0];
+            Assert.That(afterMerged.transform.IsChildOf(otherAnimator.transform), Is.True);
+
+            GameObject NewRenderer(string name, int index, GameObject parent)
+            {
+                var smrObject = Utils.NewGameObject(name, parent.transform);
+                var smr = smrObject.AddComponent<SkinnedMeshRenderer>();
+                var smrMesh = TestUtils.NewCubeMeshWithBone();
+                smrMesh.AddBlendShapeFrame("test", 100, TestUtils.NewCubeBlendShapeFrame((index, Vector3.up)), null, null);
+                smrMesh.AddBlendShapeFrame("test1", 100, TestUtils.NewCubeBlendShapeFrame((index, Vector3.left)), null, null);
+                smr.sharedMesh = smrMesh;
+                smr.bones = new[] { root.transform };
+                smr.rootBone = root.transform;
+                smr.probeAnchor = root.transform;
+                smr.localBounds = new Bounds(Vector3.zero, Vector3.one);
+                return smrObject;
+            }
+        }
+
+        [Test]
+        public void PR1749_AutoMergeSkinnedMesh_PreserveLayer()
+        {
+            // preserve layer when auto merging skinned meshes
+            const int nonDefaultLayer = 9;
+
+            var avatar = TestUtils.NewAvatar();
+            TestUtils.SetFxLayer(avatar, new AnimatorController());
+            avatar.AddComponent<TraceAndOptimize>();
+            var armature = Utils.NewGameObject("Armature", avatar.transform);
+            var root = Utils.NewGameObject("Root", armature.transform);
+
+            NewRenderer("Renderer0");
+            NewRenderer("Renderer1");
+
+            AvatarProcessor.ProcessAvatar(avatar);
+
+            var renderers = avatar.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+            Assert.That(renderers, Has.Length.EqualTo(1));
+            Assert.That(renderers[0].gameObject.layer, Is.EqualTo(nonDefaultLayer));
+
+            void NewRenderer(string name)
+            {
+                var smrObject = Utils.NewGameObject(name, avatar.transform);
+                smrObject.layer = nonDefaultLayer;
+
+                var smr = smrObject.AddComponent<SkinnedMeshRenderer>();
+                var smrMesh = TestUtils.NewCubeMeshWithBone();
+                smr.sharedMesh = smrMesh;
+                smr.bones = new[] { root.transform };
+                smr.rootBone = root.transform;
+                smr.probeAnchor = root.transform;
+                smr.localBounds = new Bounds(Vector3.zero, Vector3.one);
+            }
         }
 
         #endregion
