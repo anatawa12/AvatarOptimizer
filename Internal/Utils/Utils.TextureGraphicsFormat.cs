@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
-#if UNITY_6000_4_OR_NEWER
+#if UNITY_6000_0_OR_NEWER
 using FormatUsage = UnityEngine.Experimental.Rendering.GraphicsFormatUsage;
 #endif
 
