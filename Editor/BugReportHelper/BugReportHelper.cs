@@ -755,7 +755,7 @@ internal class BugReportHelper : EditorWindow
                             var sharedMaterial = subMesh.SharedMaterials[j];
                             if (sharedMaterial != null)
                             {
-                                builder.AppendLine($"          sharedMaterials[{j}]: {sharedMaterial.name} ({sharedMaterial.shader.name}) ({sharedMaterial.GetInstanceID()})");
+                                builder.AppendLine($"          sharedMaterials[{j}]: {sharedMaterial.name} ({sharedMaterial.shader.name}) ({sharedMaterial.GetEntityId().ToString()})");
                                 MaterialInfo(sharedMaterial, "            ");
                             }
                             else
@@ -781,7 +781,7 @@ internal class BugReportHelper : EditorWindow
                         var sharedMaterial = renderer.sharedMaterials[i];
                         if (sharedMaterial != null)
                         {
-                            builder.AppendLine($"      sharedMaterials[{i}]: {sharedMaterial.name} ({sharedMaterial.shader.name}) ({sharedMaterial.GetEntityId()})");
+                            builder.AppendLine($"      sharedMaterials[{i}]: {sharedMaterial.name} ({sharedMaterial.shader.name}) ({sharedMaterial.GetEntityId().ToString()})");
                             MaterialInfo(sharedMaterial, "        ");
                         }
                         else
@@ -835,7 +835,7 @@ internal class BugReportHelper : EditorWindow
                 {
                     if (texture == null) return "<NoneOrMissing>";
                     var builder = new StringBuilder();
-                    builder.Append("instance: ").Append(texture.GetInstanceID()).Append(", ");
+                    builder.Append("instance: ").Append(texture.GetEntityId().ToString()).Append(", ");
                     builder.Append("name: '").Append(texture.name).Append("', ");
                     builder.Append("format: ").Append(texture.graphicsFormat).Append(", ");
                     builder.Append("dimension: ").Append(texture.dimension).Append(", ");
