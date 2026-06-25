@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Anatawa12.AvatarOptimizer.APIInternal.Externals;
 using UnityEditor;
 using UnityEngine;
@@ -13,28 +14,36 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         [InitializeOnLoadMethod]
         static void FindAllInfoImplements()
         {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-            foreach (var type in assembly.GetTypes())
-            foreach (ComponentInformationAttributeBase attribute in type.GetCustomAttributes(
-                         typeof(ComponentInformationAttributeBase), false))
-            {
-                try
-                {
-                    LoadType(type, attribute);
-                }
-                catch (Exception e)
+            foreach (var assembly in
+#if UNITY_6000_6_OR_NEWER
+                UnityEngine.Assemblies.CurrentAssemblies.GetLoadedAssemblies()
+#else
+                AppDomain.CurrentDomain.GetAssemblies()
+#endif
+            )
+            try {
+                foreach (var type in assembly.GetTypes())
+                foreach (ComponentInformationAttributeBase attribute in type.GetCustomAttributes(
+                                typeof(ComponentInformationAttributeBase), false))
                 {
                     try
                     {
-                        Debug.LogError($"Processing type {type}");
-                        Debug.LogException(e);
+                        LoadType(type, attribute);
                     }
-                    catch (Exception e1)
+                    catch (Exception e)
                     {
-                        Debug.LogException(new AggregateException(e, e1));
+                        try
+                        {
+                            Debug.LogError($"Processing type {type}");
+                            Debug.LogException(e);
+                        }
+                        catch (Exception e1)
+                        {
+                            Debug.LogException(new AggregateException(e, e1));
+                        }
                     }
                 }
-            }
+            } catch (ReflectionTypeLoadException) { }
         }
 
         [InitializeOnLoadMethod]

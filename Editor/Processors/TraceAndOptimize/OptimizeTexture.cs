@@ -1292,7 +1292,7 @@ internal struct OptimizeTextureImpl {
                 island.triangles.Add(idx);
             }
         }
-
+        [Serializable]
         public readonly struct Triangle : IEnumerable<Vertex>
         {
             public readonly int UVIndex;
