@@ -14,7 +14,9 @@ using Newtonsoft.Json;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+#if AAO_VRCSDK3_AVATARS
 using VRC.Dynamics;
+#endif
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
