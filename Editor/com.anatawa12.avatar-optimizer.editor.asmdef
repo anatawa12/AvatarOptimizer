@@ -83,6 +83,11 @@
             "name": "net.nekobako.mask-texture-editor",
             "expression": "[1,2)",
             "define": "AAO_MASK_TEXTURE_EDITOR"
+        },
+        {
+            "name": "nadena.dev.ndmf",
+            "expression": "1.13.0",
+            "define": "AAO_NDMF_1_13_0"
         }
     ],
     "noEngineReferences": false
