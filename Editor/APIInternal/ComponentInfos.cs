@@ -327,7 +327,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             collector.TransformPositionAndRotation(component.transform);
         }
     }
-#if !UNITY_6000_6_OR_NEWER
+#if !UNITY_6000_5_OR_NEWER
     [ComponentInformation(typeof(FlareLayer))]
     internal class FlareLayerInformation : ComponentInformation<FlareLayer>
     {

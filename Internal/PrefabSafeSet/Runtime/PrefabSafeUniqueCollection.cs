@@ -66,13 +66,7 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 
         static PSUCRuntimeUtil()
         {
-            foreach (var assembly in
-#if UNITY_6000_6_OR_NEWER
-           UnityEngine.Assemblies.CurrentAssemblies.GetLoadedAssemblies()
-#else
-            AppDomain.CurrentDomain.GetAssemblies()
-#endif
-            )
+            foreach (var assembly in AssemblyCollector.GetAssemblies())
             {
                 OnBeforeSerializeImplType =
                     assembly.GetType(

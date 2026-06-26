@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using Anatawa12.AvatarOptimizer.APIInternal.Externals;
 using UnityEditor;
@@ -14,14 +15,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         [InitializeOnLoadMethod]
         static void FindAllInfoImplements()
         {
-            foreach (var assembly in
-#if UNITY_6000_6_OR_NEWER
-                UnityEngine.Assemblies.CurrentAssemblies.GetLoadedAssemblies()
-#else
-                AppDomain.CurrentDomain.GetAssemblies()
-#endif
-            )
-            try {
+            foreach (var assembly in AssemblyCollector.GetAssemblies())
                 foreach (var type in assembly.GetTypes())
                 foreach (ComponentInformationAttributeBase attribute in type.GetCustomAttributes(
                                 typeof(ComponentInformationAttributeBase), false))
@@ -43,7 +37,6 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
                         }
                     }
                 }
-            } catch (ReflectionTypeLoadException) { }
         }
 
         [InitializeOnLoadMethod]

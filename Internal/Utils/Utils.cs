@@ -163,11 +163,7 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         public static Type? GetTypeFromName(string name) =>
-#if UNITY_6000_6_OR_NEWER
-           UnityEngine.Assemblies.CurrentAssemblies.GetLoadedAssemblies()
-#else
-            AppDomain.CurrentDomain.GetAssemblies()
-#endif
+            AssemblyCollector.GetAssemblies()
             .Select(assembly => assembly.GetType(name))
                 .FirstOrDefault(type => !(type == null));
 
