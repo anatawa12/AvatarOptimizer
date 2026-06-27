@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Multiple groups in MergeMaterial is not working `#1754`
 
 ### Security
 
