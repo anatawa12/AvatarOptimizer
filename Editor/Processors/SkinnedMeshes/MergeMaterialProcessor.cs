@@ -189,7 +189,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
                 if (validatedInfo != null)
                 {
                     validatedSettings.Add(validatedInfo);
-                    break;
+                    continue;
                 }
             }
 
