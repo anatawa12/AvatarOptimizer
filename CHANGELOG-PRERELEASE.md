@@ -10,7 +10,18 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Replaced logic for estimating Texture usage `#1753`
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.9.16-beta.1] - 2026-06-27
+### Changed
+- Replaced logic for estimating Texture usage [`#1753`](https://github.com/anatawa12/AvatarOptimizer/pull/1753)
   - Previously, we used to use VRCSDK to estimate texture usage, but we wrote new our own logic instead.
   - This should fix the following problems
     - Render Textures are not included
@@ -19,14 +30,8 @@ The format is based on [Keep a Changelog].
 
 - Update Simplified Chinese localization [`#1752`](https://github.com/anatawa12/AvatarOptimizer/pull/1752)
 
-### Deprecated
-
-### Removed
-
 ### Fixed
-- Multiple groups in MergeMaterial is not working `#1754`
-
-### Security
+- Multiple groups in MergeMaterial is not working [`#1754`](https://github.com/anatawa12/AvatarOptimizer/pull/1754)
 
 ## [1.9.15] - 2026-06-24
 ## [1.9.15-beta.2] - 2026-06-21
@@ -2306,7 +2311,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.15...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.16-beta.1...HEAD
+[1.9.16-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.15...v1.9.16-beta.1
 [1.9.15]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.15-beta.2...v1.9.15
 [1.9.15-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.15-beta.1...v1.9.15-beta.2
 [1.9.15-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.14...v1.9.15-beta.1
