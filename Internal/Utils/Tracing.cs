@@ -54,6 +54,7 @@ public enum TracingArea : uint
     TraceAndOptimizeDecision = 8,
     OptimizeTexture = 16,
     Assertions = 32,
+    OptimizationMetrics = 64,
     None = 0,
     All = uint.MaxValue,
 }

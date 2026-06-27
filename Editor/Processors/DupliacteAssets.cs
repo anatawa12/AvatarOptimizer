@@ -149,7 +149,7 @@ internal class DupliacteAssets : Pass<DupliacteAssets>
         }
     }
 
-    static class MaterialEditorReflection
+    internal static class MaterialEditorReflection
     {
         static MaterialEditorReflection()
         {

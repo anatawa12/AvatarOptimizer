@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Replaced logic for estimating Texture usage `#1753`
+  - Previously, we used to use VRCSDK to estimate texture usage, but we wrote new our own logic instead.
+  - This should fix the following problems
+    - Render Textures are not included
+    - CubeMaps are calculated to one-sixth of the actual size
+    - Some properties are not included
 
 - Update Simplified Chinese localization [`#1752`](https://github.com/anatawa12/AvatarOptimizer/pull/1752)
 
