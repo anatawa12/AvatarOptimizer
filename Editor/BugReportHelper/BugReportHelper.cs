@@ -833,14 +833,18 @@ internal class BugReportHelper : EditorWindow
                 {
                     if (texture == null) return "<NoneOrMissing>";
                     var builder = new StringBuilder();
+                    builder.Append("type: ").Append(texture.GetType().Name).Append(", ");
                     builder.Append("instance: ").Append(texture.GetInstanceID()).Append(", ");
                     builder.Append("name: '").Append(texture.name).Append("', ");
                     builder.Append("format: ").Append(texture.graphicsFormat).Append(", ");
                     builder.Append("dimension: ").Append(texture.dimension).Append(", ");
+                    builder.Append("mipmapCount: ").Append(texture.mipmapCount).Append(", ");
                     builder.Append("width: ").Append(texture.width).Append(", ");
                     builder.Append("height: ").Append(texture.height).Append(", ");
                     if (texture is Texture3D texture3D)
                         builder.Append("depth: ").Append(texture3D.depth).Append(", ");
+                    if (texture is Texture2DArray texture2DArray)
+                        builder.Append("depth: ").Append(texture2DArray.depth).Append(", ");
                     return builder.ToString();
                 }
 
