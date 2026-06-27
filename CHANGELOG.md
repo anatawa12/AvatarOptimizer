@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Replaced logic for estimating Texture usage `#1753`
+- Replaced logic for estimating Texture usage `#1753` `#1755`
   - Previously, we used to use VRCSDK to estimate texture usage, but we wrote new our own logic instead.
   - This should fix the following problems
     - Render Textures are not included
