@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog].
 
 ### Changed
 
+- Update Simplified Chinese localization [`#1752`](https://github.com/anatawa12/AvatarOptimizer/pull/1752)
+
 ### Deprecated
 
 ### Removed
