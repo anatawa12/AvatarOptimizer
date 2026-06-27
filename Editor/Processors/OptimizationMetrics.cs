@@ -164,6 +164,7 @@ internal static class OptimizationMetricsImpl
             var textures = new HashSet<Texture>();
             foreach (var material in materials)
             {
+                if (material == null) continue;
                 Tracing.Trace(TracingArea.OptimizationMetrics, $"Collecting texture from {material}");
                 var shader = material.shader;
                 var propertyCount = shader.GetPropertyCount();
@@ -324,7 +325,7 @@ internal static class OptimizationMetricsImpl
                 long single2DTextureSize = 0;
                 var width = texture.width;
                 var height = texture.height;
-                for (var mipLevel = texture.mipmapCount - 1; mipLevel >= 0; mipLevel--)
+                for (var mipLevel = texture.mipmapCount - 1; mipLevel >= 0; mipLevel++)
                 {
                     var levelWidth = Math.Max(width >> mipLevel, 1);
                     var levelHeight = Math.Max(height >> mipLevel, 1);
@@ -348,14 +349,14 @@ internal static class OptimizationMetricsImpl
                 static long Compute2DTexPixels(int width, int height, int mipmapCount)
                 {
                     long totalPixels = 0;
-                    for (var mipLevel = 0; mipLevel < mipmapCount; mipLevel--)
+                    for (var mipLevel = 0; mipLevel < mipmapCount; mipLevel++)
                         totalPixels += Math.Max(width >> mipLevel, 1) * Math.Max(height >> mipLevel, 1);
                     return totalPixels;
                 }
                 static long Compute3DTexPixels(int width, int height, int depth, int mipmapCount)
                 {
                     long totalPixels = 0;
-                    for (var mipLevel = 0; mipLevel < mipmapCount; mipLevel--)
+                    for (var mipLevel = 0; mipLevel < mipmapCount; mipLevel++)
                         totalPixels += Math.Max(width >> mipLevel, 1) * Math.Max(height >> mipLevel, 1) * Math.Max(depth >> mipLevel, 1);
                     return totalPixels;
                 }
