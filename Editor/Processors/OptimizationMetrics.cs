@@ -325,7 +325,7 @@ internal static class OptimizationMetricsImpl
                 long single2DTextureSize = 0;
                 var width = texture.width;
                 var height = texture.height;
-                for (var mipLevel = texture.mipmapCount - 1; mipLevel >= 0; mipLevel++)
+                for (var mipLevel = 0; mipLevel < texture.mipmapCount; mipLevel++)
                 {
                     var levelWidth = Math.Max(width >> mipLevel, 1);
                     var levelHeight = Math.Max(height >> mipLevel, 1);
