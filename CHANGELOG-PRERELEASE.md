@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Metrics broken and too long loop `#1755`
 
 ### Security
+
+## [1.9.16-beta.2] - 2026-06-27
+### Fixed
+- Metrics broken and too long loop [`#1755`](https://github.com/anatawa12/AvatarOptimizer/pull/1755)
 
 ## [1.9.16-beta.1] - 2026-06-27
 ### Changed
@@ -2312,7 +2315,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.16-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.16-beta.2...HEAD
+[1.9.16-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.16-beta.1...v1.9.16-beta.2
 [1.9.16-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.15...v1.9.16-beta.1
 [1.9.15]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.15-beta.2...v1.9.15
 [1.9.15-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.15-beta.1...v1.9.15-beta.2
