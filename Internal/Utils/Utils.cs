@@ -163,7 +163,8 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         public static Type? GetTypeFromName(string name) =>
-            AppDomain.CurrentDomain.GetAssemblies().Select(assembly => assembly.GetType(name))
+            AssemblyCollector.GetAssemblies()
+            .Select(assembly => assembly.GetType(name))
                 .FirstOrDefault(type => !(type == null));
 
         public static T? DistinctSingleOrDefaultIfNoneOrMultiple<T>(this IEnumerable<T> enumerable)

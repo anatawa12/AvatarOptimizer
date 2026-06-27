@@ -17,7 +17,9 @@ using Newtonsoft.Json.Serialization;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+#if AAO_VRCSDK3_AVATARS
 using VRC.Dynamics;
+#endif
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
@@ -753,7 +755,7 @@ internal class BugReportHelper : EditorWindow
                             var sharedMaterial = subMesh.SharedMaterials[j];
                             if (sharedMaterial != null)
                             {
-                                builder.AppendLine($"          sharedMaterials[{j}]: {sharedMaterial.name} ({sharedMaterial.shader.name}) ({sharedMaterial.GetInstanceID()})");
+                                builder.AppendLine($"          sharedMaterials[{j}]: {sharedMaterial.name} ({sharedMaterial.shader.name}) ({sharedMaterial.GetEntityId().ToString()})");
                                 MaterialInfo(sharedMaterial, "            ");
                             }
                             else
@@ -779,7 +781,7 @@ internal class BugReportHelper : EditorWindow
                         var sharedMaterial = renderer.sharedMaterials[i];
                         if (sharedMaterial != null)
                         {
-                            builder.AppendLine($"      sharedMaterials[{i}]: {sharedMaterial.name} ({sharedMaterial.shader.name}) ({sharedMaterial.GetInstanceID()})");
+                            builder.AppendLine($"      sharedMaterials[{i}]: {sharedMaterial.name} ({sharedMaterial.shader.name}) ({sharedMaterial.GetEntityId().ToString()})");
                             MaterialInfo(sharedMaterial, "        ");
                         }
                         else
@@ -833,7 +835,7 @@ internal class BugReportHelper : EditorWindow
                 {
                     if (texture == null) return "<NoneOrMissing>";
                     var builder = new StringBuilder();
-                    builder.Append("instance: ").Append(texture.GetInstanceID()).Append(", ");
+                    builder.Append("instance: ").Append(texture.GetEntityId().ToString()).Append(", ");
                     builder.Append("name: '").Append(texture.name).Append("', ");
                     builder.Append("format: ").Append(texture.graphicsFormat).Append(", ");
                     builder.Append("dimension: ").Append(texture.dimension).Append(", ");
@@ -1112,7 +1114,7 @@ internal class BugReportHelper : EditorWindow
         {
             var clip = grouping.Key;
 
-            builder.Append($"  {clip.name}: ({clip.GetInstanceID()}) (Used in:");
+            builder.Append($"  {clip.name}: ({clip.GetEntityId()}) (Used in:");
             foreach (var state in grouping.Select(x => x.state))
                 builder.Append($" {state.name}");
             builder.AppendLine(")");

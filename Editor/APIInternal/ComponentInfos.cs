@@ -327,7 +327,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             collector.TransformPositionAndRotation(component.transform);
         }
     }
-
+#if !UNITY_6000_5_OR_NEWER
     [ComponentInformation(typeof(FlareLayer))]
     internal class FlareLayerInformation : ComponentInformation<FlareLayer>
     {
@@ -336,7 +336,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             collector.AddDependency(component.GetComponent<Camera>(), component);
         }
     }
-
+#endif
     internal class ConstraintInformation<T> : ComponentInformation<T> where T : Component, IConstraint
     {
         protected override void CollectDependency(T component, ComponentDependencyCollector collector)

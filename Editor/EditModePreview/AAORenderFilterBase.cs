@@ -54,7 +54,13 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 #pragma warning disable CS0618 // Type or member is obsolete
             return componentsByRenderer
                 .Where(x => SupportsMultiple() ? x.Value.Count >= 1 : x.Value.Count == 1)
-                .Select(pair => RenderGroup.For(pair.Key).WithData(pair.Value.ToArray()))
+                .Select(pair => RenderGroup.For(pair.Key)
+#if AAO_NDMF_1_13_0
+                .WithData(pair.Value.ToArray(), (l, r) => l.SequenceEqual(r))
+#else
+                .WithData(pair.Value.ToArray())
+#endif
+                )
                 .ToImmutableList();
 #pragma warning restore CS0618 // Type or member is obsolete
         }

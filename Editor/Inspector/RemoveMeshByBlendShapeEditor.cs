@@ -87,7 +87,7 @@ namespace Anatawa12.AvatarOptimizer
                         element.SetExistence(existence);
                         if (automaticallySetWeightWhenToggle && _renderer != null)
                         {
-                            var shapeIndex = _renderer.sharedMesh.GetBlendShapeIndex(shapeKeyName);
+                            var shapeIndex = _renderer.sharedMesh!.GetBlendShapeIndex(shapeKeyName);
                             if (shapeIndex != -1)
                             {
                                 using (var serializedRenderer = new SerializedObject(_renderer))
