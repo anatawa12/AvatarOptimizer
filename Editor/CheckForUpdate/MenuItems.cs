@@ -13,7 +13,7 @@ namespace Anatawa12.AvatarOptimizer.CheckForUpdate
         public static bool CheckForUpdateEnabled
         {
             get => EditorPrefs.GetBool(ToggleSettingName, true);
-            private set => EditorPrefs.SetBool(ToggleSettingName, value);
+            set => EditorPrefs.SetBool(ToggleSettingName, value);
         }
 
         public static bool ForceBetaChannel
