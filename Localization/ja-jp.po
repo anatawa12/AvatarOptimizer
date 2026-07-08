@@ -10,8 +10,7 @@ msgstr "AAOによる最適化結果:\n{0}"
 
 msgid "OptimizationMetrics:Results:description"
 msgstr ""
-"一部の数字はAvatar Optimizerが独自に計算しています。\n"
-"そのため、VRChat SDKやクライアントで表示される数値と違うことがあります。\n"
+"一部の値はAvatar Optimizerが独自に計算しており、VRChat SDKやクライアント上で表示されるものと異なる場合があります。\n"
 "\n"
 "このログの出力は、上部メニューの'Tools/Avatar Optimizer/Optimization Metrics'から無効化できます。"
 
