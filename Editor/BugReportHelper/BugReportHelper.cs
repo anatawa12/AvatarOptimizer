@@ -258,6 +258,18 @@ internal class BugReportHelper : EditorWindow
             var postBuildAvatarInfo = CollectAvatarInfo(clonedAvatar);
             reportFile.AddFile("AvatarInfo.PostBuild.tree.txt", postBuildAvatarInfo);
 
+            {
+                var context = new BuildContext(clonedAvatar, null);
+                clonedAvatar.AddComponent<DummyAvatarTagComponent>();
+                context.GetState<ndmf.AAOEnabled>().Enabled = true;
+                context.ActivateExtensionContext<MeshInfo2Context>();
+                context.ActivateExtensionContext<DestroyTracker.ExtensionContext>();
+                context.ActivateExtensionContext<ObjectMappingContext>();
+                context.ActivateExtensionContext<GCComponentInfoContext>();
+                var postBuildGcDebug = GCDebugPass.GcDebugInfo(context);
+                reportFile.AddFile("GCDebug.PostBuild.tree.txt", postBuildGcDebug);
+            }
+
             reportFile.AddFile("AnimatorParser.PostBuild.tree.txt", 
                 AnimatorParserDebugWindow.CreateText(
                     new AnimatorParser(true)
@@ -275,6 +287,8 @@ internal class BugReportHelper : EditorWindow
             EditorUtility.ClearProgressBar();
         }
     }
+
+    class DummyAvatarTagComponent : AvatarTagComponent {}
 
     private static string CollectNdmfPlugins()
     {
