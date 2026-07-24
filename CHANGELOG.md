@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Bug Report Helper errors with no AAO components in avatar `#1757`
 
 ### Security
 
