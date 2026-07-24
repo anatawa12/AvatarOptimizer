@@ -865,6 +865,10 @@ internal class BugReportHelper : EditorWindow
 #if AAO_VRCSDK3_AVATARS
                 void VRCConstraint<T>(T constraint) where T : VRC.Dynamics.VRCConstraintBase
                 {
+                    builder.AppendLine($"    Target: {constraint.TargetTransform}");
+                    builder.AppendLine($"    SolveInLocalSpace: {constraint.SolveInLocalSpace}");
+                    builder.AppendLine($"    FreezeToWorld: {constraint.FreezeToWorld}");
+                    builder.AppendLine($"    RebakeOffsetsWhenUnfrozen: {constraint.RebakeOffsetsWhenUnfrozen}");
                     builder.AppendLine($"    IsActive: {constraint.IsActive}");
                     builder.AppendLine($"    GlobalWeight: {constraint.GlobalWeight}");
                     builder.AppendLine($"    Locked: {constraint.Locked}");
