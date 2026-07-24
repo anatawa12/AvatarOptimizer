@@ -258,6 +258,18 @@ internal class BugReportHelper : EditorWindow
             var postBuildAvatarInfo = CollectAvatarInfo(clonedAvatar);
             reportFile.AddFile("AvatarInfo.PostBuild.tree.txt", postBuildAvatarInfo);
 
+            {
+                var context = new BuildContext(clonedAvatar, null);
+                clonedAvatar.AddComponent<DummyAvatarTagComponent>();
+                context.GetState<ndmf.AAOEnabled>().Enabled = true;
+                context.ActivateExtensionContext<MeshInfo2Context>();
+                context.ActivateExtensionContext<DestroyTracker.ExtensionContext>();
+                context.ActivateExtensionContext<ObjectMappingContext>();
+                context.ActivateExtensionContext<GCComponentInfoContext>();
+                var postBuildGcDebug = GCDebugPass.GcDebugInfo(context);
+                reportFile.AddFile("GCDebug.PostBuild.tree.txt", postBuildGcDebug);
+            }
+
             reportFile.AddFile("AnimatorParser.PostBuild.tree.txt", 
                 AnimatorParserDebugWindow.CreateText(
                     new AnimatorParser(true)
@@ -275,6 +287,8 @@ internal class BugReportHelper : EditorWindow
             EditorUtility.ClearProgressBar();
         }
     }
+
+    class DummyAvatarTagComponent : AvatarTagComponent {}
 
     private static string CollectNdmfPlugins()
     {
@@ -865,6 +879,10 @@ internal class BugReportHelper : EditorWindow
 #if AAO_VRCSDK3_AVATARS
                 void VRCConstraint<T>(T constraint) where T : VRC.Dynamics.VRCConstraintBase
                 {
+                    builder.AppendLine($"    Target: {constraint.TargetTransform}");
+                    builder.AppendLine($"    SolveInLocalSpace: {constraint.SolveInLocalSpace}");
+                    builder.AppendLine($"    FreezeToWorld: {constraint.FreezeToWorld}");
+                    builder.AppendLine($"    RebakeOffsetsWhenUnfrozen: {constraint.RebakeOffsetsWhenUnfrozen}");
                     builder.AppendLine($"    IsActive: {constraint.IsActive}");
                     builder.AppendLine($"    GlobalWeight: {constraint.GlobalWeight}");
                     builder.AppendLine($"    Locked: {constraint.Locked}");
