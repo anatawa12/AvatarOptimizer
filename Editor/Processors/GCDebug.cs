@@ -34,7 +34,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 AddGCDebugInfo(context);
             }
 
-            if (BugReportHelper.Context.Current is { } reportCtx)
+            if (context.GetState<ndmf.AAOEnabled>().Enabled && BugReportHelper.Context.Current is { } reportCtx)
             {
                 if (_position == InternalGcDebugPosition.AtTheBeginning)
                     reportCtx.AddTraceAndOptimizeStateReport(context);
