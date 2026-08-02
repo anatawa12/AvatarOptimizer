@@ -1,12 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg 
-        version="1.1"
-        xmlns="http://www.w3.org/2000/svg" 
-        viewBox="0 0 1024 1024"
-        xmlns:xlink="http://www.w3.org/1999/xlink"
-        xml:space="default"
->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
     <!-- Background -->
     <rect width="1024" height="1024" fill="rgb(45,45,45)"/>
     <!-- Two Black lines -->
@@ -17,10 +9,10 @@
     </g>
     <!-- Main text -->
     <g>
-        <text text-anchor="middle" x="0" y="410.704897737px" class="genzyu-medium">
-            <tspan style="font-size:93.75pt; fill:white;" x="512" dy="0pt">Avatar Optimizer</tspan>
-            <tspan style="font-size:87.5pt;" x="512" dy="150pt">簡単軽量化</tspan>
-            <tspan style="font-size:87.5pt;" x="512" dy="87.5pt">アバターツール</tspan>
+        <text text-anchor="middle" x="0" y="410" class="genzyu-medium">
+            <tspan style="font-size:125px; fill:white;" x="512" dy="0">Avatar Optimizer</tspan>
+            <tspan style="font-size:117px;" x="512" dy="200">簡単軽量化</tspan>
+            <tspan style="font-size:117px;" x="512" dy="117">アバターツール</tspan>
         </text>
     </g>
     <!-- Bottom -->
@@ -29,26 +21,26 @@
             Poor/Very Poor <tspan style="font-size:37.5px;">から </tspan>Good/Medium <tspan style="font-size:37.5px;">へ</tspan>
         </text>
 
-        <image x="261.32585" y="892.134114" width="128px" height="128px" xlink:href="./external-assets/very-poor.png"/>
-        <image x="120.6517" y="892.134114" width="128px" height="128px" xlink:href="./external-assets/poor.png"/>
-        <image x="634.67415" y="892.134114" width="128px" height="128px" xlink:href="./external-assets/good.png"/>
-        <image x="775.3483" y="892.134114" width="128px" height="128px" xlink:href="./external-assets/medium.png"/>
+        <image x="120" y="892" width="128px" height="128px" href="./external-assets/poor.png"/>
+        <image x="261" y="892" width="128px" height="128px" href="./external-assets/very-poor.png"/>
+        <image x="635" y="892" width="128px" height="128px" href="./external-assets/good.png"/>
+        <image x="776" y="892" width="128px" height="128px" href="./external-assets/medium.png"/>
         <path style="fill:rgb(0,144,205);" d="
-            M402, 941.08433745
-            L579, 941.08433745
-            L579, 913.134329
-            L622, 956.134342
-            L579, 999.134355
-            L579, 971.18434655
-            L402, 971.18434655
+            M402, 941
+            L579, 941
+            L579, 913
+            L622, 956
+            L579, 999
+            L579, 971
+            L402, 971
             Z
         "/>
     </g>
     <!-- Top -->
     <g>
-        <image x="256.106942" y="26.517904" width="281.518963px" height="78.283348px" xlink:href="./external-assets/modular-avatar.png"/>
-        <text class="anchor-start genzyu-bold" x="544.881286" y="96.275395" style="font-size:56.666724996px;fill:white;">併用可能</text>
-        <text x="512" y="172.45" class="genzyu-medium" style="font-size:56.667px;">無料ツール</text>
+        <image x="256" y="26" width="281px" height="78px" href="./external-assets/modular-avatar.png"/>
+        <text class="anchor-start genzyu-bold" x="545" y="96" style="font-size:57px;fill:white;">併用可能</text>
+        <text x="512" y="172" class="genzyu-medium" style="font-size:57px;">無料ツール</text>
     </g>
     <style>
         text {

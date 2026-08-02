@@ -1,18 +1,10 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg 
-        version="1.1"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 1424 1424"
-        xmlns:xlink="http://www.w3.org/1999/xlink"
-        xml:space="default"
->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1424 1424">
     <g>
         <clipPath id="clip-before">
             <rect width="712" height="1424"/>
         </clipPath>
         <g clip-path="url(#clip-before)">
-            <image preserveAspectRatio="none" x="-46" y="-38" width="804" height="1584" xlink:href="thumbnail-2-before.png"/>
+            <image x="-46" y="-38" width="804" href="thumbnail-2-before.png"/>
         </g>
     </g>
     <g transform="translate(712)">
@@ -20,20 +12,19 @@
             <rect width="712" height="1424"/>
         </clipPath>
         <g clip-path="url(#clip-after)">
-            <image preserveAspectRatio="none" x="-46" y="-38" width="804" height="1584" xlink:href="thumbnail-2-after.png"/>
+            <image x="-46" y="-38" width="804" href="thumbnail-2-after.png"/>
         </g>
     </g>
-    <path d="
-        M513.00,1264.75
-        L513.00,1397.00
-        L513.00,0990.00
-        L513.00,1122.25
-        L624.42,1122.25
-        L624.42,0990.00
-        L712.00,1193.50
-        L624.42,1397.00
-        L624.42,1264.75
-        Z" 
-          style="fill:rgb(86,201,66);"
-    />
+    <path style="fill:rgb(86,201,66);" d="
+        M513,1264
+        L513,1397
+        L513,0990
+        L513,1122
+        L624,1122
+        L624,0990
+        L712,1193
+        L624,1397
+        L624,1264
+        Z
+    "/>
 </svg>
