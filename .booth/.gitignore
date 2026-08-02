@@ -2,3 +2,4 @@
 *.unitypackage
 *.zip
 LICENSE.txt
+tmp/

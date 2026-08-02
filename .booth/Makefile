@@ -1,7 +1,10 @@
 
 all: thumbnail assets
 
-%.svg.png: %.svg
+export PANGOCAIRO_BACKEND:=fontconfig
+export FONTCONFIG_FILE:=$(CURDIR)/fonts.conf
+
+%.svg.png: %.svg $(FONTCONFIG_FILE) GenJyuuGothic/GenJyuuGothic-Bold.ttf GenJyuuGothic/GenJyuuGothic-Medium.ttf
 	rsvg-convert $< > $@
 
 thumbnail-1.svg.png: external-assets/poor.png external-assets/very-poor.png external-assets/good.png external-assets/medium.png external-assets/modular-avatar.png
