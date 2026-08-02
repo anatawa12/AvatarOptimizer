@@ -21,10 +21,10 @@
             Poor/Very Poor <tspan style="font-size:37.5px;">から </tspan>Good/Medium <tspan style="font-size:37.5px;">へ</tspan>
         </text>
 
-        <image x="120" y="892" width="128px" height="128px" href="./external-assets/poor.png"/>
-        <image x="261" y="892" width="128px" height="128px" href="./external-assets/very-poor.png"/>
-        <image x="635" y="892" width="128px" height="128px" href="./external-assets/good.png"/>
-        <image x="776" y="892" width="128px" height="128px" href="./external-assets/medium.png"/>
+        <image x="120" y="892" width="128px" height="128px" href="./tmp/sdk-poor.png"/>
+        <image x="261" y="892" width="128px" height="128px" href="./tmp/sdk-very-poor.png"/>
+        <image x="635" y="892" width="128px" height="128px" href="./tmp/sdk-good.png"/>
+        <image x="776" y="892" width="128px" height="128px" href="./tmp/sdk-medium.png"/>
         <path style="fill:rgb(0,144,205);" d="
             M402, 941
             L579, 941
