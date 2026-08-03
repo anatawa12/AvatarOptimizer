@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Compatibility with [Tide of Alba](https://8ya.booth.pm/items/8618883) `#1761`
+- Automatic Replace EndBone with Endpoint Position breaks PhysBone when bone is at (0, 0, 0) `#1761`
 
 ### Security
 

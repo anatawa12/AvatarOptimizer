@@ -104,6 +104,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
                     throw new InvalidOperationException($"Invalid kind: {replacer.kind}");
             }
 
+            // Flattening zero position not supported
+            if (replacementPosition == Vector3.zero) return false;
+
             return leafBones.All(ValidateLeafBone);
 
             bool ValidatePhysBone(VRCPhysBoneBase physbone, HashSet<Transform> leafBones)
