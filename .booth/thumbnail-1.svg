@@ -9,9 +9,9 @@
     </g>
     <!-- Main text -->
     <g>
-        <text text-anchor="middle" x="0" y="410" class="genzyu-medium">
-            <tspan style="font-size:125px; fill:white;" x="512" dy="0">Avatar Optimizer</tspan>
-            <tspan style="font-size:117px;" x="512" dy="200">簡単軽量化</tspan>
+        <text text-anchor="middle" x="0" y="400" class="genzyu-medium">
+            <tspan style="font-size: 93px; fill:white;" x="512" dy="0">AAO: Avatar Optimizer</tspan>
+            <tspan style="font-size:117px;" x="512" dy="200">簡単最適化</tspan>
             <tspan style="font-size:117px;" x="512" dy="117">アバターツール</tspan>
         </text>
     </g>
