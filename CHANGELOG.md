@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Bug Report Helper errors with no AAO components in avatar `#1757`
+- Compatibility with [Tide of Alba](https://8ya.booth.pm/items/8618883) `#1761`
 
 ### Security
 

@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Compatibility with [Tide of Alba](https://8ya.booth.pm/items/8618883) `#1761`
 
 ### Security
 
