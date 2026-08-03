@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Compatibility with [Tide of Alba](https://8ya.booth.pm/items/8618883) `#1761`
-- Automatic Replace EndBone with Endpoint Position breaks PhysBone when bone is at (0, 0, 0) `#1761`
 
 ### Security
+
+## [1.9.17-beta.2] - 2026-08-03
+### Fixed
+- Compatibility with [Tide of Alba](https://8ya.booth.pm/items/8618883) [`#1761`](https://github.com/anatawa12/AvatarOptimizer/pull/1761)
+- Automatic Replace EndBone with Endpoint Position breaks PhysBone when bone is at (0, 0, 0) [`#1761`](https://github.com/anatawa12/AvatarOptimizer/pull/1761)
 
 ## [1.9.17-beta.1] - 2026-07-24
 ### Fixed
@@ -2322,7 +2325,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.17-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.17-beta.2...HEAD
+[1.9.17-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.17-beta.1...v1.9.17-beta.2
 [1.9.17-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.16...v1.9.17-beta.1
 [1.9.16]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.16-beta.2...v1.9.16
 [1.9.16-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.16-beta.1...v1.9.16-beta.2
