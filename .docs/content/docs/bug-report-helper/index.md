@@ -51,6 +51,11 @@ When you provide a bug report to us, please attach the file or upload to some fi
 
 ![Window Screenshot](./window.png)
 
+### Additional helpful information to include when reporting a bug {#additional-helpful-information}
+
+While Bug Report Helper can collect information about your avatar, it can't describe the unexpected behavior you're seeing.\
+To help our investigation, please include videos or screenshots showing both the expected behavior and the behavior when Avatar Optimizer is enabled.
+
 ## Report Contents {#report-contents}
 
 The bug report contains the following information (non-exhaustive):
