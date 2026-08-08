@@ -1,4 +1,4 @@
-Avatar Optimizer
+AAO: Avatar Optimizer
 ====
 
 [![GitHub release][shields-latest-release]][github-latest]
