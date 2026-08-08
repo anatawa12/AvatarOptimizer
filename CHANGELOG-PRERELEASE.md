@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.9.17] - 2026-08-08
 ## [1.9.17-beta.2] - 2026-08-03
 ### Fixed
 - Compatibility with [Tide of Alba](https://8ya.booth.pm/items/8618883) [`#1761`](https://github.com/anatawa12/AvatarOptimizer/pull/1761)
@@ -2325,7 +2326,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.17-beta.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.17...HEAD
+[1.9.17]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.17-beta.2...v1.9.17
 [1.9.17-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.17-beta.1...v1.9.17-beta.2
 [1.9.17-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.16...v1.9.17-beta.1
 [1.9.16]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.16-beta.2...v1.9.16

@@ -16,11 +16,14 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Bug Report Helper errors with no AAO components in avatar `#1757`
-- Compatibility with [Tide of Alba](https://8ya.booth.pm/items/8618883) `#1761`
-- Automatic Replace EndBone with Endpoint Position breaks PhysBone when bone is at (0, 0, 0) `#1761`
 
 ### Security
+
+## [1.9.17] - 2026-08-08
+### Fixed
+- Bug Report Helper errors with no AAO components in avatar [`#1757`](https://github.com/anatawa12/AvatarOptimizer/pull/1757)
+- Compatibility with [Tide of Alba](https://8ya.booth.pm/items/8618883) [`#1761`](https://github.com/anatawa12/AvatarOptimizer/pull/1761)
+- Automatic Replace EndBone with Endpoint Position breaks PhysBone when bone is at (0, 0, 0) [`#1761`](https://github.com/anatawa12/AvatarOptimizer/pull/1761)
 
 ## [1.9.16] - 2026-07-13
 ### Changed
@@ -1512,7 +1515,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.16...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.17...HEAD
+[1.9.17]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.16...v1.9.17
 [1.9.16]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.15...v1.9.16
 [1.9.15]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.14...v1.9.15
 [1.9.14]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.13...v1.9.14
