@@ -41,6 +41,7 @@ jobs:
             https://vpm.nadena.dev/vpm-prerelease.json
 
       - uses: actions/cache@v4
+        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         with:
           path: Library
           key: Library-${{ matrix.unity }}
