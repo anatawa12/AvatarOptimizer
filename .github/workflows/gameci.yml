@@ -8,8 +8,7 @@ on:
   workflow_dispatch: {}
 
 permissions:
-  checks: read
-
+  contents: read
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -41,7 +40,7 @@ jobs:
             https://vpm.nadena.dev/vpm-prerelease.json
 
       - uses: actions/cache@v4
-        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+        if: ${{ github.event_name != 'pull_request_target' || github.event.pull_request.head.repo.full_name == github.repository }}
         with:
           path: Library
           key: Library-${{ matrix.unity }}
