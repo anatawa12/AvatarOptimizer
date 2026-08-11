@@ -1,0 +1,5 @@
+*.svg.png
+*.unitypackage
+*.zip
+LICENSE.txt
+tmp/

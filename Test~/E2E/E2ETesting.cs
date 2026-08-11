@@ -23,9 +23,6 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
     // If the test does not have issue, use PR number that fixes the error and add comment with link to the PR.
     public class E2ETesting
     {
-        [OneTimeSetUp]
-        public void SetupAddFormatter() => TestUtils.AddValueFormatters();
-
         #region Issue or Regression Testing
 
         [Test]

@@ -19,6 +19,35 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.9.17] - 2026-08-08
+## [1.9.17-beta.2] - 2026-08-03
+### Fixed
+- Compatibility with [Tide of Alba](https://8ya.booth.pm/items/8618883) [`#1761`](https://github.com/anatawa12/AvatarOptimizer/pull/1761)
+- Automatic Replace EndBone with Endpoint Position breaks PhysBone when bone is at (0, 0, 0) [`#1761`](https://github.com/anatawa12/AvatarOptimizer/pull/1761)
+
+## [1.9.17-beta.1] - 2026-07-24
+### Fixed
+- Bug Report Helper errors with no AAO components in avatar [`#1757`](https://github.com/anatawa12/AvatarOptimizer/pull/1757)
+
+## [1.9.16] - 2026-07-13
+## [1.9.16-beta.2] - 2026-06-27
+### Fixed
+- Metrics broken and too long loop [`#1755`](https://github.com/anatawa12/AvatarOptimizer/pull/1755)
+
+## [1.9.16-beta.1] - 2026-06-27
+### Changed
+- Replaced logic for estimating Texture usage [`#1753`](https://github.com/anatawa12/AvatarOptimizer/pull/1753)
+  - Previously, we used to use VRCSDK to estimate texture usage, but we wrote new our own logic instead.
+  - This should fix the following problems
+    - Render Textures are not included
+    - CubeMaps are calculated to one-sixth of the actual size
+    - Some properties are not included
+
+- Update Simplified Chinese localization [`#1752`](https://github.com/anatawa12/AvatarOptimizer/pull/1752)
+
+### Fixed
+- Multiple groups in MergeMaterial is not working [`#1754`](https://github.com/anatawa12/AvatarOptimizer/pull/1754)
+
 ## [1.9.15] - 2026-06-24
 ## [1.9.15-beta.2] - 2026-06-21
 ### Fixed
@@ -2297,7 +2326,13 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.15...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.17...HEAD
+[1.9.17]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.17-beta.2...v1.9.17
+[1.9.17-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.17-beta.1...v1.9.17-beta.2
+[1.9.17-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.16...v1.9.17-beta.1
+[1.9.16]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.16-beta.2...v1.9.16
+[1.9.16-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.16-beta.1...v1.9.16-beta.2
+[1.9.16-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.15...v1.9.16-beta.1
 [1.9.15]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.15-beta.2...v1.9.15
 [1.9.15-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.15-beta.1...v1.9.15-beta.2
 [1.9.15-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.14...v1.9.15-beta.1

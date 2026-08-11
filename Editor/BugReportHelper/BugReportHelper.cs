@@ -260,6 +260,18 @@ internal class BugReportHelper : EditorWindow
             var postBuildAvatarInfo = CollectAvatarInfo(clonedAvatar);
             reportFile.AddFile("AvatarInfo.PostBuild.tree.txt", postBuildAvatarInfo);
 
+            {
+                var context = new BuildContext(clonedAvatar, null);
+                clonedAvatar.AddComponent<DummyAvatarTagComponent>();
+                context.GetState<ndmf.AAOEnabled>().Enabled = true;
+                context.ActivateExtensionContext<MeshInfo2Context>();
+                context.ActivateExtensionContext<DestroyTracker.ExtensionContext>();
+                context.ActivateExtensionContext<ObjectMappingContext>();
+                context.ActivateExtensionContext<GCComponentInfoContext>();
+                var postBuildGcDebug = GCDebugPass.GcDebugInfo(context);
+                reportFile.AddFile("GCDebug.PostBuild.tree.txt", postBuildGcDebug);
+            }
+
             reportFile.AddFile("AnimatorParser.PostBuild.tree.txt", 
                 AnimatorParserDebugWindow.CreateText(
                     new AnimatorParser(true)
@@ -277,6 +289,8 @@ internal class BugReportHelper : EditorWindow
             EditorUtility.ClearProgressBar();
         }
     }
+
+    class DummyAvatarTagComponent : AvatarTagComponent {}
 
     private static string CollectNdmfPlugins()
     {
@@ -835,14 +849,18 @@ internal class BugReportHelper : EditorWindow
                 {
                     if (texture == null) return "<NoneOrMissing>";
                     var builder = new StringBuilder();
+                    builder.Append("type: ").Append(texture.GetType().Name).Append(", ");
                     builder.Append("instance: ").Append(texture.GetEntityId().ToString()).Append(", ");
                     builder.Append("name: '").Append(texture.name).Append("', ");
                     builder.Append("format: ").Append(texture.graphicsFormat).Append(", ");
                     builder.Append("dimension: ").Append(texture.dimension).Append(", ");
+                    builder.Append("mipmapCount: ").Append(texture.mipmapCount).Append(", ");
                     builder.Append("width: ").Append(texture.width).Append(", ");
                     builder.Append("height: ").Append(texture.height).Append(", ");
                     if (texture is Texture3D texture3D)
                         builder.Append("depth: ").Append(texture3D.depth).Append(", ");
+                    if (texture is Texture2DArray texture2DArray)
+                        builder.Append("depth: ").Append(texture2DArray.depth).Append(", ");
                     return builder.ToString();
                 }
 
@@ -863,6 +881,10 @@ internal class BugReportHelper : EditorWindow
 #if AAO_VRCSDK3_AVATARS
                 void VRCConstraint<T>(T constraint) where T : VRC.Dynamics.VRCConstraintBase
                 {
+                    builder.AppendLine($"    Target: {constraint.TargetTransform}");
+                    builder.AppendLine($"    SolveInLocalSpace: {constraint.SolveInLocalSpace}");
+                    builder.AppendLine($"    FreezeToWorld: {constraint.FreezeToWorld}");
+                    builder.AppendLine($"    RebakeOffsetsWhenUnfrozen: {constraint.RebakeOffsetsWhenUnfrozen}");
                     builder.AppendLine($"    IsActive: {constraint.IsActive}");
                     builder.AppendLine($"    GlobalWeight: {constraint.GlobalWeight}");
                     builder.AppendLine($"    Locked: {constraint.Locked}");

@@ -137,5 +137,12 @@ namespace Anatawa12.AvatarOptimizer
                     "OK");
             }
         }
+
+        
+        [MenuItem(BASE_PATH + "Open Bug Report Helper", true, PRIORITY + 20)]
+        private static bool ValidateOpenBugReportHelper() => Selection.activeGameObject != null;
+
+        [MenuItem(BASE_PATH + "Open Bug Report Helper", false, PRIORITY + 20)]
+        private static void OpenBugReportHelper() => BugReportHelper.BugReportHelper.ShowWindow();
     }
 }

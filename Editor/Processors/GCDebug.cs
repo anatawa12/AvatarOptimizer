@@ -34,23 +34,29 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 AddGCDebugInfo(context);
             }
 
-            if (BugReportHelper.Context.Current is { } reportCtx)
+            if (context.GetState<ndmf.AAOEnabled>().Enabled && BugReportHelper.Context.Current is { } reportCtx)
             {
                 if (_position == InternalGcDebugPosition.AtTheBeginning)
                     reportCtx.AddTraceAndOptimizeStateReport(context);
 
-                var place = new GameObject();
-                try
-                {
-                    var gcDebugRoot = AddGCDebugInfo(context, place);
-                    reportCtx.AddGcDebugInfo(_position, gcDebugRoot.CollectDataToString(), context.AvatarRootObject,
-                        context.TryGetMeshInfoFor,
-                        context.GetState<MaterialInformationState>().MaterialInformationByMaterial.Values);
-                }
-                finally
-                {
-                    GameObject.DestroyImmediate(place);
-                }
+                var debugInfo = GcDebugInfo(context);
+                reportCtx.AddGcDebugInfo(_position, debugInfo, context.AvatarRootObject,
+                    context.TryGetMeshInfoFor,
+                    context.GetState<MaterialInformationState>().MaterialInformationByMaterial.Values);
+            }
+        }
+
+        internal static string GcDebugInfo(BuildContext context)
+        {
+            var place = new GameObject();
+            try
+            {
+                var gcDebugRoot = AddGCDebugInfo(context, place);
+                return gcDebugRoot.CollectDataToString();
+            }
+            finally
+            {
+                GameObject.DestroyImmediate(place);
             }
         }
 
