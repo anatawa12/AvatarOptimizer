@@ -446,7 +446,7 @@ msgid "MergePhysBone:warning:limit-rotation-fix-animation:description"
 msgstr "This is not supported with Limit Rotation mode Fix for now."
 
 msgid "MergePhysBone:error:limit-rotation-fix-merge-bone"
-msgstr "Limit Rotation mode is Fix but some affected bones have MergeBone component. This is not supported."
+msgstr "Some affected bones have MergeBone component while Limit Rotation mode is Fix. This is not supported."
 
 msgid "MergePhysBone:error:physbone-outside-of-avatar-root"
 msgstr "VRCPhysBone components whose Root Transform is outside of the avatar are not supported as source of Merge PhysBone."
