@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Missing localization for few messages `#1767`
 
 ### Security
 
