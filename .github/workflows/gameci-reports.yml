@@ -1,0 +1,18 @@
+name: GameCI Reports
+
+on:
+  workflow_run:
+    workflows: ['GameCI']
+    types:
+      - completed
+
+jobs:
+  build-and-test:
+    - uses: dorny/test-reporter@v3
+      if: always()
+      with:
+        reporter: dotnet-nunit
+        artifact: /Test results (.*)/
+        name: 'Test report $1'
+        fail-on-empty: false
+        path: '*.xml'
