@@ -8,11 +8,13 @@ on:
 
 jobs:
   build-and-test:
-    - uses: dorny/test-reporter@v3
-      if: always()
-      with:
-        reporter: dotnet-nunit
-        artifact: /Test results (.*)/
-        name: 'Test report $1'
-        fail-on-empty: false
-        path: '*.xml'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dorny/test-reporter@v3
+        if: always()
+        with:
+          reporter: dotnet-nunit
+          artifact: /Test results (.*)/
+          name: 'Test report $1'
+          fail-on-empty: false
+          path: '*.xml'
