@@ -327,7 +327,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             collector.TransformPositionAndRotation(component.transform);
         }
     }
-#if !UNITY_6000_5_OR_NEWER
+
+#pragma warning disable CS0618 // Type or member is obsolete // Unity 6000 deprecates FlareLayer
     [ComponentInformation(typeof(FlareLayer))]
     internal class FlareLayerInformation : ComponentInformation<FlareLayer>
     {
@@ -336,7 +337,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
             collector.AddDependency(component.GetComponent<Camera>(), component);
         }
     }
-#endif
+#pragma warning restore CS0618 // Type or member is obsolete
+
     internal class ConstraintInformation<T> : ComponentInformation<T> where T : Component, IConstraint
     {
         protected override void CollectDependency(T component, ComponentDependencyCollector collector)
