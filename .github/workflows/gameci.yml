@@ -70,7 +70,7 @@ jobs:
           key: Library-${{ matrix.unity }}
           restore-keys: Library-${{ matrix.unity }}
 
-      - uses: game-ci/unity-test-runner@v3
+      - uses: game-ci/unity-test-runner@v4.0.0
         id: gameci
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE_V3 }}
