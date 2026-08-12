@@ -47,6 +47,30 @@ jobs:
             }
           }
           EOF
+          # enable enter play mode settings
+          cat <<EOF > ProjectSettings/EditorSettings.asset
+          %YAML 1.1
+          %TAG !u! tag:unity3d.com,2011:
+          --- !u!159 &1
+          EditorSettings:
+            serializedVersion: 9
+            m_EnterPlayModeOptionsEnabled: 1
+            m_EnterPlayModeOptions: 3
+          EOF
+          # configure player settings
+          cat <<EOF > ProjectSettings/ProjectSettings.asset
+          %YAML 1.1
+          %TAG !u! tag:unity3d.com,2011:
+          --- !u!129 &1
+          PlayerSettings:
+            serializedVersion: 26
+            scriptingDefineSymbols:
+              Android: VRC_SDK_VRCSDK3;UNITY_POST_PROCESSING_STACK_V2
+              Standalone: VRC_SDK_VRCSDK3;UNITY_POST_PROCESSING_STACK_V2
+              iPhone: VRC_SDK_VRCSDK3;UNITY_POST_PROCESSING_STACK_V2
+            apiCompatibilityLevel: 3
+            activeInputHandler: 0
+          EOF
           # link tests
           ln -s "../Packages/com.anatawa12.avatar-optimizer/Test~" Assets/Test
 
