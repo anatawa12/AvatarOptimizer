@@ -17,9 +17,6 @@ using Newtonsoft.Json.Serialization;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
-#if AAO_VRCSDK3_AVATARS
-using VRC.Dynamics;
-#endif
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
@@ -584,7 +581,7 @@ internal class BugReportHelper : EditorWindow
                         break;
 
 #if AAO_VRCSDK3_AVATARS
-                    case VRCPhysBoneBase physBone:
+                    case VRC.Dynamics.VRCPhysBoneBase physBone:
                         builder.AppendLine($"    version: {physBone.version}");
                         builder.AppendLine($"    integrationType: {physBone.integrationType}");
                         builder.AppendLine($"    rootTransform: {physBone.rootTransform}");

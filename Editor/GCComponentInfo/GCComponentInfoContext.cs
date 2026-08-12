@@ -6,9 +6,7 @@ using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
-#if AAO_VRCSDK3_AVATARS
-using VRC.SDK3.Dynamics.PhysBone.Components;
-#endif
+
 namespace Anatawa12.AvatarOptimizer
 {
     class GCComponentInfoContext : IExtensionContext
