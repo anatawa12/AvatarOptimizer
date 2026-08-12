@@ -66,16 +66,11 @@ namespace Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection
 
         static PSUCRuntimeUtil()
         {
-            foreach (var assembly in AssemblyCollector.GetAssemblies())
-            {
-                OnBeforeSerializeImplType =
-                    assembly.GetType(
-                        "Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection.PrefabSafeUniqueCollectionRuntimeEditorImpl`3");
-                if (OnBeforeSerializeImplType != null) return;
-            }
-
-            if (OnBeforeSerializeImplType == null)
+            var onBeforeSerializeImplType =
+                Type.GetType("Anatawa12.AvatarOptimizer.PrefabSafeUniqueCollection.PrefabSafeUniqueCollectionRuntimeEditorImpl`3, com.anatawa12.avatar-optimizer.internal.prefab-safe-set.editor");
+            if (onBeforeSerializeImplType == null)
                 throw new InvalidOperationException("PrefabSafeUniqueCollectionRuntimeEditorImpl not found");
+            OnBeforeSerializeImplType = onBeforeSerializeImplType;
         }
 
         public static MethodInfo GetOnValidateCallbackMethod(Type tAdditionValueType, Type tRemoveKeyType,

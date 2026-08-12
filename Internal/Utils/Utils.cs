@@ -162,11 +162,6 @@ namespace Anatawa12.AvatarOptimizer
                     yield return new KeyValuePair<TKey, (TValue1?, TValue2?)>(key, (default, second[key]));
         }
 
-        public static Type? GetTypeFromName(string name) =>
-            AssemblyCollector.GetAssemblies()
-            .Select(assembly => assembly.GetType(name))
-                .FirstOrDefault(type => !(type == null));
-
         public static T? DistinctSingleOrDefaultIfNoneOrMultiple<T>(this IEnumerable<T> enumerable)
             => DistinctSingleOrDefaultIfNoneOrMultiple(enumerable, null);
 

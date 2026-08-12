@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Anatawa12.AvatarOptimizer
 {
-    internal static class AssemblyCollector
+    public static class AssemblyCollector
     {
         static Assembly[]? asm_cash;
         public static Assembly[] GetAssemblies()

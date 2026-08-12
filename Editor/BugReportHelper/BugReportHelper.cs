@@ -301,7 +301,7 @@ internal class BugReportHelper : EditorWindow
         try
         {
             // required types
-            var iPluginInternal = GetType("nadena.dev.ndmf.PluginResolver");
+            var iPluginInternal = Type.GetType("nadena.dev.ndmf.PluginResolver, nadena.dev.ndmf", throwOnError: true);
             var findAllPluginsMethod = iPluginInternal.GetMethod("FindAllPlugins", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static,
                 null, Type.EmptyTypes, null);
             if (findAllPluginsMethod == null) throw new Exception("FindAllPlugins method not found in PluginResolver");
@@ -321,8 +321,6 @@ internal class BugReportHelper : EditorWindow
         {
             return "Error collecting NDMF plugin information: \n" + e;
         }
-
-        Type GetType(string name) => Utils.GetTypeFromName(name) ?? throw new Exception($"Type '{name}' not found");
     }
 
     private static string CollectNdmfSequence()
@@ -330,7 +328,7 @@ internal class BugReportHelper : EditorWindow
         // We collect NDMF build sequence information, something like shown on SolverWindow, with reflections.
         try
         {
-            var pluginResolver = GetType("nadena.dev.ndmf.PluginResolver");
+            var pluginResolver = Type.GetType("nadena.dev.ndmf.PluginResolver, nadena.dev.ndmf", throwOnError: true);
             var constructor = pluginResolver.GetConstructors().Select(ctor =>
             {
                 var parameters = ctor.GetParameters();
@@ -353,12 +351,12 @@ internal class BugReportHelper : EditorWindow
             }).FirstOrDefault(x => x != null)?? throw new Exception("PluginResolver constructor with optional bool parameter named includeDisabled not found");
             // passes should be type interactable as IEnumerable<(BuildPhase, IEnumerable<ConcretePass>)>
             var passesProperty = GetPropertyOrField<IEnumerable>(pluginResolver, "Passes");
-            var concratePassType = GetType("nadena.dev.ndmf.ConcretePass");
+            var concratePassType = Type.GetType("nadena.dev.ndmf.ConcretePass, nadena.dev.ndmf", throwOnError: true);
             var pluginOfConcratePass = GetPropertyOrField<PluginBase>(concratePassType, "Plugin");
             var deactivatePluginsOfConcratePass = GetPropertyOrField<IEnumerable<Type>>(concratePassType, "DeactivatePlugins");
             var activatePluginsOfConcratePass = GetPropertyOrField<IEnumerable<Type>>(concratePassType, "ActivatePlugins");
             var instantiatedPassOfConcratePass = GetPropertyOrField<object>(concratePassType, "InstantiatedPass");
-            var iPassType = GetType("nadena.dev.ndmf.IPass");
+            var iPassType = Type.GetType("nadena.dev.ndmf.IPass, nadena.dev.ndmf", true);
             var qualifiedNameOfIPass = GetPropertyOrField<string>(iPassType, "QualifiedName");
             var displayNameOfIPass = GetPropertyOrField<string>(iPassType, "DisplayName");
 
@@ -410,7 +408,6 @@ internal class BugReportHelper : EditorWindow
             return "Error collecting NDMF sequence information: \n" + e;
         }
 
-        Type GetType(string name) => Utils.GetTypeFromName(name) ?? throw new Exception($"Type '{name}' not found");
         Func<object, T> GetPropertyOrField<T>(Type type, string name)
         {
             var field = type.GetField(name, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
