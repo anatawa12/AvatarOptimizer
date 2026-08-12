@@ -36,6 +36,9 @@ public static class UnityObjectIDHelper
     }
 }
 #if !UNITY_6000_2_OR_NEWER
+/// <summary>
+/// The polyfill for EntityId introduced in Unity 6000.2.
+/// </summary>
 public struct EntityId : IEquatable<EntityId>
 {
     public int InstanceID;
@@ -50,7 +53,7 @@ public struct EntityId : IEquatable<EntityId>
         return InstanceID == other.InstanceID;
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         return obj is EntityId eid && Equals(eid);
     }
