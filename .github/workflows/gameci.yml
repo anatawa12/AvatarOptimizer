@@ -31,7 +31,7 @@ jobs:
           mkdir -p Assets Packages ProjectSettings
           echo "m_EditorVersion: $UNITY_VERSION" > ProjectSettings/ProjectVersion.txt
           # create manifest.json with necessary dependencies
-          # com.vrchat.base has missing dependency to com.unity.modules.video
+          # com.vrchat.base has missing dependency to com.unity.modules.video and com.unity.modules.physics2d
           # com.unity.xr.oculus, a package referenced by com.vrchat.base, has missing dependency to com.unity.modules.androidjni
           # NDMF had missing dependency to com.unity.modules.animation until https://github.com/bdunderscore/ndmf/pull/655 was merged in 1.8.0
           # We need com.unity.test-framework and com.unity.testtools.codecoverage for tests
@@ -41,6 +41,7 @@ jobs:
               "com.unity.modules.androidjni": "1.0.0",
               "com.unity.modules.animation": "1.0.0",
               "com.unity.modules.video": "1.0.0",
+              "com.unity.modules.physics2d": "1.0.0",
               "com.unity.test-framework": "1.1.33",
               "com.unity.testtools.codecoverage": "1.2.7"
             }
