@@ -3,7 +3,7 @@ name: GameCI
 
 on:
   push:
-    branches: [ master, master-* ]
+    branches: [ master, master-*, workflow-tests/* ]
   pull_request_target: {}
   workflow_dispatch: {}
 
@@ -15,23 +15,47 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - unity: 2022
-            projectRef: d2e10f445881af7cc806abd2fc99a0651942dbb8 # project-for-test-2022
         unity:
-          - 2022
+          - 2022.3.22f1
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ matrix.projectRef }}
-          persist-credentials: false
+      # install tools
+      - uses: anatawa12/sh-actions/setup-vrc-get@master
+
+      # prepare project
+      - name: Create Project directory
+        shell: bash
+        env: 
+          UNITY_VERSION: ${{ matrix.unity }}
+          unityVersion: ${{ matrix.unityVersion }}
+        run: |-
+          mkdir -p Assets Packages ProjectSettings
+          echo "m_EditorVersion: $UNITY_VERSION" > ProjectSettings/ProjectVersion.txt
+          # create manifest.json with necessary dependencies
+          # com.vrchat.base has missing dependency to com.unity.modules.video
+          # com.unity.xr.oculus, a package referenced by com.vrchat.base, has missing dependency to com.unity.modules.androidjni
+          # NDMF had missing dependency to com.unity.modules.animation until https://github.com/bdunderscore/ndmf/pull/655 was merged in 1.8.0
+          # We need com.unity.test-framework and com.unity.testtools.codecoverage for tests
+          cat <<EOF > Packages/manifest.json
+          {
+            "dependencies": {
+              "com.unity.modules.androidjni": "1.0.0",
+              "com.unity.modules.animation": "1.0.0",
+              "com.unity.modules.video": "1.0.0",
+              "com.unity.test-framework": "1.3.7",
+              "com.unity.testtools.codecoverage": "1.2.7"
+            }
+          }
+          EOF
+          # link tests
+          ln -s "../Packages/com.anatawa12.avatar-optimizer/Test~" Assets/Test
+
+      # prepare packages
       - uses: actions/checkout@v4
         with:
           path: Packages/com.anatawa12.avatar-optimizer
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
           allow-unsafe-pr-checkout: true
-      - uses: anatawa12/sh-actions/setup-vrc-get@master
       - run: vrc-get install -y com.vrchat.avatars
       - uses: anatawa12/sh-actions/resolve-vpm-packages@master
         with:
