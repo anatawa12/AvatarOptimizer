@@ -16,27 +16,27 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         static void FindAllInfoImplements()
         {
             foreach (var assembly in AssemblyCollector.GetAssemblies())
-                foreach (var type in assembly.GetTypes())
-                foreach (ComponentInformationAttributeBase attribute in type.GetCustomAttributes(
-                                typeof(ComponentInformationAttributeBase), false))
+            foreach (var type in assembly.GetTypes())
+            foreach (ComponentInformationAttributeBase attribute in type.GetCustomAttributes(
+                         typeof(ComponentInformationAttributeBase), false))
+            {
+                try
+                {
+                    LoadType(type, attribute);
+                }
+                catch (Exception e)
                 {
                     try
                     {
-                        LoadType(type, attribute);
+                        Debug.LogError($"Processing type {type}");
+                        Debug.LogException(e);
                     }
-                    catch (Exception e)
+                    catch (Exception e1)
                     {
-                        try
-                        {
-                            Debug.LogError($"Processing type {type}");
-                            Debug.LogException(e);
-                        }
-                        catch (Exception e1)
-                        {
-                            Debug.LogException(new AggregateException(e, e1));
-                        }
+                        Debug.LogException(new AggregateException(e, e1));
                     }
                 }
+            }
         }
 
         [InitializeOnLoadMethod]

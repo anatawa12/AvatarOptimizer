@@ -29,9 +29,9 @@ public static class UnityObjectIDHelper
 #if UNITY_6000_4_OR_NEWER
         return unityObject.objectReferenceEntityIdValue;
 #elif UNITY_6000_2_OR_NEWER
-    return unityObject.objectReferenceInstanceIDValue; // implicit cast
+        return unityObject.objectReferenceInstanceIDValue; // implicit cast
 #else
-    return new (unityObject.objectReferenceInstanceIDValue);
+        return new (unityObject.objectReferenceInstanceIDValue);
 #endif
     }
 }
