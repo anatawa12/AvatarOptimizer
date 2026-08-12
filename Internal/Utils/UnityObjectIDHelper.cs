@@ -57,8 +57,10 @@ public struct EntityId : IEquatable<EntityId>
     public override int GetHashCode() => InstanceID;
     public static EntityId None => default(EntityId);
 
-
     public static bool operator ==(EntityId left, EntityId right) => left.Equals(right);
     public static bool operator !=(EntityId left, EntityId right) => !left.Equals(right);
+
+    public override string ToString() => InstanceID.ToString();
+    public string ToString(string format) => InstanceID.ToString(format);
 }
 #endif

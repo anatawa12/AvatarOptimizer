@@ -769,7 +769,7 @@ internal class BugReportHelper : EditorWindow
                             var sharedMaterial = subMesh.SharedMaterials[j];
                             if (sharedMaterial != null)
                             {
-                                builder.AppendLine($"          sharedMaterials[{j}]: {sharedMaterial.name} ({sharedMaterial.shader.name}) ({sharedMaterial.GetEntityId().ToString()})");
+                                builder.AppendLine($"          sharedMaterials[{j}]: {sharedMaterial.name} ({sharedMaterial.shader.name}) ({sharedMaterial.GetEntityId()})");
                                 MaterialInfo(sharedMaterial, "            ");
                             }
                             else
@@ -795,7 +795,7 @@ internal class BugReportHelper : EditorWindow
                         var sharedMaterial = renderer.sharedMaterials[i];
                         if (sharedMaterial != null)
                         {
-                            builder.AppendLine($"      sharedMaterials[{i}]: {sharedMaterial.name} ({sharedMaterial.shader.name}) ({sharedMaterial.GetEntityId().ToString()})");
+                            builder.AppendLine($"      sharedMaterials[{i}]: {sharedMaterial.name} ({sharedMaterial.shader.name}) ({sharedMaterial.GetEntityId()})");
                             MaterialInfo(sharedMaterial, "        ");
                         }
                         else
@@ -850,7 +850,7 @@ internal class BugReportHelper : EditorWindow
                     if (texture == null) return "<NoneOrMissing>";
                     var builder = new StringBuilder();
                     builder.Append("type: ").Append(texture.GetType().Name).Append(", ");
-                    builder.Append("instance: ").Append(texture.GetEntityId().ToString()).Append(", ");
+                    builder.Append("instance: ").Append(texture.GetEntityId()).Append(", ");
                     builder.Append("name: '").Append(texture.name).Append("', ");
                     builder.Append("format: ").Append(texture.graphicsFormat).Append(", ");
                     builder.Append("dimension: ").Append(texture.dimension).Append(", ");
@@ -1264,6 +1264,7 @@ internal class BugReportHelper : EditorWindow
             public void AppendFormatted(Color t) => _builder._sb.Append(t.ToString(FloatFormat));
             public void AppendFormatted(Color32 t) => _builder._sb.Append(t);
             public void AppendFormatted(Bounds t) => _builder._sb.Append(t.ToString(FloatFormat));
+            public void AppendFormatted(EntityId t) => _builder._sb.Append(t.ToString());
             public void AppendFormatted(Component t) => _builder._sb.Append(ComponentPath(t));
             public void AppendFormatted(GameObject t) => _builder._sb.Append(ComponentPath(t.transform));
             public void AppendFormatted(UnityEngine.Rendering.VertexAttributeDescriptor t) => _builder._sb.Append(t.ToString());
