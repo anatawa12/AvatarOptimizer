@@ -1,25 +1,18 @@
-#nullable enable
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace Anatawa12.AvatarOptimizer
 {
     public static class AssemblyCollector
     {
-        static Assembly[]? asm_cash;
-        public static Assembly[] GetAssemblies()
+        public static IReadOnlyList<Assembly> GetAssemblies()
         {
-            if (asm_cash is not null) { return asm_cash; }
-
 #if UNITY_6000_6_OR_NEWER
-            asm_cash = UnityEngine.Assemblies.CurrentAssemblies.GetLoadedAssemblies().ToArray();
-            return asm_cash;
+            return UnityEngine.Assemblies.CurrentAssemblies.GetLoadedAssemblies();
 #else
-            asm_cash = AppDomain.CurrentDomain.GetAssemblies();
-            return asm_cash;
+            return AppDomain.CurrentDomain.GetAssemblies();
 #endif
-
         }
     }
 }
