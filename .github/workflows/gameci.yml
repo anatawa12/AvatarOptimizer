@@ -1,4 +1,5 @@
 name: GameCI
+# note: name is referenced by other workflow
 
 on:
   push:
@@ -6,6 +7,8 @@ on:
   pull_request_target: {}
   workflow_dispatch: {}
 
+permissions:
+  contents: read
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -17,16 +20,17 @@ jobs:
             projectRef: d2e10f445881af7cc806abd2fc99a0651942dbb8 # project-for-test-2022
         unity:
           - 2022
-    permissions:
-      checks: write
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ matrix.projectRef }}
+          persist-credentials: false
       - uses: actions/checkout@v4
         with:
           path: Packages/com.anatawa12.avatar-optimizer
           ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          allow-unsafe-pr-checkout: true
       - uses: anatawa12/sh-actions/setup-vrc-get@master
       - run: vrc-get install -y com.vrchat.avatars
       - uses: anatawa12/sh-actions/resolve-vpm-packages@master
@@ -36,6 +40,7 @@ jobs:
             https://vpm.nadena.dev/vpm-prerelease.json
 
       - uses: actions/cache@v4
+        if: ${{ github.event_name != 'pull_request_target' || github.event.pull_request.head.repo.full_name == github.repository }}
         with:
           path: Library
           key: Library-${{ matrix.unity }}
@@ -54,14 +59,6 @@ jobs:
       - name: "Show files at root folder to find crash log"
         if: always()
         run: ls -la
-
-      - uses: dorny/test-reporter@v2
-        if: always()
-        with:
-          reporter: dotnet-nunit
-          name: EditMode Tests
-          fail-on-empty: false
-          path: ${{ steps.gameci.outputs.artifactsPath }}/editmode-results.xml
 
       - uses: actions/upload-artifact@v4
         if: always()

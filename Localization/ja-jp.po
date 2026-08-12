@@ -370,6 +370,9 @@ msgstr "統合済み"
 msgid "MergePhysBone:prop:components"
 msgstr "コンポーネント"
 
+msgid "MergePhysBone:error:limit-rotation-fix-merge-bone"
+msgstr "角度制限の設定がFixですが、MergeBoneのついたボーンが含まれています。これはサポートされていません。"
+
 msgid "MergePhysBone:error:physbone-outside-of-avatar-root"
 msgstr "Root Transformがアバターの外のGameObjectに設定されているVRCPhysBoneコンポーネントは、Merge PhysBoneの統合対象としてサポートされていません。"
 
