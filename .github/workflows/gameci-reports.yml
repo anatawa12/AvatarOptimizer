@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest-slim
+    runs-on: ubuntu-slim
     permissions:
       contents: read
       actions: read
