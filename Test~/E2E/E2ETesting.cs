@@ -436,6 +436,7 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             Assert.That(smr.sharedMaterials, Has.Length.EqualTo(3), "Material slots should NOT be merged.");
         }
 
+#if AAO_VRCSDK3_AVATARS
         [Test]
         public void Issue1655_AutoMergePB_Should_Not_Merge_PhysBones_Targeting_Same_Target()
         {
@@ -469,7 +470,6 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             Assert.That(pb2 != null, "PB2 should not be merged");
         }
 
-#if AAO_VRCSDK3_AVATARS
         [Test]
         public void PR1675_AutoMergePB_Targeting_External_Bone()
         {
