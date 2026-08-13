@@ -35,7 +35,7 @@ namespace Anatawa12.AvatarOptimizer.Test
 
                 if (!expectingErrors.Contains((simpleError.Severity, simpleError.TitleKey)))
                 {
-                    throw new Exception($"unexpected {simpleError.Severity}: {simpleError.TitleKey}");
+                    throw new Exception($"unexpected {simpleError.Severity}: {simpleError.TitleKey}\n{simpleError.ToMessage()}");
                 }
                 foundErrors.Add((simpleError.Severity, simpleError.TitleKey));
             }
