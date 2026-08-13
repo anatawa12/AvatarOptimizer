@@ -1,3 +1,4 @@
+#if AAO_VRCSDK3_AVATARS
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Build;
@@ -81,7 +82,7 @@ internal class DetectPlayerBuildErrorUnityBug : IVRCSDKPreprocessAvatarCallback,
             if (_postProcessBuildCalled) return; // current Unity does not call postprocess when compile errors exist. so we use it to detect no compile error case.
             if (_postProcessAvatarCalled) return; // VRChat SDK does not call call postprocess when asset bundle build fails. so we use it to detect no build error case.
 
-            // If we reach here, it means:
+            // If we reach here, it means:GCComponentInfoContext
             // - avatar build was started
             // - compilation was started during avatar build
             // - no compilation errors were reported (by AssemblyCompilationFinished)
@@ -107,3 +108,4 @@ internal class DetectPlayerBuildErrorUnityBug : IVRCSDKPreprocessAvatarCallback,
         }
     }
 }
+#endif

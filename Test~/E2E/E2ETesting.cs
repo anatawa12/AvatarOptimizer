@@ -7,12 +7,12 @@ using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using UnityEngine.Animations;
 using UnityEngine.Rendering;
-using VRC.Dynamics;
 using Debug = UnityEngine.Debug;
 using Object = System.Object;
 #if AAO_VRCSDK3_AVATARS
-using UnityEngine.Animations;
+using VRC.Dynamics;
 using VRC.SDK3.Dynamics.PhysBone.Components;
 #endif
 

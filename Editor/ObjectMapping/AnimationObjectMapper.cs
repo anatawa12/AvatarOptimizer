@@ -210,7 +210,9 @@ namespace Anatawa12.AvatarOptimizer
 
                     return Array.Empty<(string path, Type type, string propertyName, int)>(); // this means removed
                 }
+#pragma warning disable CS0164 // This label has not been referenced // for some platform this is not available
                 componentLive:;
+#pragma warning restore CS0164
 
                 if (gameObjectInfo.NewPath == null) return Array.Empty<(string path, Type type, string propertyName, int)>();
                 if (path == gameObjectInfo.NewPath) return null;

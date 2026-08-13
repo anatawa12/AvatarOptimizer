@@ -6,7 +6,6 @@ using Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes;
 using nadena.dev.ndmf;
 using UnityEditor;
 using UnityEngine;
-using VRC.SDK3.Dynamics.PhysBone.Components;
 
 namespace Anatawa12.AvatarOptimizer
 {
