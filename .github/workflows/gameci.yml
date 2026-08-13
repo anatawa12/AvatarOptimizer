@@ -109,10 +109,12 @@ jobs:
           repos: |
             https://vpm.anatawa12.com/vpm.json
             https://vpm.nadena.dev/vpm-prerelease.json
-      - name: Remove VRChat SDK if we're testing with no VRChat SDK Environment
+      - name: Set up for no VRChat SDK Environment
         if: ${{ matrix.vrcsdk == 'none' }}
         run: |-
           vrc-get remove -y com.vrchat.avatars com.vrchat.base
+          # ndmf requires several external libraries and manual activation
+          ln -s Dependencies\~ Packages/nadena.dev.ndmf/Dependencies
 
       - uses: actions/cache@v4
         if: ${{ github.event_name != 'pull_request_target' || github.event.pull_request.head.repo.full_name == github.repository }}
