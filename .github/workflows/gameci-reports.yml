@@ -8,13 +8,17 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-slim
+    permissions:
+      contents: read
+      actions: read
+      checks: write
     steps:
       - uses: dorny/test-reporter@v3
-        if: always()
         with:
           reporter: dotnet-nunit
           artifact: /Test results (.*)/
           name: 'Test report $1'
           fail-on-empty: false
+          use-actions-summary: false # create checks
           path: '*.xml'
