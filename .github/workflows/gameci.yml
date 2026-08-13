@@ -18,6 +18,18 @@ jobs:
         unity:
           - 2022.3.6f1
           - 2022.3.22f1
+        vrcsdk:
+          # without vrcsdk
+          - none
+          # all supported majors
+          - 3.7.0
+          - 3.8.0
+          - 3.9.0
+          - 3.10.0
+          # new components
+          # - 3.8.0 # AAO_VRCSDK3_AVATARS_IGNORE_OTHER_PHYSBONE
+          - 3.10.3 # AAO_VRCSDK3_AVATARS_VRC_RAYCAST
+          - 3.10.4 # AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER
     steps:
       # install tools
       - uses: anatawa12/sh-actions/setup-vrc-get@master
@@ -27,7 +39,6 @@ jobs:
         shell: bash
         env: 
           UNITY_VERSION: ${{ matrix.unity }}
-          unityVersion: ${{ matrix.unityVersion }}
         run: |-
           mkdir -p Assets Packages ProjectSettings
           echo "m_EditorVersion: $UNITY_VERSION" > ProjectSettings/ProjectVersion.txt
@@ -82,19 +93,32 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
           allow-unsafe-pr-checkout: true
-      - run: vrc-get install -y com.vrchat.avatars
+      - name: Install VRChat SDK Avatars ${{ matrix.vrcsdk }}
+        env:
+          VRCSDK_VERSION: ${{ matrix.vrcsdk }}
+        run: |-
+          if [ "$VRCSDK_VERSION" == "none" ]; then
+            # we remove later
+            vrc-get install -y com.vrchat.avatars
+          else
+            vrc-get install -y com.vrchat.avatars ${VRCSDK_VERSION}
+          fi
       - uses: anatawa12/sh-actions/resolve-vpm-packages@master
         with:
           repos: |
             https://vpm.anatawa12.com/vpm.json
             https://vpm.nadena.dev/vpm-prerelease.json
+      - name: Remove VRChat SDK if we're testing with no VRChat SDK Environment
+        if: ${{ matrix.vrcsdk == 'none' }}
+        run: |-
+          vrc-get remove -y com.vrchat.avatars com.vrchat.base
 
       - uses: actions/cache@v4
         if: ${{ github.event_name != 'pull_request_target' || github.event.pull_request.head.repo.full_name == github.repository }}
         with:
           path: Library
-          key: Library-${{ matrix.unity }}
-          restore-keys: Library-${{ matrix.unity }}
+          key: Library-${{ matrix.unity }}-${{ matrix.vrcsdk }}
+          restore-keys: Library-${{ matrix.unity }}-${{ matrix.vrcsdk }}
 
       - uses: game-ci/unity-test-runner@v4.0.0
         id: gameci
@@ -104,7 +128,7 @@ jobs:
           testMode: EditMode
           coverageOptions: generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+com.anatawa12.avatar-optimizer.*,-*.test.*
           customParameters: 
-          checkName: Test results ${{ matrix.unity }}
+          checkName: Test results ${{ matrix.unity }}-${{ matrix.vrcsdk }}
 
       - name: "Show files at root folder to find crash log"
         if: always()
@@ -113,17 +137,17 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: All artifacts ${{ matrix.unity }}
+          name: All artifacts ${{ matrix.unity }}-${{ matrix.vrcsdk }}
           path: artifacts
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: Test results ${{ matrix.unity }}
+          name: Test results ${{ matrix.unity }}-${{ matrix.vrcsdk }}
           path: ${{ steps.gameci.outputs.artifactsPath }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: Coverage results ${{ matrix.unity }}
+          name: Coverage results ${{ matrix.unity }}-${{ matrix.vrcsdk }}
           path: ${{ steps.gameci.outputs.coveragePath }}
 
   conclude-gameci:
