@@ -15,21 +15,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity:
-          - 2022.3.6f1
-          - 2022.3.22f1
-        vrcsdk:
-          # without vrcsdk
-          - none
-          # all supported majors
-          - 3.7.0
-          - 3.8.0
-          - 3.9.0
-          - 3.10.0
-          # new components
+        include:
+          # unity 2022.3.6 test
+          - { name: 2022.3.6f1-latest,  unity: 2022.3.6f1,  vrcsdk: latest }
+          # latest SDK with primary unity version
+          - { name: 2022.3.22f1-latest, unity: 2022.3.22f1, vrcsdk: latest }
+          # all supported major versions
+          - { name: 2022.3.22f1-3.7.0,  unity: 2022.3.22f1, vrcsdk: 3.7.0 }
+          - { name: 2022.3.22f1-3.8.0,  unity: 2022.3.22f1, vrcsdk: 3.8.0 }
+          - { name: 2022.3.22f1-3.9.0,  unity: 2022.3.22f1, vrcsdk: 3.9.0 }
+          - { name: 2022.3.22f1-3.10.0, unity: 2022.3.22f1, vrcsdk: 3.10.0 }
+          # new components versions
           # - 3.8.0 # AAO_VRCSDK3_AVATARS_IGNORE_OTHER_PHYSBONE
-          - 3.10.3 # AAO_VRCSDK3_AVATARS_VRC_RAYCAST
-          - 3.10.4 # AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER
+          - { name: 2022.3.22f1-3.10.3, unity: 2022.3.22f1, vrcsdk: 3.10.3 } # AAO_VRCSDK3_AVATARS_VRC_RAYCAST
+          - { name: 2022.3.22f1-3.10.4, unity: 2022.3.22f1, vrcsdk: 3.10.4 } # AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER
+          # No VRChat SDK Environments
+          - { name: 2022.3.22f1-no-sdk, unity: 2022.3.22f1 }
+
     steps:
       # install tools
       - uses: anatawa12/sh-actions/setup-vrc-get@master
@@ -98,8 +100,8 @@ jobs:
         env:
           VRCSDK_VERSION: ${{ matrix.vrcsdk }}
         run: |-
-          if [ "$VRCSDK_VERSION" == "none" ]; then
-            # we remove later
+          if [ "$VRCSDK_VERSION" == "" ] || [ "$VRCSDK_VERSION" == "latest" ]; then
+            # we remove later if version is none
             vrc-get install -y com.vrchat.avatars
           else
             vrc-get install -y com.vrchat.avatars ${VRCSDK_VERSION}
@@ -110,7 +112,7 @@ jobs:
             https://vpm.anatawa12.com/vpm.json
             https://vpm.nadena.dev/vpm-prerelease.json
       - name: Set up for no VRChat SDK Environment
-        if: ${{ matrix.vrcsdk == 'none' }}
+        if: ${{ !matrix.vrcsdk }}
         run: |-
           vrc-get remove -y com.vrchat.avatars com.vrchat.base
           # ndmf requires several external libraries and manual activation
@@ -120,8 +122,8 @@ jobs:
         if: ${{ github.event_name != 'pull_request_target' || github.event.pull_request.head.repo.full_name == github.repository }}
         with:
           path: Library
-          key: Library-${{ matrix.unity }}-${{ matrix.vrcsdk }}
-          restore-keys: Library-${{ matrix.unity }}-${{ matrix.vrcsdk }}
+          key: Library-${{ matrix.name }}
+          restore-keys: Library-${{ matrix.name }}
 
       - uses: game-ci/unity-test-runner@v4.0.0
         id: gameci
@@ -131,7 +133,7 @@ jobs:
           testMode: EditMode
           coverageOptions: generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+com.anatawa12.avatar-optimizer.*,-*.test.*
           customParameters: 
-          checkName: Test results ${{ matrix.unity }}-${{ matrix.vrcsdk }}
+          checkName: Test results ${{ matrix.name }}
 
       - name: "Show files at root folder to find crash log"
         if: always()
@@ -140,17 +142,17 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: All artifacts ${{ matrix.unity }}-${{ matrix.vrcsdk }}
+          name: All artifacts ${{ matrix.name }}
           path: artifacts
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: Test results ${{ matrix.unity }}-${{ matrix.vrcsdk }}
+          name: Test results ${{ matrix.name }}
           path: ${{ steps.gameci.outputs.artifactsPath }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: Coverage results ${{ matrix.unity }}-${{ matrix.vrcsdk }}
+          name: Coverage results ${{ matrix.name }}
           path: ${{ steps.gameci.outputs.coveragePath }}
 
   conclude-gameci:
