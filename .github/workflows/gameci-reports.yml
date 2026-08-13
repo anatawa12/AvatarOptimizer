@@ -9,6 +9,10 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest-slim
+    permissions:
+      contents: read
+      actions: read
+      checks: write
     steps:
       - uses: dorny/test-reporter@v3
         with:
