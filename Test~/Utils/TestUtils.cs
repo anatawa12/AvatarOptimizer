@@ -324,7 +324,7 @@ namespace Anatawa12.AvatarOptimizer.Test
                 $"restPosition={bone.restPosition}, " +
                 $"restRotation={bone.restRotation.eulerAngles:G}, " +
                 $"restScale={bone.restScale:G}, " +
-                $"localGravityDirection={bone.localGravityDirection:G}, " +
+            //  $"localGravityDirection={bone.localGravityDirection:G}, " + // Only available in 3.7.1 and this is not much useful as introducing #if
                 $"sphereCollision: {bone.sphereCollision}");
 #endif
             TryAddCustomValueFormatter<Transform>(bone => $"Transform({Utils.RelativePath(root: null, bone.transform)})");

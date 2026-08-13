@@ -590,7 +590,7 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             Assert.That(child.transform.parent, Is.EqualTo(parent.transform));
         }
 
-#if AAO_VRCSDK3_AVATARS
+#if AAO_VRCSDK3_AVATARS_IGNORE_OTHER_PHYSBONE
         // The problematic case: We broke ignore other PhysBones
         // https://github.com/anatawa12/AvatarOptimizer/issues/1713
         [Test]
@@ -659,7 +659,9 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             var afterBones = parentPhysBone.bones.ToList();
             Assert.That(afterBones, Is.EqualTo(beforeBones));
         }
+#endif
 
+#if AAO_VRCSDK3_AVATARS
         // https://github.com/anatawa12/AvatarOptimizer/issues/1722
         // MergePhysBoneCollider was checking IsActive animation only on the target bone's hierarchy,
         // so colliders targeting the same external bone but with different toggle states on their own
