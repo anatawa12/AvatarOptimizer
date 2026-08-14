@@ -117,6 +117,11 @@ jobs:
           vrc-get remove -y com.vrchat.avatars com.vrchat.base
           # ndmf requires several external libraries and manual activation
           ln -s Dependencies\~ Packages/nadena.dev.ndmf/Dependencies
+      - name: Apply patch for NDMF
+        run: |-
+          # apply https://github.com/bdunderscore/ndmf/pull/826 but for all ndmf versions
+          sed -i.bak 's/using (_report\./using (ErrorReport.CurrentReport./' Packages/nadena.dev.ndmf/Editor/API/BuildContext.cs
+          rm Packages/nadena.dev.ndmf/Editor/API/BuildContext.cs.bak
 
       - uses: actions/cache@v4
         if: ${{ github.event_name != 'pull_request_target' || github.event.pull_request.head.repo.full_name == github.repository }}

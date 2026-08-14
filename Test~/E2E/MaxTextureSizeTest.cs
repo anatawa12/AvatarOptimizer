@@ -1,11 +1,9 @@
-using System.Linq;
 using nadena.dev.ndmf;
 using nadena.dev.ndmf.platform;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
-using UnityEngine.Experimental.Rendering;
 
 namespace Anatawa12.AvatarOptimizer.Test.E2E
 {
@@ -45,16 +43,17 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             maxTexSizeComponent.maxTextureSize = MaxTextureSizeValue.Max1024;
 
             // Run NDMF
-            var context = AvatarProcessor.ProcessAvatar(avatar, AmbientPlatform.DefaultPlatform);
+            LogTestUtility.Test(_ =>
+            {
+                AvatarProcessor.ProcessAvatar(avatar, AmbientPlatform.DefaultPlatform);
+            });
 
             // Verify the texture was resized
             var resultTexture = renderer.sharedMaterial.mainTexture as Texture2D;
-            var errors = context.ErrorReport.Errors.Where(x => x.Plugin.QualifiedName == "com.anatawa12.avatar-optimizer").ToList();
             Assert.IsNotNull(resultTexture, "Material should still have a texture");
             Assert.That(resultTexture.width, Is.LessThanOrEqualTo(1024), "Texture width should be <= 1024");
             Assert.That(resultTexture.height, Is.LessThanOrEqualTo(1024), "Texture height should be <= 1024");
             Assert.That(resultTexture.mipmapCount, Is.EqualTo(11));
-            Assert.That(errors, Is.Empty);
         }
 
         [Test]
@@ -92,16 +91,17 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             maxTexSizeComponent.maxTextureSize = MaxTextureSizeValue.Max1024;
 
             // Run NDMF
-            var context = AvatarProcessor.ProcessAvatar(avatar, AmbientPlatform.DefaultPlatform);
+            LogTestUtility.Test(_ =>
+            {
+                AvatarProcessor.ProcessAvatar(avatar, AmbientPlatform.DefaultPlatform);
+            });
 
             // Verify the texture was resized
             var resultTexture = renderer.sharedMaterial.mainTexture as Texture2D;
-            var errors = context.ErrorReport.Errors.Where(x => x.Plugin.QualifiedName == "com.anatawa12.avatar-optimizer").ToList();
             Assert.IsNotNull(resultTexture, "Material should still have a texture");
             Assert.That(resultTexture.width, Is.LessThanOrEqualTo(1024), "Texture width should be <= 1024");
             Assert.That(resultTexture.height, Is.LessThanOrEqualTo(1024), "Texture height should be <= 1024");
             Assert.That(resultTexture.mipmapCount, Is.EqualTo(11));
-            Assert.That(errors, Is.Empty);
         }
 
         [Test]
@@ -138,17 +138,19 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             maxTexSizeComponent.maxTextureSize = MaxTextureSizeValue.Max1024;
 
             // Run NDMF
-            var context = AvatarProcessor.ProcessAvatar(avatar, AmbientPlatform.DefaultPlatform);
+            LogTestUtility.Test(scope =>
+            {
+                AvatarProcessor.ProcessAvatar(avatar, AmbientPlatform.DefaultPlatform);
+
+                scope.ExpectError(ErrorSeverity.NonFatal, "MaxTextureSize:warning:insufficientMipmaps");
+            });
 
             // Verify the texture was NOT resized (since it has no mipmaps)
             var resultTexture = renderer.sharedMaterial.mainTexture as Texture2D;
-            var errors = context.ErrorReport.Errors.Where(x => x.Plugin.QualifiedName == "com.anatawa12.avatar-optimizer").ToList();
             Assert.IsNotNull(resultTexture, "Material should still have a texture");
             // The texture should remain the same (not resized) since it has no mipmaps
             Assert.That(resultTexture.width, Is.EqualTo(2048), "Texture width should remain 2048 without mipmaps");
             Assert.That(resultTexture.height, Is.EqualTo(2048), "Texture height should remain 2048 without mipmaps");
-            Assert.That(errors, Has.Count.EqualTo(1));
-            Assert.That((errors[0].TheError as SimpleError)?.TitleKey, Is.EqualTo("MaxTextureSize:warning:insufficientMipmaps"));
         }
 
         [Test]
@@ -180,17 +182,19 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             maxTexSizeComponent.maxTextureSize = MaxTextureSizeValue.Max512;
 
             // Run NDMF
-            var context = AvatarProcessor.ProcessAvatar(avatar, AmbientPlatform.DefaultPlatform);
+            LogTestUtility.Test(scope =>
+            {
+                AvatarProcessor.ProcessAvatar(avatar, AmbientPlatform.DefaultPlatform);
+
+                scope.ExpectError(ErrorSeverity.NonFatal, "MaxTextureSize:warning:insufficientMipmaps");
+            });
 
             // Verify the texture was NOT resized (since it has no mipmaps)
             var resultTexture = renderer.sharedMaterial.mainTexture as Texture2D;
-            var errors = context.ErrorReport.Errors.Where(x => x.Plugin.QualifiedName == "com.anatawa12.avatar-optimizer").ToList();
             Assert.IsNotNull(resultTexture, "Material should still have a texture");
             // The texture should remain the same (not resized) since it has no mipmaps
             Assert.That(resultTexture.width, Is.EqualTo(2048), "Texture width should remain 2048 with insufficent mipmaps");
             Assert.That(resultTexture.height, Is.EqualTo(2048), "Texture height should remain 2048 with insufficent mipmaps");
-            Assert.That(errors, Has.Count.EqualTo(1));
-            Assert.That((errors[0].TheError as SimpleError)?.TitleKey, Is.EqualTo("MaxTextureSize:warning:insufficientMipmaps"));
         }
 
         [Test]
@@ -222,17 +226,18 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             maxTexSizeComponent.maxTextureSize = MaxTextureSizeValue.Max512;
 
             // Run NDMF
-            var context = AvatarProcessor.ProcessAvatar(avatar, AmbientPlatform.DefaultPlatform);
+            LogTestUtility.Test(_ =>
+            {
+                AvatarProcessor.ProcessAvatar(avatar, AmbientPlatform.DefaultPlatform);
+            });
 
             // Verify the texture was NOT resized (since it has no mipmaps)
             var resultTexture = renderer.sharedMaterial.mainTexture as Texture2D;
-            var errors = context.ErrorReport.Errors.Where(x => x.Plugin.QualifiedName == "com.anatawa12.avatar-optimizer").ToList();
             Assert.IsNotNull(resultTexture, "Material should still have a texture");
             // The texture should remain the same (not resized) since it has no mipmaps
             Assert.That(resultTexture.width, Is.EqualTo(512), "Texture width should resized to 512 with sufficent mipmaps");
             Assert.That(resultTexture.height, Is.EqualTo(512), "Texture height should resized to 512 with sufficent mipmaps");
             Assert.That(resultTexture.mipmapCount, Is.EqualTo(1));
-            Assert.That(errors, Is.Empty);
         }
 
         [Test]
@@ -270,17 +275,19 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             maxTexSizeComponent.maxTextureSize = MaxTextureSizeValue.Max1024;
 
             // Run NDMF
-            var context = AvatarProcessor.ProcessAvatar(avatar, AmbientPlatform.DefaultPlatform);
+            LogTestUtility.Test(scope =>
+            {
+                AvatarProcessor.ProcessAvatar(avatar, AmbientPlatform.DefaultPlatform);
+
+                scope.ExpectError(ErrorSeverity.NonFatal, "MaxTextureSize:warning:crunchedNotSupported");
+            });
 
             // Verify the texture was NOT resized (since it has no mipmaps)
             var resultTexture = renderer.sharedMaterial.mainTexture as Texture2D;
-            var errors = context.ErrorReport.Errors.Where(x => x.Plugin.QualifiedName == "com.anatawa12.avatar-optimizer").ToList();
             Assert.IsNotNull(resultTexture, "Material should still have a texture");
             // The texture should remain the same (not resized) since it has no mipmaps
             Assert.That(resultTexture.width, Is.EqualTo(2048), "Texture width should remain 2048 without mipmaps");
             Assert.That(resultTexture.height, Is.EqualTo(2048), "Texture height should remain 2048 without mipmaps");
-            Assert.That(errors, Has.Count.EqualTo(1));
-            Assert.That((errors[0].TheError as SimpleError)?.TitleKey, Is.EqualTo("MaxTextureSize:warning:crunchedNotSupported"));
         }
 
         [Test]
@@ -317,15 +324,16 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             maxTexSizeComponent.maxTextureSize = MaxTextureSizeValue.Max1024;
 
             // Run NDMF
-            var context = AvatarProcessor.ProcessAvatar(avatar, AmbientPlatform.DefaultPlatform);
+            LogTestUtility.Test(_ =>
+            {
+                AvatarProcessor.ProcessAvatar(avatar, AmbientPlatform.DefaultPlatform);
+            });
 
             // Verify the texture was NOT resized (since it's already small enough)
             var resultTexture = renderer.sharedMaterial.mainTexture as Texture2D;
-            var errors = context.ErrorReport.Errors.Where(x => x.Plugin.QualifiedName == "com.anatawa12.avatar-optimizer").ToList();
             Assert.IsNotNull(resultTexture, "Material should still have a texture");
             Assert.That(resultTexture.width, Is.EqualTo(512), "Texture width should remain 512");
             Assert.That(resultTexture.height, Is.EqualTo(512), "Texture height should remain 512");
-            Assert.That(errors, Is.Empty);
         }
     }
 }

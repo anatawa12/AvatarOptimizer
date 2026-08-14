@@ -7,6 +7,7 @@ namespace Anatawa12.AvatarOptimizer.Test
 {
     public static class LogTestUtility
     {
+        // Note: BuildContext won't overwrite this context so you don't have to worry if this might loss with AvatarProcessor.ProcessAvatar
         public static void Test(Action<LogTestScope> test)
         {
             var scope = new LogTestScope();
@@ -32,6 +33,10 @@ namespace Anatawa12.AvatarOptimizer.Test
             foreach (var errorContext in errors)
             {
                 var simpleError = (SimpleError)errorContext.TheError;
+
+                if (errorContext.Plugin != null && errorContext.Plugin.QualifiedName != "com.anatawa12.avatar-optimizer") continue;
+                if (simpleError.Severity == ErrorSeverity.Information && simpleError.TitleKey == "NonVRChatPlatformSupport:genericPlatformMessage")
+                    continue;
 
                 if (!expectingErrors.Contains((simpleError.Severity, simpleError.TitleKey)))
                 {
