@@ -498,6 +498,7 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             });
         }
         
+#if !AAO_VRCSDK3_AVATARS_3_8_0 // There is a bug in VRCSDK 3.8.0
         [Test]
         public void PR1675_ManualMergePB_Targeting_External_Bone()
         {
@@ -531,6 +532,7 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
                 c.ExpectError(ErrorSeverity.Error, "MergePhysBone:error:physbone-outside-of-avatar-root");
             });
         }
+#endif
 
         // similar to 1645 but disabled with IsActive of parent GameObject, which is more common case and was not fixed by 1645 fix.
         [Test]
