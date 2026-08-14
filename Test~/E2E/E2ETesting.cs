@@ -199,7 +199,7 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
                         .AddPropertyBinding("d", typeof(GameObject), "m_IsActive",
                             new Keyframe(0, 1), new Keyframe(1, 0)));
                 })
-                .AddLayer("LayerB", sm =>
+                .AddLayer("LayerB", 1, sm =>
                 {
                     sm.NewClipState("StateBE on", clip => clip
                         .AddPropertyBinding("a/b", typeof(GameObject), "m_IsActive",
@@ -207,7 +207,7 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
                         .AddPropertyBinding("d/e", typeof(GameObject), "m_IsActive",
                             new Keyframe(0, 0), new Keyframe(1, 1)));
                 })
-                .AddLayer("LayerC", sm =>
+                .AddLayer("LayerC", 1, sm =>
                 {
                     sm.NewClipState("StateC", clip => clip
                         .AddPropertyBinding("a/b/c", typeof(GameObject), "m_IsActive",
