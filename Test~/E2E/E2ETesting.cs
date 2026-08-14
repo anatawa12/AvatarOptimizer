@@ -224,18 +224,18 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             // assert that meshes are merged as expected, to verify test runs correctly
             // $$AAO_AUTO_MERGE_SMR_INTERMEDIATE_0 should be at root and $$AAO_AUTO_MERGE_SKINNED_MESH_1 in child
             var intermediate = avatar.transform.Find("$$AAO_AUTO_MERGE_SMR_INTERMEDIATE_0");
-            Assert.That(intermediate, Is.Not.Null, "Intermediate merged GameObject should exist");
+            Assert.That(intermediate, Is.Not.Null, $"Intermediate merged GameObject should exist\n{TestUtils.AvatarStructureString(avatar)}");
             var mergedMesh = intermediate.Find("$$AAO_AUTO_MERGE_SKINNED_MESH_1");
-            Assert.That(mergedMesh, Is.Not.Null, "Merged SkinnedMeshRenderer should exist");
-            Assert.That(mergedMesh.GetComponent<SkinnedMeshRenderer>(), Is.Not.Null, "Merged SkinnedMeshRenderer component should exist");
-            Assert.That(a == null, "GameObject 'a' should be removed");
-            Assert.That(b == null, "GameObject 'b' should be removed");
-            Assert.That(c == null, "GameObject 'c' should be removed");
-            Assert.That(d == null, "GameObject 'd' should be removed");
-            Assert.That(e == null, "GameObject 'e' should be removed");
-            Assert.That(f == null, "GameObject 'f' should be removed");
-            Assert.That(renderer0GameObject == null, "GameObject 'renderer0' should be removed");
-            Assert.That(renderer1GameObject == null, "GameObject 'renderer1' should be removed");
+            Assert.That(mergedMesh, Is.Not.Null, $"Merged SkinnedMeshRenderer should exist\n{TestUtils.AvatarStructureString(avatar)}");
+            Assert.That(mergedMesh.GetComponent<SkinnedMeshRenderer>(), Is.Not.Null, $"Merged SkinnedMeshRenderer component should exist\n{TestUtils.AvatarStructureString(avatar)}");
+            Assert.That(a == null, $"GameObject 'a' should be removed\n{TestUtils.AvatarStructureString(avatar)}");
+            Assert.That(b == null, $"GameObject 'b' should be removed\n{TestUtils.AvatarStructureString(avatar)}");
+            Assert.That(c == null, $"GameObject 'c' should be removed\n{TestUtils.AvatarStructureString(avatar)}");
+            Assert.That(d == null, $"GameObject 'd' should be removed\n{TestUtils.AvatarStructureString(avatar)}");
+            Assert.That(e == null, $"GameObject 'e' should be removed\n{TestUtils.AvatarStructureString(avatar)}");
+            Assert.That(f == null, $"GameObject 'f' should be removed\n{TestUtils.AvatarStructureString(avatar)}");
+            Assert.That(renderer0GameObject == null, $"GameObject 'renderer0' should be removed\n{TestUtils.AvatarStructureString(avatar)}");
+            Assert.That(renderer1GameObject == null, $"GameObject 'renderer1' should be removed\n{TestUtils.AvatarStructureString(avatar)}");
         }
 
         [Test]
