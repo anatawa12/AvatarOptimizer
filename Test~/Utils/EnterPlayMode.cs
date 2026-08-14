@@ -15,7 +15,7 @@ namespace Anatawa12.AvatarOptimizer.Test
                 || (EditorSettings.enterPlayModeOptions & EnterPlayModeOptions.DisableDomainReload) == 0
                 )
             {
-                throw new Exception("EnterPlayMode requires EnterPlayModeOptions enabled and enter play mode disabled");
+                throw new Exception("EnterPlayMode requires 'Enter Play Mode Options' enabled and 'Disable Domain Reload' set.");
             }
             _inner = new UnityEngine.TestTools.EnterPlayMode(expectDomainReload: false);
         }
