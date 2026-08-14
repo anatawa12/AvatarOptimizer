@@ -194,23 +194,45 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             if (animator)
                 modifications.Add(AddHumanoidModifications(null, animator), true);
 
+            var hasPlatformAnimations = false;
+
 #if AAO_VRCSDK3_AVATARS
             var descriptor = session.AvatarRootObject.GetComponent<VRCAvatarDescriptor>();
             if (descriptor)
+            {
                 CollectAvatarDescriptorModifications(modifications, descriptor);
+                hasPlatformAnimations = true;
+            }
 #endif
 
 #if AAO_VRM0
             var blendShapeProxy = session.AvatarRootObject.GetComponent<VRM.VRMBlendShapeProxy>();
             if (blendShapeProxy)
+            {
                 modifications.Add(CollectBlendShapeProxyModifications(session, blendShapeProxy), true);
+                hasPlatformAnimations = true;
+            }
 #endif
 
 #if AAO_VRM1
             var vrm10Instance = session.AvatarRootObject.GetComponent<UniVRM10.Vrm10Instance>();
             if (vrm10Instance)
+            {
                 modifications.Add(CollectVrm10InstanceModifications(session, vrm10Instance), true);
+                hasPlatformAnimations = true;
+            }
 #endif
+            if (!hasPlatformAnimations && animator)
+                modifications.Add(NodesMerger.ComponentFromPlayableLayers(
+                    animator,
+                    new[]
+                    {
+                        (
+                            AnimatorWeightState.AlwaysOne,
+                            AnimatorLayerBlendingMode.Override,
+                            ParseAnimatorController(session.AvatarRootObject, animator.runtimeAnimatorController)
+                        )
+                    }), alwaysApplied: true);
         }
 
 #if AAO_VRCSDK3_AVATARS
