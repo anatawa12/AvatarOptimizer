@@ -148,7 +148,7 @@ jobs:
           key: Library-${{ matrix.name }}
           restore-keys: Library-${{ matrix.name }}
 
-      - uses: game-ci/unity-test-runner@v4.0.0
+      - uses: game-ci/unity-test-runner@3b797698e836b3ef3ee896d79499ccb45366e6ef # https://github.com/game-ci/unity-test-runner/pull/315
         id: gameci
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE_V3 }}
