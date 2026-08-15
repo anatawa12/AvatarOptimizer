@@ -131,6 +131,9 @@ jobs:
           # apply https://github.com/bdunderscore/ndmf/pull/826 but for all ndmf versions
           sed -i.bak 's/using (_report\./using (ErrorReport.CurrentReport./' Packages/nadena.dev.ndmf/Editor/API/BuildContext.cs
           rm Packages/nadena.dev.ndmf/Editor/API/BuildContext.cs.bak
+      - name: Disable crunch compression
+        run: |
+          grep --null -rlF 'crunchedCompression: 1' . | xargs -0 -I{} sh -c 'echo "$1"; sed -i.bak "s/crunchedCompression: 1/crunchedCompression: 0/" "$1" && rm "$1.bak"' - {}
 
       - uses: actions/cache@v4
         if: ${{ github.event_name != 'pull_request_target' || github.event.pull_request.head.repo.full_name == github.repository }}
