@@ -17,24 +17,32 @@ jobs:
       matrix:
         include:
           # unity 2022.3.6 test
-          - { name: 2022.3.6f1-latest,  unity: 2022.3.6f1,  vrcsdk: latest }
+          - { name: 2022.3.6f1-latest,        unity: 2022.3.6f1,  vrcsdk: latest, ndmf: latest, }
           # latest SDK with primary unity version
-          - { name: 2022.3.22f1-latest, unity: 2022.3.22f1, vrcsdk: latest }
+          - { name: 2022.3.22f1-latest,       unity: 2022.3.22f1, vrcsdk: latest, ndmf: latest, }
           # all supported major versions
-          - { name: 2022.3.22f1-3.7.0,  unity: 2022.3.22f1, vrcsdk: 3.7.0 }
-          - { name: 2022.3.22f1-3.8.0,  unity: 2022.3.22f1, vrcsdk: 3.8.0 }
-          - { name: 2022.3.22f1-3.9.0,  unity: 2022.3.22f1, vrcsdk: 3.9.0 }
-          - { name: 2022.3.22f1-3.10.0, unity: 2022.3.22f1, vrcsdk: 3.10.0 }
+          - { name: 2022.3.22f1-3.7.0,        unity: 2022.3.22f1, vrcsdk: 3.7.0,  ndmf: latest, }
+          - { name: 2022.3.22f1-3.8.0,        unity: 2022.3.22f1, vrcsdk: 3.8.0,  ndmf: latest, }
+          - { name: 2022.3.22f1-3.9.0,        unity: 2022.3.22f1, vrcsdk: 3.9.0,  ndmf: latest, }
+          - { name: 2022.3.22f1-3.10.0,       unity: 2022.3.22f1, vrcsdk: 3.10.0, ndmf: latest, }
           # new components versions
           # - 3.8.0 # AAO_VRCSDK3_AVATARS_IGNORE_OTHER_PHYSBONE
-          - { name: 2022.3.22f1-3.10.3, unity: 2022.3.22f1, vrcsdk: 3.10.3 } # AAO_VRCSDK3_AVATARS_VRC_RAYCAST
-          - { name: 2022.3.22f1-3.10.4, unity: 2022.3.22f1, vrcsdk: 3.10.4 } # AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER
+          - { name: 2022.3.22f1-3.10.3,       unity: 2022.3.22f1, vrcsdk: 3.10.3, ndmf: latest, } # AAO_VRCSDK3_AVATARS_VRC_RAYCAST
+          - { name: 2022.3.22f1-3.10.4,       unity: 2022.3.22f1, vrcsdk: 3.10.4, ndmf: latest, } # AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER
           # No VRChat SDK Environments
-          - { name: 2022.3.22f1-no-sdk, unity: 2022.3.22f1 }
+          - { name: 2022.3.22f1-no-sdk,       unity: 2022.3.22f1,                 ndmf: latest, }
+          # oldest possible NDMF version
+          - { name: 2022.3.22f1-old-ndmf,     unity: 2022.3.22f1, vrcsdk: 3.10.4, ndmf: 1.8.1, }  # needs https://github.com/bdunderscore/ndmf/commit/ac0198ec327be029e44ecda4326d32ddfc45b094
+
+    env:
+      VRCSDK_VERSION: ${{ matrix.vrcsdk }}
+      NDMF_VERSION: ${{ matrix.ndmf }}
 
     steps:
       # install tools
       - uses: anatawa12/sh-actions/setup-vrc-get@master
+      - name: Set up repository
+        run: vrc-get repo add https://vpm.nadena.dev/vpm-prerelease.json
 
       # prepare project
       - name: Create Project directory
@@ -80,9 +88,9 @@ jobs:
           PlayerSettings:
             serializedVersion: 26
             scriptingDefineSymbols:
-              Android: VRC_SDK_VRCSDK3;UNITY_POST_PROCESSING_STACK_V2
-              Standalone: VRC_SDK_VRCSDK3;UNITY_POST_PROCESSING_STACK_V2
-              iPhone: VRC_SDK_VRCSDK3;UNITY_POST_PROCESSING_STACK_V2
+              Android: ${VRCSDK_VERSION:+VRC_SDK_VRCSDK3;UNITY_POST_PROCESSING_STACK_V2}
+              Standalone: ${VRCSDK_VERSION:+VRC_SDK_VRCSDK3;UNITY_POST_PROCESSING_STACK_V2}
+              iPhone: ${VRCSDK_VERSION:+VRC_SDK_VRCSDK3;UNITY_POST_PROCESSING_STACK_V2}
             apiCompatibilityLevel: 3
             activeInputHandler: 0
           EOF
@@ -97,20 +105,10 @@ jobs:
           persist-credentials: false
           allow-unsafe-pr-checkout: true
       - name: Install VRChat SDK Avatars ${{ matrix.vrcsdk }}
-        env:
-          VRCSDK_VERSION: ${{ matrix.vrcsdk }}
-        run: |-
-          if [ "$VRCSDK_VERSION" == "" ] || [ "$VRCSDK_VERSION" == "latest" ]; then
-            # we remove later if version is none
-            vrc-get install -y com.vrchat.avatars
-          else
-            vrc-get install -y com.vrchat.avatars ${VRCSDK_VERSION}
-          fi
+        run: vrc-get install -y com.vrchat.avatars ${VRCSDK_VERSION/latest/}
+      - name: Install NDMF ${{ matrix.ndmf }}
+        run: vrc-get install -y nadena.dev.ndmf ${NDMF_VERSION/latest/}
       - uses: anatawa12/sh-actions/resolve-vpm-packages@master
-        with:
-          repos: |
-            https://vpm.anatawa12.com/vpm.json
-            https://vpm.nadena.dev/vpm-prerelease.json
       - name: Set up for no VRChat SDK Environment
         if: ${{ !matrix.vrcsdk }}
         run: |-
