@@ -282,6 +282,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             }
         }
 
+#if AAO_VRCSDK3_AVATARS_IGNORE_OTHER_PHYSBONE
         // https://github.com/anatawa12/AvatarOptimizer/issues/1716
         [Test]
         public void Issue1716_MergedRootAffectedByParentPhysBone()
@@ -315,6 +316,7 @@ namespace Anatawa12.AvatarOptimizer.Test
 
             Assert.That(newChain, Is.EqualTo(rootPhysBoneChain));
         }
+#endif
     }
 }
 

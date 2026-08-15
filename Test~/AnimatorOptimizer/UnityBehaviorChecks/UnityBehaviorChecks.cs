@@ -33,7 +33,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
         [UnityTest]
         public IEnumerator DiamondStyleEntryExitFirstFrameCheck()
         {
-            yield return new EnterPlayMode(expectDomainReload: false);
+            yield return new EnterPlayMode();
 
             var tester = LoadTester();
             var controller = LoadCloneAnimatorController("DiamondStyleEntryExit");
@@ -88,7 +88,7 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
         [UnityTest]
         public IEnumerator LinearStyleEntryExitFirstFrameCheck()
         {
-            yield return new EnterPlayMode(expectDomainReload: false);
+            yield return new EnterPlayMode();
 
             var tester = LoadTester();
             var controller = LoadCloneAnimatorController("LinearStyleEntryExit");

@@ -34,7 +34,8 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             AssetDatabase.CopyAsset(path, cloned);
             var loaded = AssetDatabase.LoadAssetAtPath<AnimatorController>(cloned);
             foreach (var o in AssetDatabase.LoadAllAssetsAtPath(cloned))
-                AssetDatabase.RemoveObjectFromAsset(o);
+                if (o != null)
+                    AssetDatabase.RemoveObjectFromAsset(o);
             AssetDatabase.DeleteAsset(cloned);
             return loaded;
         }

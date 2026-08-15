@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using NUnit.Framework.Constraints;
 using NUnit.Framework.Internal;
 using UnityEditor;
@@ -311,6 +312,46 @@ namespace Anatawa12.AvatarOptimizer.Test
             }
         }
 
+        public static string AvatarStructureString(GameObject root)
+        {
+            var sb = new StringBuilder();
+            sb.Append(root.name).Append('\n');
+            PrintGameObject(root, "");
+            return sb.ToString();
+
+            void PrintGameObject(GameObject obj, string indent)
+            {
+                var hasChild = obj.transform.childCount > 0;
+                var componentIndent = hasChild ? "| " : "  ";
+                foreach (var component in obj.GetComponents<Component>())
+                    sb.Append(indent).Append(componentIndent).Append(component.GetType().FullName).Append('\n');
+
+                for (int i = 0; i < obj.transform.childCount; i++)
+                {
+                    var isLast = i == obj.transform.childCount - 1;
+                    var child = obj.transform.GetChild(i).gameObject;
+
+                    if (isLast)
+                    {
+                        sb.Append(indent).Append("`-- ").Append(child.name).Append('\n');
+                        PrintGameObject(child, indent + "    ");
+                    }
+                    else
+                    {
+                        sb.Append(indent).Append("+-- ").Append(child.name).Append('\n');
+                        PrintGameObject(child, indent + "|   ");
+                    }
+                }
+            }
+        }
+/*
+Test
+| Transform
++-- Test
+|   Test
+`-- Test
+ */
+
         public static void AddValueFormatters()
         {
 #if AAO_VRCSDK3_AVATARS
@@ -324,7 +365,7 @@ namespace Anatawa12.AvatarOptimizer.Test
                 $"restPosition={bone.restPosition}, " +
                 $"restRotation={bone.restRotation.eulerAngles:G}, " +
                 $"restScale={bone.restScale:G}, " +
-                $"localGravityDirection={bone.localGravityDirection:G}, " +
+            //  $"localGravityDirection={bone.localGravityDirection:G}, " + // Only available in 3.7.1 and this is not much useful as introducing #if
                 $"sphereCollision: {bone.sphereCollision}");
 #endif
             TryAddCustomValueFormatter<Transform>(bone => $"Transform({Utils.RelativePath(root: null, bone.transform)})");

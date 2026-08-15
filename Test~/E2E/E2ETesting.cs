@@ -7,12 +7,12 @@ using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using UnityEngine.Animations;
 using UnityEngine.Rendering;
-using VRC.Dynamics;
 using Debug = UnityEngine.Debug;
 using Object = System.Object;
 #if AAO_VRCSDK3_AVATARS
-using UnityEngine.Animations;
+using VRC.Dynamics;
 using VRC.SDK3.Dynamics.PhysBone.Components;
 #endif
 
@@ -199,7 +199,7 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
                         .AddPropertyBinding("d", typeof(GameObject), "m_IsActive",
                             new Keyframe(0, 1), new Keyframe(1, 0)));
                 })
-                .AddLayer("LayerB", sm =>
+                .AddLayer("LayerB", 1, sm =>
                 {
                     sm.NewClipState("StateBE on", clip => clip
                         .AddPropertyBinding("a/b", typeof(GameObject), "m_IsActive",
@@ -207,7 +207,7 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
                         .AddPropertyBinding("d/e", typeof(GameObject), "m_IsActive",
                             new Keyframe(0, 0), new Keyframe(1, 1)));
                 })
-                .AddLayer("LayerC", sm =>
+                .AddLayer("LayerC", 1, sm =>
                 {
                     sm.NewClipState("StateC", clip => clip
                         .AddPropertyBinding("a/b/c", typeof(GameObject), "m_IsActive",
@@ -224,18 +224,18 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             // assert that meshes are merged as expected, to verify test runs correctly
             // $$AAO_AUTO_MERGE_SMR_INTERMEDIATE_0 should be at root and $$AAO_AUTO_MERGE_SKINNED_MESH_1 in child
             var intermediate = avatar.transform.Find("$$AAO_AUTO_MERGE_SMR_INTERMEDIATE_0");
-            Assert.That(intermediate, Is.Not.Null, "Intermediate merged GameObject should exist");
+            Assert.That(intermediate, Is.Not.Null, $"Intermediate merged GameObject should exist\n{TestUtils.AvatarStructureString(avatar)}");
             var mergedMesh = intermediate.Find("$$AAO_AUTO_MERGE_SKINNED_MESH_1");
-            Assert.That(mergedMesh, Is.Not.Null, "Merged SkinnedMeshRenderer should exist");
-            Assert.That(mergedMesh.GetComponent<SkinnedMeshRenderer>(), Is.Not.Null, "Merged SkinnedMeshRenderer component should exist");
-            Assert.That(a == null, "GameObject 'a' should be removed");
-            Assert.That(b == null, "GameObject 'b' should be removed");
-            Assert.That(c == null, "GameObject 'c' should be removed");
-            Assert.That(d == null, "GameObject 'd' should be removed");
-            Assert.That(e == null, "GameObject 'e' should be removed");
-            Assert.That(f == null, "GameObject 'f' should be removed");
-            Assert.That(renderer0GameObject == null, "GameObject 'renderer0' should be removed");
-            Assert.That(renderer1GameObject == null, "GameObject 'renderer1' should be removed");
+            Assert.That(mergedMesh, Is.Not.Null, $"Merged SkinnedMeshRenderer should exist\n{TestUtils.AvatarStructureString(avatar)}");
+            Assert.That(mergedMesh.GetComponent<SkinnedMeshRenderer>(), Is.Not.Null, $"Merged SkinnedMeshRenderer component should exist\n{TestUtils.AvatarStructureString(avatar)}");
+            Assert.That(a == null, $"GameObject 'a' should be removed\n{TestUtils.AvatarStructureString(avatar)}");
+            Assert.That(b == null, $"GameObject 'b' should be removed\n{TestUtils.AvatarStructureString(avatar)}");
+            Assert.That(c == null, $"GameObject 'c' should be removed\n{TestUtils.AvatarStructureString(avatar)}");
+            Assert.That(d == null, $"GameObject 'd' should be removed\n{TestUtils.AvatarStructureString(avatar)}");
+            Assert.That(e == null, $"GameObject 'e' should be removed\n{TestUtils.AvatarStructureString(avatar)}");
+            Assert.That(f == null, $"GameObject 'f' should be removed\n{TestUtils.AvatarStructureString(avatar)}");
+            Assert.That(renderer0GameObject == null, $"GameObject 'renderer0' should be removed\n{TestUtils.AvatarStructureString(avatar)}");
+            Assert.That(renderer1GameObject == null, $"GameObject 'renderer1' should be removed\n{TestUtils.AvatarStructureString(avatar)}");
         }
 
         [Test]
@@ -436,6 +436,7 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             Assert.That(smr.sharedMaterials, Has.Length.EqualTo(3), "Material slots should NOT be merged.");
         }
 
+#if AAO_VRCSDK3_AVATARS
         [Test]
         public void Issue1655_AutoMergePB_Should_Not_Merge_PhysBones_Targeting_Same_Target()
         {
@@ -469,7 +470,6 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             Assert.That(pb2 != null, "PB2 should not be merged");
         }
 
-#if AAO_VRCSDK3_AVATARS
         [Test]
         public void PR1675_AutoMergePB_Targeting_External_Bone()
         {
@@ -498,6 +498,7 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             });
         }
         
+#if !AAO_VRCSDK3_AVATARS_3_8_0 // There is a bug in VRCSDK 3.8.0
         [Test]
         public void PR1675_ManualMergePB_Targeting_External_Bone()
         {
@@ -531,6 +532,7 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
                 c.ExpectError(ErrorSeverity.Error, "MergePhysBone:error:physbone-outside-of-avatar-root");
             });
         }
+#endif
 
         // similar to 1645 but disabled with IsActive of parent GameObject, which is more common case and was not fixed by 1645 fix.
         [Test]
@@ -590,7 +592,7 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             Assert.That(child.transform.parent, Is.EqualTo(parent.transform));
         }
 
-#if AAO_VRCSDK3_AVATARS
+#if AAO_VRCSDK3_AVATARS_IGNORE_OTHER_PHYSBONE
         // The problematic case: We broke ignore other PhysBones
         // https://github.com/anatawa12/AvatarOptimizer/issues/1713
         [Test]
@@ -659,7 +661,9 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             var afterBones = parentPhysBone.bones.ToList();
             Assert.That(afterBones, Is.EqualTo(beforeBones));
         }
+#endif
 
+#if AAO_VRCSDK3_AVATARS
         // https://github.com/anatawa12/AvatarOptimizer/issues/1722
         // MergePhysBoneCollider was checking IsActive animation only on the target bone's hierarchy,
         // so colliders targeting the same external bone but with different toggle states on their own
