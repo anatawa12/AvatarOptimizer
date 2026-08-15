@@ -1,3 +1,4 @@
+#if AAO_VRCSDK3_AVATARS
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Build;
@@ -107,3 +108,4 @@ internal class DetectPlayerBuildErrorUnityBug : IVRCSDKPreprocessAvatarCallback,
         }
     }
 }
+#endif

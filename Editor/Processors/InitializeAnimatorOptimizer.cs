@@ -54,8 +54,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                             ProcessController(layer.animatorController, component.gameObject);
                         foreach (ref var layer in avatarDescriptor.specialAnimationLayers.AsSpan())
                             ProcessController(layer.animatorController, component.gameObject);
-#endif
                         break;
+#endif
                     // do not run animator optimizer with unknown components
                     default:
                         continue;

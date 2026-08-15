@@ -28,11 +28,11 @@ namespace Anatawa12.AvatarOptimizer
         // - Track merging Components
         // - Track VrmFirstPersonFlags
 
-        private readonly IReadOnlyDictionary<int, BeforeGameObjectTree> _beforeGameObjectInfos;
+        private readonly IReadOnlyDictionary<EntityId, BeforeGameObjectTree> _beforeGameObjectInfos;
 
         // key: instanceId
-        private readonly Dictionary<int, BuildingComponentInfo> _originalComponentInfos = new();
-        private readonly Dictionary<int, BuildingComponentInfo> _componentInfos = new();
+        private readonly Dictionary<EntityId, BuildingComponentInfo> _originalComponentInfos = new();
+        private readonly Dictionary<EntityId, BuildingComponentInfo> _componentInfos = new();
 
         public ObjectMappingBuilder(GameObject rootObject)
         {
@@ -40,18 +40,18 @@ namespace Anatawa12.AvatarOptimizer
             var transforms = rootObject.GetComponentsInChildren<Transform>(true);
 
             _beforeGameObjectInfos = transforms
-                .ToDictionary(t => t.gameObject.GetInstanceID(), t => new BeforeGameObjectTree(t.gameObject));
+                .ToDictionary(t => t.gameObject.GetEntityId(), t => new BeforeGameObjectTree(t.gameObject));
 
             foreach (var transform in transforms)
             {
                 if (!transform.parent) continue;
-                if (!_beforeGameObjectInfos.TryGetValue(transform.parent.gameObject.GetInstanceID(),
+                if (!_beforeGameObjectInfos.TryGetValue(transform.parent.gameObject.GetEntityId(),
                         out var parentInfo)) continue;
-                var selfInfo = _beforeGameObjectInfos[transform.gameObject.GetInstanceID()];
+                var selfInfo = _beforeGameObjectInfos[transform.gameObject.GetEntityId()];
                 parentInfo.Children[transform.GetSiblingIndex()] = selfInfo;
             }
 
-            _beforeGameObjectInfos[rootObject.GetInstanceID()].InitializeRecursive();
+            _beforeGameObjectInfos[rootObject.GetEntityId()].InitializeRecursive();
             
 #if AAO_VRM0
             if (rootObject.TryGetComponent<VRMFirstPerson>(out var firstPerson)
@@ -99,17 +99,17 @@ namespace Anatawa12.AvatarOptimizer
         public void RecordMergeComponent<T>(T from, T mergeTo) where T: Component
         {
             Tracing.Trace(TracingArea.BuildObjectMapping, $"RecordMergeComponent: {from} -> {mergeTo}");
-            if (!_componentInfos.TryGetValue(mergeTo.GetInstanceID(), out var mergeToInfo))
+            if (!_componentInfos.TryGetValue(mergeTo.GetEntityId(), out var mergeToInfo))
             {
                 var newMergeToInfo = new BuildingComponentInfo(mergeTo);
-                _originalComponentInfos.Add(mergeTo.GetInstanceID(), newMergeToInfo);
-                _componentInfos.Add(mergeTo.GetInstanceID(), newMergeToInfo);
+                _originalComponentInfos.Add(mergeTo.GetEntityId(), newMergeToInfo);
+                _componentInfos.Add(mergeTo.GetEntityId(), newMergeToInfo);
                 GetComponentInfo(from).MergedTo(newMergeToInfo);
             }
             else
             {
                 var newMergeToInfo = new BuildingComponentInfo(mergeTo);
-                _componentInfos[mergeTo.GetInstanceID()]= newMergeToInfo;
+                _componentInfos[mergeTo.GetEntityId()] = newMergeToInfo;
                 mergeToInfo.MergedTo(newMergeToInfo);
                 GetComponentInfo(from).MergedTo(newMergeToInfo);
             }
@@ -169,15 +169,15 @@ namespace Anatawa12.AvatarOptimizer
             _componentInfos.Values.Where(x => !x.IsMerged);
 
         public VrmFirstPersonFlag? GetVrmFirstPersonFlag(ComponentOrGameObject component)
-            => _componentInfos.TryGetValue(component.GetInstanceID(), out var info) ? info.VrmFirstPersonFlag : null;
+            => _componentInfos.TryGetValue(component.GetEntityId(), out var info) ? info.VrmFirstPersonFlag : null;
 
         private BuildingComponentInfo GetComponentInfo(ComponentOrGameObject component)
         {
-            if (!_componentInfos.TryGetValue(component.GetInstanceID(), out var info))
+            if (!_componentInfos.TryGetValue(component.GetEntityId(), out var info))
             {
                 info = new BuildingComponentInfo(component);
-                _originalComponentInfos.Add(component.GetInstanceID(), info);
-                _componentInfos.Add(component.GetInstanceID(), info);
+                _originalComponentInfos.Add(component.GetEntityId(), info);
+                _componentInfos.Add(component.GetEntityId(), info);
             }
             return info;
         }
@@ -275,7 +275,7 @@ namespace Anatawa12.AvatarOptimizer
 
         class BuildingComponentInfo : AnimationComponentInfo<TPropInfo>
         {
-            internal readonly int InstanceId;
+            internal readonly EntityId InstanceId;
             internal readonly Type Type;
 
             // id in this -> id in merged
@@ -289,7 +289,7 @@ namespace Anatawa12.AvatarOptimizer
 
             public BuildingComponentInfo(ComponentOrGameObject component)
             {
-                InstanceId = component.GetInstanceID();
+                InstanceId = component.GetEntityId();
                 Type = component.Value.GetType();
             }
 
@@ -377,7 +377,7 @@ namespace Anatawa12.AvatarOptimizer
                 get
                 {
                     if (_mergedInto != null) throw new Exception("Already Merged");
-                    var instance = EditorUtility.InstanceIDToObject(InstanceId);
+                    var instance = UnityObjectIDHelper.EntityIdToObject(InstanceId);
                     return new ComponentOrGameObject(instance ? instance : null);
                 }
             }

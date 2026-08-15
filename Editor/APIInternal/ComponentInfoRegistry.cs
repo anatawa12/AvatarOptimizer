@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 using Anatawa12.AvatarOptimizer.APIInternal.Externals;
 using UnityEditor;
 using UnityEngine;
@@ -13,7 +15,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         [InitializeOnLoadMethod]
         static void FindAllInfoImplements()
         {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            foreach (var assembly in AssemblyCollector.GetAssemblies())
             foreach (var type in assembly.GetTypes())
             foreach (ComponentInformationAttributeBase attribute in type.GetCustomAttributes(
                          typeof(ComponentInformationAttributeBase), false))

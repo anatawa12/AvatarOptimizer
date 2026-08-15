@@ -201,7 +201,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                                 return false;
 
                             case (Object obj, var obj2):
-                                return obj.GetInstanceID() == obj2.GetInstanceID();
+                                return obj.GetEntityId() == obj2.GetEntityId();
                         }
                     }
                     else
