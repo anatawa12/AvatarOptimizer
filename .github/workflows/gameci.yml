@@ -116,14 +116,20 @@ jobs:
           persist-credentials: false
           allow-unsafe-pr-checkout: true
       - name: Install VRChat SDK Avatars ${{ matrix.vrcsdk }}
+        if: ${{ matrix.vrcsdk }}
         run: vrc-get install -y com.vrchat.avatars ${VRCSDK_VERSION/latest/}
+      - name: Set up dummy SDK Avatars if no-SDK mode ${{ matrix.vrcsdk }}
+        if: ${{ !matrix.vrcsdk }}
+        run: |
+          mkdir -p Packages/com.vrchat.avatars && echo '{"name":"com.vrchat.avatars","version":"0.0.0"}' > Packages/com.vrchat.avatars/package.json
+          mkdir -p Packages/com.vrchat.base && echo '{"name":"com.vrchat.base","version":"0.0.0"}' > Packages/com.vrchat.base/package.json
       - name: Install NDMF ${{ matrix.ndmf }}
         run: vrc-get install -y nadena.dev.ndmf ${NDMF_VERSION/latest/}
       - uses: anatawa12/sh-actions/resolve-vpm-packages@master
       - name: Set up for no VRChat SDK Environment
         if: ${{ !matrix.vrcsdk }}
         run: |-
-          vrc-get remove -y com.vrchat.avatars com.vrchat.base
+          rm -rf Packages/{com.vrchat.avatars,com.vrchat.base}
           # ndmf requires several external libraries and manual activation
           ln -s Dependencies\~ Packages/nadena.dev.ndmf/Dependencies
       - name: Apply patch for NDMF
