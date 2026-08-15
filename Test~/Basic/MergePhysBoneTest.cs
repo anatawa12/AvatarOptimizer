@@ -220,10 +220,12 @@ namespace Anatawa12.AvatarOptimizer.Test
             void Compare(string prop, float reference, float refRatio, float merged, float mergedRatio)
             {
                 // Our computation may encounter something like 1/11 and unity computation is not precise so we allow some error.
-                // 840 ulp is maximum error for 0.0005% error range for normal float values.
-                // If you found this test is flaky, please check the error message and consider to increase this error range.
-                // The reason why we use ULPs instead of percentage is that tiny values can produce large percentage error especially for subnormal values, and we want to allow some error even for tiny values.
-                Assert.That(merged, Is.EqualTo(reference).Within(840).Ulps, $"{prop} of chain1 does not match reference (refRatio: {refRatio}, mergedRatio: {mergedRatio})");
+                // We have to consider both errors coming from input and output.
+                // Therefore, we don't use Within().ulps, use our computed error instead.
+                var ratioError = 0.00005f;
+var refError = Mathf.Abs(reference) * 0.0005f;
+                Assert.That(merged, Is.EqualTo(reference).Within(Mathf.Max(ratioError, refError)),
+                    $"{prop} of chain1 does not match reference (refRatio: {refRatio}, mergedRatio: {mergedRatio})");
             }
         }
 
