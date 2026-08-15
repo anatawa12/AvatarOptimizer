@@ -1,3 +1,4 @@
+#if AAO_VRCSDK3_AVATARS
 using System.Collections.Generic;
 using System.Linq;
 using Anatawa12.AvatarOptimizer.AnimatorParsersV2;
@@ -788,3 +789,4 @@ public class ReplaceEndBoneWithEndpointPositionTest
 
     #endregion
 }
+#endif

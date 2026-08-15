@@ -3,7 +3,7 @@ name: GameCI
 
 on:
   push:
-    branches: [ master, master-* ]
+    branches: [ master, master-*, workflow-tests/* ]
   pull_request_target: {}
   workflow_dispatch: {}
 
@@ -16,37 +16,119 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - unity: 2022
-            projectRef: d2e10f445881af7cc806abd2fc99a0651942dbb8 # project-for-test-2022
-        unity:
-          - 2022
+          # unity 2022.3.6 test
+          - { name: 2022.3.6f1-latest,        unity: 2022.3.6f1,  vrcsdk: latest, ndmf: latest, }
+          # latest SDK with primary unity version
+          - { name: 2022.3.22f1-latest,       unity: 2022.3.22f1, vrcsdk: latest, ndmf: latest, }
+          # all supported major versions
+          - { name: 2022.3.22f1-3.7.0,        unity: 2022.3.22f1, vrcsdk: 3.7.0,  ndmf: latest, }
+          - { name: 2022.3.22f1-3.8.0,        unity: 2022.3.22f1, vrcsdk: 3.8.0,  ndmf: latest, }
+          - { name: 2022.3.22f1-3.9.0,        unity: 2022.3.22f1, vrcsdk: 3.9.0,  ndmf: latest, }
+          - { name: 2022.3.22f1-3.10.0,       unity: 2022.3.22f1, vrcsdk: 3.10.0, ndmf: latest, }
+          # new components versions
+          # - 3.8.0 # AAO_VRCSDK3_AVATARS_IGNORE_OTHER_PHYSBONE
+          - { name: 2022.3.22f1-3.10.3,       unity: 2022.3.22f1, vrcsdk: 3.10.3, ndmf: latest, } # AAO_VRCSDK3_AVATARS_VRC_RAYCAST
+          - { name: 2022.3.22f1-3.10.4,       unity: 2022.3.22f1, vrcsdk: 3.10.4, ndmf: latest, } # AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER
+          # No VRChat SDK Environments
+          - { name: 2022.3.22f1-no-sdk,       unity: 2022.3.22f1,                 ndmf: latest, }
+          # oldest possible NDMF version
+          - { name: 2022.3.22f1-old-ndmf,     unity: 2022.3.22f1, vrcsdk: 3.10.4, ndmf: 1.8.1, }  # needs https://github.com/bdunderscore/ndmf/commit/ac0198ec327be029e44ecda4326d32ddfc45b094
+
+    env:
+      VRCSDK_VERSION: ${{ matrix.vrcsdk }}
+      NDMF_VERSION: ${{ matrix.ndmf }}
+
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ matrix.projectRef }}
-          persist-credentials: false
+      # install tools
+      - uses: anatawa12/sh-actions/setup-vrc-get@master
+      - name: Set up repository
+        run: vrc-get repo add https://vpm.nadena.dev/vpm-prerelease.json
+
+      # prepare project
+      - name: Create Project directory
+        shell: bash
+        env: 
+          UNITY_VERSION: ${{ matrix.unity }}
+        run: |-
+          mkdir -p Assets Packages ProjectSettings
+          echo "m_EditorVersion: $UNITY_VERSION" > ProjectSettings/ProjectVersion.txt
+          # create manifest.json with necessary dependencies
+          # com.vrchat.base has missing dependency to com.unity.ugui (only 3.7.x), com.unity.modules.video and com.unity.modules.physics2d
+          # com.unity.xr.oculus, a package referenced by com.vrchat.base, has missing dependency to com.unity.modules.androidjni
+          # NDMF had missing dependency to com.unity.modules.animation until https://github.com/bdunderscore/ndmf/pull/655 was merged in 1.8.0
+          # We need com.unity.test-framework and com.unity.testtools.codecoverage for tests
+          cat <<EOF > Packages/manifest.json
+          {
+            "dependencies": {
+              "com.unity.modules.androidjni": "1.0.0",
+              "com.unity.modules.animation": "1.0.0",
+              "com.unity.modules.video": "1.0.0",
+              "com.unity.modules.physics2d": "1.0.0",
+              "com.unity.ugui": "1.0.0",
+              "com.unity.test-framework": "1.1.33",
+              "com.unity.testtools.codecoverage": "1.2.7"
+            }
+          }
+          EOF
+          # enable enter play mode settings
+          cat <<EOF > ProjectSettings/EditorSettings.asset
+          %YAML 1.1
+          %TAG !u! tag:unity3d.com,2011:
+          --- !u!159 &1
+          EditorSettings:
+            serializedVersion: 9
+            m_EnterPlayModeOptionsEnabled: 1
+            m_EnterPlayModeOptions: 3
+          EOF
+          # configure player settings
+          cat <<EOF > ProjectSettings/ProjectSettings.asset
+          %YAML 1.1
+          %TAG !u! tag:unity3d.com,2011:
+          --- !u!129 &1
+          PlayerSettings:
+            serializedVersion: 26
+            scriptingDefineSymbols:
+              Android: ${VRCSDK_VERSION:+VRC_SDK_VRCSDK3;UNITY_POST_PROCESSING_STACK_V2}
+              Standalone: ${VRCSDK_VERSION:+VRC_SDK_VRCSDK3;UNITY_POST_PROCESSING_STACK_V2}
+              iPhone: ${VRCSDK_VERSION:+VRC_SDK_VRCSDK3;UNITY_POST_PROCESSING_STACK_V2}
+            apiCompatibilityLevel: 3
+            activeInputHandler: 0
+          EOF
+          # link tests
+          ln -s "../Packages/com.anatawa12.avatar-optimizer/Test~" Assets/Test
+
+      # prepare packages
       - uses: actions/checkout@v4
         with:
           path: Packages/com.anatawa12.avatar-optimizer
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
           allow-unsafe-pr-checkout: true
-      - uses: anatawa12/sh-actions/setup-vrc-get@master
-      - run: vrc-get install -y com.vrchat.avatars
+      - name: Install VRChat SDK Avatars ${{ matrix.vrcsdk }}
+        run: vrc-get install -y com.vrchat.avatars ${VRCSDK_VERSION/latest/}
+      - name: Install NDMF ${{ matrix.ndmf }}
+        run: vrc-get install -y nadena.dev.ndmf ${NDMF_VERSION/latest/}
       - uses: anatawa12/sh-actions/resolve-vpm-packages@master
-        with:
-          repos: |
-            https://vpm.anatawa12.com/vpm.json
-            https://vpm.nadena.dev/vpm-prerelease.json
+      - name: Set up for no VRChat SDK Environment
+        if: ${{ !matrix.vrcsdk }}
+        run: |-
+          vrc-get remove -y com.vrchat.avatars com.vrchat.base
+          # ndmf requires several external libraries and manual activation
+          ln -s Dependencies\~ Packages/nadena.dev.ndmf/Dependencies
+      - name: Apply patch for NDMF
+        run: |-
+          # apply https://github.com/bdunderscore/ndmf/pull/826 but for all ndmf versions
+          sed -i.bak 's/using (_report\./using (ErrorReport.CurrentReport./' Packages/nadena.dev.ndmf/Editor/API/BuildContext.cs
+          rm Packages/nadena.dev.ndmf/Editor/API/BuildContext.cs.bak
 
       - uses: actions/cache@v4
         if: ${{ github.event_name != 'pull_request_target' || github.event.pull_request.head.repo.full_name == github.repository }}
         with:
           path: Library
-          key: Library-${{ matrix.unity }}
-          restore-keys: Library-${{ matrix.unity }}
+          key: Library-${{ matrix.name }}
+          restore-keys: Library-${{ matrix.name }}
 
-      - uses: game-ci/unity-test-runner@v3
+      - uses: game-ci/unity-test-runner@v4.0.0
         id: gameci
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE_V3 }}
@@ -54,7 +136,7 @@ jobs:
           testMode: EditMode
           coverageOptions: generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+com.anatawa12.avatar-optimizer.*,-*.test.*
           customParameters: 
-          checkName: Test results ${{ matrix.unity }}
+          checkName: Test results ${{ matrix.name }}
 
       - name: "Show files at root folder to find crash log"
         if: always()
@@ -63,12 +145,17 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: Test results ${{ matrix.unity }}
+          name: All artifacts ${{ matrix.name }}
+          path: artifacts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Test results ${{ matrix.name }}
           path: ${{ steps.gameci.outputs.artifactsPath }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: Coverage results ${{ matrix.unity }}
+          name: Coverage results ${{ matrix.name }}
           path: ${{ steps.gameci.outputs.coveragePath }}
 
   conclude-gameci:
