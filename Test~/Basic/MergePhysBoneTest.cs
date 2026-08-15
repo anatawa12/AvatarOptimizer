@@ -220,10 +220,10 @@ namespace Anatawa12.AvatarOptimizer.Test
             void Compare(string prop, float reference, float refRatio, float merged, float mergedRatio)
             {
                 // Our computation may encounter something like 1/11 and unity computation is not precise so we allow some error.
-                // We have to consider both error came from input and output.
+                // We have to consider both errors coming from input and output.
                 // Therefore, we don't use Within().ulps, use our computed error instead.
                 var ratioError = 0.00005f;
-                var refError = reference * 0.0005f;
+var refError = Mathf.Abs(reference) * 0.0005f;
                 Assert.That(merged, Is.EqualTo(reference).Within(Mathf.Max(ratioError, refError)),
                     $"{prop} of chain1 does not match reference (refRatio: {refRatio}, mergedRatio: {mergedRatio})");
             }
