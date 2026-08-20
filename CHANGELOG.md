@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Missing localization for few messages `#1767`
+- False positive "Differently animated BlendShape is detected" error in Merge Skinned Mesh with MA BlendShape Sync `#1778`
 
 ### Security
 
