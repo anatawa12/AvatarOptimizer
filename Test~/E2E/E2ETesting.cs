@@ -1146,5 +1146,58 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
         }
 
         #endregion
+
+        [Test]
+        public void Issue1777MergeSmrMergeSameNameSameCurveWithDifferentKeySettings()
+        {
+            // mesh A and B has blendShape named "BlendShape" and merged to single mesh with manually configured MergeSMR
+            // Animation targeting A.BlendShape and B.BlendShape have curves with same behavior, but different keyframe options
+            var avatar = TestUtils.NewAvatar();
+            var meshA = TestUtils.NewCubeMesh();
+            meshA.AddBlendShapeFrame("BlendShape", 100f, TestUtils.NewCubeBlendShapeFrame((0, Vector3.up)), null, null);
+            var meshB = TestUtils.NewCubeMesh();
+            meshB.AddBlendShapeFrame("BlendShape", 100f, TestUtils.NewCubeBlendShapeFrame((0, Vector3.up)), null, null);
+            var goA = Utils.NewGameObject("MeshA", avatar.transform);
+            var goB = Utils.NewGameObject("MeshB", avatar.transform);
+            var smrA = goA.AddComponent<SkinnedMeshRenderer>();
+            var smrB = goB.AddComponent<SkinnedMeshRenderer>();
+            smrA.sharedMesh = meshA;
+            smrB.sharedMesh = meshB;
+            var mergeSMRGO = Utils.NewGameObject("MergeSMR", avatar.transform);
+            var mergeSMRRenderer = mergeSMRGO.AddComponent<SkinnedMeshRenderer>();
+            var mergeSMR = mergeSMRGO.AddComponent<MergeSkinnedMesh>();
+            mergeSMR.blendShapeMode = MergeSkinnedMesh.BlendShapeMode.MergeSameName;
+            mergeSMR.renderersSet.SetValueNonPrefab(new[] { smrA, smrB });
+            mergeSMRRenderer.probeAnchor = mergeSMR.transform;
+            mergeSMRRenderer.rootBone = mergeSMR.transform;
+
+            var curveA = new AnimationCurve(new Keyframe(0, 0), new Keyframe(1, 100));
+            var curveB = new AnimationCurve(curveA.keys)
+                { preWrapMode = curveA.preWrapMode, postWrapMode = curveA.postWrapMode };
+
+            // curveB has broken, free tangents, which is the case with Modular Avatar 1.18.0..=1.18.1
+            for (var i = 0; i < curveB.length; i++)
+            {
+                AnimationUtility.SetKeyBroken(curveB, i, true);
+                AnimationUtility.SetKeyLeftTangentMode(curveB, i, AnimationUtility.TangentMode.Free);
+                AnimationUtility.SetKeyRightTangentMode(curveB, i, AnimationUtility.TangentMode.Free);
+            }
+
+            TestUtils.SetFxLayer(avatar, new AnimatorControllerBuilder("")
+                .AddLayer("Base Layer", sm =>
+                {
+                    sm.NewClipState("AnimateBlendShapes", clip => clip
+                        .AddPropertyBinding("MeshA", typeof(SkinnedMeshRenderer), "blendShape.BlendShape", curveA)
+                        .AddPropertyBinding("MeshB", typeof(SkinnedMeshRenderer), "blendShape.BlendShape", curveB));
+                })
+                .Build());
+
+            LogTestUtility.Test(_ =>
+            {
+                AvatarProcessor.ProcessAvatar(avatar);
+            });
+
+            // if no error is reported, test is passed
+        }
     }
 }
