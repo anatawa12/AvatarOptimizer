@@ -148,15 +148,13 @@ jobs:
           key: Library-${{ matrix.name }}
           restore-keys: Library-${{ matrix.name }}
 
-      - uses: game-ci/unity-test-runner@3b797698e836b3ef3ee896d79499ccb45366e6ef # https://github.com/game-ci/unity-test-runner/pull/315
+      - uses: anatawa12/unity-test-runner@v0.1
         id: gameci
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE_V3 }}
         with:
           testMode: EditMode
+          licenseXml: ${{ secrets.UNITY_LICENSE_XML }}
           coverageOptions: generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+com.anatawa12.avatar-optimizer.*,-*.test.*
           customParameters: 
-          checkName: Test results ${{ matrix.name }}
 
       - name: "Show files at root folder to find crash log"
         if: always()
@@ -171,12 +169,7 @@ jobs:
         if: always()
         with:
           name: Test results ${{ matrix.name }}
-          path: ${{ steps.gameci.outputs.artifactsPath }}
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: Coverage results ${{ matrix.name }}
-          path: ${{ steps.gameci.outputs.coveragePath }}
+          path: artifacts
 
   conclude-gameci:
     runs-on: ubuntu-latest
