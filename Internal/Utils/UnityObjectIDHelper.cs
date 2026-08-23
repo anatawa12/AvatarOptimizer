@@ -39,9 +39,9 @@ public static class UnityObjectIDHelper
 /// <summary>
 /// The polyfill for EntityId introduced in Unity 6000.2.
 /// </summary>
-public struct EntityId : IEquatable<EntityId>
+public readonly struct EntityId : IEquatable<EntityId>
 {
-    public int InstanceID;
+    public readonly int InstanceID;
 
     public EntityId(int id)
     {
