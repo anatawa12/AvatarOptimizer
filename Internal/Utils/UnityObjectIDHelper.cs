@@ -34,6 +34,13 @@ public static class UnityObjectIDHelper
         return new (unityObject.objectReferenceInstanceIDValue);
 #endif
     }
+
+    public static System.Text.StringBuilder Append(this System.Text.StringBuilder self, EntityId entityId) =>
+#if UNITY_6000_4_OR_NEWER
+        self.Append((object)entityId);
+#else
+        self.Append(entityId);
+#endif
 }
 #if !UNITY_6000_2_OR_NEWER
 /// <summary>
