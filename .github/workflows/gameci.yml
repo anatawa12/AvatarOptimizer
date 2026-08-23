@@ -39,7 +39,7 @@ jobs:
           # VRCSDK doesn't support unity 6000 so we test without VRCSDK
           - { name: 6000.0.59f2,              unity: 6000.0.59f2,                 ndmf: latest, } # minimum 6000.0 versions w/o security issue
           - { name: 6000.1.17f1,              unity: 6000.1.17f1,                 ndmf: latest, } # minimum 6000.1 versions w/o security issue
-          - { name: 6000.2.6f2,               unity: 6000.2.6f2,                  ndmf: latest, } # minimum 6000.2 versions w/o security issue
+          - { name: 6000.2.12f1,              unity: 6000.2.12f1,                 ndmf: latest, } # minimum 6000.2 versions with symlink issue fixed UUM-119544: https://issuetracker.unity.com/issues/21352/
           - { name: 6000.3.0f1,               unity: 6000.3.0f1,                  ndmf: latest, }
           - { name: 6000.4.0f1,               unity: 6000.4.0f1,                  ndmf: latest, }
           - { name: 6000.5.0f1,               unity: 6000.5.0f1,                  ndmf: latest, }
