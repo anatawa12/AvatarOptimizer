@@ -38,7 +38,7 @@ namespace Anatawa12.AvatarOptimizer.Test
 
         public static IEnumerable<TextureFormat> AllTextureFormats()
         {
-            return Enum.GetValues(typeof(TextureFormat)).Cast<TextureFormat>().Where(x => (int)x <= 0);
+            return Enum.GetValues(typeof(TextureFormat)).Cast<TextureFormat>().Where(x => (int)x > 0);
         }
 
         public static IEnumerable<GraphicsFormat> GraphicsFormatsForAllTextureFormats() =>
