@@ -30,7 +30,7 @@ internal class LiltoonShaderInformation : ShaderInformation
     private static void Register()
     {
         // get current version value
-        if (Utils.GetTypeFromName("lilToon.lilConstants") is not {} lilConstantsType) return;
+        if (Type.GetType("lilToon.lilConstants, lilToon.Editor") is not {} lilConstantsType) return;
         if (lilConstantsType.GetField("currentVersionValue", BindingFlags.Public | BindingFlags.Static) is not {} currentVersionValueField) return;
         if (currentVersionValueField.GetValue(null) is not int versionValue) return;
 

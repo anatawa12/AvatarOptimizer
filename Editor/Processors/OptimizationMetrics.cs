@@ -275,12 +275,14 @@ internal static class OptimizationMetricsImpl
                         or GraphicsFormat.RG_EAC_UNorm or GraphicsFormat.RG_EAC_SNorm
                         => TextureSize2dBlocked(texture, 4, 4, 16),
 
+#pragma warning disable CS0618 // Type or member is obsolete // "Texture compression format PVRTC has been deprecated and will be removed in a future release" since 6000.1.0a9
                     // PVRTC 2BPP: 4x8 => 64 bit / 8 bytes with bilinear (4 channels, requires Power of Two size?)
                     GraphicsFormat.RGB_PVRTC_2Bpp_SRGB or GraphicsFormat.RGB_PVRTC_2Bpp_UNorm or GraphicsFormat.RGBA_PVRTC_2Bpp_SRGB or GraphicsFormat.RGBA_PVRTC_2Bpp_UNorm
                         => TextureSize2dBlocked(texture, 4, 8, 8),
                     // PVRTC 4BPP: 4x4 => 64 bit / 8 bytes with bilinear (4 channels, requires Power of Two size?)
                     GraphicsFormat.RGB_PVRTC_4Bpp_SRGB or GraphicsFormat.RGB_PVRTC_4Bpp_UNorm or GraphicsFormat.RGBA_PVRTC_4Bpp_SRGB or GraphicsFormat.RGBA_PVRTC_4Bpp_UNorm
                         => TextureSize2dBlocked(texture, 4, 4, 8),
+#pragma warning restore
 
                     // ASTC: kxk pixels => 128 bit / 16 bytes (4 channels, possibly HDR)
                     GraphicsFormat.RGBA_ASTC4X4_SRGB or GraphicsFormat.RGBA_ASTC4X4_UNorm or GraphicsFormat.RGBA_ASTC4X4_UFloat

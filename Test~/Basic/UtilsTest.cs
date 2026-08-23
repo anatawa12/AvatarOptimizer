@@ -36,11 +36,9 @@ namespace Anatawa12.AvatarOptimizer.Test
 
         #region TextureFormat
 
-        private const TextureFormat InvalidTextureFormat = (TextureFormat)(-127);
-
         public static IEnumerable<TextureFormat> AllTextureFormats()
         {
-            return Enum.GetValues(typeof(TextureFormat)).Cast<TextureFormat>().Where(x => x != 0 && x != InvalidTextureFormat);
+            return Enum.GetValues(typeof(TextureFormat)).Cast<TextureFormat>().Where(x => (int)x > 0);
         }
 
         public static IEnumerable<GraphicsFormat> GraphicsFormatsForAllTextureFormats() =>

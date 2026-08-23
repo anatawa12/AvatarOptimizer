@@ -3,7 +3,7 @@ name: GameCI
 
 on:
   push:
-    branches: [ master, master-*, workflow-tests/* ]
+    branches: [ master, master-*, workflow-tests/*, unity-6000-support ]
   pull_request_target: {}
   workflow_dispatch: {}
 
@@ -33,6 +33,17 @@ jobs:
           - { name: 2022.3.22f1-no-sdk,       unity: 2022.3.22f1,                 ndmf: latest, }
           # oldest possible NDMF version
           - { name: 2022.3.22f1-old-ndmf,     unity: 2022.3.22f1, vrcsdk: 3.10.4, ndmf: 1.8.1, }  # needs https://github.com/bdunderscore/ndmf/commit/ac0198ec327be029e44ecda4326d32ddfc45b094
+
+          # Experimental Unity 6000 support
+          # We test each unity 6000.x since most release introduces changes that are necessary to handle in our side 
+          # VRCSDK doesn't support unity 6000 so we test without VRCSDK
+          - { name: 6000.0.59f2,              unity: 6000.0.59f2,                 ndmf: latest, } # minimum 6000.0 versions w/o security issue
+          - { name: 6000.1.17f1,              unity: 6000.1.17f1,                 ndmf: latest, } # minimum 6000.1 versions w/o security issue
+          - { name: 6000.2.12f1,              unity: 6000.2.12f1,                 ndmf: latest, } # minimum 6000.2 versions with symlink issue fixed UUM-119544: https://issuetracker.unity.com/issues/21352/
+          - { name: 6000.3.0f1,               unity: 6000.3.0f1,                  ndmf: latest, }
+          - { name: 6000.4.0f1,               unity: 6000.4.0f1,                  ndmf: latest, }
+          #- { name: 6000.5.0f1,               unity: 6000.5.0f1,                  ndmf: latest, } # NDMF is not compilable for Unity 6000.5, see https://github.com/bdunderscore/ndmf/pull/808
+          #- { name: 6000.6.0b8,               unity: 6000.6.0b8,                  ndmf: latest, } # 6 is still in beta and no gameci image
 
     env:
       VRCSDK_VERSION: ${{ matrix.vrcsdk }}
@@ -105,14 +116,20 @@ jobs:
           persist-credentials: false
           allow-unsafe-pr-checkout: true
       - name: Install VRChat SDK Avatars ${{ matrix.vrcsdk }}
+        if: ${{ matrix.vrcsdk }}
         run: vrc-get install -y com.vrchat.avatars ${VRCSDK_VERSION/latest/}
+      - name: Set up dummy SDK Avatars if no-SDK mode ${{ matrix.vrcsdk }}
+        if: ${{ !matrix.vrcsdk }}
+        run: |
+          mkdir -p Packages/com.vrchat.avatars && echo '{"name":"com.vrchat.avatars","version":"0.0.0"}' > Packages/com.vrchat.avatars/package.json
+          mkdir -p Packages/com.vrchat.base && echo '{"name":"com.vrchat.base","version":"0.0.0"}' > Packages/com.vrchat.base/package.json
       - name: Install NDMF ${{ matrix.ndmf }}
         run: vrc-get install -y nadena.dev.ndmf ${NDMF_VERSION/latest/}
       - uses: anatawa12/sh-actions/resolve-vpm-packages@master
       - name: Set up for no VRChat SDK Environment
         if: ${{ !matrix.vrcsdk }}
         run: |-
-          vrc-get remove -y com.vrchat.avatars com.vrchat.base
+          rm -rf Packages/{com.vrchat.avatars,com.vrchat.base}
           # ndmf requires several external libraries and manual activation
           ln -s Dependencies\~ Packages/nadena.dev.ndmf/Dependencies
       - name: Apply patch for NDMF
@@ -131,15 +148,13 @@ jobs:
           key: Library-${{ matrix.name }}
           restore-keys: Library-${{ matrix.name }}
 
-      - uses: game-ci/unity-test-runner@v4.0.0
+      - uses: anatawa12/unity-test-runner@v0.1
         id: gameci
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE_V3 }}
         with:
           testMode: EditMode
+          licenseXml: ${{ secrets.UNITY_LICENSE_XML }}
           coverageOptions: generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+com.anatawa12.avatar-optimizer.*,-*.test.*
           customParameters: 
-          checkName: Test results ${{ matrix.name }}
 
       - name: "Show files at root folder to find crash log"
         if: always()
@@ -148,18 +163,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: All artifacts ${{ matrix.name }}
-          path: artifacts
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
           name: Test results ${{ matrix.name }}
-          path: ${{ steps.gameci.outputs.artifactsPath }}
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: Coverage results ${{ matrix.name }}
-          path: ${{ steps.gameci.outputs.coveragePath }}
+          path: artifacts
 
   conclude-gameci:
     runs-on: ubuntu-latest

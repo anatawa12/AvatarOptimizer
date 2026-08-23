@@ -76,7 +76,7 @@ namespace Anatawa12.AvatarOptimizer
 
                     foreach (var p in serialized.ObjectReferenceProperties())
                     {
-                        if (mapping.MapComponentInstance(p.objectReferenceInstanceIDValue, out var mappedComponent))
+                        if (mapping.MapComponentInstance(p.ObjectReferenceEntityIdValue(), out var mappedComponent))
                             p.objectReferenceValue = mappedComponent;
 
                         if (mapAnimatorController)
@@ -130,7 +130,7 @@ namespace Anatawa12.AvatarOptimizer
 
         private MappedComponentInfo<T> GetMappedInternal<T>(T component) where T : Object
         {
-            var componentInfo = _mapping.GetComponentMapping(component.GetInstanceID());
+            var componentInfo = _mapping.GetComponentMapping(component.GetEntityId());
             if (componentInfo == null) return new OriginalComponentInfo<T>(component);
             return new ComponentInfo<T>(componentInfo);
         }
@@ -167,7 +167,7 @@ namespace Anatawa12.AvatarOptimizer
 
             public ComponentInfo(ComponentInfo info) => _info = info;
 
-            public override T MappedComponent => (T)EditorUtility.InstanceIDToObject(_info.MergedInto);
+            public override T MappedComponent => (T)UnityObjectIDHelper.EntityIdToObject(_info.MergedInto);
             public override bool TryMapProperty(string property, out API.MappedPropertyInfo found)
             {
                 found = default;
@@ -180,7 +180,7 @@ namespace Anatawa12.AvatarOptimizer
                 if (mappedProp.MappedProperty == default) return false;
 
                 found = new API.MappedPropertyInfo(
-                    EditorUtility.InstanceIDToObject(mappedProp.MappedProperty.InstanceId),
+                    UnityObjectIDHelper.EntityIdToObject(mappedProp.MappedProperty.InstanceId),
                     mappedProp.MappedProperty.Name);
                 return true;
 

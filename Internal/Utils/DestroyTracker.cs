@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using nadena.dev.ndmf;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Anatawa12.AvatarOptimizer
@@ -12,34 +13,34 @@ namespace Anatawa12.AvatarOptimizer
     {
         private static DestroyTracker? _tracker;
 
-        private readonly Dictionary<int, Action<int>?> _handlers = new ();
+        private readonly Dictionary<EntityId, Action<EntityId>?> _handlers = new ();
 
-        public static void Track(Object obj, Action<int> handler)
+        public static void Track(Object obj, Action<EntityId> handler)
         {
             var tracker = _tracker;
             if (tracker == null) return;
 
-            var instanceId = obj.GetInstanceID();
+            var instanceId = obj.GetEntityId();
             if (tracker._handlers.TryGetValue(instanceId, out var oldHandler))
                 tracker._handlers[instanceId] = oldHandler + handler;
             else
                 tracker._handlers[instanceId] = handler;
         }
 
-        public static void Untrack(Object obj, Action<int> handler)
+        public static void Untrack(Object obj, Action<EntityId> handler)
         {
             var tracker = _tracker;
             if (tracker == null) return;
 
-            var instanceId = obj.GetInstanceID();
+            var instanceId = obj.GetEntityId();
             if (tracker._handlers.TryGetValue(instanceId, out var oldHandler))
                 tracker._handlers[instanceId] = oldHandler - handler;
         }
 
-        public static void DestroyImmediate(Object obj)
+        public static void DestroyImmediate(Object? obj)
         {
             if (obj == null) return;
-            var instanceId = obj.GetInstanceID();
+            var instanceId = obj.GetEntityId();
             Object.DestroyImmediate(obj);
             var tracker = _tracker;
             if (tracker != null)

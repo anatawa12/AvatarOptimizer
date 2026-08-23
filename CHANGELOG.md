@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Initial minimal support for Unity 6000.x `#1711`
+  - Those versions are not yet officially supported, but something should start working.
 
 ### Changed
 
