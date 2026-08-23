@@ -844,7 +844,7 @@ internal class BugReportHelper : EditorWindow
                     if (texture == null) return "<NoneOrMissing>";
                     var builder = new StringBuilder();
                     builder.Append("type: ").Append(texture.GetType().Name).Append(", ");
-                    builder.Append("instance: ").Append(texture.GetEntityId()).Append(", ");
+                    builder.Append("instance: ").Append((object)texture.GetEntityId()).Append(", ");
                     builder.Append("name: '").Append(texture.name).Append("', ");
                     builder.Append("format: ").Append(texture.graphicsFormat).Append(", ");
                     builder.Append("dimension: ").Append(texture.dimension).Append(", ");
