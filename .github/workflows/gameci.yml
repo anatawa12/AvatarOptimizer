@@ -163,11 +163,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: All artifacts ${{ matrix.name }}
-          path: artifacts
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
           name: Test results ${{ matrix.name }}
           path: artifacts
 
