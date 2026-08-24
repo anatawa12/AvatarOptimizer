@@ -126,7 +126,9 @@ namespace Anatawa12.AvatarOptimizer.APIInternal
         {
             // Mesh renderer without MeshFilter does nothing
             // Mesh renderer without Mesh does nothing
-            if (!component.TryGetComponent<MeshFilter>(out var meshFilter) || meshFilter.sharedMesh == null) return;
+            if (!component.TryGetComponent<MeshFilter>(out var meshFilter) ||
+                (meshFilter.sharedMesh == null &&
+                 collector.GetAnimatedObjectValues(meshFilter, "m_Mesh").All(x => x == null))) return;
             base.CollectDependency(component, collector);
             collector.AddDependency(meshFilter).EvenIfDependantDisabled();
         }

@@ -317,6 +317,17 @@ namespace Anatawa12.AvatarOptimizer.API
         internal abstract bool? GetAnimatedFlag(Component component, string animationProperty, bool currentValue);
 
         // TODO: rename to better name and make public
+        // NOTE for external users: this is API Proposal to provide ObjectReference curve values
+        /// <summary>
+        /// Returns the possible values of the <paramref name="animationProperty"/> object reference curve.
+        /// </summary>
+        /// <param name="component"></param>
+        /// <param name="animationProperty"></param>
+        /// <param name="currentValue"></param>
+        /// <returns></returns>
+        internal abstract Object?[] GetAnimatedObjectValues(Component component, string animationProperty);
+
+        // TODO: rename to better name and make public
         // NOTE for external users: this is API Proposal to determine whether the parameter is
         // used by the animator or not. For example, phys bones.
         /// <summary>
