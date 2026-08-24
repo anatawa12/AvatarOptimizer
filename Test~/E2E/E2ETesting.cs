@@ -1201,7 +1201,7 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
         [Test]
         public void Issue1779MeshFilterMeshIsAnimatable()
         {
-            // MeshFilter.m_Mesh is animatable. priopr AAO ignores that and MeshRenderer-MeshFilter pair was removed.
+            // MeshFilter.m_Mesh is animatable. prior AAO ignores that and MeshRenderer-MeshFilter pair was removed.
             var avatar = TestUtils.NewAvatar();
             avatar.AddComponent<TraceAndOptimize>();
             var meshA = TestUtils.NewCubeMesh();

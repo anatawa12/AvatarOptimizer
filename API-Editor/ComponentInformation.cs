@@ -323,7 +323,6 @@ namespace Anatawa12.AvatarOptimizer.API
         /// </summary>
         /// <param name="component"></param>
         /// <param name="animationProperty"></param>
-        /// <param name="currentValue"></param>
         /// <returns></returns>
         internal abstract Object?[] GetAnimatedObjectValues(Component component, string animationProperty);
 
