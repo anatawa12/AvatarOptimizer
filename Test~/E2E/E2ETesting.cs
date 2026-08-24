@@ -10,7 +10,7 @@ using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Rendering;
 using Debug = UnityEngine.Debug;
-using Object = System.Object;
+using Object = UnityEngine.Object;
 #if AAO_VRCSDK3_AVATARS
 using VRC.Dynamics;
 using VRC.SDK3.Dynamics.PhysBone.Components;
@@ -1145,8 +1145,6 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             }
         }
 
-        #endregion
-
         [Test]
         public void Issue1777MergeSmrMergeSameNameSameCurveWithDifferentKeySettings()
         {
@@ -1199,5 +1197,36 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
 
             // if no error is reported, test is passed
         }
+
+        [Test]
+        public void Issue1779MeshFilterMeshIsAnimatable()
+        {
+            // MeshFilter.m_Mesh is animatable. priopr AAO ignores that and MeshRenderer-MeshFilter pair was removed.
+            var avatar = TestUtils.NewAvatar();
+            avatar.AddComponent<TraceAndOptimize>();
+            var meshA = TestUtils.NewCubeMesh();
+            var goA = Utils.NewGameObject("MeshA", avatar.transform);
+            var mrA = goA.AddComponent<MeshRenderer>();
+            var mfA = goA.AddComponent<MeshFilter>();
+            mfA.mesh = null;
+
+            TestUtils.SetFxLayer(avatar, new AnimatorControllerBuilder("")
+                .AddLayer("Base Layer", sm =>
+                {
+                    sm.NewClipState("AnimateMesh", clip => clip
+                        .AddObjectReferenceBinding("MeshA", typeof(MeshFilter), "m_Mesh", (0f, meshA)));
+                })
+                .Build());
+
+            LogTestUtility.Test(_ =>
+            {
+                AvatarProcessor.ProcessAvatar(avatar);
+            });
+
+            Assert.That(mfA != null, "mfA is not destroyed");
+            Assert.That(mrA != null, "mrA is not destroyed");
+        }
+
+        #endregion
     }
 }
