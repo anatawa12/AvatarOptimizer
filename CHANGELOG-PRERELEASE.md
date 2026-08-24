@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Incompatibility with animations swapping mesh of Mesh Filter `#1780`
 
 ### Security
+
+## [1.9.18-beta.3] - 2026-08-24
+### Fixed
+- Incompatibility with animations swapping mesh of Mesh Filter [`#1780`](https://github.com/anatawa12/AvatarOptimizer/pull/1780)
 
 ## [1.9.18-beta.2] - 2026-08-24
 ### Added
@@ -2337,7 +2340,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18-beta.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18-beta.3...HEAD
+[1.9.18-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18-beta.2...v1.9.18-beta.3
 [1.9.18-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18-beta.1...v1.9.18-beta.2
 [1.9.18-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.17...v1.9.18-beta.1
 [1.9.17]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.17-beta.2...v1.9.17
