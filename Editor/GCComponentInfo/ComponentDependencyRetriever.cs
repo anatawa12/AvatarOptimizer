@@ -314,6 +314,10 @@ namespace Anatawa12.AvatarOptimizer
             internal override bool? GetAnimatedFlag(Component component, string animationProperty, bool currentValue) =>
                 _collector._session.GetConstantValue(component, animationProperty, currentValue);
 
+            internal override Object?[] GetAnimatedObjectValues(Component component, string animationProperty) =>
+                _collector._session.GetAnimationComponent(component).GetObjectNode(animationProperty).Value
+                    .PossibleValues;
+
             internal override bool IsParameterUsed(string parameterName) => _isParameterUsed(parameterName);
 
             public override API.PathDependencyInfo AddPathDependency(Transform dependency, Transform root)
