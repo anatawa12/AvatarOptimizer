@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Incompatibility with animations swapping mesh of Mesh Filter `#1780`
 
 ### Security
 
