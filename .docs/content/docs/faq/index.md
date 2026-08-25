@@ -65,6 +65,8 @@ please create [Asset Description] and please configure [Parameters Read By Exter
 If the gimmick is published or selling, I would like to bundle your Asset Description with AAO to improve compatibility with the gimmick.
 If you would like to, please contact us on [GitHub], [NDMF Discord], [Fediverse (Misskey / Mastodon)][Fediverse], or [Twitter].
 
+If you are the author of such an OSC-based gimmick, please also read [OSC Gimmick Compatibility] for step-by-step guidance.
+
 ## I cannot upload the avatar because of pre-build hard limit check {#i-cannot-upload-the-avatar-because-of-pre-build-hard-limit-check}
 
 This is because the upload button on the VRCSDK Control Panel is disabled if the hard limit is exceeded with on-scene Avatar.
@@ -98,5 +100,6 @@ I also accept financial support on [GitHub Sponsors] and [Booth].
 [GitHub]: https://github.com/anatawa12/AvatarOptimizer/
 [Asset Description]: ../developers/asset-description/
 [Parameters Read By External Tools]: ../developers/asset-description/#parameters-read-by-external-tools
+[OSC Gimmick Compatibility]: ../developers/osc-gimmick/
 
 [^merged-mesh]: Merged Mesh is a Skinned Mesh Renderer which is attached along with `AAO Merge Skinned Mesh` component.
