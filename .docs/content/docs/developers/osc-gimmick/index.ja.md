@@ -6,13 +6,13 @@ title: OSCギミックにAvatar Optimizerとの互換性をもたせる
 
 このページでは、OSCツールを使用して実行時にPhysBoneやContact Receiverのパラメータを読み書きするアバターギミックの作者向けに、互換性を確保するために必要な設定について説明します。
 
-## OSCギミックがなぜ場合に Avatar Optimizer と非互換になるか {#why}
+## OSCギミックがなぜ Avatar Optimizer と非互換になる場合があるか {#why}
 
 ### OSCツールによって読み取られるパラメータ {#why-read}
 
 PhysBoneおよびContact Receiverコンポーネントは、OSCツールから直接読み取ることのできるパラメータを公開しています。
 これらのパラメータは、アバターのAnimator ControllerやExpression Parametersに宣言されていない場合でも外部ツールからアクセスできます。
-また、Animator ControllerやExpression Parameterに宣言されていても、実際に使用されていない場合には削除される場合があります。[^fake-usage]
+また、Animator ControllerやExpression Parameterに宣言されていても、実際には使用されていない場合、削除される場合があります。[^fake-usage]
 
 このため、Avatar Optimizerは、そのようなパラメータが本当に使用されていないのか、それともOSCツールによって意図的に読み取られているのかを判別できません。
 
@@ -73,4 +73,4 @@ Asset Descriptionの詳細については、[Asset Description]のページを�
 
 [^fake-usage]: 一見エフェクトがあるように見えても、実際にはそうではないアニメーション（ダミーのGameObjectをアニメーションさせるなど）を追加しようとしても、将来的にそのGameObjectやアニメーションが削除される可能性があります。そのため、Avatar Optimizerを誤解させようとしないでください。
 
-[^missing-asset]: Asset Descriptionを正しく処理できない、設計の悪いツールによって使用された場合にのみ問題となります。私たちが知る限り、現在そのようなツールは存在しません。互換性に関する問題が発生した場合は、お知らせください。
+[^missing-asset]: MissingなScriptable Objectを正しく処理できない、実装が適切でないツールがプロジェクトに存在した場合にのみ問題となります。現在のところ、そのようなツールを私たちは認知していません。互換性に関する問題が発生した場合は、お知らせください。

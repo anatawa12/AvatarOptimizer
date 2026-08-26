@@ -6,13 +6,13 @@ title: Make your OSC gimmicks compatible with Avatar Optimizer
 
 This page is for authors of avatar gimmicks that use OSC tools to read or write PhysBone or Contact Receiver parameters at runtime.
 
-## Why OSC Gimmicks can become incompatible with Avatar Optimizer {#when}
+## Why OSC Gimmicks can become incompatible with Avatar Optimizer {#why}
 
 ### Parameters Read by Your OSC Tool {#why-read}
 
 PhysBone and Contact Receiver components expose parameters that OSC tools can read directly.
 These parameters are accessible to external tools even when they are not declared in the avatar's Animator Controller or Expression Parameters.
-In addition, even when parameters are declared in avatar's Animator Controller or Expression Parameters, they might be removed by Avatar Optimizer if it's actually not used.[^fake-usage]
+In addition, even when parameters are declared in avatar's Animator Controller or Expression Parameters, they might be removed by Avatar Optimizer if they are actually not used.[^fake-usage]
 
 Because of this, Avatar Optimizer cannot tell whether such parameters are genuinely unused or intentionally read by an OSC tool.
 
@@ -69,6 +69,6 @@ For more details on Asset Description, please refer to the [Asset Description] p
 [Asset Description]: ../asset-description/
 [asset-description-read]: ../asset-description/#parameters-read-by-external-tools
 
-[^fake-usage]: Even when you tries to add animation that looks like have effects but actually not, like animating dummy GameObject, we might remove such GameObject and animation in the future. Therefore, please do not try trick Avatar Optimizer.
+[^fake-usage]: Even when you tries to add animations that looks like have effects but actually not, like animating some dummy GameObjects, we might remove such GameObjects and animations in the future. Therefore, please do not try trick Avatar Optimizer.
 
-[^missing-asset][^1]: An Asset Description is only problematic if it is used by a poorly designed tool that does not handle unknown Asset Descriptions correctly. As far as we know, no such tools currently exist. Please let us know if you encounter any compatibility issues.
+[^missing-asset][^1]: An Asset Description is only problematic if it is used by a poorly implemented tool that does not handle unknown Scriptable Objects correctly. As far as we know, no such tools currently exist. Please let us know if you encounter any compatibility issues.
