@@ -555,11 +555,11 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         protected override void CollectDependency(VRCImpostorSettings component, ComponentDependencyCollector collector)
         {
             foreach (var transform in component.transformsToIgnore)
-                collector.AddDependency(transform);
+                collector.AddDependency(component, transform).EvenIfDependantDisabled();
             foreach (var transform in component.reparentHere)
-                collector.AddDependency(transform);
+                collector.AddDependency(component, transform).EvenIfDependantDisabled();
             foreach (var transform in component.extraChildTransforms)
-                collector.AddDependency(transform);
+                collector.AddDependency(component, transform).EvenIfDependantDisabled();
         }
     }
     
