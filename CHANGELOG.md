@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog].
 - Missing localization for few messages `#1767`
 - False positive "Differently animated BlendShape is detected" error in Merge Skinned Mesh with MA BlendShape Sync `#1778`
 - Incompatibility with animations swapping mesh of Mesh Filter `#1780`
+- VRCImposterSettings might be removed unexpectedly `#1783`
 
 ### Security
 
