@@ -3,7 +3,7 @@ name: GameCI
 
 on:
   push:
-    branches: [ master, master-*, workflow-tests/*, unity-6000-support ]
+    branches: [ master, master-*, workflow-tests/*, ci-unity-6000.5 ]
   pull_request_target: {}
   workflow_dispatch: {}
 
