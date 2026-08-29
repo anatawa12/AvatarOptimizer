@@ -10,11 +10,11 @@ This page is for authors of avatar gimmicks that use OSC tools to read or write 
 
 ### Parameters Read by Your OSC Tool {#why-read}
 
-Some modern avatars have their own gimmicks based on PhysBone / Contact Receiver components, so those components will be forgotten to remove in most cases.
+Some modern avatars have their own gimmicks based on PhysBone / Contact Receiver components, so those components will be forgotten to remove in most cases.\
 Therefore, Avatar Optimizer is designed to remove such components if they does not effect appearance through Animators or Expression Parameters.[^fake-usage]
 
-However, PhysBone and Contact Receiver components expose parameters that OSC tools can read directly.
-Therefore, Avatar Optimizer cannot tell whether such parameters are genuinely unused or intentionally read by an OSC tool and Avatar Optimizer might remove PhysBone components that are intended for OSC Gimmicks interaction.
+However, PhysBone and Contact Receiver components expose parameters that OSC tools can read directly.\
+Avatar Optimizer cannot recognize whether such parameters are truly unused or intended to be read by an OSC tool, so Avatar Optimizer might remove those components that are intended for OSC Gimmicks interaction.
 
 ### Parameters Changed by Your OSC Tool {#why-change}
 
