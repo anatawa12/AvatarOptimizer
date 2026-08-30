@@ -556,11 +556,11 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         {
             collector.AddDependency(component.transform, component).EvenIfDependantDisabled();
             foreach (var transform in component.transformsToIgnore)
-                collector.AddDependency(component, transform).EvenIfDependantDisabled();
+                collector.AddDependency(transform, component).EvenIfDependantDisabled();
             foreach (var transform in component.reparentHere)
-                collector.AddDependency(component, transform).EvenIfDependantDisabled();
+                collector.AddDependency(transform, component).EvenIfDependantDisabled();
             foreach (var transform in component.extraChildTransforms)
-                collector.AddDependency(component, transform).EvenIfDependantDisabled();
+                collector.AddDependency(transform, component).EvenIfDependantDisabled();
         }
     }
     
