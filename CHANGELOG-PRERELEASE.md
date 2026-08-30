@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- VRCImpostorSettings might be removed unexpectedly `#1783`
 
 ### Security
 
