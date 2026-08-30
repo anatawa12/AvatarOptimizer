@@ -62,4 +62,4 @@ For more details on Asset Description, please refer to the [Asset Description] p
 
 [^fake-usage]: Even when you tries to add animations that looks like have effects but actually not, like animating some dummy GameObjects, we might remove such GameObjects and animations in the future. Therefore, please do not try trick Avatar Optimizer.
 
-[^missing-asset][^1]: An Asset Description is only problematic if it is used by a poorly implemented tool that does not handle unknown Scriptable Objects correctly. As far as we know, no such tools currently exist. Please let us know if you encounter any compatibility issues.
+[^missing-asset]: An Asset Description is only problematic if it is used by a poorly implemented tool that does not handle unknown Scriptable Objects correctly. As far as we know, no such tools currently exist. Please let us know if you encounter any compatibility issues.
