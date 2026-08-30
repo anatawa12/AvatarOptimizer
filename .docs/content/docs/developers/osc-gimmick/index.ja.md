@@ -4,73 +4,63 @@ title: OSCギミックにAvatar Optimizerとの互換性をもたせる
 
 # OSCギミックにAvatar Optimizerとの互換性をもたせる
 
-このページでは、OSCツールを使用して実行時にPhysBoneやContact Receiverのパラメータを読み書きするアバターギミックの作者向けに、互換性を確保するために必要な設定について説明します。
+このページでは、OSCツールを使用して実行時にPhysBoneやContact Receiverのパラメーターを読み書きするアバターギミックの作者向けに、互換性を確保するために必要な設定について説明します。
 
-## OSCギミックがなぜ Avatar Optimizer と非互換になる場合があるか {#why}
+## なぜOSCギミックがAvatar Optimizerと非互換になる場合があるか {#why}
 
-### OSCツールによって読み取られるパラメータ {#why-read}
+### OSCツールによるパラメーターの読み取り {#why-read}
 
-PhysBoneおよびContact Receiverコンポーネントは、OSCツールから直接読み取ることのできるパラメータを公開しています。
-これらのパラメータは、アバターのAnimator ControllerやExpression Parametersに宣言されていない場合でも外部ツールからアクセスできます。
-また、Animator ControllerやExpression Parameterに宣言されていても、実際には使用されていない場合、削除される場合があります。[^fake-usage]
+最近のアバターはPhysBoneやContact Receiverコンポーネントを使用した独自のギミックが含まれている場合があり、ユーザーがギミックを削除する際には、これらのコンポーネントを削除し忘れる可能性が高いです。\
+そのため、Avatar Optimizerは、Animator ParameterやExpression Parameterを通じてアバターを変化させることがないコンポーネントについては削除するように設計されています。[^fake-usage]
 
-このため、Avatar Optimizerは、そのようなパラメータが本当に使用されていないのか、それともOSCツールによって意図的に読み取られているのかを判別できません。
+しかしながら、PhysBoneやContact Receiverは、OSCツールから直接読み取ることができるパラメーターを公開しており、
+Avatar Optimizerは、そのようなパラメーターが本当に使用されていないのか、OSCツールによって読み取られることが意図されているのかを判別することができません。\
+そのため、OSCツールによってパラメーターを読み取ることが意図されていた場合も、コンポーネントを削除してしまう可能性があります。
 
-最近のアバターには、PhysBoneやContact Receiverコンポーネントを利用したギミックが含まれていることがあります。
-ギミックを削除した後に、ユーザーがこれらのコンポーネントを削除し忘れることもあります。
-そのため、Avatar Optimizerは、Animator Controllerで使用されておらず、かつSynced Expression Parametersとして定義されていないパラメータを未使用と判断し、それに対応するPhysBoneやContact Receiverコンポーネントを削除しようとします。
+### OSCツールによるパラメーターの変更 {#why-change}
 
-そのため、OSCツールによるこれらのパラメータの読み取りに依存しているギミックでは、コンポーネントが気付かないうちに削除され、ギミックが動作しなくなる可能性があります。
+Avatar Optimizerでは、実行時に変更されないパラメーターを分析してAnimator Controllerを最適化する機能の実装も計画しています。\
+しかし、Avatar Optimizerが定数だと判断したパラメーターが、実際にはOSCツールやVRCParameterDriverによって変更されるものであった場合、この最適化によってギミックが動作しなくなる可能性があります。
 
-### OSCツールによって変更されるパラメータ {#why-change}
-
-Avatar Optimizerでは、実行時に変更されることのないパラメータを分析してAnimator Controllerを最適化する機能も計画しています。
-
-しかし、OSCツールやVRCParameterDriverによって、Avatar Optimizerが定数だと判断したパラメータが変更される場合、この最適化によってギミックが動作しなくなる可能性があります。
-
-Avatar Optimizerはまだこの最適化を実装していませんが、将来この最適化が実装された際にもギミックの互換性を維持できるよう、そのようなパラメータを宣言してください。
+Avatar Optimizerはまだこの最適化を実装していませんが、将来この最適化が実装された場合にギミックとの互換性を維持できるよう、パラメーターを宣言するようお願いします。
 
 ## 何をすればよいか {#what-to-do}
 
-Avatar Optimizerによってギミックが誤って最適化されるのを防ぐため、[Asset Description]を作成し、OSCツールが読み取る、または変更するすべてのパラメータを、それぞれ`Parameters Read By External Tools`または`Parameters Changed By External Tools`リストに宣言していただくようお願いします。
+Avatar Optimizerがギミックに誤った最適化を適用してしまうことを防ぐために、[Asset Description]を作成し、OSCツールが読み取る、または変更するすべてのパラメーターを、それぞれ`Parameters Read By External Tools`または`Parameters Changed By External Tools`リストに宣言していただくようお願いします。
 
-Asset Descriptionはアバターまたはギミックと一緒に配布してください。
-Avatar OptimizerがインストールされていないプロジェクトにAsset Descriptionが存在しても問題はないため、ギミックと一緒にAsset Descriptionを配布しても、ギミックがAvatar Optimizerに依存することにはなりません。[^missing-asset]
+その後、作成したAsset Descriptionをアバター、またはギミックと一緒に配布してください。\
+Avatar OptimizerがインストールされていないプロジェクトにAsset Descriptionファイルが存在した場合でも特に問題は発生しないため、ギミックと一緒にAsset Descriptionを配布しても、ギミックがAvatar Optimizerに依存することにはなりません。[^missing-asset]
 
 ### 手順 {#step-by-step}
 
-1. OSCツールが読み取る、または変更するすべてのパラメータを確認してください。
+1. OSCツールが読み取る、または変更するすべてのパラメーターを確認してください。
 
-   外部ツールが実行時に読み取る、または変更するすべてのAvatar Parameter名を列挙してください。
-
-   Asset Descriptionでは正規表現を使用できるため、正確な名前を指定する必要はありません。
-   例えば、`FooHaptics/OSC/`のようなプレフィックスを持つすべてのパラメータに一致するパターンを指定できます。
+   ツールが実行時に読み取る、または変更するすべてのパラメーター名を列挙してください。\
+   Asset Descriptionは正規表現に対応しているため、必ずしも正確な名前を指定する必要はありません。\
+   例えば、`FooHaptics/OSC/`のような接頭辞(プレフィックス)を持つすべてのパラメーターに一致するパターンを指定することが可能です。
 
 2. Asset Descriptionを作成してください。
 
-   UnityのProjectウィンドウで右クリックし、`Create > Avatar Optimizer > Asset Description`を選択してください。
-
+   UnityのProjectウィンドウで右クリックし、`Create > Avatar Optimizer > Asset Description`を選択してください。\
    ファイルの名前や保存場所は自由です。
 
-3. パラメータを`Parameters Read By External Tools`および`Parameters Changed By External Tools`に追加してください。
+3. パラメーターを`Parameters Read By External Tools`および`Parameters Changed By External Tools`に追加してください。
 
-   Asset DescriptionをInspectorで開き、手順1で確認した各パラメータを対応するリストに追加してください。
+   作成したAsset DescriptionをInspectorで開き、手順1で確認した各パラメーターを対応するリストに追加してください。\
+   なお、この仕組みはアバターにギミックが導入されているかどうかを判別できないため、設定内容がプロジェクト内のすべてのアバターに適用されることにご注意ください。
 
-   この仕組みでは、ギミックがインストールされているかどうかを判別できないため、設定はプロジェクト内のすべてのアバターに適用されます。
-
-   正規表現を使用する場合は、パラメータの定義をできるだけ具体的にしてください。
+   正規表現を使用する場合は、パラメーターをできるだけ具体的に定義してください。
 
 4. Asset Descriptionをギミックと一緒に配布してください。
 
-   ギミックをインストールしたユーザーが正しい設定を自動的に取得できるよう、Asset Descriptionファイルを製品のパッケージに含めてください。
-
-   Asset Descriptionをギミックと一緒に配布しても、ギミックがAvatar Optimizerに依存することにはならないため、ユーザーがAvatar Optimizerをインストールする必要はありません。
+   ギミックを導入したユーザーに自動で正しい設定が適用されるように、作成したAsset Descriptionファイルを製品のパッケージに同梱してください。\
+   Asset Descriptionをギミックに同梱して配布しても、ギミックがAvatar Optimizerに依存することはありません。ユーザーがAvatar Optimizerをインストールする必要はありません。
 
 Asset Descriptionの詳細については、[Asset Description]のページを参照してください。
 
 [Asset Description]: ../asset-description/
 [asset-description-read]: ../asset-description/#parameters-read-by-external-tools
 
-[^fake-usage]: 一見エフェクトがあるように見えても、実際にはそうではないアニメーション（ダミーのGameObjectをアニメーションさせるなど）を追加しようとしても、将来的にそのGameObjectやアニメーションが削除される可能性があります。そのため、Avatar Optimizerを誤解させようとしないでください。
+[^fake-usage]: 何らかの意味があるように見えても、実際にはそうではないアニメーション(ダミーのGameObjectを操作するなど)を追加したとしても、将来的にはそのGameObjectやアニメーションが削除される可能性があります。Avatar Optimizerの処理を騙そうとしないでください。
 
-[^missing-asset]: MissingなScriptable Objectを正しく処理できない、実装が適切でないツールがプロジェクトに存在した場合にのみ問題となります。現在のところ、そのようなツールを私たちは認知していません。互換性に関する問題が発生した場合は、お知らせください。
+[^missing-asset]: MissingになっているScriptable Objectを正しく処理できないような、実装が不適切なツールがプロジェクトに存在した場合にのみ問題が発生します。私たちの知る限りでは、現時点でそのようなツールは存在していません。互換性に関する問題が発生した場合は報告をお願いします。

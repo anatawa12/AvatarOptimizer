@@ -51,17 +51,19 @@ Avatar Optimizer 1.8.0 以降にアップデートしてください。
 
 ## OSCギミックで使用されているPhysBone / Contact Receiverが動作していない {#physbones-contact-receivers-that-are-used-in-the-osc-based-gimmick-are-not-working}
 
-`AAO Trace and Optimize`コンポーネントは、アバターの振る舞いを変えないように慎重に設計されています。
-しかし、技術的な理由から、`AAO Trace and Optimize`コンポーネントはPhysBone / Contact ReceiverコンポーネントがOSCギミックで使用されているかどうかを判断することができません。
+`AAO Trace and Optimize`コンポーネントは、アバターの振る舞いを変えないように慎重に設計されています。\
+しかし、技術的な理由から、`AAO Trace and Optimize`コンポーネントはPhysBoneやContact ReceiverコンポーネントがOSCギミックで使用されているかどうかを判別することができません。
 
-最近のアバターは、PhysBone / Contact Receiverコンポーネントを使用した独自のギミックを持っていることがあるため、これらのコンポーネントを削除し忘れることがよくあります。
-そのため、`AAO Trace and Optimize`は、そのようなコンポーネントがOSCギミックで使用されていないと仮定して、それらが他の用途で使われていなければ削除します。
+最近のアバターはPhysBoneやContact Receiverを使用した独自のギミックが含まれている場合があり、ユーザーがギミックを削除する際には、これらのコンポーネントを削除し忘れる可能性が高いです。\
+そのため、`AAO Trace and Optimize`は、そのようなコンポーネントがOSCギミックで使用されていないものと仮定して、それらが他の用途で使われていなければ削除するよう設計されています。
 
 この仮定は正しいとは限らないため、PhysBone / Contact Receiverコンポーネントが(AnimatorやExpression Menuを使用せずに)OSCギミックで使用されている場合には、[Asset Description]ファイルを作成し、[Parameters Read By External Tools]を設定してください。
 
-そのギミックが公開・販売されているような場合には、そのギミックとAAOの互換性を改善するために、作成した Asset Descriptionファイルを共有していただけると助かります。
-そのAsset Descriptionを将来のAvatar Optimizerに組み込むことにより、そのギミックが正しく動作するようになるかもしれません。
+そのギミックが公開・販売されているような場合には、そのギミックとAAOの互換性を改善するために、作成した Asset Descriptionファイルを共有していただけると助かります。\
+そのAsset Descriptionを将来のAvatar Optimizerに組み込むことにより、そのギミックが正しく動作するようになるかもしれません。\
 共有していただける場合は、[GitHub]、[NDMF Discord]、[Fediverse (Misskey / Mastodon)][Fediverse]、[Twitter]などからご連絡ください。
+
+もしあなたがOSCギミックの作者であれば、手順付きの説明を記載している[OSCギミックの互換性に関するページ]もあわせてお読みください。
 
 ## ビルド前のハードリミットチェックのせいでアバターをアップロードできない {#i-cannot-upload-the-avatar-because-of-pre-build-hard-limit-check}
 
@@ -96,5 +98,6 @@ Avatar Optimizerの開発を支援したい場合、[GitHub Discussions]での�
 [GitHub]: https://github.com/anatawa12/AvatarOptimizer/
 [Asset Description]: ../developers/asset-description/
 [Parameters Read By External Tools]: ../developers/asset-description/#parameters-read-by-external-tools
+[OSCギミックの互換性に関するページ]: ../developers/osc-gimmick/
 
 [^merged-mesh]: 統合先のメッシュとは、`AAO Merge Skinned Mesh`コンポーネントと一緒に付いているSkinned Mesh Rendererのことです。
