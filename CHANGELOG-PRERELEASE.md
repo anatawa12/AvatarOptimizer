@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Added support for AudioLink support in Toon Standard in 3.10.5 `#1787`
 
 ### Changed
 

@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog].
 ### Added
 - Initial minimal support for Unity 6000.x `#1711`
   - Those versions are not yet officially supported, but something should start working.
+- Added support for AudioLink support in Toon Standard in 3.10.5 `#1787`
 
 ### Changed
 
