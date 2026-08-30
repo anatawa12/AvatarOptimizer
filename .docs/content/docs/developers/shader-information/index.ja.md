@@ -37,7 +37,7 @@ Shader Information APIは3つの主要なクラスで構成されています。
 
 Shader Information API全体を通して、`null`値は**不明な値**または**アニメーションで操作される(静的に決定することのできない)値**を表します。\
 マテリアルプロパティがアニメーションで操作されているなど、ビルド時にその値を決定できない場合、APIはその不確実性を示すために`null`を返します。\
-値を静的に決定できない場合は、パラメータに`null`を渡す必要があります。
+値を静的に決定できない場合は、パラメーターに`null`を渡す必要があります。
 
 ## 使い方 {#getting-started}
 
@@ -148,7 +148,7 @@ bool? enabled = matInfo.IsShaderKeywordEnabled("KEYWORD_NAME");
 ### テクスチャ使用状況の登録 {#registering-textures}
 
 `RegisterTextureUVUsage`メソッドを使用して、各2Dテクスチャに関する情報をAvatar Optimizerに伝えます。\
-パラメータの詳細については、APIドキュメントのコメントを参照してください。
+パラメーターの詳細については、APIドキュメントのコメントを参照してください。
 
 ```csharp
 public override void GetMaterialInformation(MaterialInformationCallback matInfo)
