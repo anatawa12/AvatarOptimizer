@@ -173,6 +173,25 @@ class VRCSDKToonStandardShaderInformation : ShaderInformation
             Register("_ColorMask", UsingUVChannels.UV0);
         }
 
+        // Added in 3.10.5
+        // AudioLinks
+        if (matInfo.IsShaderKeywordEnabled("USE_AUDIOLINK") != false)
+        {
+            Register("_AudioLinkMask", 
+                SelectUV4(matInfo.GetFloat("_ALMaskUVChannel"))
+                | SelectUV4(matInfo.GetFloat("_ALEffectUVChannel"))
+            );
+
+            UsingUVChannels SelectUV4(float? channel) => channel switch
+            {
+                0 => UsingUVChannels.UV0,
+                1 => UsingUVChannels.UV1,
+                2 => UsingUVChannels.UV2,
+                3 => UsingUVChannels.UV3,
+                _ => UsingUVChannels.UV0 | UsingUVChannels.UV1 | UsingUVChannels.UV2 | UsingUVChannels.UV3,
+            };
+        }
+
         if (withOutline)
         {
             // note: this does not require the mipmap
