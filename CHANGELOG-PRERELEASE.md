@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Added support for AudioLink support in Toon Standard in 3.10.5 `#1787`
 
 ### Changed
 
@@ -17,9 +16,15 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- VRCImpostorSettings might be removed unexpectedly `#1783`
 
 ### Security
+
+## [1.9.18] - 2026-08-31
+### Added
+- Added support for AudioLink support in Toon Standard in 3.10.5 [`#1787`](https://github.com/anatawa12/AvatarOptimizer/pull/1787)
+
+### Fixed
+- VRCImpostorSettings might be removed unexpectedly [`#1783`](https://github.com/anatawa12/AvatarOptimizer/pull/1783)
 
 ## [1.9.18-beta.3] - 2026-08-24
 ### Fixed
@@ -2342,7 +2347,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18-beta.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18...HEAD
+[1.9.18]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18-beta.3...v1.9.18
 [1.9.18-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18-beta.2...v1.9.18-beta.3
 [1.9.18-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18-beta.1...v1.9.18-beta.2
 [1.9.18-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.17...v1.9.18-beta.1

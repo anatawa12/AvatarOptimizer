@@ -8,9 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Initial minimal support for Unity 6000.x `#1711`
-  - Those versions are not yet officially supported, but something should start working.
-- Added support for AudioLink support in Toon Standard in 3.10.5 `#1787`
 
 ### Changed
 
@@ -19,12 +16,20 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Missing localization for few messages `#1767`
-- False positive "Differently animated BlendShape is detected" error in Merge Skinned Mesh with MA BlendShape Sync `#1778`
-- Incompatibility with animations swapping mesh of Mesh Filter `#1780`
-- VRCImpostorSettings might be removed unexpectedly `#1783`
 
 ### Security
+
+## [1.9.18] - 2026-08-31
+### Added
+- Initial minimal support for Unity 6000.x [`#1711`](https://github.com/anatawa12/AvatarOptimizer/pull/1711)
+  - Those versions are not yet officially supported, but something should start working.
+- Added support for AudioLink support in Toon Standard in 3.10.5 [`#1787`](https://github.com/anatawa12/AvatarOptimizer/pull/1787)
+
+### Fixed
+- Missing localization for few messages [`#1767`](https://github.com/anatawa12/AvatarOptimizer/pull/1767)
+- False positive "Differently animated BlendShape is detected" error in Merge Skinned Mesh with MA BlendShape Sync [`#1778`](https://github.com/anatawa12/AvatarOptimizer/pull/1778)
+- Incompatibility with animations swapping mesh of Mesh Filter [`#1780`](https://github.com/anatawa12/AvatarOptimizer/pull/1780)
+- VRCImpostorSettings might be removed unexpectedly [`#1783`](https://github.com/anatawa12/AvatarOptimizer/pull/1783)
 
 ## [1.9.17] - 2026-08-08
 ### Fixed
@@ -1522,7 +1527,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.17...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18...HEAD
+[1.9.18]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.17...v1.9.18
 [1.9.17]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.16...v1.9.17
 [1.9.16]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.15...v1.9.16
 [1.9.15]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.14...v1.9.15
