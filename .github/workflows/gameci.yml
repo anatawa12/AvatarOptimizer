@@ -3,7 +3,7 @@ name: GameCI
 
 on:
   push:
-    branches: [ master, master-*, workflow-tests/*, unity-6000-support ]
+    branches: [ master, master-*, workflow-tests/*, ci-unity-6000.5 ]
   pull_request_target: {}
   workflow_dispatch: {}
 
@@ -42,7 +42,7 @@ jobs:
           - { name: 6000.2.12f1,              unity: 6000.2.12f1,                 ndmf: latest, } # minimum 6000.2 versions with symlink issue fixed UUM-119544: https://issuetracker.unity.com/issues/21352/
           - { name: 6000.3.0f1,               unity: 6000.3.0f1,                  ndmf: latest, }
           - { name: 6000.4.0f1,               unity: 6000.4.0f1,                  ndmf: latest, }
-          #- { name: 6000.5.0f1,               unity: 6000.5.0f1,                  ndmf: latest, } # NDMF is not compilable for Unity 6000.5, see https://github.com/bdunderscore/ndmf/pull/808
+          - { name: 6000.5.0f1,               unity: 6000.5.0f1,                  ndmf: latest, }
           #- { name: 6000.6.0b8,               unity: 6000.6.0b8,                  ndmf: latest, } # 6 is still in beta and no gameci image
 
     env:
@@ -76,8 +76,8 @@ jobs:
               "com.unity.modules.video": "1.0.0",
               "com.unity.modules.physics2d": "1.0.0",
               "com.unity.ugui": "1.0.0",
-              "com.unity.test-framework": "1.1.33",
-              "com.unity.testtools.codecoverage": "1.2.7"
+              "com.unity.test-framework": "$(case "$UNITY_VERSION" in 2022.* | 6000.[0-4].*) echo 1.1.33 ;; 6000.*) echo 1.8.0 ;; esac)",
+              "com.unity.testtools.codecoverage": "1.3.0"
             }
           }
           EOF
