@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Particle Systems with the Shape of vertices of Skinnd Mesh Renderers only with no-triangle submeshesas would be borken `#1789`
 
 ### Security
+
+## [1.9.19-beta.1] - 2026-09-07
+### Fixed
+- Particle Systems with the Shape of vertices of Skinnd Mesh Renderers only with no-triangle submeshesas would be borken [`#1789`](https://github.com/anatawa12/AvatarOptimizer/pull/1789)
 
 ## [1.9.18] - 2026-08-31
 ### Added
@@ -2348,7 +2351,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.19-beta.1...HEAD
+[1.9.19-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18...v1.9.19-beta.1
 [1.9.18]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18-beta.3...v1.9.18
 [1.9.18-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18-beta.2...v1.9.18-beta.3
 [1.9.18-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18-beta.1...v1.9.18-beta.2
