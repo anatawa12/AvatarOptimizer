@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Animation Curve normalization might throw an exception `#1790`
+- Contacts for bHaptics are removed `#1791`
 
 ### Security
 

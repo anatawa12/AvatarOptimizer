@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Particle Systems with the Shape of vertices of Skinnd Mesh Renderers only with no-triangle submeshesas would be borken `#1789`
 - Animation Curve normalization might throw an exception `#1790`
+- Contacts for bHaptics are removed `#1791`
 
 ### Security
 
