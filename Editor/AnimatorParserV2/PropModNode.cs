@@ -454,12 +454,15 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
             Curve = curve ?? throw new ArgumentException("The binding is not valid for the clip", nameof(binding));
             // Normalize animation curve to prevent false positive 'different animation' detection.
             // The free tangent broken keypoints can represent all other modes as far as I know.
+            // We initially have used single `for (var i = 0; i < curve.length; i++)`, but AnimationUtility might change
+            // length of animation curve, therefore we split to three loops.
+            // We investigate further later.
             for (var i = 0; i < curve.length; i++)
-            {
                 AnimationUtility.SetKeyBroken(curve, i, true);
+            for (var i = 0; i < curve.length; i++)
                 AnimationUtility.SetKeyLeftTangentMode(curve, i, AnimationUtility.TangentMode.Free);
+            for (var i = 0; i < curve.length; i++)
                 AnimationUtility.SetKeyRightTangentMode(curve, i, AnimationUtility.TangentMode.Free);
-            }
             _constantInfo = new Lazy<FloatValueInfo>(() => ParseProperty(curve, additiveReferenceClip, binding, additiveReferenceFrame), isThreadSafe: false);
         }
 
