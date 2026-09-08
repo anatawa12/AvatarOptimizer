@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Animation Curve normalization might throw an exception `#1790`
-- Contacts for bHaptics are removed `#1791`
 
 ### Security
+
+## [1.9.19-beta.2] - 2026-09-08
+### Fixed
+- Animation Curve normalization might throw an exception [`#1790`](https://github.com/anatawa12/AvatarOptimizer/pull/1790)
+- Contacts for bHaptics are removed [`#1791`](https://github.com/anatawa12/AvatarOptimizer/pull/1791)
 
 ## [1.9.19-beta.1] - 2026-09-07
 ### Fixed
@@ -2353,7 +2356,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.19-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.19-beta.2...HEAD
+[1.9.19-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.19-beta.1...v1.9.19-beta.2
 [1.9.19-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18...v1.9.19-beta.1
 [1.9.18]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18-beta.3...v1.9.18
 [1.9.18-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18-beta.2...v1.9.18-beta.3
