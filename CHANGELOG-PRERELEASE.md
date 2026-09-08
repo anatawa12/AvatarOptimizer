@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Animation Curve normalization might throw an exception `#1790`
 
 ### Security
 
