@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.9.19] - 2026-09-11
 ## [1.9.19-beta.2] - 2026-09-08
 ### Fixed
 - Animation Curve normalization might throw an exception [`#1790`](https://github.com/anatawa12/AvatarOptimizer/pull/1790)
@@ -2356,7 +2357,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.19-beta.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.19...HEAD
+[1.9.19]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.19-beta.2...v1.9.19
 [1.9.19-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.19-beta.1...v1.9.19-beta.2
 [1.9.19-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18...v1.9.19-beta.1
 [1.9.18]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18-beta.3...v1.9.18

@@ -16,11 +16,14 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Particle Systems with the Shape of vertices of Skinnd Mesh Renderers only with no-triangle submeshesas would be borken `#1789`
-- Animation Curve normalization might throw an exception `#1790`
-- Contacts for bHaptics are removed `#1791`
 
 ### Security
+
+## [1.9.19] - 2026-09-11
+### Fixed
+- Particle Systems with the Shape of vertices of Skinnd Mesh Renderers only with no-triangle submeshesas would be borken [`#1789`](https://github.com/anatawa12/AvatarOptimizer/pull/1789)
+- Animation Curve normalization might throw an exception [`#1790`](https://github.com/anatawa12/AvatarOptimizer/pull/1790)
+- Contacts for bHaptics are removed [`#1791`](https://github.com/anatawa12/AvatarOptimizer/pull/1791)
 
 ## [1.9.18] - 2026-08-31
 ### Added
@@ -1530,7 +1533,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.19...HEAD
+[1.9.19]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18...v1.9.19
 [1.9.18]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.17...v1.9.18
 [1.9.17]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.16...v1.9.17
 [1.9.16]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.15...v1.9.16
