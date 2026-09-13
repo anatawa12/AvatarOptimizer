@@ -251,7 +251,7 @@ msgstr ""
 msgid "MakeChildren:description"
 msgstr "ビルド時に、指定されたGameObjectを子にする。"
 
-msgid "MakeChildren:tooltip:executeEarly"
+msgid "MakeChildren:prop:executeEarly"
 msgstr "早期に実行する"
 
 msgid "MakeChildren:tooltip:executeEarly"
@@ -503,14 +503,14 @@ msgid "MergeSkinnedMesh:copy-enablement-animation:error:too-many-activeness-anim
 msgstr "以下の統合対象のメッシュの有効無効状態が、複数のプロパティをアニメーションすることによって決定されています。"
 
 msgid "MergeSkinnedMesh:copy-enablement-animation:error:too-many-activeness-animation:description"
-msgid "'有効無効状態に関するアニメーションをコピーする'は、有効無効状態に関する操作を統合先のSkinnedMeshRendererの有効無効状態(enabled)に対して適用するように設計されています。\n"
+msgstr "'有効無効状態に関するアニメーションをコピーする'は、有効無効状態に関する操作を統合先のSkinnedMeshRendererの有効無効状態(enabled)に対して適用するように設計されています。\n"
 "そのため、SkinnedMeshRendererの有効無効状態(enabled)とGameObjectの有効無効状態(activeSelf)の両方や、複数階層の有効無効状態(activeSelf)をアニメーションで操作しているような場合には、コピーすることができません。"
 
 msgid "MergeSkinnedMesh:copy-enablement-animation:error:activeness-animation-of-source-mismatch"
-msgid "統合対象のメッシュ間で、有効無効状態に関するアニメーションが揃っていません。"
+msgstr "統合対象のメッシュ間で、有効無効状態に関するアニメーションが揃っていません。"
 
 msgid "MergeSkinnedMesh:copy-enablement-animation:error:activeness-animation-of-source-mismatch:description"
-msgid "'有効無効状態に関するアニメーションをコピーする'は、統合対象の間で有効無効状態が同じようにアニメーションされている場合にのみ適用できます。"
+msgstr "'有効無効状態に関するアニメーションをコピーする'は、統合対象の間で有効無効状態が同じようにアニメーションされている場合にのみ適用できます。"
 
 # endregion
 
