@@ -1,0 +1,16 @@
+{
+    "name": "com.anatawa12.avatar-optimizer.devtools",
+    "rootNamespace": "AvatarOptimizer.DevTools",
+    "references": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
