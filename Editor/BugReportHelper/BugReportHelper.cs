@@ -474,6 +474,7 @@ internal class BugReportHelper : EditorWindow
                 switch (component)
                 {
                     case Transform t:
+                        builder.AppendLine($"    tag: {t.gameObject.tag}");
                         builder.AppendLine($"    activeSelf: {t.gameObject.activeSelf}");
                         builder.AppendLine($"    position: {t.position}");
                         builder.AppendLine($"    rotation: {t.rotation}");
