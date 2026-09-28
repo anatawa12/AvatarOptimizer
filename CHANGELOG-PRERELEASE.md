@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Korean localization with UI labels kept in English [`#1793`](https://github.com/anatawa12/AvatarOptimizer/pull/1793)
 
 ### Changed
 
@@ -17,10 +16,16 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Bones closer than 3mm with x100 scale might be unexpectedly merged incorrectly `#1796`
-- Duplicate and outdated localization keys and PO syntax errors in existing language catalogs [`#1793`](https://github.com/anatawa12/AvatarOptimizer/pull/1793)
 
 ### Security
+
+## [1.9.20-beta.1] - 2026-09-28
+### Added
+- Korean localization with UI labels kept in English [`#1793`](https://github.com/anatawa12/AvatarOptimizer/pull/1793)
+
+### Fixed
+- Bones closer than 3mm with x100 scale might be unexpectedly merged incorrectly [`#1796`](https://github.com/anatawa12/AvatarOptimizer/pull/1796)
+- Duplicate and outdated localization keys and PO syntax errors in existing language catalogs [`#1793`](https://github.com/anatawa12/AvatarOptimizer/pull/1793)
 
 ## [1.9.19] - 2026-09-11
 ## [1.9.19-beta.2] - 2026-09-08
@@ -2360,7 +2365,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.19...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.20-beta.1...HEAD
+[1.9.20-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.19...v1.9.20-beta.1
 [1.9.19]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.19-beta.2...v1.9.19
 [1.9.19-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.19-beta.1...v1.9.19-beta.2
 [1.9.19-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18...v1.9.19-beta.1
