@@ -1,0 +1,22 @@
+{
+    "name": "com.anatawa12.avatar-optimizer.devtools",
+    "rootNamespace": "AvatarOptimizer.DevTools",
+    "references": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [
+      {
+        "name": "com.vrchat.avatars",
+        "define": "AAO_VRCSDK3_AVATARS",
+        "expression": ""
+      }
+    ],
+    "noEngineReferences": false
+}
