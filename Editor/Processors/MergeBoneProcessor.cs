@@ -363,7 +363,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
 
                 // TODO? consider scaling animations?
                 var scale = transform != null ? transform.lossyScale : Vector3.one;
-                var scaleMax = Mathf.Max(scale.x, scale.y, scale.z);
+var scaleMax = Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.y), Mathf.Abs(scale.z));
                 var thisTranslateScale = Mathf.Max(scaleMax, 1) * translateScale;
                 var minIndex = -1;
                 var minDistance = float.MaxValue;
