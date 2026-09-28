@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Bones closer than 3mm with x100 scale might be unexpectedly merged incorrectly `#1796`
 
 ### Security
 

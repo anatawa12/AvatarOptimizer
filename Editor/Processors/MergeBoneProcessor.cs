@@ -361,6 +361,10 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 if (!ValidBone(transform, mat)) return (null, -1);
                 if (!_byBoneTransform.TryGetValue(transform, out var list)) return (null, -1);
 
+                // TODO? consider scaling animations?
+                var scale = transform != null ? transform.lossyScale : Vector3.one;
+var scaleMax = Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.y), Mathf.Abs(scale.z));
+                var thisTranslateScale = Mathf.Max(scaleMax, 1) * translateScale;
                 var minIndex = -1;
                 var minDistance = float.MaxValue;
                 for (var i = 0; i < list.Count; i++)
@@ -379,9 +383,9 @@ namespace Anatawa12.AvatarOptimizer.Processors
                         Mathf.Abs(key.m21 - mat.m21),
                         Mathf.Abs(key.m22 - mat.m22),
                         // translate
-                        Mathf.Abs(key.m03 - mat.m03) * translateScale,
-                        Mathf.Abs(key.m13 - mat.m13) * translateScale,
-                        Mathf.Abs(key.m23 - mat.m23) * translateScale
+                        Mathf.Abs(key.m03 - mat.m03) * thisTranslateScale,
+                        Mathf.Abs(key.m13 - mat.m13) * thisTranslateScale,
+                        Mathf.Abs(key.m23 - mat.m23) * thisTranslateScale
                     );
 
                     if (dist < minDistance)
