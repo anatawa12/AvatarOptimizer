@@ -184,6 +184,7 @@ namespace Anatawa12.AvatarOptimizer.Test
             var name = assembly.GetName().Name;
             if (!name.StartsWith("com.anatawa12.avatar-optimizer")) return false;
             if (name.StartsWith("com.anatawa12.avatar-optimizer.test")) return false;
+            if (name.StartsWith("com.anatawa12.avatar-optimizer.devtools")) return false;
             if (name.StartsWith("com.anatawa12.avatar-optimizer.internal")) return false;
             return true;
         }
