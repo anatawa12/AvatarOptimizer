@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Korean localization with UI labels kept in English [`#1793`](https://github.com/anatawa12/AvatarOptimizer/pull/1793)
 
 ### Changed
 
@@ -17,6 +18,7 @@ The format is based on [Keep a Changelog].
 
 ### Fixed
 - Bones closer than 3mm with x100 scale might be unexpectedly merged incorrectly `#1796`
+- Duplicate and outdated localization keys and PO syntax errors in existing language catalogs [`#1793`](https://github.com/anatawa12/AvatarOptimizer/pull/1793)
 
 ### Security
 
