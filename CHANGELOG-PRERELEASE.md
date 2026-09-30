@@ -16,9 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- PhysBone Colliders can be removed incorrectly when there are other disabled PhysBone Colliders with same transform `#1799`
 
 ### Security
+
+## [1.9.20-beta.2] - 2026-09-30
+### Fixed
+- PhysBone Colliders can be removed incorrectly when there are other disabled PhysBone Colliders with same transform [`#1799`](https://github.com/anatawa12/AvatarOptimizer/pull/1799)
 
 ## [1.9.20-beta.1] - 2026-09-28
 ### Added
@@ -2366,7 +2369,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.20-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.20-beta.2...HEAD
+[1.9.20-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.20-beta.1...v1.9.20-beta.2
 [1.9.20-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.19...v1.9.20-beta.1
 [1.9.19]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.19-beta.2...v1.9.19
 [1.9.19-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.19-beta.1...v1.9.19-beta.2
