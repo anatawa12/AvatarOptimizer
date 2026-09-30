@@ -83,7 +83,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 while (toggleRoot != null && toggleRoot != context.AvatarRootTransform
                         && !context.GetAnimationComponent(toggleRoot.gameObject).IsAnimatedFloat(Props.IsActive))
                 {
-                    if (!toggleRoot.gameObject.activeInHierarchy) goto next_collider; // always off colliders should be ignored
+                    if (!toggleRoot.gameObject.activeSelf) goto next_collider; // always off colliders should be ignored
                     toggleRoot = toggleRoot.parent;
                 }
 
