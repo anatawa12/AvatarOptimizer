@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Bones closer than 3mm with x100 scale might be unexpectedly merged incorrectly `#1796`
 - Duplicate and outdated localization keys and PO syntax errors in existing language catalogs [`#1793`](https://github.com/anatawa12/AvatarOptimizer/pull/1793)
+- PhysBone Colliders can be removed incorrectly when there are other disabled PhysBone Colliders with same transform `#1799`
 
 ### Security
 

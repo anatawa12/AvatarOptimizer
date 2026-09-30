@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- PhysBone Colliders can be removed incorrectly when there are other disabled PhysBone Colliders with same transform `#1799`
 
 ### Security
 

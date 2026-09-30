@@ -1227,6 +1227,117 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             Assert.That(mrA != null, "mrA is not destroyed");
         }
 
+#if AAO_VRCSDK3_AVATARS
+        [Test]
+        public void Issue1798_MergePhysBoneCollider_InitialActiveness_DisabledByEnable()
+        {
+            var avatar = TestUtils.NewAvatar();
+            avatar.AddComponent<TraceAndOptimize>();
+            TestUtils.SetFxLayer(avatar, new AnimatorControllerBuilder("").Build());
+
+            var physBone0 = Utils.NewGameObject("VRCPhysBone0", avatar.transform);
+            var physBone0Component = physBone0.AddComponent<VRCPhysBone>();
+            var physBone0Child = Utils.NewGameObject("VRCPhysBone0_Child", physBone0.transform);
+            physBone0Child.transform.position = Vector3.up;
+            physBone0Child.AddComponent<SkinnedMeshRenderer>().sharedMesh = TestUtils.NewCubeMesh();
+
+            var physBone1 = Utils.NewGameObject("VRCPhysBone1", avatar.transform);
+            var physBone1Component = physBone1.AddComponent<VRCPhysBone>();
+            var physBone1Child = Utils.NewGameObject("VRCPhysBone1_Child", physBone1.transform);
+            physBone1Child.transform.position = Vector3.up;
+            physBone1Child.AddComponent<SkinnedMeshRenderer>().sharedMesh = TestUtils.NewCubeMesh();
+
+            var vrcPhysBoneCollider0 = Utils.NewGameObject("VRCPhysBoneCollider0", avatar.transform).AddComponent<VRCPhysBoneCollider>();
+            var vrcPhysBoneCollider1 = Utils.NewGameObject("VRCPhysBoneCollider1", avatar.transform).AddComponent<VRCPhysBoneCollider>();
+
+            vrcPhysBoneCollider0.enabled = false;
+
+            physBone0Component.colliders.Add(vrcPhysBoneCollider0);
+            physBone1Component.colliders.Add(vrcPhysBoneCollider1);
+
+            LogTestUtility.Test(_ =>
+            {
+                AvatarProcessor.ProcessAvatar(avatar);
+            });
+
+            Assert.That(physBone0Component.colliders[0] == null, "Disabled PB should be removed");
+            Assert.That(physBone1Component.colliders[0] != null, "Active PB should not be removed");
+        }
+
+        [Test]
+        public void Issue1798_MergePhysBoneCollider_InitialActiveness_InactiveParent()
+        {
+            var avatar = TestUtils.NewAvatar();
+            avatar.AddComponent<TraceAndOptimize>();
+            TestUtils.SetFxLayer(avatar, new AnimatorControllerBuilder("").Build());
+
+            var physBone0 = Utils.NewGameObject("VRCPhysBone0", avatar.transform);
+            var physBone0Component = physBone0.AddComponent<VRCPhysBone>();
+            var physBone0Child = Utils.NewGameObject("VRCPhysBone0_Child", physBone0.transform);
+            physBone0Child.transform.position = Vector3.up;
+            physBone0Child.AddComponent<SkinnedMeshRenderer>().sharedMesh = TestUtils.NewCubeMesh();
+
+            var physBone1 = Utils.NewGameObject("VRCPhysBone1", avatar.transform);
+            var physBone1Component = physBone1.AddComponent<VRCPhysBone>();
+            var physBone1Child = Utils.NewGameObject("VRCPhysBone1_Child", physBone1.transform);
+            physBone1Child.transform.position = Vector3.up;
+            physBone1Child.AddComponent<SkinnedMeshRenderer>().sharedMesh = TestUtils.NewCubeMesh();
+
+            var vrcPhysBoneCollider0 = Utils.NewGameObject("VRCPhysBoneCollider0", avatar.transform).AddComponent<VRCPhysBoneCollider>();
+            var vrcPhysBoneCollider1 = Utils.NewGameObject("VRCPhysBoneCollider1", avatar.transform).AddComponent<VRCPhysBoneCollider>();
+
+            vrcPhysBoneCollider0.gameObject.SetActive(false);
+
+            physBone0Component.colliders.Add(vrcPhysBoneCollider0);
+            physBone1Component.colliders.Add(vrcPhysBoneCollider1);
+
+            LogTestUtility.Test(_ =>
+            {
+                AvatarProcessor.ProcessAvatar(avatar);
+            });
+
+            Assert.That(physBone0Component.colliders[0] == null, "Disabled PB should be removed");
+            Assert.That(physBone1Component.colliders[0] != null, "Active PB should not be removed");
+        }
+
+        [Test]
+        public void Issue1798_MergePhysBoneCollider_InitialActiveness_FirstActiveAndFollowingNonActive()
+        {
+            var avatar = TestUtils.NewAvatar();
+            avatar.AddComponent<TraceAndOptimize>();
+            TestUtils.SetFxLayer(avatar, new AnimatorControllerBuilder("").Build());
+
+            var physBone0 = Utils.NewGameObject("VRCPhysBone0", avatar.transform);
+            var physBone0Component = physBone0.AddComponent<VRCPhysBone>();
+            var physBone0Child = Utils.NewGameObject("VRCPhysBone0_Child", physBone0.transform);
+            physBone0Child.transform.position = Vector3.up;
+            physBone0Child.AddComponent<SkinnedMeshRenderer>().sharedMesh = TestUtils.NewCubeMesh();
+
+            var physBone1 = Utils.NewGameObject("VRCPhysBone1", avatar.transform);
+            var physBone1Component = physBone1.AddComponent<VRCPhysBone>();
+            var physBone1Child = Utils.NewGameObject("VRCPhysBone1_Child", physBone1.transform);
+            physBone1Child.transform.position = Vector3.up;
+            physBone1Child.AddComponent<SkinnedMeshRenderer>().sharedMesh = TestUtils.NewCubeMesh();
+
+            var vrcPhysBoneCollider0 = Utils.NewGameObject("VRCPhysBoneCollider0", avatar.transform).AddComponent<VRCPhysBoneCollider>();
+            var vrcPhysBoneCollider1 = Utils.NewGameObject("VRCPhysBoneCollider1", avatar.transform).AddComponent<VRCPhysBoneCollider>();
+
+            vrcPhysBoneCollider1.gameObject.SetActive(false);
+
+            physBone0Component.colliders.Add(vrcPhysBoneCollider0);
+            physBone1Component.colliders.Add(vrcPhysBoneCollider1);
+
+            LogTestUtility.Test(_ =>
+            {
+                AvatarProcessor.ProcessAvatar(avatar);
+            });
+
+            Assert.That(physBone0Component.colliders[0] != null, "Active PB should not be removed");
+            Assert.That(physBone1Component.colliders[0] == null
+                        || !physBone1Component.colliders[0].isActiveAndEnabled, "Disabled PB should be removed or disabled");
+        }
+#endif
+
         #endregion
     }
 }

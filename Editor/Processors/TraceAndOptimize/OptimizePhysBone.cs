@@ -65,6 +65,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 // if any of the property is animated, we do not merge the collider.
                 if (Properties.PhysBoneColliderProperties.Any(context.GetAnimationComponent(collider).IsAnimatedFloat))
                     continue;
+                // Always off colliders should not be merged.
+                if (!collider.enabled)
+                    continue;
                 
                 var rootTransform = collider.GetRootTransform();
                 var transform = rootTransform;
@@ -79,13 +82,18 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 Transform? toggleRoot = collider.transform;
                 while (toggleRoot != null && toggleRoot != context.AvatarRootTransform
                         && !context.GetAnimationComponent(toggleRoot.gameObject).IsAnimatedFloat(Props.IsActive))
+                {
+                    if (!toggleRoot.gameObject.activeSelf) goto next_collider; // always off colliders should be ignored
                     toggleRoot = toggleRoot.parent;
+                }
 
                 var key = new ColliderBaseCharacteristics(transform, toggleRoot, collider);
                 if (!collidersByTransform.TryGetValue(key, out var list))
                     collidersByTransform.Add(key, list = new List<VRCPhysBoneColliderBase>());
 
                 list.Add(collider);
+
+                next_collider:; // nested loop continue
             }
 
             var mergedColliders = new Dictionary<VRCPhysBoneColliderBase, VRCPhysBoneColliderBase>();
