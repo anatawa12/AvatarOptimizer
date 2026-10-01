@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Korean localization with UI labels kept in English [`#1793`](https://github.com/anatawa12/AvatarOptimizer/pull/1793)
 
 ### Changed
 
@@ -17,11 +16,17 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Bones closer than 3mm with x100 scale might be unexpectedly merged incorrectly `#1796`
-- Duplicate and outdated localization keys and PO syntax errors in existing language catalogs [`#1793`](https://github.com/anatawa12/AvatarOptimizer/pull/1793)
-- PhysBone Colliders can be removed incorrectly when there are other disabled PhysBone Colliders with same transform `#1799`
 
 ### Security
+
+## [1.9.20] - 2026-10-01
+### Added
+- Korean localization with UI labels kept in English [`#1793`](https://github.com/anatawa12/AvatarOptimizer/pull/1793)
+
+### Fixed
+- Bones closer than 3mm with x100 scale might be unexpectedly merged incorrectly [`#1796`](https://github.com/anatawa12/AvatarOptimizer/pull/1796)
+- Duplicate and outdated localization keys and PO syntax errors in existing language catalogs [`#1793`](https://github.com/anatawa12/AvatarOptimizer/pull/1793)
+- PhysBone Colliders can be removed incorrectly when there are other disabled PhysBone Colliders with same transform [`#1799`](https://github.com/anatawa12/AvatarOptimizer/pull/1799)
 
 ## [1.9.19] - 2026-09-11
 ### Fixed
@@ -1537,7 +1542,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.19...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.20...HEAD
+[1.9.20]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.19...v1.9.20
 [1.9.19]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18...v1.9.19
 [1.9.18]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.17...v1.9.18
 [1.9.17]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.16...v1.9.17
