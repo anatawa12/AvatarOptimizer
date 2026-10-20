@@ -75,6 +75,11 @@
             "define": "AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER"
         },
         {
+            "name": "com.vrchat.avatars",
+            "expression": "[3.10.6-beta.2,3.10.6]",
+            "define": "AAO_VRCSDK3_AVATARS_NATIVE_FACE_TRACKING"
+        },
+        {
             "name": "com.vrmc.univrm",
             "expression": "",
             "define": "AAO_VRM0"
