@@ -95,6 +95,11 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                 case VRC_AvatarDescriptor.LipSyncStyle.VisemeParameterOnly:
                     // NOP
                     break;
+#if AAO_VRCSDK3_AVATARS_NATIVE_FACE_TRACKING
+                case VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShapeFaceTracking when component is VRCAvatarDescriptor:
+                    // Done in VRCAvatarDescriptor with enableFaceTracking
+                    break;
+#endif
                 default:
                     BuildLog.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:UnknownLipSyncStyle", 
                             component.lipSync.ToString(),
@@ -160,6 +165,11 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                 case VRC_AvatarDescriptor.LipSyncStyle.VisemeParameterOnly:
                     // NOP
                     break;
+#if AAO_VRCSDK3_AVATARS_NATIVE_FACE_TRACKING
+                case VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShapeFaceTracking when component is VRCAvatarDescriptor:
+                    // Done in VRCAvatarDescriptor with enableFaceTracking
+                    break;
+#endif
                 default:
                     // Warning Reported in CollectMutations
                     break;
