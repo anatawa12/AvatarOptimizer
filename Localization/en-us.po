@@ -1098,6 +1098,12 @@ msgstr "Unknown Eyelid Type '{0}' is specified."
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType:description"
 msgstr "This is typically a bug of Avatar Optimizer. Please report this issue with the message above."
 
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyeGazeMode"
+msgstr "Unknown EyeGaze Mode '{0}' is specified."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyeGazeMode:hint"
+msgstr "This is typically a bug of Avatar Optimizer. Please report this issue with the message above."
+
 #endregion
 
 #region AnimatorParser

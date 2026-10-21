@@ -207,14 +207,35 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
 
             if (component.enableEyeLook)
             {
-                var leftEye = component.customEyeLookSettings.leftEye;
-                var rightEye = component.customEyeLookSettings.rightEye;
-                if (leftEye != null && rightEye != null)
+#if AAO_VRCSDK3_AVATARS_NATIVE_FACE_TRACKING
+                switch (component.customEyeLookSettings.eyeGazeMode)
+#endif
                 {
-                    // We create cross dependency relationship to prevent deleting one
-                    // Deleting both is acceptable
-                    collector.AddDependency(leftEye, rightEye);
-                    collector.AddDependency(rightEye, leftEye);
+#if AAO_VRCSDK3_AVATARS_NATIVE_FACE_TRACKING
+                    case VRCAvatarDescriptor.CustomEyeLookSettings.EyeGazeMode.BoneRotation:
+                    case VRCAvatarDescriptor.CustomEyeLookSettings.EyeGazeMode.Both:
+#else
+                    {
+#endif
+                        var leftEye = component.customEyeLookSettings.leftEye;
+                        var rightEye = component.customEyeLookSettings.rightEye;
+                        if (leftEye != null && rightEye != null)
+                        {
+                            // We create cross dependency relationship to prevent deleting one
+                            // Deleting both is acceptable
+                            collector.AddDependency(leftEye, rightEye);
+                            collector.AddDependency(rightEye, leftEye);
+                        }
+#if AAO_VRCSDK3_AVATARS_NATIVE_FACE_TRACKING
+                        break;
+                    case VRCAvatarDescriptor.CustomEyeLookSettings.EyeGazeMode.FaceTracking:
+                        break;
+                    default:
+                        // Warning Reported in CollectMutations
+                        break;
+#else
+                    }
+#endif
                 }
             }
 
@@ -248,11 +269,34 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
 
             if (component.enableEyeLook)
             {
-                var leftEye = component.customEyeLookSettings.leftEye;
-                var rightEye = component.customEyeLookSettings.rightEye;
+#if AAO_VRCSDK3_AVATARS_NATIVE_FACE_TRACKING
+                switch (component.customEyeLookSettings.eyeGazeMode)
+#endif
+                {
+#if AAO_VRCSDK3_AVATARS_NATIVE_FACE_TRACKING
+                    case VRCAvatarDescriptor.CustomEyeLookSettings.EyeGazeMode.BoneRotation:
+                    case VRCAvatarDescriptor.CustomEyeLookSettings.EyeGazeMode.Both:
+#else
+                    {
+#endif
+                        var leftEye = component.customEyeLookSettings.leftEye;
+                        var rightEye = component.customEyeLookSettings.rightEye;
 
-                if (leftEye) collector.TransformRotation(leftEye);
-                if (rightEye) collector.TransformRotation(rightEye);
+                        if (leftEye) collector.TransformRotation(leftEye);
+                        if (rightEye) collector.TransformRotation(rightEye);
+#if AAO_VRCSDK3_AVATARS_NATIVE_FACE_TRACKING
+                        break;
+                    case VRCAvatarDescriptor.CustomEyeLookSettings.EyeGazeMode.FaceTracking:
+                        break;
+                    default:
+                        BuildLog.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyeGazeMode",
+                            component.customEyeLookSettings.eyeGazeMode.ToString(),
+                            component);
+                        break;
+#else
+                    }
+#endif
+                }
 
                 switch (component.customEyeLookSettings.eyelidType)
                 {
