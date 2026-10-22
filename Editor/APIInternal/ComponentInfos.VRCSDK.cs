@@ -881,8 +881,47 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         protected override void CollectDependency(ContactReceiver component, ComponentDependencyCollector collector)
         {
             // the contact receiver receives contact event from the sender
-            if (collector.IsParameterUsed(component.parameter))
+            if (
+                collector.IsParameterUsed(component.parameter)
+#if AAO_VRCSDK3_AVATARS_MATERIAL_CONTACTS_AND_ADVANCED_PROXIMITY
+                || (component is { receiverType: ContactReceiver.ReceiverType.Proximity, advancedProximityParameters: true }
+                    && (
+                        collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_TYPE)
+                        || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_LOCAL_POSITION_X)
+                        || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_LOCAL_POSITION_Y)
+                        || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_LOCAL_POSITION_Z)
+                        || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_VELOCITY_X)
+                        || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_VELOCITY_Y)
+                        || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_VELOCITY_Z)
+                        || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_VELOCITY_MAGNITUDE)
+                        || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_PROXIMITY_SPEED)
+                        || component.collisionTags.Any(tag =>
+                            collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_COLLISION_TAG_PREFIX + tag))
+                    )
+                )
+#endif
+            )
                 collector.MarkEntrypoint();
+
+#if AAO_VRCSDK3_AVATARS_MATERIAL_CONTACTS_AND_ADVANCED_PROXIMITY
+            if (component.receiverType == ContactReceiver.ReceiverType.Proximity)
+            {
+                if (component.writeToMaterials)
+                {
+                    foreach (var renderer in component.shaderTargetRenderers.Take(4))
+                    {
+                        collector.AddDependency(renderer, component).OnlyIfTargetCanBeEnable();
+                    }
+                }
+                if (component.advancedProximityParameters)
+                {
+                    foreach (var renderer in component.shaderTargetRenderers.Take(4))
+                    {
+                        collector.AddDependency(renderer, component).OnlyIfTargetCanBeEnable();
+                    }
+                }
+            }
+#endif
             collector.AddDependency(component.rootTransform);
         }
     }
