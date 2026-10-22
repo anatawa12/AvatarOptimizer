@@ -1120,6 +1120,20 @@ msgstr
 
 #endregion
 
+#region BlendShapeGroup
+# Currently, only VRC Native FaceTracking uses this feature so our error messages are specific to Native FaceTracking.
+# However, this feature might be extended to support more use cases in the future
+
+msgid "BlendShapeGroup:error:BlendShapesMerged"
+msgstr "BlendShapes specified for VRC Native Face Tracking differently are merged to single BlendShape. This is not supported!: {0}"
+
+msgid "BlendShapeGroup:error:BlendShapesMerged:description"
+msgstr 
+"This typically means you have merged meshes with MergeSkinnedMesh in not supported way.\n"
+"If you see this only with AAO Trace and Optimize, it's a bug of AAO! Please report us!"
+
+#endregion
+
 #region AnimatorParser
 
 msgid "AnimatorParser:PlayableLayerControl:UnknownBlendablePlayableLayer"

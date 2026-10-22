@@ -129,6 +129,9 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                             .Then.Run(Processors.RemoveZeroSizedPolygonProcessor.Instance)
                             .Then.Run(Processors.TraceAndOptimizes.OptimizeTexture.Instance)
                             .Then.Run(Processors.AnimatorOptimizer.RemoveInvalidProperties.Instance)
+                            .Then.Run(new Processors.GCDebugPass(InternalGcDebugPosition.PreFinalization))
+                            // Finalization part would fix components broke with optimization above
+                            .Then.Run(Processors.ApplyBlendShapeGroup.Instance)
                             .Then.Run(new Processors.GCDebugPass(InternalGcDebugPosition.AtTheEnd))
                         );
                 });
