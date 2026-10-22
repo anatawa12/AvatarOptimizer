@@ -1118,6 +1118,12 @@ msgstr
 "This typically means you have merged meshes with MergeSkinnedMesh in not supported way.\n"
 "If you see this only with AAO Trace and Optimize, it's a bug of AAO! Please report us!"
 
+msgid "ComponentInfos:VRCRaycast:warning:UnknownVersion"
+msgstr "Unknown VRCRayCast Version '{0}' is specified."
+
+msgid "ComponentInfos:VRCRaycast:warning:UnknownVersion:hint"
+msgstr "This is typically a bug of Avatar Optimizer. Please report this issue with the message above."
+
 #endregion
 
 #region BlendShapeGroup

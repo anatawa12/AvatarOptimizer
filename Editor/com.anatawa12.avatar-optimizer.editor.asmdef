@@ -80,6 +80,11 @@
             "define": "AAO_VRCSDK3_AVATARS_NATIVE_FACE_TRACKING"
         },
         {
+            "name": "com.vrchat.avatars",
+            "expression": "[3.10.6-beta.2,3.10.6]",
+            "define": "AAO_VRCSDK3_AVATARS_VRC_RAYCAST_V1_1"
+        },
+        {
             "name": "com.vrmc.univrm",
             "expression": "",
             "define": "AAO_VRM0"

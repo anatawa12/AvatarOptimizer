@@ -1023,8 +1023,24 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
     {
         protected override void CollectDependency(VRCRaycast component, ComponentDependencyCollector collector)
         {
+#if AAO_VRCSDK3_AVATARS_VRC_RAYCAST_V1_1
+            switch (component.Version)
+            {
+                case VRCRaycast.RaycastComponentVersion.Version_1_0:
+                case VRCRaycast.RaycastComponentVersion.Version_1_1:
+                    break;
+                default:
+                    BuildLog.LogWarning("ComponentInfos:VRCRaycast:warning:UnknownVersion", component.Version);
+                    break;
+            }
+#endif
             var transform = component.ResultTransform;
-            if (transform != null) // Raycast do nothing if target is null
+            // Raycast do nothing if target is null in Version_1_0
+            if (transform != null
+#if AAO_VRCSDK3_AVATARS_VRC_RAYCAST_V1_1
+                || component.Version != VRCRaycast.RaycastComponentVersion.Version_1_0
+#endif
+            )
             {
                 collector.AddDependency(transform);
                 collector.AddDependency(transform, component);
@@ -1038,6 +1054,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                     component.Parameter + VRCRaycast.PARAM_DISTANCE,
                     component.Parameter + VRCRaycast.PARAM_HIT,
                     component.Parameter + VRCRaycast.PARAM_RATIO,
+#if AAO_VRCSDK3_AVATARS_VRC_RAYCAST_V1_1
+#endif
                 }.Any(collector.IsParameterUsed))
             {
                 collector.MarkEntrypoint();
