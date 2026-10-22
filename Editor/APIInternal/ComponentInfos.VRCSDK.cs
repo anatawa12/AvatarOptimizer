@@ -455,8 +455,11 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             {
                 foreach (var renderer in component.faceTrackingMeshes)
                     collector.ModifyProperties(renderer, $"blendShape.{blendShape}");
-                // VRC Native Face Tracking uses single BlendShape names for multiple
-                // TODO: let AAO to map those blendshapes to single shared name
+
+                // VRC Native Face Tracking uses single BlendShape names for multiple Skinned Mesh Renderers.
+                // AAO generally manages BlendShape name independently so we exceptionally handle them.
+                if (component.faceTrackingMeshes.Count > 1)
+                    collector.AddBlendShapeGroup(blendShape, component.faceTrackingMeshes);
             }
 #endif
         }
