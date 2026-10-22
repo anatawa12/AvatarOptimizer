@@ -180,18 +180,18 @@ namespace Anatawa12.AvatarOptimizer.Test
         });
 
         [Test]
-        public void ContactBase_ReceiverType() => TestEnum(new[]
-        {
-            ContactBase.ShapeType.Box,
-            ContactBase.ShapeType.Capsule,
-            ContactBase.ShapeType.Sphere,
-        });
-
-        [Test]
         public void VRCPhysBoneBase_Version() => TestEnum(new[]
         {
             VRCPhysBoneBase.Version.Version_1_0,
             VRCPhysBoneBase.Version.Version_1_1,
+        });
+
+        [Test]
+        public void VRCPhysBoneColliderBase_ShapeType() => TestEnum(new[]
+        {
+            VRCPhysBoneColliderBase.ShapeType.Sphere,
+            VRCPhysBoneColliderBase.ShapeType.Capsule,
+            VRCPhysBoneColliderBase.ShapeType.Plane,
         });
 
 #if AAO_VRCSDK3_AVATARS_VRC_RAYCAST_V1_1
