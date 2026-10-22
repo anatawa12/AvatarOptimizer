@@ -176,7 +176,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             }
         }
         
-        private static string ParseBlendShapeProperty(string prop) =>
+        protected static string ParseBlendShapeProperty(string prop) =>
             prop.StartsWith("blendShape.", StringComparison.Ordinal)
                 ? prop.Substring("blendShape.".Length)
                 : throw new Exception("invalid blendShape property");
@@ -238,6 +238,35 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
 #endif
                 }
             }
+
+#if AAO_VRCSDK3_AVATARS_NATIVE_FACE_TRACKING
+            if (component.enableFaceTracking)
+            {
+                // We generally do not want to prevent merging meshes.
+                // However, we need to prevent merging meshes among faceTrackingMeshes
+                // unless we can enforce merging BlendShapes for face tracking,
+                // because VRC Native Face Tracking uses single BlendShape name among faceTrackingMeshes.
+                // AAO cannot enforce merging blendShapes when AAO merges Skinned Mesh Renderer for several reasons.
+                //
+                // Therefore, we mark the faceTrackingMeshes 'not for merge' if there are multiple faceTrackingMeshes.
+                // We don't mark such if there is only one mesh in faceTrackingMeshes
+                // since merging single faceTrackingMeshes to non-faceTrackingMeshes SMR is harmless.
+                // In theory, we can skip marking 'some' faceTrackingMeshes from dependency registration for same reaosn.
+                // However, it would make AAO behavior unstable and hard to predict, so we do not do so.
+                //
+                // Marking the Skinned Mesh Renderer as a dependency of some component would mark
+                // the Skinned Mesh Renderer 'not for merge'.
+                //
+                // TODO: When all BlendShapes names are available in single SMR, We can skip this `AddDependency`-ing.
+                // Note that SMR might have additional BlendShapes with MergeSMR or renaming. You must care that.
+                var meshes = component.faceTrackingMeshes.Where(x => x).ToList();
+                if (meshes.Count >= 2)
+                {
+                    foreach (var renderer in meshes)
+                        collector.AddDependency(renderer);
+                }
+            }
+#endif
 
             void AddCollider(VRCAvatarDescriptor.ColliderConfig collider, string where)
             {
@@ -331,6 +360,12 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                         }
                     }
                         break;
+#if AAO_VRCSDK3_AVATARS_NATIVE_FACE_TRACKING
+                    case VRCAvatarDescriptor.EyelidType.FaceTracking:
+                    {
+                        break;
+                    }
+#endif
                     default:
                         BuildLog.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType", 
                                 component.customEyeLookSettings.eyelidType.ToString(),
@@ -338,12 +373,98 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                         break;
                 }
             }
+
+#if AAO_VRCSDK3_AVATARS_NATIVE_FACE_TRACKING
+            if (component.enableFaceTracking)
+            {
+                var blendShapesSetIndices = new Dictionary<string, int>(StringComparer.Ordinal);
+                for (int index2 = 0; index2 < (component.faceTrackingBlendshapesSetList?.Count ?? 0); ++index2)
+                {
+                    var setName = component.faceTrackingBlendshapesSetList![index2]?.setName;
+                    if (setName != null && !string.IsNullOrEmpty(setName) && setName.Length <= 100)
+                        blendShapesSetIndices[setName] = index2;
+                }
+
+                foreach (var shapeSet in component.faceTrackingBlendshapesSetList ?? new List<VRCAvatarDescriptor.FaceTrackingBlendshapesSet>())
+                {
+                    if (shapeSet == null) continue;
+                    // Does it have effect with weight = 0 like cancelling animators values? I think so
+                    //if (collector.GetAnimatedFlag(component, $"__AAO_.faceTrackingBlendshapesSet.{shapeSet.setName}.setWeight", shapeSet.setWeight != 0) != false)
+                    {
+                        // Basic Face Tracking
+                        {
+                            for (VRCAvatarDescriptor.FaceTrackingKey key = 0;
+                                 key < VRCAvatarDescriptor.FaceTrackingKey.Max
+                                 && (int)key < shapeSet.faceTrackingBlendshapeNames.Length;
+                                 key++)
+                            {
+                                var shapeName = shapeSet.faceTrackingBlendshapeNames[(int)key];
+                                if (string.IsNullOrEmpty(shapeName)) continue;
+                                if (!IsFaceTrackingKeyEnabled(component, key)) continue;
+
+                                FaceTrackingBlendShape(shapeName);
+                            }
+                        }
+
+                        if (component.lipSync == VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShapeFaceTracking
+                            && shapeSet.visemeBlendshapeNames.Length == (int)VRC_AvatarDescriptor.Viseme.Count)
+                        {
+                            for (VRC_AvatarDescriptor.Viseme key = 0; key < VRC_AvatarDescriptor.Viseme.Count; key++)
+                            {
+                                var shapeName = shapeSet.visemeBlendshapeNames[(int)key];
+                                if (string.IsNullOrEmpty(shapeName)) continue;
+                                FaceTrackingBlendShape(shapeName);
+                            }
+                        }
+                    }
+                }
+
+                foreach (var parameterBehavior in component.faceTrackingParameterBehaviors.Take(128))
+                {
+                    if (parameterBehavior == null) continue;
+
+                    switch (parameterBehavior.targetMode)
+                    {
+                        case VRCAvatarDescriptor.ParameterBehaviorTargetMode.ForwardToAnimator:
+                            if (string.IsNullOrEmpty(parameterBehavior.outputParameterName)) continue;
+                            //collector.ModifyProperties(component.GetComponent<Animator>(), parameterBehavior.outputParameterName);
+                            break;
+                        case VRCAvatarDescriptor.ParameterBehaviorTargetMode.ApplyBlendSetWeight:
+                            if (string.IsNullOrEmpty(parameterBehavior.targetBlendSetName)) continue;
+                            if (!blendShapesSetIndices.ContainsKey(parameterBehavior.targetBlendSetName)) continue;
+                            //collector.ModifyProperties(component, $"__AAO_.faceTrackingBlendshapesSet.{parameterBehavior.targetBlendSetName}.setWeight");
+                            break;
+                        case VRCAvatarDescriptor.ParameterBehaviorTargetMode.ApplyToBlendshape:
+                        case VRCAvatarDescriptor.ParameterBehaviorTargetMode.LimitBlendshapeMax:
+                        case VRCAvatarDescriptor.ParameterBehaviorTargetMode.LimitBlendshapeMin:
+                            FaceTrackingBlendShape(parameterBehavior.targetBlendshapeName);
+                            break;
+                        default:
+                            BuildLog.LogWarning("ComponentInfos:VRCAvatarDescriptor:warning:UnknownParameterBehaviorTargetMode",
+                                parameterBehavior.targetMode);
+                            break;
+                    }
+
+                    // parameterBehavior.combineMode and parameterBehavior.inputTrackingKeys does not need any AAO work
+                }
+
+                //component.visemeDampenAmount and component.visemeDampenMode does not need any AAO work
+            }
+
+            void FaceTrackingBlendShape(string blendShape)
+            {
+                foreach (var renderer in component.faceTrackingMeshes)
+                    collector.ModifyProperties(renderer, $"blendShape.{blendShape}");
+                // VRC Native Face Tracking uses single BlendShape names for multiple
+                // TODO: let AAO to map those blendshapes to single shared name
+            }
+#endif
         }
 
         protected override void ApplySpecialMapping(VRCAvatarDescriptor component, MappingSource mappingSource)
         {
             base.ApplySpecialMapping(component, mappingSource);
-            
+
             if (component.enableEyeLook)
             {
                 // NOTE: we should not check eyelidsSkinnedMesh for null because it can be missing object
@@ -385,7 +506,179 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                         break;
                 }
             }
+
+#if AAO_VRCSDK3_AVATARS_NATIVE_FACE_TRACKING
+            if (component.enableFaceTracking)
+            {
+                var faceTrackingMeshes = new List<MappedComponentInfo<SkinnedMeshRenderer>>();
+                int writeI = 0;
+                for (int readI = 0; readI < component.faceTrackingMeshes.Count; readI++)
+                {
+                    var renderer = component.faceTrackingMeshes[readI];
+                    var info = mappingSource.GetMappedComponent(renderer);
+                    if (info.MappedComponent == null)
+                    {
+                        // skip this element
+                    }
+                    else
+                    {
+                        faceTrackingMeshes.Add(info);
+                        component.faceTrackingMeshes[writeI] = info.MappedComponent;
+                        writeI++;
+                    }
+                }
+
+                component.faceTrackingMeshes.RemoveRange(writeI, component.faceTrackingMeshes.Count - writeI);
+
+                var blendShapesSetIndices = new Dictionary<string, int>(StringComparer.Ordinal);
+                for (int index2 = 0; index2 < (component.faceTrackingBlendshapesSetList?.Count ?? 0); ++index2)
+                {
+                    var setName = component.faceTrackingBlendshapesSetList![index2]?.setName;
+                    if (setName != null && !string.IsNullOrEmpty(setName) && setName.Length <= 100)
+                        blendShapesSetIndices[setName] = index2;
+                }
+
+                foreach (var shapeSet in component.faceTrackingBlendshapesSetList ??
+                                         new List<VRCAvatarDescriptor.FaceTrackingBlendshapesSet>())
+                {
+                    if (shapeSet == null) continue;
+                    // Does it have effect with weight = 0 like cancelling animators values? I think so
+                    //if (collector.GetAnimatedFlag(component, $"__AAO_.faceTrackingBlendshapesSet.{shapeSet.setName}.setWeight", shapeSet.setWeight != 0) != false)
+                    {
+                        // Basic Face Tracking
+                        {
+                            for (VRCAvatarDescriptor.FaceTrackingKey key = 0;
+                                 key < VRCAvatarDescriptor.FaceTrackingKey.Max
+                                 && (int)key < shapeSet.faceTrackingBlendshapeNames.Length;
+                                 key++)
+                            {
+                                ref var shapeName = ref shapeSet.faceTrackingBlendshapeNames[(int)key];
+                                if (string.IsNullOrEmpty(shapeName)) continue;
+                                if (!IsFaceTrackingKeyEnabled(component, key)) continue;
+
+                                FaceTrackingBlendShape(ref shapeName);
+                            }
+                        }
+
+                        if (component.lipSync == VRC_AvatarDescriptor.LipSyncStyle.VisemeBlendShapeFaceTracking
+                            && shapeSet.visemeBlendshapeNames.Length == (int)VRC_AvatarDescriptor.Viseme.Count)
+                        {
+                            for (VRC_AvatarDescriptor.Viseme key = 0; key < VRC_AvatarDescriptor.Viseme.Count; key++)
+                            {
+                                ref var shapeName = ref shapeSet.visemeBlendshapeNames[(int)key];
+                                if (string.IsNullOrEmpty(shapeName)) continue;
+                                FaceTrackingBlendShape(ref shapeName);
+                            }
+                        }
+                    }
+                }
+
+                foreach (var parameterBehavior in component.faceTrackingParameterBehaviors.Take(128))
+                {
+                    if (parameterBehavior == null) continue;
+
+                    switch (parameterBehavior.targetMode)
+                    {
+                        case VRCAvatarDescriptor.ParameterBehaviorTargetMode.ForwardToAnimator:
+                            if (string.IsNullOrEmpty(parameterBehavior.outputParameterName)) continue;
+                            //collector.ModifyProperties(component.GetComponent<Animator>(), parameterBehavior.outputParameterName);
+                            break;
+                        case VRCAvatarDescriptor.ParameterBehaviorTargetMode.ApplyBlendSetWeight:
+                            if (string.IsNullOrEmpty(parameterBehavior.targetBlendSetName)) continue;
+                            if (!blendShapesSetIndices.ContainsKey(parameterBehavior.targetBlendSetName)) continue;
+                            //collector.ModifyProperties(component, $"__AAO_.faceTrackingBlendshapesSet.{parameterBehavior.targetBlendSetName}.setWeight");
+                            break;
+                        case VRCAvatarDescriptor.ParameterBehaviorTargetMode.ApplyToBlendshape:
+                        case VRCAvatarDescriptor.ParameterBehaviorTargetMode.LimitBlendshapeMax:
+                        case VRCAvatarDescriptor.ParameterBehaviorTargetMode.LimitBlendshapeMin:
+                            FaceTrackingBlendShape(ref parameterBehavior.targetBlendshapeName);
+                            break;
+                        default:
+                            // Warning Reported in CollectMutations
+                            break;
+                    }
+
+                    // parameterBehavior.combineMode and parameterBehavior.inputTrackingKeys does not need any AAO work
+                }
+
+                //component.visemeDampenAmount and component.visemeDampenMode does not need any AAO work
+
+                void FaceTrackingBlendShape(ref string shapeName)
+                {
+                    if (faceTrackingMeshes.Count == 0) return; // This avatar does not have face tracking in practice
+
+                    HashSet<string> newShapeName = new HashSet<string>();
+
+                    foreach (var renderer in faceTrackingMeshes)
+                    {
+                        if (renderer.TryMapProperty($"blendShape.{shapeName}", out var mapped))
+                        {
+                            if (mapped.Component == renderer.MappedComponent)
+                            {
+                                var newName = ParseBlendShapeProperty(mapped.Property);
+                                newShapeName.Add(newName);
+                            }
+                        }
+                        else
+                        {
+                            // removed. no-op
+                        }
+                    }
+
+                    if (newShapeName.Count == 0)
+                    {
+                        // removed
+                    }
+                    else if (newShapeName.Count == 1)
+                    {
+                        shapeName = newShapeName.First();
+                    }
+                    else
+                    {
+                        BuildLog.LogError("ComponentInfos:VRCAvatarDescriptor:FaceTracking:BlendShapeNameDiverge",
+                            shapeName, string.Join(", ", newShapeName));
+                    }
+                }
+            }
+#endif
         }
+
+#if AAO_VRCSDK3_AVATARS_NATIVE_FACE_TRACKING
+        private bool IsFaceTrackingKeyEnabled(VRCAvatarDescriptor component, VRCAvatarDescriptor.FaceTrackingKey key)
+        {
+            // Canny: IsBasicFaceTrackingKey should take VRCAvatarDescriptor.FaceTrackingKey
+            if (component.useAllTrackingKeys || VRCAvatarDescriptor.IsBasicFaceTrackingKey((int)key))
+            {
+                switch (key)
+                {
+                    case >= VRCAvatarDescriptor.FaceTrackingKey.EyeLookOutRight and <= VRCAvatarDescriptor.FaceTrackingKey.EyeLookDownLeft:
+                    {
+                        if (component.enableEyeLook)
+                        {
+                            if (component.customEyeLookSettings.eyeGazeMode is VRCAvatarDescriptor.CustomEyeLookSettings.EyeGazeMode.FaceTracking
+                                or VRCAvatarDescriptor.CustomEyeLookSettings.EyeGazeMode.Both)
+                                return false;
+                        }
+
+                        return true;
+                    }
+                    case VRCAvatarDescriptor.FaceTrackingKey.EyeClosedRight or VRCAvatarDescriptor.FaceTrackingKey.EyeClosedLeft:
+                    {
+                        if (component.enableEyeLook)
+                        {
+                            if (component.customEyeLookSettings.eyelidType is not (VRCAvatarDescriptor.EyelidType.None
+                                or VRCAvatarDescriptor.EyelidType.FaceTracking)) return false;
+                        }
+
+                        return true;
+                    }
+                    default:
+                        return true;
+                }
+            }
+            return false;
+        }
+#endif
     }
 
     [ComponentInformation(typeof(VRC.SDKBase.VRCStation))]

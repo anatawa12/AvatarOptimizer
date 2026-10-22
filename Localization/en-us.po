@@ -1104,6 +1104,20 @@ msgstr "Unknown EyeGaze Mode '{0}' is specified."
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyeGazeMode:hint"
 msgstr "This is typically a bug of Avatar Optimizer. Please report this issue with the message above."
 
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownParameterBehaviorTargetMode"
+msgstr "Unknown Parameter Behavior Target Mode '{0}' is specified."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownParameterBehaviorTargetMode:hint"
+msgstr "This is typically a bug of Avatar Optimizer. Please report this issue with the message above."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:FaceTracking:BlendShapeNameDiverge"
+msgstr "VRC Native Face Tracking BlendShape '{0}' is mapped to multiple BlendShape names: {1}"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:FaceTracking:BlendShapeNameDiverge:description"
+msgstr 
+"This typically means you have merged meshes with MergeSkinnedMesh in not supported way.\n"
+"If you see this only with AAO Trace and Optimize, it's a bug of AAO! Please report us!"
+
 #endregion
 
 #region AnimatorParser
