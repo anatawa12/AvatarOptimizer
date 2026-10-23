@@ -662,8 +662,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                     {
                         if (component.enableEyeLook)
                         {
-                            if (component.customEyeLookSettings.eyeGazeMode is VRCAvatarDescriptor.CustomEyeLookSettings.EyeGazeMode.FaceTracking
-                                or VRCAvatarDescriptor.CustomEyeLookSettings.EyeGazeMode.Both)
+                            if (component.customEyeLookSettings.eyeGazeMode is not (VRCAvatarDescriptor.CustomEyeLookSettings.EyeGazeMode.FaceTracking
+                                or VRCAvatarDescriptor.CustomEyeLookSettings.EyeGazeMode.Both))
                                 return false;
                         }
 
