@@ -385,6 +385,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                         blendShapesSetIndices[setName] = index2;
                 }
 
+                var faceTrackingMeshes = component.faceTrackingMeshes.Where(x => x != null).ToList();
+
                 foreach (var shapeSet in component.faceTrackingBlendshapesSetList ?? new List<VRCAvatarDescriptor.FaceTrackingBlendshapesSet>())
                 {
                     if (shapeSet == null) continue;
@@ -449,17 +451,18 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                 }
 
                 //component.visemeDampenAmount and component.visemeDampenMode does not need any AAO work
-            }
 
-            void FaceTrackingBlendShape(string blendShape)
-            {
-                foreach (var renderer in component.faceTrackingMeshes)
-                    collector.ModifyProperties(renderer, $"blendShape.{blendShape}");
+                void FaceTrackingBlendShape(string blendShape)
+                {
+                    foreach (var renderer in faceTrackingMeshes)
+                        if (renderer)
+                            collector.ModifyProperties(renderer, $"blendShape.{blendShape}");
 
-                // VRC Native Face Tracking uses single BlendShape names for multiple Skinned Mesh Renderers.
-                // AAO generally manages BlendShape name independently so we exceptionally handle them.
-                if (component.faceTrackingMeshes.Count > 1)
-                    collector.AddBlendShapeGroup(blendShape, component.faceTrackingMeshes);
+                    // VRC Native Face Tracking uses single BlendShape names for multiple Skinned Mesh Renderers.
+                    // AAO generally manages BlendShape name independently so we exceptionally handle them.
+                    if (faceTrackingMeshes.Count > 1)
+                        collector.AddBlendShapeGroup(blendShape, faceTrackingMeshes);
+                }
             }
 #endif
         }
