@@ -932,9 +932,10 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                 foreach (var renderer in component.shaderTargetRenderers.Take(ContactReceiver.SHADER_MAX_UPDATED_RENDERERS))
                 {
                     // note: animator cannot drive array properties so this is not actual animation.
-                    collector.ModifyProperties(renderer,
-                        $"material.{component.ShaderPropertyNameTransforms}",
-                        $"material.{component.ShaderPropertyNameData}");
+                    if (renderer)
+                        collector.ModifyProperties(renderer,
+                            $"material.{component.ShaderPropertyNameTransforms}",
+                            $"material.{component.ShaderPropertyNameData}");
                 }
             }
 #endif
