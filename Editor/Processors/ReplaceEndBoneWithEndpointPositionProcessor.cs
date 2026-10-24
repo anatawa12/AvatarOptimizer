@@ -61,7 +61,7 @@ namespace Anatawa12.AvatarOptimizer.Processors
                 foreach (var leafBone in leafBones)
                 {
                     pbInfo.RemoveDependencyType(leafBone, GCComponentInfo.DependencyType.PhysBone);
-                    componentInfos.GetInfo(leafBone).RemoveDependencyType(physbone, GCComponentInfo.DependencyType.Normal);
+                    componentInfos.GetInfo(leafBone).RemoveDependencyType(physbone, GCComponentInfo.DependencyType.ExternalNormal);
                 }
                 
                 // Remove PhysBone mutations on leafBones in the hope that MergeBone will be applied

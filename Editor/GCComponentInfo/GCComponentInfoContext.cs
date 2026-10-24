@@ -51,6 +51,15 @@ namespace Anatawa12.AvatarOptimizer
             }
             transformInfo.AddDependency(parent, GCComponentInfo.DependencyType.Parent);
         }
+
+        public void MapExternalDependency<T>(T from, T mergeTo) where T : Component
+        {
+            var fromInfo = GetInfo(from);
+            var newInfo = GetInfo(mergeTo);
+            foreach (var (component, dependencyType) in fromInfo.Dependencies)
+                if ((dependencyType & GCComponentInfo.DependencyType.ExternalNormal) != 0)
+                    newInfo.AddDependency(component, GCComponentInfo.DependencyType.ExternalNormal);
+        }
     }
 
     internal readonly partial struct GCComponentInfoHolder
@@ -148,9 +157,10 @@ namespace Anatawa12.AvatarOptimizer
         public void MarkHeavyBehaviour() => HeavyBehaviourComponent = true;
         public void MarkBehaviour() => _behaviourComponent = true;
 
-        public void ClearDependencies()
+        public void ClearSelfDependencies()
         {
-            Dependencies.Clear();
+            foreach (var component in Dependencies.Keys.ToList())
+                RemoveDependencyType(component, ~(DependencyType.ExternalNormal | DependencyType.RequireComponent));
             AddDependency(Component.gameObject.transform, DependencyType.ComponentToTransform);
         }
 
@@ -184,11 +194,13 @@ namespace Anatawa12.AvatarOptimizer
         public enum DependencyType : byte
         {
             Normal = 1 << 0,
+            ExternalNormal = 1 << 6, 
             Parent = 1 << 1,
             ComponentToTransform = 1 << 2,
             Bone = 1 << 3,
             PhysBone = 1 << 4,
             ObjectName = 1 << 5, // part of path dependency, parent should not be changed and name should not be changed. only valid for Transform
+            RequireComponent = 1 << 7, 
         }
 
         public override string ToString() => "GCComponentInfo(" + Component.GetType().Name + " on " + Component.gameObject.name + ")";

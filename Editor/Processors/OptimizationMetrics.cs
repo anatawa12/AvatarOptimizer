@@ -536,6 +536,10 @@ internal static class OptimizationMetricsImpl
 #if AAO_VRCSDK3_AVATARS_VRC_RAYCAST
             Add(AvatarPerformanceCategory.RaycastCount, s => ToStringCount(s.raycastCount));
 #endif
+#if AAO_VRCSDK3_AVATARS_NATIVE_FACE_TRACKING
+            Add(AvatarPerformanceCategory.ForwardedParametersCount, s => ToStringCount(s.forwardedParametersCount));
+            Add(AvatarPerformanceCategory.FaceTrackingOperations, s => ToStringCount(s.faceTrackingOperations));
+#endif
             return dict;
         }
     }

@@ -59,8 +59,7 @@ namespace Anatawa12.AvatarOptimizer
 
                     foreach (var requiredComponent in RequireComponentCache.GetRequiredComponents(component.GetType()))
                     foreach (var required in component.GetComponents(requiredComponent))
-                            collector.AddDependency(component, required)
-                                .EvenIfDependantDisabled();
+                            collector.AddRequireComponentDependency(required);
 
                     collector.FinalizeForComponent();
                 }
@@ -291,7 +290,7 @@ namespace Anatawa12.AvatarOptimizer
             private API.ComponentDependencyInfo AddDependencyInternal(
                 GCComponentInfo? info,
                 Component? dependency,
-                GCComponentInfo.DependencyType type = GCComponentInfo.DependencyType.Normal)
+                GCComponentInfo.DependencyType type)
             {
                 _dependencyInfo?.Finish();
                 _dependencyInfo = null;
@@ -306,10 +305,10 @@ namespace Anatawa12.AvatarOptimizer
             }
 
             public override API.ComponentDependencyInfo AddDependency(Component? dependant, Component? dependency) =>
-                AddDependencyInternal(_collector._componentInfos.TryGetInfo(dependant), dependency);
+                AddDependencyInternal(_collector._componentInfos.TryGetInfo(dependant), dependency, GCComponentInfo.DependencyType.ExternalNormal);
 
             public override API.ComponentDependencyInfo AddDependency(Component? dependency) =>
-                AddDependencyInternal(_info, dependency);
+                AddDependencyInternal(_info, dependency, GCComponentInfo.DependencyType.Normal);
 
             internal override bool? GetAnimatedFlag(Component component, string animationProperty, bool currentValue) =>
                 _collector._session.GetConstantValue(component, animationProperty, currentValue);
@@ -345,8 +344,8 @@ namespace Anatawa12.AvatarOptimizer
                 return dependencyInfo;
             }
 
-            public void AddParentDependency(Transform component) =>
-                AddDependencyInternal(_info, component.parent, GCComponentInfo.DependencyType.Parent)
+            internal void AddRequireComponentDependency(Component? dependency) =>
+                AddDependencyInternal(_info, dependency, GCComponentInfo.DependencyType.RequireComponent)
                     .EvenIfDependantDisabled();
 
             public void FinalizeForComponent()
@@ -385,7 +384,7 @@ namespace Anatawa12.AvatarOptimizer
                     GCComponentInfoContext componentInfos,
                     GCComponentInfo dependantInformation,
                     Component component,
-                    GCComponentInfo.DependencyType type = GCComponentInfo.DependencyType.Normal)
+                    GCComponentInfo.DependencyType type)
                 {
                     _componentInfos = componentInfos;
                     _dependency = component;
