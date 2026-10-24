@@ -1098,6 +1098,46 @@ msgstr "Unknown Eyelid Type '{0}' is specified."
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType:description"
 msgstr "This is typically a bug of Avatar Optimizer. Please report this issue with the message above."
 
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyeGazeMode"
+msgstr "Unknown EyeGaze Mode '{0}' is specified."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyeGazeMode:hint"
+msgstr "This is typically a bug of Avatar Optimizer. Please report this issue with the message above."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownParameterBehaviorTargetMode"
+msgstr "Unknown Parameter Behavior Target Mode '{0}' is specified."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownParameterBehaviorTargetMode:hint"
+msgstr "This is typically a bug of Avatar Optimizer. Please report this issue with the message above."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:FaceTracking:BlendShapeNameDiverge"
+msgstr "VRC Native Face Tracking BlendShape '{0}' is mapped to multiple BlendShape names: {1}"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:FaceTracking:BlendShapeNameDiverge:description"
+msgstr 
+"This typically means you have merged meshes with MergeSkinnedMesh in not supported way.\n"
+"If you see this only with AAO Trace and Optimize, it's a bug of AAO! Please report us!"
+
+msgid "ComponentInfos:VRCRaycast:warning:UnknownVersion"
+msgstr "Unknown VRCRayCast Version '{0}' is specified."
+
+msgid "ComponentInfos:VRCRaycast:warning:UnknownVersion:hint"
+msgstr "This is typically a bug of Avatar Optimizer. Please report this issue with the message above."
+
+#endregion
+
+#region BlendShapeGroup
+# Currently, only VRC Native FaceTracking uses this feature so our error messages are specific to Native FaceTracking.
+# However, this feature might be extended to support more use cases in the future
+
+msgid "BlendShapeGroup:error:BlendShapesMerged"
+msgstr "BlendShapes specified for VRC Native Face Tracking differently are merged to single BlendShape. This is not supported!: {0}"
+
+msgid "BlendShapeGroup:error:BlendShapesMerged:description"
+msgstr 
+"This typically means you have merged meshes with MergeSkinnedMesh in not supported way.\n"
+"If you see this only with AAO Trace and Optimize, it's a bug of AAO! Please report us!"
+
 #endregion
 
 #region AnimatorParser

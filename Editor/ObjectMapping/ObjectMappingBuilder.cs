@@ -189,10 +189,10 @@ namespace Anatawa12.AvatarOptimizer
                 _originalComponentInfos.ToDictionary(p => p.Key, p => p.Value.Build()));
         }
 
-        class AnimationPropertyInfo
+        class AnimationPropertyInfo : AnimationPropertyInfo<TPropInfo>
         {
-            public readonly BuildingComponentInfo? Component;
-            public readonly string? Name;
+            private readonly BuildingComponentInfo? _component;
+            public string? _name;
             public AnimationPropertyInfo? MergedTo { get; private set; }
             private MappedPropertyInfo? _mappedPropertyInfo;
 
@@ -200,10 +200,22 @@ namespace Anatawa12.AvatarOptimizer
 
             public List<AnimationPropertyInfo>? CopiedTo { get; private set; }
 
+            public override AnimationComponentInfo<TPropInfo>? Component => _component;
+            public override string? Name => _name;
+            public override AnimationPropertyInfo<TPropInfo> MappedProperty
+            {
+                get
+                {
+                    var merged = this;
+                    while (merged is { MergedTo: not null }) merged = merged.MergedTo;
+                    return merged;
+                }
+            }
+
             public AnimationPropertyInfo(BuildingComponentInfo component, string name)
             {
-                Component = component ?? throw new ArgumentNullException(nameof(component));
-                Name = name ?? throw new ArgumentNullException(nameof(name));
+                _component = component ?? throw new ArgumentNullException(nameof(component));
+                _name = name ?? throw new ArgumentNullException(nameof(name));
             }
 
             private AnimationPropertyInfo()
@@ -240,7 +252,7 @@ namespace Anatawa12.AvatarOptimizer
             {
                 if (this == RemovedMarker) return MappedPropertyInfo.Removed;
 
-                if (Component == null) throw new InvalidOperationException("Component is null");
+                if (_component == null) throw new InvalidOperationException("Component is null");
 
                 if (MergedTo != null)
                 {
@@ -260,9 +272,9 @@ namespace Anatawa12.AvatarOptimizer
                 {
                     // this is edge
                     if (CopiedTo == null || CopiedTo.Count == 0)
-                        return new MappedPropertyInfo(Component.InstanceId, Component.Type, Name!);
+                        return new MappedPropertyInfo(_component.InstanceId, _component.Type, Name!);
 
-                    var descriptor = new PropertyDescriptor(Component.InstanceId, Component.Type, Name!);
+                    var descriptor = new PropertyDescriptor(_component.InstanceId, _component.Type, Name!);
 
                     var copied = new List<PropertyDescriptor> { descriptor };
                     foreach (var copiedTo in CopiedTo)
@@ -385,6 +397,8 @@ namespace Anatawa12.AvatarOptimizer
             public override string[] Properties => _afterPropertyIds.Keys.ToArray();
 
             public override ref TPropInfo GetPropertyInfo(string property) => ref GetProperty(property).PropertyInfo;
+            public override AnimationPropertyInfo<TPropInfo> GetProperty(string property) => GetProperty(property);
+
             public override TPropInfo TryGetPropertyInfo(string property)
             {
                 if (_afterPropertyIds.TryGetValue(property, out var info))
@@ -413,7 +427,16 @@ namespace Anatawa12.AvatarOptimizer
         public abstract void RemoveProperty(string property);
 
         public abstract ref TPropInfo GetPropertyInfo(string property);
+        public abstract AnimationPropertyInfo<TPropInfo> GetProperty(string property);
         public abstract TPropInfo TryGetPropertyInfo(string property);
         public abstract IEnumerable<(string name, TPropInfo info)> GetAllPropertyInfo { get; }
+    }
+
+    internal abstract class AnimationPropertyInfo<TPropInfo>
+        where TPropInfo : struct, IPropertyInfo<TPropInfo>
+    {
+        public abstract AnimationComponentInfo<TPropInfo>? Component { get; }
+        public abstract string? Name { get; }
+        public abstract AnimationPropertyInfo<TPropInfo> MappedProperty { get; }
     }
 }
