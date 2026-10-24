@@ -911,18 +911,33 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                 collector.MarkEntrypoint();
 
 #if AAO_VRCSDK3_AVATARS_MATERIAL_CONTACTS_AND_ADVANCED_PROXIMITY
-            if (!string.IsNullOrEmpty(component.separateShaderParameter) || !string.IsNullOrEmpty(component.parameter))
+            if ((!string.IsNullOrEmpty(component.separateShaderParameter) || !string.IsNullOrEmpty(component.parameter)) && component.writeToMaterials)
             {
-                if (component.writeToMaterials)
+                foreach (var renderer in component.shaderTargetRenderers.Take(ContactReceiver.SHADER_MAX_UPDATED_RENDERERS))
                 {
-                    foreach (var renderer in component.shaderTargetRenderers.Take(4))
-                    {
-                        collector.AddDependency(renderer, component).OnlyIfTargetCanBeEnable();
-                    }
+                    collector.AddDependency(renderer, component).OnlyIfTargetCanBeEnable();
                 }
             }
 #endif
             collector.AddDependency(component.rootTransform);
+        }
+
+        protected override void CollectMutations(ContactReceiver component, ComponentMutationsCollector collector)
+        {
+            base.CollectMutations(component, collector);
+#if AAO_VRCSDK3_AVATARS_MATERIAL_CONTACTS_AND_ADVANCED_PROXIMITY
+            // TODO: This prevents merging Skinned Mesh Renderers that are animated by same Material Contacts
+            if ((!string.IsNullOrEmpty(component.separateShaderParameter) || !string.IsNullOrEmpty(component.parameter)) && component.writeToMaterials)
+            {
+                foreach (var renderer in component.shaderTargetRenderers.Take(ContactReceiver.SHADER_MAX_UPDATED_RENDERERS))
+                {
+                    // note: animator cannot drive array properties so this is not actual animation.
+                    collector.ModifyProperties(renderer,
+                        $"material.{component.ShaderPropertyNameTransforms}",
+                        $"material.{component.ShaderPropertyNameData}");
+                }
+            }
+#endif
         }
     }
 
