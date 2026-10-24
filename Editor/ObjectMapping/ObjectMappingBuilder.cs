@@ -96,6 +96,7 @@ namespace Anatawa12.AvatarOptimizer
 #endif
         }
 
+        // you should not call this directly since this does not update GCComponents
         public void RecordMergeComponent<T>(T from, T mergeTo) where T: Component
         {
             Tracing.Trace(TracingArea.BuildObjectMapping, $"RecordMergeComponent: {from} -> {mergeTo}");

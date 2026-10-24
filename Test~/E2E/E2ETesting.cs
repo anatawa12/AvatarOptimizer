@@ -1338,6 +1338,85 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
         }
 #endif
 
+        [Test]
+        public void PR1803_AutoMergeSMR_Removes_Renderer_External_Dependency()
+        {
+            var avatar = TestUtils.NewAvatar();
+            avatar.AddComponent<TraceAndOptimize>();
+            var renderer0GameObject = Utils.NewGameObject("Renderer0", avatar.transform);
+            var renderer1GameObject = Utils.NewGameObject("Renderer1", avatar.transform);
+            var renderer0 = renderer0GameObject.AddComponent<SkinnedMeshRenderer>();
+            var renderer1 = renderer1GameObject.AddComponent<SkinnedMeshRenderer>();
+
+            var rootBone = Utils.NewGameObject("RootBone", avatar.transform);
+            renderer0.rootBone = renderer0.probeAnchor = rootBone.transform;
+            renderer1.rootBone = renderer1.probeAnchor = rootBone.transform;
+            renderer0.bones = new[] { rootBone.transform };
+            renderer1.bones = new[] { rootBone.transform };
+            renderer0.localBounds = new Bounds(Vector3.zero, Vector3.one);
+            renderer1.localBounds = new Bounds(Vector3.zero, Vector3.one);
+
+            renderer0.sharedMesh = TestUtils.NewCubeMeshWithBone();
+            renderer0.material = new Material(Shader.Find("Standard"));
+            renderer1.sharedMesh = TestUtils.NewCubeMeshWithBone();
+            renderer1.material = new Material(Shader.Find("Standard"));
+
+            var testComponent = avatar.AddComponent<DependencyTestComponent>();
+            testComponent.dependant.Add(renderer0);
+            testComponent.dependant.Add(renderer1);
+
+            TestUtils.SetFxLayer(avatar, new AnimatorControllerBuilder("").Build());
+
+            AvatarProcessor.ProcessAvatar(avatar);
+
+            Assert.That(renderer0 == null, "renderer0 == null");
+            Assert.That(renderer1 == null, "renderer1 == null");
+
+            Assert.That(testComponent != null, "testComponent != null");
+        }
+
+        [Test]
+        public void PR1803_MergeSMR_Removes_Renderer_External_Dependency()
+        {
+            var avatar = TestUtils.NewAvatar();
+            avatar.AddComponent<TraceAndOptimize>();
+            var renderer0GameObject = Utils.NewGameObject("Renderer0", avatar.transform);
+            var renderer1GameObject = Utils.NewGameObject("Renderer1", avatar.transform);
+            var mergeGameObject = Utils.NewGameObject("Merge", avatar.transform);
+            var renderer0 = renderer0GameObject.AddComponent<SkinnedMeshRenderer>();
+            var renderer1 = renderer1GameObject.AddComponent<SkinnedMeshRenderer>();
+            var mergeRenderer = mergeGameObject.AddComponent<SkinnedMeshRenderer>();
+            var mergeSMR = mergeGameObject.AddComponent<MergeSkinnedMesh>();
+
+            var rootBone = Utils.NewGameObject("RootBone", avatar.transform);
+            renderer0.rootBone = renderer0.probeAnchor = rootBone.transform;
+            renderer1.rootBone = renderer1.probeAnchor = rootBone.transform;
+            mergeRenderer.rootBone = mergeRenderer.probeAnchor = rootBone.transform;
+            renderer0.bones = new[] { rootBone.transform };
+            renderer1.bones = new[] { rootBone.transform };
+            renderer0.localBounds = new Bounds(Vector3.zero, Vector3.one);
+            renderer1.localBounds = new Bounds(Vector3.zero, Vector3.one);
+
+            renderer0.sharedMesh = TestUtils.NewCubeMeshWithBone();
+            renderer0.material = new Material(Shader.Find("Standard"));
+            renderer1.sharedMesh = TestUtils.NewCubeMeshWithBone();
+            renderer1.material = new Material(Shader.Find("Standard"));
+
+            mergeSMR.renderersSet.AddRange(new[] { renderer0, renderer1 });
+
+            var testComponent = avatar.AddComponent<DependencyTestComponent>();
+            testComponent.dependant.Add(renderer0);
+            testComponent.dependant.Add(renderer1);
+
+            TestUtils.SetFxLayer(avatar, new AnimatorControllerBuilder("").Build());
+
+            AvatarProcessor.ProcessAvatar(avatar);
+
+            Assert.That(renderer0 == null, "renderer0 == null");
+            Assert.That(renderer1 == null, "renderer1 == null");
+
+            Assert.That(testComponent != null, "testComponent != null");
+        }
         #endregion
     }
 }

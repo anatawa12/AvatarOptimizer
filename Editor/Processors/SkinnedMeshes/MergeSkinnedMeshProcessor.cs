@@ -53,7 +53,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
             RemoveOldRenderers(target, meshInfos, Component.removeEmptyRendererObject);
 
             var gcInfo = context.Extension<GCComponentInfoContext>().GetInfo(target.SourceRenderer);
-            gcInfo.ClearDependencies();
+            gcInfo.ClearSelfDependencies();
             APIInternal.SkinnedMeshRendererInformation.AddDependencyInformation(gcInfo, target);
         }
 

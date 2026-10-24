@@ -395,7 +395,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     // The only allowed dependency is physbone
                     // Transform self-reference is not registered
                     if (!dependencies.All(dependency =>
-                            dependency.Key == physbone && dependency.Value == GCComponentInfo.DependencyType.Normal))
+                            dependency.Key == physbone && dependency.Value == GCComponentInfo.DependencyType.ExternalNormal))
                         return false;
                 }
 
