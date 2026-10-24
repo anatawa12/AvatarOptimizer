@@ -8,11 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Initial support for VRCSDK 3.10.6 features `#1803`
-  - Please note that VRCSDK 3.10.6 features can be changed after open beta release.
-  - This adds Native Face Tracking Support
-  - This adds Material Contacts Support
-  - This adds VRC Raycast v1.1 Support
 
 ### Changed
 
@@ -23,6 +18,14 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.9.21-beta.1] - 2026-10-24
+### Added
+- Initial support for VRCSDK 3.10.6 features [`#1803`](https://github.com/anatawa12/AvatarOptimizer/pull/1803)
+  - Please note that VRCSDK 3.10.6 features can be changed after open beta release.
+  - This adds Native Face Tracking Support
+  - This adds Material Contacts Support
+  - This adds VRC Raycast v1.1 Support
 
 ## [1.9.20] - 2026-10-01
 ## [1.9.20-beta.2] - 2026-09-30
@@ -2375,7 +2378,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.20...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21-beta.1...HEAD
+[1.9.21-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.20...v1.9.21-beta.1
 [1.9.20]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.20-beta.2...v1.9.20
 [1.9.20-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.20-beta.1...v1.9.20-beta.2
 [1.9.20-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.19...v1.9.20-beta.1
