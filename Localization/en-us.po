@@ -114,6 +114,15 @@ msgstr "Animator Layers"
 msgid "OptimizationMetrics:GameObjectCount"
 msgstr "Game Objects"
 
+msgid "OptimizationMetrics:RaycastCount"
+msgstr "Raycast Count"
+
+msgid "OptimizationMetrics:ForwardedParametersCount"
+msgstr "Forwarded Parameters Count"
+
+msgid "OptimizationMetrics:FaceTrackingOperations"
+msgstr "Face Tracking Operations"
+
 msgid "LegacyModularAvatarWarning:message"
 msgstr ""
 "We found Modular Avatar 1.7.x or older is installed!\n"
