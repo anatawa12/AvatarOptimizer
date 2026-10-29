@@ -888,24 +888,30 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
             if (
                 collector.IsParameterUsed(component.parameter)
 #if AAO_VRCSDK3_AVATARS_MATERIAL_CONTACTS_AND_ADVANCED_PROXIMITY
-                || (component.advancedParameters && (
-                        collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_TYPE)
-                        || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_LOCAL_POSITION_X)
-                        || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_LOCAL_POSITION_Y)
-                        || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_LOCAL_POSITION_Z)
-                        || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_LOSSY_SCALE_X)
-                        || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_LOSSY_SCALE_Y)
-                        || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_LOSSY_SCALE_Z)
-                        || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_VELOCITY_X)
-                        || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_VELOCITY_Y)
-                        || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_VELOCITY_Z)
-                        || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_VELOCITY_MAGNITUDE)
-                        || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_POINT_SEPARATION)
-                        || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_PROXIMITY_SPEED)
-                        || component.collisionTags.Any(tag =>
-                            collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_COLLISION_TAG_PREFIX + tag))
-                    )
-                )
+                || ((component.advancedParameters & ContactReceiver.AdvancedParameter.SenderType) != 0 &&
+                    collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_TYPE))
+                || ((component.advancedParameters & ContactReceiver.AdvancedParameter.SenderLocalPosition) != 0 && (
+                    collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_LOCAL_POSITION_X)
+                    || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_LOCAL_POSITION_Y)
+                    || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_LOCAL_POSITION_Z)))
+                || ((component.advancedParameters & ContactReceiver.AdvancedParameter.SenderLossyScale) != 0 && (
+                    collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_LOSSY_SCALE_X)
+                    || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_LOSSY_SCALE_Y)
+                    || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_LOSSY_SCALE_Z)))
+                || ((component.advancedParameters & ContactReceiver.AdvancedParameter.SenderVelocity) != 0 && (
+                    collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_VELOCITY_X)
+                    || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_VELOCITY_Y)
+                    || collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_SENDER_VELOCITY_Z)
+                    || collector.IsParameterUsed(component.parameter +
+                                                 ContactReceiver.PARAM_SENDER_VELOCITY_MAGNITUDE)))
+                || ((component.advancedParameters & ContactReceiver.AdvancedParameter.PointSeparation) != 0 &&
+                    collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_POINT_SEPARATION))
+                || ((component.advancedParameters & ContactReceiver.AdvancedParameter.ProximitySpeed) != 0 &&
+                    collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_PROXIMITY_SPEED))
+                || ((component.advancedParameters & ContactReceiver.AdvancedParameter.CollisionTags) != 0 &&
+                    component.collisionTags.Any(tag =>
+                        collector.IsParameterUsed(component.parameter + ContactReceiver.PARAM_COLLISION_TAG_PREFIX +
+                                                  tag)))
 #endif
             )
                 collector.MarkEntrypoint();
