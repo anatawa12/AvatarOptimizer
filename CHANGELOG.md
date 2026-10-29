@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Support for VRCSDK 3.10.6 features `#1803`
+- Support for VRCSDK 3.10.6 features `#1803` `#1808`
   - Please note that VRCSDK 3.10.6 features can be changed after open beta release.
   - This adds Native Face Tracking Support
   - This adds Material Contacts Support
