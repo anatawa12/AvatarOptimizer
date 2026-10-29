@@ -29,7 +29,7 @@ jobs:
           # - 3.8.0 # AAO_VRCSDK3_AVATARS_IGNORE_OTHER_PHYSBONE
           - { name: 2022.3.22f1-3.10.3,       unity: 2022.3.22f1, vrcsdk: 3.10.3, ndmf: latest, } # AAO_VRCSDK3_AVATARS_VRC_RAYCAST
           - { name: 2022.3.22f1-3.10.4,       unity: 2022.3.22f1, vrcsdk: 3.10.4, ndmf: latest, } # AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER
-          - { name: 2022.3.22f1-3.10.6,       unity: 2022.3.22f1, vrcsdk: 3.10.6-beta.3, ndmf: latest, } # AAO_VRCSDK3_AVATARS_NATIVE_FACE_TRACKING AAO_VRCSDK3_AVATARS_VRC_RAYCAST_V1_1 and AAO_VRCSDK3_AVATARS_MATERIAL_CONTACTS_AND_ADVANCED_PROXIMITY
+          - { name: 2022.3.22f1-3.10.6,       unity: 2022.3.22f1, vrcsdk: 3.10.6-beta.4, ndmf: latest, } # AAO_VRCSDK3_AVATARS_NATIVE_FACE_TRACKING AAO_VRCSDK3_AVATARS_VRC_RAYCAST_V1_1 and AAO_VRCSDK3_AVATARS_MATERIAL_CONTACTS_AND_ADVANCED_PROXIMITY
           # No VRChat SDK Environments
           - { name: 2022.3.22f1-no-sdk,       unity: 2022.3.22f1,                 ndmf: latest, }
           # oldest possible NDMF version
