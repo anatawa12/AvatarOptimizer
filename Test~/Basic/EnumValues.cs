@@ -179,6 +179,22 @@ namespace Anatawa12.AvatarOptimizer.Test
             ContactReceiver.ReceiverType.Proximity,
         });
 
+#if AAO_VRCSDK3_AVATARS_MATERIAL_CONTACTS_AND_ADVANCED_PROXIMITY
+        [Test]
+        public void ContactReceiver_AdvancedParameter() => TestEnum(new[]
+        {
+            ContactReceiver.AdvancedParameter.None,
+            ContactReceiver.AdvancedParameter.SenderType,
+            ContactReceiver.AdvancedParameter.SenderLocalPosition,
+            ContactReceiver.AdvancedParameter.SenderLossyScale,
+            ContactReceiver.AdvancedParameter.SenderVelocity,
+            ContactReceiver.AdvancedParameter.PointSeparation,
+            ContactReceiver.AdvancedParameter.ProximitySpeed,
+            ContactReceiver.AdvancedParameter.CollisionTags,
+            ContactReceiver.AdvancedParameter.All,
+        });
+#endif
+        
         [Test]
         public void VRCPhysBoneBase_Version() => TestEnum(new[]
         {
