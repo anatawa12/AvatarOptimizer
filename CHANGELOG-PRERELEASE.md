@@ -8,12 +8,15 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- Compatibility with VRCSDK 3.10.6-beta.4 `#1808`
 
 ### Changed
 
 ### Deprecated
 
 ### Removed
+- Compatibility with VRCSDK 3.10.6-beta.3 `#1808`
+  - Avarar Optimizer no longer compiles with VRCSDK 3.10.6-beta.3
 
 ### Fixed
 
