@@ -16,7 +16,7 @@ The format is based on [Keep a Changelog].
 
 ### Removed
 - Compatibility with VRCSDK 3.10.6-beta.3 `#1808`
-  - Avarar Optimizer no longer compiles with VRCSDK 3.10.6-beta.3
+  - Avatar Optimizer no longer compiles with VRCSDK 3.10.6-beta.3
 
 ### Fixed
 
