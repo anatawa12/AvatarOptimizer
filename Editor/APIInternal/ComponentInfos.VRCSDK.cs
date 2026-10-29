@@ -652,9 +652,7 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
 #if AAO_VRCSDK3_AVATARS_NATIVE_FACE_TRACKING
         private bool IsFaceTrackingKeyEnabled(VRCAvatarDescriptor component, VRCAvatarDescriptor.FaceTrackingKey key)
         {
-            // Canny: IsBasicFaceTrackingKey should take VRCAvatarDescriptor.FaceTrackingKey
-            // https://github.com/anatawa12/AvatarOptimizer/pull/1803
-            if (component.useAllTrackingKeys || VRCAvatarDescriptor.IsBasicFaceTrackingKey((int)key))
+            if (component.useAllTrackingKeys || VRCAvatarDescriptor.IsBasicFaceTrackingKey(key))
             {
                 switch (key)
                 {
