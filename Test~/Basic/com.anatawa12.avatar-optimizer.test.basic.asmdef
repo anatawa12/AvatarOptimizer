@@ -58,7 +58,7 @@
         },
         {
             "name": "com.vrchat.avatars",
-            "expression": "[3.10.6-beta.3,3.10.6]",
+            "expression": "[3.10.6-beta.4,3.10.6]",
             "define": "AAO_VRCSDK3_AVATARS_MATERIAL_CONTACTS_AND_ADVANCED_PROXIMITY"
         },
         {
