@@ -8,19 +8,24 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Compatibility with VRCSDK 3.10.6-beta.4 `#1808`
 
 ### Changed
 
 ### Deprecated
 
 ### Removed
-- Compatibility with VRCSDK 3.10.6-beta.3 `#1808`
-  - Avatar Optimizer no longer compiles with VRCSDK 3.10.6-beta.3
 
 ### Fixed
 
 ### Security
+
+## [1.9.21-beta.2] - 2026-10-29
+### Added
+- Compatibility with VRCSDK 3.10.6-beta.4 [`#1808`](https://github.com/anatawa12/AvatarOptimizer/pull/1808)
+
+### Removed
+- Compatibility with VRCSDK 3.10.6-beta.3 [`#1808`](https://github.com/anatawa12/AvatarOptimizer/pull/1808)
+  - Avatar Optimizer no longer compiles with VRCSDK 3.10.6-beta.3
 
 ## [1.9.21-beta.1] - 2026-10-24
 ### Added
@@ -2381,7 +2386,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21-beta.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21-beta.2...HEAD
+[1.9.21-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21-beta.1...v1.9.21-beta.2
 [1.9.21-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.20...v1.9.21-beta.1
 [1.9.20]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.20-beta.2...v1.9.20
 [1.9.20-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.20-beta.1...v1.9.20-beta.2
