@@ -76,17 +76,17 @@
         },
         {
             "name": "com.vrchat.avatars",
-            "expression": "[3.10.6-beta.4,3.10.6]",
+            "expression": "3.10.6-beta.4",
             "define": "AAO_VRCSDK3_AVATARS_NATIVE_FACE_TRACKING"
         },
         {
             "name": "com.vrchat.avatars",
-            "expression": "[3.10.6-beta.4,3.10.6]",
+            "expression": "3.10.6-beta.4",
             "define": "AAO_VRCSDK3_AVATARS_VRC_RAYCAST_V1_1"
         },
         {
             "name": "com.vrchat.avatars",
-            "expression": "[3.10.6-beta.4,3.10.6]",
+            "expression": "3.10.6-beta.4",
             "define": "AAO_VRCSDK3_AVATARS_MATERIAL_CONTACTS_AND_ADVANCED_PROXIMITY"
         },
         {
