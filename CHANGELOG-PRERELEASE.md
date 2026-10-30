@@ -10,16 +10,21 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Enabled VRCSDK 3.10.6 features for stable 3.10.6 SDK `#1809`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Names of removed BlendShapes are left in Face Tracking settings of VRCAvatarDescriptor `#1812`
 
 ### Security
+
+## [1.9.21-rc.1] - 2026-10-30
+### Changed
+- Enabled VRCSDK 3.10.6 features for stable 3.10.6 SDK [`#1809`](https://github.com/anatawa12/AvatarOptimizer/pull/1809)
+
+### Fixed
+- Names of removed BlendShapes are left in Face Tracking settings of VRCAvatarDescriptor [`#1812`](https://github.com/anatawa12/AvatarOptimizer/pull/1812)
 
 ## [1.9.21-beta.2] - 2026-10-29
 ### Added
@@ -2388,7 +2393,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21-beta.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21-rc.1...HEAD
+[1.9.21-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21-beta.2...v1.9.21-rc.1
 [1.9.21-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21-beta.1...v1.9.21-beta.2
 [1.9.21-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.20...v1.9.21-beta.1
 [1.9.20]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.20-beta.2...v1.9.20
