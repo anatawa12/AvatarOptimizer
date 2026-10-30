@@ -633,7 +633,8 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
 
                     if (newShapeName.Count == 0)
                     {
-                        // removed
+                        // removed: clear the name so it is not counted as a face tracking operation
+                        shapeName = "";
                     }
                     else if (newShapeName.Count == 1)
                     {

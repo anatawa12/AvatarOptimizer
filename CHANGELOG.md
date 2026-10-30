@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog].
   - This adds VRC Raycast v1.1 Support
 
 ### Changed
+- Removed face tracking BlendShape names whose BlendShapes were removed from the Face Tracking settings `#1810`
 
 ### Deprecated
 
