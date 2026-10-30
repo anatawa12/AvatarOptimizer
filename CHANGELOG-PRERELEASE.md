@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.9.21] - 2026-10-30
 ## [1.9.21-rc.1] - 2026-10-30
 ### Changed
 - Enabled VRCSDK 3.10.6 features for stable 3.10.6 SDK [`#1809`](https://github.com/anatawa12/AvatarOptimizer/pull/1809)
@@ -2393,7 +2394,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21-rc.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21...HEAD
+[1.9.21]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21-rc.1...v1.9.21
 [1.9.21-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21-beta.2...v1.9.21-rc.1
 [1.9.21-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21-beta.1...v1.9.21-beta.2
 [1.9.21-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.20...v1.9.21-beta.1
