@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Names of removed BlendShapes are left in Face Tracking settings of VRCAvatarDescriptor `#1812`
 
 ### Security
 
