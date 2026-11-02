@@ -25,6 +25,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         // all feature flags
         public bool RemoveZeroSizedPolygon;
+        public bool ReduceParameterBitWidth;
         public bool OptimizeTexture;
         public bool SweepComponents;
         public bool ConfigureLeafMergeBone;
@@ -101,6 +102,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             if (config.removeZeroSizedPolygons && settings.removeZeroSizedPolygons)
             {
                 RemoveZeroSizedPolygon = true;
+            }
+
+            if (config.reduceParameterBitWidth && settings.reduceParameterBitWidth)
+            {
+                ReduceParameterBitWidth = true;
             }
 
             if (config.optimizeAnimator && settings.optimizeAnimator)
