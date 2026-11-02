@@ -114,6 +114,9 @@ msgstr "Animator Layers"
 msgid "OptimizationMetrics:GameObjectCount"
 msgstr "Game Objects"
 
+msgid "OptimizationMetrics:SyncedParameterBits"
+msgstr "Synced Parameter Bits"
+
 msgid "OptimizationMetrics:RaycastCount"
 msgstr "Raycast Count"
 
@@ -1065,6 +1068,9 @@ msgstr "Prevents removing end bones whose parent is not removed."
 
 msgid "TraceAndOptimize:prop:removeZeroSizedPolygons"
 msgstr "Automatically Remove Zero Sized Polygons"
+
+msgid "TraceAndOptimize:prop:reduceParameterBitWidth"
+msgstr "Automatically Reduce Bit Width of Synced Int Parameters"
 
 msgid "TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape"
 msgstr "Unknown PhysBone Collider Shape '{0}' is specified."

@@ -113,6 +113,9 @@ msgstr "Animatorのレイヤー数"
 msgid "OptimizationMetrics:GameObjectCount"
 msgstr "GameObjectの数"
 
+msgid "OptimizationMetrics:SyncedParameterBits"
+msgstr "同期パラメーターのビット数"
+
 msgid "locale:ja"
 msgstr "日本語"
 
@@ -955,6 +958,9 @@ msgstr "親が削除されていないendボーンを削除しないようにし
 
 msgid "TraceAndOptimize:prop:removeZeroSizedPolygons"
 msgstr "面積がゼロのポリゴンを自動的に削除する"
+
+msgid "TraceAndOptimize:prop:reduceParameterBitWidth"
+msgstr "同期されるInt型パラメーターのビット幅を自動的に削減する"
 
 msgid "TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape"
 msgstr "未知のPhysBone Collider形状'{0}'が指定されています。"

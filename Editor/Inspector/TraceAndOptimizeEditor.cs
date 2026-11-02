@@ -14,6 +14,7 @@ namespace Anatawa12.AvatarOptimizer
         private SerializedProperty _removeUnusedObjects = null!; // Initialized in OnEnable
         private SerializedProperty _preserveEndBone = null!; // Initialized in OnEnable
         private SerializedProperty _removeZeroSizedPolygons = null!; // Initialized in OnEnable
+        private SerializedProperty _reduceParameterBitWidth = null!; // Initialized in OnEnable
         private SerializedProperty _optimizePhysBone = null!; // Initialized in OnEnable
         private SerializedProperty _optimizeAnimator = null!; // Initialized in OnEnable
         private SerializedProperty _mergeSkinnedMesh = null!; // Initialized in OnEnable
@@ -32,6 +33,7 @@ namespace Anatawa12.AvatarOptimizer
             _removeUnusedObjects = serializedObject.FindProperty(nameof(TraceAndOptimize.removeUnusedObjects));
             _preserveEndBone = serializedObject.FindProperty(nameof(TraceAndOptimize.preserveEndBone));
             _removeZeroSizedPolygons = serializedObject.FindProperty(nameof(TraceAndOptimize.removeZeroSizedPolygons));
+            _reduceParameterBitWidth = serializedObject.FindProperty(nameof(TraceAndOptimize.reduceParameterBitWidth));
             _optimizePhysBone = serializedObject.FindProperty(nameof(TraceAndOptimize.optimizePhysBone));
             _optimizeAnimator = serializedObject.FindProperty(nameof(TraceAndOptimize.optimizeAnimator));
             _mergeSkinnedMesh = serializedObject.FindProperty(nameof(TraceAndOptimize.mergeSkinnedMesh));
@@ -109,6 +111,9 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUI.indentLevel++;
                 EditorGUILayout.HelpBox(AAOL10N.Tr("TraceAndOptimize:note:advancedOptimization"), MessageType.Info);
                 EditorGUILayout.PropertyField(_removeZeroSizedPolygons);
+#if AAO_VRCSDK3_AVATARS_PARAMETER_BIT_WIDTH
+                EditorGUILayout.PropertyField(_reduceParameterBitWidth);
+#endif
                 EditorGUI.indentLevel--;
             }
 

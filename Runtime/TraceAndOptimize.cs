@@ -50,6 +50,17 @@ namespace Anatawa12.AvatarOptimizer
         internal bool removeZeroSizedPolygons = false;
 
         [NotKeyable]
+        [AAOLocalized("TraceAndOptimize:prop:reduceParameterBitWidth")]
+        [ToggleLeft]
+        [SerializeField]
+#if !AAO_VRCSDK3_AVATARS
+        // no meaning without VRCSDK
+        [HideInInspector]
+#endif
+        // Note: this option is a part of Advanced Optimizations
+        internal bool reduceParameterBitWidth = false;
+
+        [NotKeyable]
         [AAOLocalized("TraceAndOptimize:prop:optimizePhysBone")]
         [ToggleLeft]
         [SerializeField]
