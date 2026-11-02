@@ -214,16 +214,11 @@ namespace Anatawa12.AvatarOptimizer
             var descriptor = rootGameObject.GetComponent<VRC.SDK3.Avatars.Components.VRCAvatarDescriptor>();
             if (descriptor)
             {
-                if (descriptor.customizeAnimationLayers)
+                foreach (var layerController in descriptor.GetCustomizedPlayableLayerControllers())
                 {
-                    foreach (var layer in descriptor.baseAnimationLayers.Concat(descriptor.specialAnimationLayers))
-                    {
-                        if (layer.isDefault || !layer.animatorController) continue;
-
-                        var (controller, _) = ACUtils.GetControllerAndOverrides(layer.animatorController);
-                        foreach (var parameter in controller.parameters)
-                            parameters.Add(parameter.name);
-                    }
+                    var (controller, _) = ACUtils.GetControllerAndOverrides(layerController);
+                    foreach (var parameter in controller.parameters)
+                        parameters.Add(parameter.name);
                 }
 
                 if (descriptor is { customExpressions: true, expressionParameters: var expressionParameters }
