@@ -111,6 +111,18 @@ namespace Anatawa12.AvatarOptimizer
             }
         }
 
+        public static IEnumerable<RuntimeAnimatorController> GetCustomizedPlayableLayerControllers(
+            this VRCAvatarDescriptor descriptor)
+        {
+            if (!descriptor.customizeAnimationLayers) yield break;
+
+            var layers = (descriptor.baseAnimationLayers ?? Array.Empty<VRCAvatarDescriptor.CustomAnimLayer>())
+                .Concat(descriptor.specialAnimationLayers ?? Array.Empty<VRCAvatarDescriptor.CustomAnimLayer>());
+            foreach (var layer in layers)
+                if (!layer.isDefault && layer.animatorController != null)
+                    yield return layer.animatorController;
+        }
+
         public static AnimatorLayerMap<RuntimeAnimatorController> GetAvatarLayerControllers(
             VRCAvatarDescriptor descriptor)
         {
