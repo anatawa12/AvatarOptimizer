@@ -103,7 +103,7 @@ msgstr ""
 msgid "MakeChildren:description"
 msgstr "此元件會在建置時將指定的物件設為子級"
 
-msgid "MakeChildren:tooltip:executeEarly"
+msgid "MakeChildren:prop:executeEarly"
 msgstr "提前執行"
 
 msgid "MakeChildren:tooltip:executeEarly"
@@ -504,7 +504,7 @@ msgstr "已完成遷移至 Trace and Optimize！"
 
 # region TraceAndOptimize
 
-msgid "TraceAndOptimize:prop:freezeBlendShape"
+msgid "TraceAndOptimize:prop:optimizeBlendShape"
 msgstr "自動凍結和移除 BlendShape"
 
 msgid "TraceAndOptimize:prop:removeUnusedObjects"

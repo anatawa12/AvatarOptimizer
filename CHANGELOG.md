@@ -8,8 +8,6 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Initial minimal support for Unity 6000.x `#1711`
-  - Those versions are not yet officially supported, but something should start working.
 
 ### Changed
 
@@ -18,11 +16,43 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Missing localization for few messages `#1767`
-- False positive "Differently animated BlendShape is detected" error in Merge Skinned Mesh with MA BlendShape Sync `#1778`
-- Incompatibility with animations swapping mesh of Mesh Filter `#1780`
 
 ### Security
+
+## [1.9.21] - 2026-10-30
+### Added
+- Support for VRCSDK 3.10.6 features [`#1803`](https://github.com/anatawa12/AvatarOptimizer/pull/1803) [`#1808`](https://github.com/anatawa12/AvatarOptimizer/pull/1808) [`#1809`](https://github.com/anatawa12/AvatarOptimizer/pull/1809) [`#1812`](https://github.com/anatawa12/AvatarOptimizer/pull/1812)
+  - Please note that VRCSDK 3.10.6 features can be changed after open beta release.
+  - This adds Native Face Tracking Support
+  - This adds Material Contacts Support
+  - This adds VRC Raycast v1.1 Support
+
+## [1.9.20] - 2026-10-01
+### Added
+- Korean localization with UI labels kept in English [`#1793`](https://github.com/anatawa12/AvatarOptimizer/pull/1793)
+
+### Fixed
+- Bones closer than 3mm with x100 scale might be unexpectedly merged incorrectly [`#1796`](https://github.com/anatawa12/AvatarOptimizer/pull/1796)
+- Duplicate and outdated localization keys and PO syntax errors in existing language catalogs [`#1793`](https://github.com/anatawa12/AvatarOptimizer/pull/1793)
+- PhysBone Colliders can be removed incorrectly when there are other disabled PhysBone Colliders with same transform [`#1799`](https://github.com/anatawa12/AvatarOptimizer/pull/1799)
+
+## [1.9.19] - 2026-09-11
+### Fixed
+- Particle Systems with the Shape of vertices of Skinnd Mesh Renderers only with no-triangle submeshesas would be borken [`#1789`](https://github.com/anatawa12/AvatarOptimizer/pull/1789)
+- Animation Curve normalization might throw an exception [`#1790`](https://github.com/anatawa12/AvatarOptimizer/pull/1790)
+- Contacts for bHaptics are removed [`#1791`](https://github.com/anatawa12/AvatarOptimizer/pull/1791)
+
+## [1.9.18] - 2026-08-31
+### Added
+- Initial minimal support for Unity 6000.x [`#1711`](https://github.com/anatawa12/AvatarOptimizer/pull/1711)
+  - Those versions are not yet officially supported, but something should start working.
+- Added support for AudioLink support in Toon Standard in 3.10.5 [`#1787`](https://github.com/anatawa12/AvatarOptimizer/pull/1787)
+
+### Fixed
+- Missing localization for few messages [`#1767`](https://github.com/anatawa12/AvatarOptimizer/pull/1767)
+- False positive "Differently animated BlendShape is detected" error in Merge Skinned Mesh with MA BlendShape Sync [`#1778`](https://github.com/anatawa12/AvatarOptimizer/pull/1778)
+- Incompatibility with animations swapping mesh of Mesh Filter [`#1780`](https://github.com/anatawa12/AvatarOptimizer/pull/1780)
+- VRCImpostorSettings might be removed unexpectedly [`#1783`](https://github.com/anatawa12/AvatarOptimizer/pull/1783)
 
 ## [1.9.17] - 2026-08-08
 ### Fixed
@@ -1520,7 +1550,11 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.17...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21...HEAD
+[1.9.21]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.20...v1.9.21
+[1.9.20]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.19...v1.9.20
+[1.9.19]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18...v1.9.19
+[1.9.18]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.17...v1.9.18
 [1.9.17]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.16...v1.9.17
 [1.9.16]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.15...v1.9.16
 [1.9.15]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.14...v1.9.15

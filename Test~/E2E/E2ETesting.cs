@@ -1227,6 +1227,196 @@ namespace Anatawa12.AvatarOptimizer.Test.E2E
             Assert.That(mrA != null, "mrA is not destroyed");
         }
 
+#if AAO_VRCSDK3_AVATARS
+        [Test]
+        public void Issue1798_MergePhysBoneCollider_InitialActiveness_DisabledByEnable()
+        {
+            var avatar = TestUtils.NewAvatar();
+            avatar.AddComponent<TraceAndOptimize>();
+            TestUtils.SetFxLayer(avatar, new AnimatorControllerBuilder("").Build());
+
+            var physBone0 = Utils.NewGameObject("VRCPhysBone0", avatar.transform);
+            var physBone0Component = physBone0.AddComponent<VRCPhysBone>();
+            var physBone0Child = Utils.NewGameObject("VRCPhysBone0_Child", physBone0.transform);
+            physBone0Child.transform.position = Vector3.up;
+            physBone0Child.AddComponent<SkinnedMeshRenderer>().sharedMesh = TestUtils.NewCubeMesh();
+
+            var physBone1 = Utils.NewGameObject("VRCPhysBone1", avatar.transform);
+            var physBone1Component = physBone1.AddComponent<VRCPhysBone>();
+            var physBone1Child = Utils.NewGameObject("VRCPhysBone1_Child", physBone1.transform);
+            physBone1Child.transform.position = Vector3.up;
+            physBone1Child.AddComponent<SkinnedMeshRenderer>().sharedMesh = TestUtils.NewCubeMesh();
+
+            var vrcPhysBoneCollider0 = Utils.NewGameObject("VRCPhysBoneCollider0", avatar.transform).AddComponent<VRCPhysBoneCollider>();
+            var vrcPhysBoneCollider1 = Utils.NewGameObject("VRCPhysBoneCollider1", avatar.transform).AddComponent<VRCPhysBoneCollider>();
+
+            vrcPhysBoneCollider0.enabled = false;
+
+            physBone0Component.colliders.Add(vrcPhysBoneCollider0);
+            physBone1Component.colliders.Add(vrcPhysBoneCollider1);
+
+            LogTestUtility.Test(_ =>
+            {
+                AvatarProcessor.ProcessAvatar(avatar);
+            });
+
+            Assert.That(physBone0Component.colliders[0] == null, "Disabled PB should be removed");
+            Assert.That(physBone1Component.colliders[0] != null, "Active PB should not be removed");
+        }
+
+        [Test]
+        public void Issue1798_MergePhysBoneCollider_InitialActiveness_InactiveParent()
+        {
+            var avatar = TestUtils.NewAvatar();
+            avatar.AddComponent<TraceAndOptimize>();
+            TestUtils.SetFxLayer(avatar, new AnimatorControllerBuilder("").Build());
+
+            var physBone0 = Utils.NewGameObject("VRCPhysBone0", avatar.transform);
+            var physBone0Component = physBone0.AddComponent<VRCPhysBone>();
+            var physBone0Child = Utils.NewGameObject("VRCPhysBone0_Child", physBone0.transform);
+            physBone0Child.transform.position = Vector3.up;
+            physBone0Child.AddComponent<SkinnedMeshRenderer>().sharedMesh = TestUtils.NewCubeMesh();
+
+            var physBone1 = Utils.NewGameObject("VRCPhysBone1", avatar.transform);
+            var physBone1Component = physBone1.AddComponent<VRCPhysBone>();
+            var physBone1Child = Utils.NewGameObject("VRCPhysBone1_Child", physBone1.transform);
+            physBone1Child.transform.position = Vector3.up;
+            physBone1Child.AddComponent<SkinnedMeshRenderer>().sharedMesh = TestUtils.NewCubeMesh();
+
+            var vrcPhysBoneCollider0 = Utils.NewGameObject("VRCPhysBoneCollider0", avatar.transform).AddComponent<VRCPhysBoneCollider>();
+            var vrcPhysBoneCollider1 = Utils.NewGameObject("VRCPhysBoneCollider1", avatar.transform).AddComponent<VRCPhysBoneCollider>();
+
+            vrcPhysBoneCollider0.gameObject.SetActive(false);
+
+            physBone0Component.colliders.Add(vrcPhysBoneCollider0);
+            physBone1Component.colliders.Add(vrcPhysBoneCollider1);
+
+            LogTestUtility.Test(_ =>
+            {
+                AvatarProcessor.ProcessAvatar(avatar);
+            });
+
+            Assert.That(physBone0Component.colliders[0] == null, "Disabled PB should be removed");
+            Assert.That(physBone1Component.colliders[0] != null, "Active PB should not be removed");
+        }
+
+        [Test]
+        public void Issue1798_MergePhysBoneCollider_InitialActiveness_FirstActiveAndFollowingNonActive()
+        {
+            var avatar = TestUtils.NewAvatar();
+            avatar.AddComponent<TraceAndOptimize>();
+            TestUtils.SetFxLayer(avatar, new AnimatorControllerBuilder("").Build());
+
+            var physBone0 = Utils.NewGameObject("VRCPhysBone0", avatar.transform);
+            var physBone0Component = physBone0.AddComponent<VRCPhysBone>();
+            var physBone0Child = Utils.NewGameObject("VRCPhysBone0_Child", physBone0.transform);
+            physBone0Child.transform.position = Vector3.up;
+            physBone0Child.AddComponent<SkinnedMeshRenderer>().sharedMesh = TestUtils.NewCubeMesh();
+
+            var physBone1 = Utils.NewGameObject("VRCPhysBone1", avatar.transform);
+            var physBone1Component = physBone1.AddComponent<VRCPhysBone>();
+            var physBone1Child = Utils.NewGameObject("VRCPhysBone1_Child", physBone1.transform);
+            physBone1Child.transform.position = Vector3.up;
+            physBone1Child.AddComponent<SkinnedMeshRenderer>().sharedMesh = TestUtils.NewCubeMesh();
+
+            var vrcPhysBoneCollider0 = Utils.NewGameObject("VRCPhysBoneCollider0", avatar.transform).AddComponent<VRCPhysBoneCollider>();
+            var vrcPhysBoneCollider1 = Utils.NewGameObject("VRCPhysBoneCollider1", avatar.transform).AddComponent<VRCPhysBoneCollider>();
+
+            vrcPhysBoneCollider1.gameObject.SetActive(false);
+
+            physBone0Component.colliders.Add(vrcPhysBoneCollider0);
+            physBone1Component.colliders.Add(vrcPhysBoneCollider1);
+
+            LogTestUtility.Test(_ =>
+            {
+                AvatarProcessor.ProcessAvatar(avatar);
+            });
+
+            Assert.That(physBone0Component.colliders[0] != null, "Active PB should not be removed");
+            Assert.That(physBone1Component.colliders[0] == null
+                        || !physBone1Component.colliders[0].isActiveAndEnabled, "Disabled PB should be removed or disabled");
+        }
+#endif
+
+        [Test]
+        public void PR1803_AutoMergeSMR_Removes_Renderer_External_Dependency()
+        {
+            var avatar = TestUtils.NewAvatar();
+            avatar.AddComponent<TraceAndOptimize>();
+            var renderer0GameObject = Utils.NewGameObject("Renderer0", avatar.transform);
+            var renderer1GameObject = Utils.NewGameObject("Renderer1", avatar.transform);
+            var renderer0 = renderer0GameObject.AddComponent<SkinnedMeshRenderer>();
+            var renderer1 = renderer1GameObject.AddComponent<SkinnedMeshRenderer>();
+
+            var rootBone = Utils.NewGameObject("RootBone", avatar.transform);
+            renderer0.rootBone = renderer0.probeAnchor = rootBone.transform;
+            renderer1.rootBone = renderer1.probeAnchor = rootBone.transform;
+            renderer0.bones = new[] { rootBone.transform };
+            renderer1.bones = new[] { rootBone.transform };
+            renderer0.localBounds = new Bounds(Vector3.zero, Vector3.one);
+            renderer1.localBounds = new Bounds(Vector3.zero, Vector3.one);
+
+            renderer0.sharedMesh = TestUtils.NewCubeMeshWithBone();
+            renderer0.material = new Material(Shader.Find("Standard"));
+            renderer1.sharedMesh = TestUtils.NewCubeMeshWithBone();
+            renderer1.material = new Material(Shader.Find("Standard"));
+
+            var testComponent = avatar.AddComponent<DependencyTestComponent>();
+            testComponent.dependant.Add(renderer0);
+            testComponent.dependant.Add(renderer1);
+
+            TestUtils.SetFxLayer(avatar, new AnimatorControllerBuilder("").Build());
+
+            AvatarProcessor.ProcessAvatar(avatar);
+
+            Assert.That(renderer0 == null, "renderer0 == null");
+            Assert.That(renderer1 == null, "renderer1 == null");
+
+            Assert.That(testComponent != null, "testComponent != null");
+        }
+
+        [Test]
+        public void PR1803_MergeSMR_Removes_Renderer_External_Dependency()
+        {
+            var avatar = TestUtils.NewAvatar();
+            avatar.AddComponent<TraceAndOptimize>();
+            var renderer0GameObject = Utils.NewGameObject("Renderer0", avatar.transform);
+            var renderer1GameObject = Utils.NewGameObject("Renderer1", avatar.transform);
+            var mergeGameObject = Utils.NewGameObject("Merge", avatar.transform);
+            var renderer0 = renderer0GameObject.AddComponent<SkinnedMeshRenderer>();
+            var renderer1 = renderer1GameObject.AddComponent<SkinnedMeshRenderer>();
+            var mergeRenderer = mergeGameObject.AddComponent<SkinnedMeshRenderer>();
+            var mergeSMR = mergeGameObject.AddComponent<MergeSkinnedMesh>();
+
+            var rootBone = Utils.NewGameObject("RootBone", avatar.transform);
+            renderer0.rootBone = renderer0.probeAnchor = rootBone.transform;
+            renderer1.rootBone = renderer1.probeAnchor = rootBone.transform;
+            mergeRenderer.rootBone = mergeRenderer.probeAnchor = rootBone.transform;
+            renderer0.bones = new[] { rootBone.transform };
+            renderer1.bones = new[] { rootBone.transform };
+            renderer0.localBounds = new Bounds(Vector3.zero, Vector3.one);
+            renderer1.localBounds = new Bounds(Vector3.zero, Vector3.one);
+
+            renderer0.sharedMesh = TestUtils.NewCubeMeshWithBone();
+            renderer0.material = new Material(Shader.Find("Standard"));
+            renderer1.sharedMesh = TestUtils.NewCubeMeshWithBone();
+            renderer1.material = new Material(Shader.Find("Standard"));
+
+            mergeSMR.renderersSet.AddRange(new[] { renderer0, renderer1 });
+
+            var testComponent = avatar.AddComponent<DependencyTestComponent>();
+            testComponent.dependant.Add(renderer0);
+            testComponent.dependant.Add(renderer1);
+
+            TestUtils.SetFxLayer(avatar, new AnimatorControllerBuilder("").Build());
+
+            AvatarProcessor.ProcessAvatar(avatar);
+
+            Assert.That(renderer0 == null, "renderer0 == null");
+            Assert.That(renderer1 == null, "renderer1 == null");
+
+            Assert.That(testComponent != null, "testComponent != null");
+        }
         #endregion
     }
 }

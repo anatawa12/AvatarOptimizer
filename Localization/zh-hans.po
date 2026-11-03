@@ -250,7 +250,7 @@ msgstr ""
 msgid "MakeChildren:description"
 msgstr "在构建时，将指定的 GameObject 设为子对象。"
 
-msgid "MakeChildren:tooltip:executeEarly"
+msgid "MakeChildren:prop:executeEarly"
 msgstr "提前执行"
 
 msgid "MakeChildren:tooltip:executeEarly"
@@ -899,7 +899,7 @@ msgstr "这些调试选项用于规避 Avatar Optimizer 中发生的 Bug，作�
 "此外，某些调试选项可能未经充分测试，或者其行为可能会发生变化。请注意！"
 
 msgid "TraceAndOptimize:warn:unknown-type"
-msgstr "检测到未知的组件类型"{0}"！"
+msgstr "检测到未知的组件类型\"{0}\"！"
 
 msgid "TraceAndOptimize:warn:unknown-type:description"
 msgstr "Avatar Optimizer 发现了未知的组件。这可能会降低优化处理的质量，并可能导致处理后的 Avatar 损坏。（不会影响原始 Avatar）"

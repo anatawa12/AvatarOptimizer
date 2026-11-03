@@ -170,6 +170,7 @@ namespace Anatawa12.AvatarOptimizer
         AfterMeshProcessing = 30,
         AfterAutoMergeSkinnedMesh = 40,
         AfterGcComponents = 50,
+        PreFinalization = 60,
         AtTheEnd = 1000000,
     }
 }

@@ -19,6 +19,60 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.9.21] - 2026-10-30
+## [1.9.21-rc.1] - 2026-10-30
+### Changed
+- Enabled VRCSDK 3.10.6 features for stable 3.10.6 SDK [`#1809`](https://github.com/anatawa12/AvatarOptimizer/pull/1809)
+
+### Fixed
+- Names of removed BlendShapes are left in Face Tracking settings of VRCAvatarDescriptor [`#1812`](https://github.com/anatawa12/AvatarOptimizer/pull/1812)
+
+## [1.9.21-beta.2] - 2026-10-29
+### Added
+- Compatibility with VRCSDK 3.10.6-beta.4 [`#1808`](https://github.com/anatawa12/AvatarOptimizer/pull/1808)
+
+### Removed
+- Compatibility with VRCSDK 3.10.6-beta.3 [`#1808`](https://github.com/anatawa12/AvatarOptimizer/pull/1808)
+  - Avatar Optimizer no longer compiles with VRCSDK 3.10.6-beta.3
+
+## [1.9.21-beta.1] - 2026-10-24
+### Added
+- Initial support for VRCSDK 3.10.6 features [`#1803`](https://github.com/anatawa12/AvatarOptimizer/pull/1803)
+  - Please note that VRCSDK 3.10.6 features can be changed after open beta release.
+  - This adds Native Face Tracking Support
+  - This adds Material Contacts Support
+  - This adds VRC Raycast v1.1 Support
+
+## [1.9.20] - 2026-10-01
+## [1.9.20-beta.2] - 2026-09-30
+### Fixed
+- PhysBone Colliders can be removed incorrectly when there are other disabled PhysBone Colliders with same transform [`#1799`](https://github.com/anatawa12/AvatarOptimizer/pull/1799)
+
+## [1.9.20-beta.1] - 2026-09-28
+### Added
+- Korean localization with UI labels kept in English [`#1793`](https://github.com/anatawa12/AvatarOptimizer/pull/1793)
+
+### Fixed
+- Bones closer than 3mm with x100 scale might be unexpectedly merged incorrectly [`#1796`](https://github.com/anatawa12/AvatarOptimizer/pull/1796)
+- Duplicate and outdated localization keys and PO syntax errors in existing language catalogs [`#1793`](https://github.com/anatawa12/AvatarOptimizer/pull/1793)
+
+## [1.9.19] - 2026-09-11
+## [1.9.19-beta.2] - 2026-09-08
+### Fixed
+- Animation Curve normalization might throw an exception [`#1790`](https://github.com/anatawa12/AvatarOptimizer/pull/1790)
+- Contacts for bHaptics are removed [`#1791`](https://github.com/anatawa12/AvatarOptimizer/pull/1791)
+
+## [1.9.19-beta.1] - 2026-09-07
+### Fixed
+- Particle Systems with the Shape of vertices of Skinnd Mesh Renderers only with no-triangle submeshesas would be borken [`#1789`](https://github.com/anatawa12/AvatarOptimizer/pull/1789)
+
+## [1.9.18] - 2026-08-31
+### Added
+- Added support for AudioLink support in Toon Standard in 3.10.5 [`#1787`](https://github.com/anatawa12/AvatarOptimizer/pull/1787)
+
+### Fixed
+- VRCImpostorSettings might be removed unexpectedly [`#1783`](https://github.com/anatawa12/AvatarOptimizer/pull/1783)
+
 ## [1.9.18-beta.3] - 2026-08-24
 ### Fixed
 - Incompatibility with animations swapping mesh of Mesh Filter [`#1780`](https://github.com/anatawa12/AvatarOptimizer/pull/1780)
@@ -2340,7 +2394,18 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18-beta.3...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21...HEAD
+[1.9.21]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21-rc.1...v1.9.21
+[1.9.21-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21-beta.2...v1.9.21-rc.1
+[1.9.21-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21-beta.1...v1.9.21-beta.2
+[1.9.21-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.20...v1.9.21-beta.1
+[1.9.20]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.20-beta.2...v1.9.20
+[1.9.20-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.20-beta.1...v1.9.20-beta.2
+[1.9.20-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.19...v1.9.20-beta.1
+[1.9.19]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.19-beta.2...v1.9.19
+[1.9.19-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.19-beta.1...v1.9.19-beta.2
+[1.9.19-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18...v1.9.19-beta.1
+[1.9.18]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18-beta.3...v1.9.18
 [1.9.18-beta.3]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18-beta.2...v1.9.18-beta.3
 [1.9.18-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.18-beta.1...v1.9.18-beta.2
 [1.9.18-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.17...v1.9.18-beta.1

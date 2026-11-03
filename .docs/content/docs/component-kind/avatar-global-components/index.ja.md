@@ -12,7 +12,7 @@ Avatar Global Componentはアバターのルートに追加することでアバ
 
 ![avatar-root.png](avatar-root.png)
 
-Avatar Global Componentをアバターのルート以外に追加した場合、インスペクター上にエラーが表示され、コンポーネントは一切動作しません。
+Avatar Global Componentをアバターのルート以外に追加した場合、Inspector上にエラーが表示され、コンポーネントは一切動作しません。
 
 以下のコンポーネントがAvatar Global Componentです。
 

@@ -114,6 +114,15 @@ msgstr "Animator Layers"
 msgid "OptimizationMetrics:GameObjectCount"
 msgstr "Game Objects"
 
+msgid "OptimizationMetrics:RaycastCount"
+msgstr "Raycast Count"
+
+msgid "OptimizationMetrics:ForwardedParametersCount"
+msgstr "Forwarded Parameters Count"
+
+msgid "OptimizationMetrics:FaceTrackingOperations"
+msgstr "Face Tracking Operations"
+
 msgid "LegacyModularAvatarWarning:message"
 msgstr ""
 "We found Modular Avatar 1.7.x or older is installed!\n"
@@ -206,7 +215,7 @@ msgstr "(Removed but not found)"
 # region ObjectMapping
 
 msgid "ObjectMapping:DummyAnimationObject:1"
-msgstr "Keys removed by AAO becuase Target object is absent. (This message is only available in play mode)"
+msgstr "Keys removed by AAO because Target object is absent. (This message is only available in play mode)"
 
 msgid "ObjectMapping:DummyAnimationObject:2"
 msgstr "AAO may have deleted the target object if target object is 'unused'."
@@ -251,7 +260,7 @@ msgstr ""
 msgid "MakeChildren:description"
 msgstr "This component will make children at build time"
 
-msgid "MakeChildren:tooltip:executeEarly"
+msgid "MakeChildren:prop:executeEarly"
 msgstr "Execute Early"
 
 msgid "MakeChildren:tooltip:executeEarly"
@@ -439,14 +448,14 @@ msgstr "Components"
 msgid "MergePhysBone:warning:limit-rotation-fix-animation"
 msgstr "Limit Rotation mode is Fix but physBone affected transforms are animated."
 
-msgid "MergePhysBone:warning:limit-rotation-fix-animation"
-msgstr "Merge Bone on PhysBone for Merge PhysBone with Limit Rotation mode Fix does not work and completely unsupported."
-
 msgid "MergePhysBone:warning:limit-rotation-fix-animation:description"
 msgstr "This is not supported with Limit Rotation mode Fix for now."
 
 msgid "MergePhysBone:error:limit-rotation-fix-merge-bone"
 msgstr "Some affected bones have MergeBone component while Limit Rotation mode is Fix. This is not supported."
+
+msgid "MergePhysBone:error:limit-rotation-fix-merge-bone:description"
+msgstr "Merge Bone on PhysBone for Merge PhysBone with Limit Rotation mode Fix does not work and completely unsupported."
 
 msgid "MergePhysBone:error:physbone-outside-of-avatar-root"
 msgstr "VRCPhysBone components whose Root Transform is outside of the avatar are not supported as source of Merge PhysBone."
@@ -603,14 +612,14 @@ msgid "MergeSkinnedMesh:copy-enablement-animation:error:too-many-activeness-anim
 msgstr "Multiple properties related to the activeness of the following source meshes are animated."
 
 msgid "MergeSkinnedMesh:copy-enablement-animation:error:too-many-activeness-animation:description"
-msgid "'Copy Enablement Animation' is designed to copy activeness / enablement animations to 'enabled' of the merged mesh.\n"
+msgstr "'Copy Enablement Animation' is designed to copy activeness / enablement animations to 'enabled' of the merged mesh.\n"
 "Therefore, we cannot copy animations if there are multiple properties are animated like both renderer's 'enabled' and GameObject's 'activeSelf', or multiple layers of 'activeSelf'."
 
 msgid "MergeSkinnedMesh:copy-enablement-animation:error:activeness-animation-of-source-mismatch"
-msgid "The animations for the activeness of the source meshes are different between multiple source meshes."
+msgstr "The animations for the activeness of the source meshes are different between multiple source meshes."
 
 msgid "MergeSkinnedMesh:copy-enablement-animation:error:activeness-animation-of-source-mismatch:description"
-msgid "'Copy Enablement Animation' can work if the activeness of the source meshes are animated with same curve and same animation clip."
+msgstr "'Copy Enablement Animation' can work if the activeness of the source meshes are animated with same curve and same animation clip."
 
 # endregion
 
@@ -1097,6 +1106,46 @@ msgstr "Unknown Eyelid Type '{0}' is specified."
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType:description"
 msgstr "This is typically a bug of Avatar Optimizer. Please report this issue with the message above."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyeGazeMode"
+msgstr "Unknown EyeGaze Mode '{0}' is specified."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyeGazeMode:hint"
+msgstr "This is typically a bug of Avatar Optimizer. Please report this issue with the message above."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownParameterBehaviorTargetMode"
+msgstr "Unknown Parameter Behavior Target Mode '{0}' is specified."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownParameterBehaviorTargetMode:hint"
+msgstr "This is typically a bug of Avatar Optimizer. Please report this issue with the message above."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:FaceTracking:BlendShapeNameDiverge"
+msgstr "VRC Native Face Tracking BlendShape '{0}' is mapped to multiple BlendShape names: {1}"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:FaceTracking:BlendShapeNameDiverge:description"
+msgstr 
+"This typically means you have merged meshes with MergeSkinnedMesh in not supported way.\n"
+"If you see this only with AAO Trace and Optimize, it's a bug of AAO! Please report us!"
+
+msgid "ComponentInfos:VRCRaycast:warning:UnknownVersion"
+msgstr "Unknown VRCRayCast Version '{0}' is specified."
+
+msgid "ComponentInfos:VRCRaycast:warning:UnknownVersion:hint"
+msgstr "This is typically a bug of Avatar Optimizer. Please report this issue with the message above."
+
+#endregion
+
+#region BlendShapeGroup
+# Currently, only VRC Native FaceTracking uses this feature so our error messages are specific to Native FaceTracking.
+# However, this feature might be extended to support more use cases in the future
+
+msgid "BlendShapeGroup:error:BlendShapesMerged"
+msgstr "BlendShapes specified for VRC Native Face Tracking differently are merged to single BlendShape. This is not supported!: {0}"
+
+msgid "BlendShapeGroup:error:BlendShapesMerged:description"
+msgstr 
+"This typically means you have merged meshes with MergeSkinnedMesh in not supported way.\n"
+"If you see this only with AAO Trace and Optimize, it's a bug of AAO! Please report us!"
 
 #endregion
 

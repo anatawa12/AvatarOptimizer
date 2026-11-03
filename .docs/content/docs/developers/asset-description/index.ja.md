@@ -77,10 +77,12 @@ Asset Descriptionでは実際のScene上のコンポーネントと同様に、S
 
 OSCツールなどの外部ツールから読み取られるパラメーターを指定します。
 
-詳細は[上のセクション](#why-parameters-read-by-external-tools)を参照してください。
+詳細は[上のセクション](#why-parameters-read-by-external-tools)や、手順付きの説明を記載している[OSCギミックの互換性に関するページ]を参照してください。
 
 ### Parameters Changed By External Tools {#parameters-changed-by-external-tools}
 
 OSCツールなどの外部ツールから変更されるパラメーターを指定します。
 
-詳細は[上のセクション](#why-parameters-written-by-external-tools)を参照してください。
+詳細は[上のセクション](#why-parameters-written-by-external-tools)や、手順付きの説明を記載している[OSCギミックの互換性に関するページ]を参照してください。
+
+[OSCギミックの互換性に関するページ]: ../osc-gimmick/

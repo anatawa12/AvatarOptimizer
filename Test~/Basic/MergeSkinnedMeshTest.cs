@@ -279,6 +279,7 @@ public class MergeSkinnedMeshTest
         var mergedFinalRenderer = mergedFinalGameObject.AddComponent<SkinnedMeshRenderer>();
 
         var context = new BuildContext(avatar, null);
+        context.GetState<AAOEnabled>().Enabled = true;
         context.ActivateExtensionContext<Processors.MeshInfo2Context>();
         context.ActivateExtensionContext<ObjectMappingContext>();
         context.ActivateExtensionContext<DestroyTracker.ExtensionContext>();

@@ -22,8 +22,11 @@ namespace Anatawa12.AvatarOptimizer
         }
 
         public static void RecordMergeComponent<T>(this BuildContext context, T from, T mergeTo)
-            where T : Component =>
+            where T : Component
+        {
             GetMappingBuilder(context).RecordMergeComponent(from, mergeTo);
+            context.Extension<GCComponentInfoContext>().MapExternalDependency(from, mergeTo);
+        }
 
         public static void RecordMoveProperties(this BuildContext context, Component from,
             params (string old, string @new)[] props) =>

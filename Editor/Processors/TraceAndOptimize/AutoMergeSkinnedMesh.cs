@@ -281,6 +281,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             var newMeshInfo = context.GetMeshInfoFor(newSkinnedMeshRenderer);
             var meshInfosArray = meshInfos.ToArray();
 
+            var gcContext = context.Extension<GCComponentInfoContext>();
+            gcContext.NewComponent(newSkinnedMeshRenderer.transform);
+            gcContext.NewComponent(newSkinnedMeshRenderer);
+
             var (subMeshIndexMap, materials) = createSubMeshes(meshInfosArray);
 
             MergeSkinnedMeshProcessor.DoMerge(context, newMeshInfo, meshInfosArray, subMeshIndexMap, materials);
@@ -289,9 +293,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             MergeSkinnedMeshProcessor.RemoveOldRenderers(newMeshInfo, meshInfosArray,
                 removeEmptyRendererObject: false);
 
-            var gcContext = context.Extension<GCComponentInfoContext>();
-            gcContext.NewComponent(newSkinnedMeshRenderer.transform);
-            APIInternal.SkinnedMeshRendererInformation.AddDependencyInformation(gcContext.NewComponent(newSkinnedMeshRenderer), newMeshInfo);
+            APIInternal.SkinnedMeshRendererInformation.AddDependencyInformation(gcContext.GetInfo(newSkinnedMeshRenderer), newMeshInfo);
         }
 
         private static void MergeAnimatingSkinnedMesh(
@@ -320,6 +322,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
             var newSkinnedMeshRenderer = CreateNewRenderer(gameObjectFactory, commonParent, key);
             newSkinnedMeshRenderer.gameObject.layer = GetMostCommonLayer(meshInfos);
+
+            var gcContext = context.Extension<GCComponentInfoContext>();
+            gcContext.NewComponent(newSkinnedMeshRenderer.transform);
+            gcContext.NewComponent(newSkinnedMeshRenderer);
+
             // process rest activeness animation
             if (activenessAnimatingProperties.Count > 0)
             {
@@ -354,9 +361,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             MergeSkinnedMeshProcessor.RemoveOldRenderers(newMeshInfo, meshInfosArray,
                 removeEmptyRendererObject: false);
             
-            var gcContext = context.Extension<GCComponentInfoContext>();
-            gcContext.NewComponent(newSkinnedMeshRenderer.transform);
-            APIInternal.SkinnedMeshRendererInformation.AddDependencyInformation(gcContext.NewComponent(newSkinnedMeshRenderer), newMeshInfo);
+            APIInternal.SkinnedMeshRendererInformation.AddDependencyInformation(gcContext.GetInfo(newSkinnedMeshRenderer), newMeshInfo);
         }
 
         private static Transform ComputeCommonParent(IReadOnlyList<MeshInfo2> meshInfos, Transform avatarRoot)

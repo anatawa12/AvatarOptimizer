@@ -130,8 +130,14 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         private class Collector : ComponentMutationsCollector
         {
             private readonly RootPropModNodeContainer _modifications;
+            private readonly BuildContext _context;
 
-            public Collector(RootPropModNodeContainer modifications) => _modifications = modifications;
+            public Collector(RootPropModNodeContainer modifications, BuildContext context)
+            {
+                _modifications = modifications;
+                _context = context;
+            }
+
             public Component? Modifier { get; set; }
 
 
@@ -158,6 +164,9 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
                     _modifications.Add(component, prop, new VariableComponentPropModNode(Modifier!, preserve: true), ApplyState.Always);
                 }
             }
+
+            internal override void AddBlendShapeGroup(string blendShape, IEnumerable<SkinnedMeshRenderer> properties) =>
+                _context.AddBlendShapeGroup(blendShape, properties);
         }
 
         /// <summary>
@@ -166,7 +175,7 @@ namespace Anatawa12.AvatarOptimizer.AnimatorParsersV2
         private static void OtherMutateComponents(RootPropModNodeContainer mod, BuildContext context)
         {
             Profiler.BeginSample("OtherMutateComponents");
-            var collector = new Collector(mod);
+            var collector = new Collector(mod, context);
             foreach (var component in context.GetComponents<Component>())
             {
                 using (ErrorReport.WithContextObject(component))

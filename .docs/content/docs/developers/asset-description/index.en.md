@@ -78,10 +78,12 @@ Therefore, even if the class name is changed, the specification in Asset Descrip
 
 Specify the parameters that are read by external tools.
 
-Please read [above](#why-parameters-read-by-external-tools) for more information.
+For more information, please read [above](#why-parameters-read-by-external-tools), or read [OSC Gimmick Compatibility] for step-by-step guidance.
 
 ### Parameters Changed By External Tools {#parameters-changed-by-external-tools}
 
 Specify the parameters that are changed by external tools.
 
-Please read [above](#why-parameters-written-by-external-tools) for more information.
+For more information, please read [above](#why-parameters-written-by-external-tools), or read [OSC Gimmick Compatibility] for step-by-step guidance.
+
+[OSC Gimmick Compatibility]: ../osc-gimmick/
