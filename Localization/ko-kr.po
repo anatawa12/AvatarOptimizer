@@ -114,6 +114,15 @@ msgstr "Animator Layers"
 msgid "OptimizationMetrics:GameObjectCount"
 msgstr "Game Objects"
 
+msgid "OptimizationMetrics:RaycastCount"
+msgstr "Raycast Count"
+
+msgid "OptimizationMetrics:ForwardedParametersCount"
+msgstr "Forwarded Parameters Count"
+
+msgid "OptimizationMetrics:FaceTrackingOperations"
+msgstr "Face Tracking Operations"
+
 msgid "LegacyModularAvatarWarning:message"
 msgstr ""
 "Modular Avatar 1.7.x 이하 버전이 설치되어 있습니다.\n"
@@ -1100,6 +1109,46 @@ msgstr "Eyelid Type에 알 수 없는 값 '{0}'이(가) 지정되었습니다."
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType:description"
 msgstr "일반적으로 Avatar Optimizer의 버그로 인해 발생합니다. 위 메시지와 함께 문제를 제보해 주세요."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyeGazeMode"
+msgstr "Eye Gaze Mode에 알 수 없는 값 '{0}'이(가) 지정되었습니다."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyeGazeMode:hint"
+msgstr "일반적으로 Avatar Optimizer의 버그로 인해 발생합니다. 위 메시지와 함께 문제를 제보해 주세요."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownParameterBehaviorTargetMode"
+msgstr "Parameter Behaviors의 출력 대상 모드에 알 수 없는 값 '{0}'이(가) 지정되었습니다."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownParameterBehaviorTargetMode:hint"
+msgstr "일반적으로 Avatar Optimizer의 버그로 인해 발생합니다. 위 메시지와 함께 문제를 제보해 주세요."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:FaceTracking:BlendShapeNameDiverge"
+msgstr "VRC 네이티브 페이스 트래킹용 블렌드 셰이프 '{0}'이(가) 여러 블렌드 셰이프 이름에 매핑되어 있습니다: {1}"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:FaceTracking:BlendShapeNameDiverge:description"
+msgstr ""
+"일반적으로 Merge Skinned Mesh로 메시를 지원하지 않는 방식으로 병합했을 때 발생합니다.\n"
+"AAO Trace and Optimize만 사용했는데도 이 문제가 발생한다면 AAO의 버그입니다. 문제를 제보해 주세요!"
+
+msgid "ComponentInfos:VRCRaycast:warning:UnknownVersion"
+msgstr "알 수 없는 VRCRaycast 버전 '{0}'이(가) 지정되었습니다."
+
+msgid "ComponentInfos:VRCRaycast:warning:UnknownVersion:hint"
+msgstr "일반적으로 Avatar Optimizer의 버그로 인해 발생합니다. 위 메시지와 함께 문제를 제보해 주세요."
+
+#endregion
+
+#region BlendShapeGroup
+# Currently, only VRC Native FaceTracking uses this feature so our error messages are specific to Native FaceTracking.
+# However, this feature might be extended to support more use cases in the future
+
+msgid "BlendShapeGroup:error:BlendShapesMerged"
+msgstr "VRC 네이티브 페이스 트래킹에서 서로 다르게 지정된 블렌드 셰이프들이 하나의 블렌드 셰이프로 병합되었습니다. 이 구성은 지원하지 않습니다: {0}"
+
+msgid "BlendShapeGroup:error:BlendShapesMerged:description"
+msgstr ""
+"일반적으로 Merge Skinned Mesh로 메시를 지원하지 않는 방식으로 병합했을 때 발생합니다.\n"
+"AAO Trace and Optimize만 사용했는데도 이 문제가 발생한다면 AAO의 버그입니다. 문제를 제보해 주세요!"
 
 #endregion
 
