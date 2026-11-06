@@ -1,20 +1,12 @@
-# Korean translation of Avatar Optimizer.
-# Distributed under the MIT License; see LICENSE.
 msgid ""
 msgstr ""
 "Language: ko-kr\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
 
 msgid "CheckForUpdate:out-of-date"
 msgstr "Avatar Optimizer의 새 버전 {0}을(를) 사용할 수 있습니다! (현재 버전: {1})"
 
 msgid "OptimizationMetrics:Results"
-msgstr ""
-"AAO 최적화 결과:\n"
-"{0}"
+msgstr "AAO 최적화 결과:\n{0}"
 
 msgid "OptimizationMetrics:Results:description"
 msgstr ""
