@@ -89,8 +89,24 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         where T : EditSkinnedMeshComponent
     {
         private Mesh? _duplicated;
+        private readonly ComputeContext _context = new("AAO mesh removal preview");
 
-        RenderAspects IRenderFilterNode.WhatChanged => RenderAspects.Mesh | RenderAspects.Shapes;
+        private RenderAspects _whatChanged = RenderAspects.Mesh | RenderAspects.Shapes;
+        RenderAspects IRenderFilterNode.WhatChanged => _whatChanged;
+        protected virtual RenderAspects ReadAspects => RenderAspects.Mesh;
+
+        public Task<IRenderFilterNode?> Refresh(
+            IEnumerable<(Renderer, Renderer)> proxyPairs, ComputeContext context, RenderAspects updatedAspects)
+        {
+            if (!_context.IsInvalidated && (updatedAspects & ReadAspects) == 0)
+            {
+                _context.Invalidates(context);
+                _whatChanged = 0;
+                return Task.FromResult<IRenderFilterNode?>(this);
+            }
+
+            return Task.FromResult<IRenderFilterNode?>(null);
+        }
 
         protected abstract ValueTask<bool> Process(
             Renderer original,
@@ -105,6 +121,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             [NotNull] T[] components,
             ComputeContext context)
         {
+            _context.Invalidates(context);
             UnityEngine.Profiling.Profiler.BeginSample($"RemoveMeshByBlendShapeRendererNode.Process({original.name})");
 
             Mesh duplicated;
@@ -126,7 +143,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 }
             }
 
-            if (await Process(original, proxy, components, duplicated, context))
+            if (await Process(original, proxy, components, duplicated, _context))
             {
                 if (proxy is SkinnedMeshRenderer skinned)
                     skinned.sharedMesh = duplicated;
