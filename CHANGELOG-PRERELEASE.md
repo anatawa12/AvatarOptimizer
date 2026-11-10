@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
-- Work around a VRC Avatar Descriptor inspector bug where the "Use All Tracking Keys" toggle becomes unclickable when components are attached to the avatar root `#1816`
-  - Although the heading mentions AAO components, this issue can also be triggered by other components, including Unity built-in components such as Colliders. Therefore, I consider this a VRCSDK bug rather than an issue with our components.
-  - For details about the VRCSDK bug, see [this Canny post](https://feedback.vrchat.com/sdk-bug-reports/p/3106-use-all-tracking-keys-toggle-may-be-unclickable-and-the-left-half-of-field).
 
 ### Deprecated
 
@@ -21,6 +18,12 @@ The format is based on [Keep a Changelog].
 ### Fixed
 
 ### Security
+
+## [1.9.22-rc.1] - 2026-11-10
+### Changed
+- Work around a VRC Avatar Descriptor inspector bug where the "Use All Tracking Keys" toggle becomes unclickable when components are attached to the avatar root [`#1816`](https://github.com/anatawa12/AvatarOptimizer/pull/1816)
+  - Although the heading mentions AAO components, this issue can also be triggered by other components, including Unity built-in components such as Colliders. Therefore, I consider this a VRCSDK bug rather than an issue with our components.
+  - For details about the VRCSDK bug, see [this Canny post](https://feedback.vrchat.com/sdk-bug-reports/p/3106-use-all-tracking-keys-toggle-may-be-unclickable-and-the-left-half-of-field).
 
 ## [1.9.21] - 2026-10-30
 ## [1.9.21-rc.1] - 2026-10-30
@@ -2397,7 +2400,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.22-rc.1...HEAD
+[1.9.22-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21...v1.9.22-rc.1
 [1.9.21]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21-rc.1...v1.9.21
 [1.9.21-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21-beta.2...v1.9.21-rc.1
 [1.9.21-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21-beta.1...v1.9.21-beta.2
