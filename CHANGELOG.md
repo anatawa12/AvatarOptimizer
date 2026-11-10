@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Remove Mesh by Mask may not work for meshes with UV near 0 `#1818`
 
 ### Security
 

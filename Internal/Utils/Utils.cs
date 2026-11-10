@@ -498,5 +498,21 @@ namespace Anatawa12.AvatarOptimizer
             if (gameObject == null) return null;
             return binding.type == typeof(GameObject) ? gameObject.gameObject : gameObject.GetComponent(binding.type);
         }
+
+        /// Exact floor(frac(x) * width), frac(x) = x - floor(x) ∈ [0,1).
+        public static int UvToPixel(float x, int width)
+        {
+            Assert(width is >= 1 and <= 1 << 29, "width must be in [1, 2^29]");
+            // |x| >= 2^23 means x is an integer, so frac = 0. This also filters NaN/Inf.
+            if (!(Math.Abs(x) < 1<<23)) return 0;
+
+            double d = x;   // exact
+            double w = width;
+            // Identity: floor(x*w) = floor(x)*w + floor(frac(x)*w)
+            //   (floor(x)*w is an integer, so it can be pulled out of the floor)
+            // We want floor(frac(x)*w), so move floor(x)*w to the other side:
+            //   floor(frac(x)*w) = floor(x*w) - floor(x)*w
+            return (int)(Math.Floor(d * w) - Math.Floor(d) * w);
+        }
     }
 }

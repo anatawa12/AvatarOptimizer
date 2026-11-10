@@ -187,8 +187,8 @@ internal class MeshRemovalProviderImpl : MeshRemovalProvider
                 var uvIndex = vertexIndex;
                 if (uvIndex >= uv.Length) return false;
                 var uvValue = uv[uvIndex];
-                var x = Mathf.FloorToInt(Utils.Modulo(uvValue.x, 1) * mask.width);
-                var y = Mathf.FloorToInt(Utils.Modulo(uvValue.y, 1) * mask.height);
+                var x = Utils.UvToPixel(uvValue.x, mask.width);
+                var y = Utils.UvToPixel(uvValue.y, mask.height);
                 var shouldRemove = mask.shouldRemove[y * mask.width + x];
                 if (!shouldRemove)
                 {
