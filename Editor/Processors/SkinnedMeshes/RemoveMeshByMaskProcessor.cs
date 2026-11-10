@@ -75,8 +75,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.SkinnedMeshes
 
                 int GetValue(float u, float v)
                 {
-                    var x = Mathf.FloorToInt(Utils.Modulo(u, 1) * textureWidth);
-                    var y = Mathf.FloorToInt(Utils.Modulo(v, 1) * textureHeight);
+                    var x = Utils.UvToPixel(u, textureWidth);
+                    var y = Utils.UvToPixel(v, textureHeight);
                     if (y * textureWidth + x < 0 || y * textureWidth + x >= pixels.Length) throw new IndexOutOfRangeException($"x: {x}, y: {y}, u: {u}, v: {v}, w: {textureWidth}, h: {textureHeight}, l: {pixels.Length}");
                     var pixel = pixels[y * textureWidth + x];
                     return Mathf.Max(Mathf.Max(pixel.r, pixel.g), pixel.b);

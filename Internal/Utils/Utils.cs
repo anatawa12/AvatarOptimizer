@@ -498,5 +498,7 @@ namespace Anatawa12.AvatarOptimizer
             if (gameObject == null) return null;
             return binding.type == typeof(GameObject) ? gameObject.gameObject : gameObject.GetComponent(binding.type);
         }
+
+        public static int UvToPixel(float u, int width) => Mathf.FloorToInt(Modulo(u, 1) * width);
     }
 }
