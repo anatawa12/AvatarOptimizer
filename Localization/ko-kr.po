@@ -1,20 +1,12 @@
-# Korean translation of Avatar Optimizer.
-# Distributed under the MIT License; see LICENSE.
 msgid ""
 msgstr ""
 "Language: ko-kr\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
 
 msgid "CheckForUpdate:out-of-date"
 msgstr "Avatar Optimizer의 새 버전 {0}을(를) 사용할 수 있습니다! (현재 버전: {1})"
 
 msgid "OptimizationMetrics:Results"
-msgstr ""
-"AAO 최적화 결과:\n"
-"{0}"
+msgstr "AAO 최적화 결과:\n{0}"
 
 msgid "OptimizationMetrics:Results:description"
 msgstr ""
@@ -121,6 +113,15 @@ msgstr "Animator Layers"
 
 msgid "OptimizationMetrics:GameObjectCount"
 msgstr "Game Objects"
+
+msgid "OptimizationMetrics:RaycastCount"
+msgstr "Raycast Count"
+
+msgid "OptimizationMetrics:ForwardedParametersCount"
+msgstr "Forwarded Parameters Count"
+
+msgid "OptimizationMetrics:FaceTrackingOperations"
+msgstr "Face Tracking Operations"
 
 msgid "LegacyModularAvatarWarning:message"
 msgstr ""
@@ -230,8 +231,8 @@ msgstr "이로 인해 애니메이션이 제대로 작동하지 않으면 AAO에
 
 msgid "ClearEndpointPosition:description"
 msgstr ""
-"_end 본을 추가하여 Endpoint Position을 초기화합니다.\n"
-"MergeBone 컴포넌트를 사용할 때 유용합니다."
+"_end 본을 추가하고 Endpoint Position을 0으로 설정합니다.\n"
+"Merge Bone 컴포넌트를 사용할 때 유용합니다."
 
 msgid "ClearEndpointPosition:button:Apply and Remove Component"
 msgstr "Apply and Remove Component"
@@ -256,19 +257,19 @@ msgstr ""
 # region MakeChildren
 
 msgid "MakeChildren:description"
-msgstr "빌드 시 지정한 GameObject를 이 오브젝트의 자식으로 만듭니다."
+msgstr "빌드 시 지정한 GameObject를 자식으로 만듭니다."
 
 msgid "MakeChildren:prop:executeEarly"
 msgstr "Execute Early"
 
 msgid "MakeChildren:tooltip:executeEarly"
-msgstr "Modular Avatar 등 여러 다른 도구보다 MakeChildren을 먼저 실행합니다."
+msgstr "Modular Avatar 등 여러 다른 도구보다 Make Children을 먼저 실행합니다."
 
 msgid "MakeChildren:prop:children"
 msgstr "Children"
 
 msgid "MakeChildren:executeEarly does not support animation"
-msgstr "'Execute Early'는 애니메이션 경로 재매핑을 지원하지 않습니다. MakeChildren 적용 후의 GameObject 계층 구조에 맞는 애니메이션을 사용해 주세요."
+msgstr "'Execute Early'는 애니메이션 경로 재매핑을 지원하지 않습니다. Make Children 적용 후의 GameObject 계층 구조에 맞는 애니메이션을 사용해 주세요."
 
 # endregion
 
@@ -284,7 +285,7 @@ msgid "MergeBone:tooltip:avoidNameConflict"
 msgstr "이름 충돌을 방지하도록 자식 GameObject의 이름을 변경합니다."
 
 msgid "MergeBone:validation:onAvatarRoot"
-msgstr "아바타 루트에 MergeBone을 추가하는 것은 지원하지 않습니다."
+msgstr "아바타 루트에 Merge Bone을 추가하는 것은 지원하지 않습니다."
 
 msgid "MergeBone:validation:thereAreComponent"
 msgstr "Transform 이외의 컴포넌트가 있습니다. 이 구성은 지원하지 않습니다."
@@ -303,7 +304,7 @@ msgid "MergePhysBone:tooltip:makeParent"
 msgstr "모든 PhysBone을 이 GameObject의 자식으로 만듭니다."
 
 msgid "MergePhysBone:error:makeParentWithChildren"
-msgstr "'Make Children of Me'가 활성화되어 있지만, 이미 자식 오브젝트가 있습니다."
+msgstr "'Make Children of Me'가 활성화되어 있지만, 이미 자식이 있습니다."
 
 msgid "MergePhysBone:error:parentDiffer"
 msgstr "병합할 PhysBone들의 부모가 서로 다릅니다. 같은 부모 아래로 옮기거나 'Make Children of Me'를 사용해 주세요."
@@ -452,10 +453,10 @@ msgid "MergePhysBone:warning:limit-rotation-fix-animation:description"
 msgstr "현재 Limit Rotation의 Fix 모드에서는 이 구성을 지원하지 않습니다."
 
 msgid "MergePhysBone:error:limit-rotation-fix-merge-bone"
-msgstr "Limit Rotation 모드가 Fix이지만 영향을 받는 일부 본에 MergeBone 컴포넌트가 있습니다. 이 구성은 지원하지 않습니다."
+msgstr "Limit Rotation 모드가 Fix이지만 영향을 받는 일부 본에 Merge Bone 컴포넌트가 있습니다. 이 구성은 지원하지 않습니다."
 
 msgid "MergePhysBone:error:limit-rotation-fix-merge-bone:description"
-msgstr "Merge PhysBone의 Limit Rotation 모드가 Fix이면 PhysBone에 추가한 MergeBone 컴포넌트는 작동하지 않으며, 이 조합은 전혀 지원하지 않습니다."
+msgstr "Merge PhysBone의 Limit Rotation 모드가 Fix이면 PhysBone에 추가한 Merge Bone 컴포넌트는 작동하지 않으며, 이 조합은 전혀 지원하지 않습니다."
 
 msgid "MergePhysBone:error:physbone-outside-of-avatar-root"
 msgstr "Root Transform이 아바타 외부에 있는 VRCPhysBone 컴포넌트는 Merge PhysBone의 병합 대상으로 지원하지 않습니다."
@@ -754,7 +755,7 @@ msgid "RemoveMeshByMask:error:maskIsNotReadable:description"
 msgstr "마스크 텍스처의 임포트 설정에서 Read/Write Enabled를 활성화해 주세요."
 
 msgid "RemoveMeshByMask:error:unknownMode"
-msgstr "알 수 없는 삭제 모드가 지정되었습니다."
+msgstr "Remove Mode에 알 수 없는 값이 지정되었습니다."
 
 msgid "RemoveMeshByMask:warning:NoMesh"
 msgstr "SkinnedMeshRenderer에 메시가 지정되지 않았습니다."
@@ -869,7 +870,7 @@ msgid "ReplaceEndBoneWithEndpointPosition:validation:overlappedPhysBone"
 msgstr "영향을 받는 범위가 다른 PhysBone과 겹칩니다. 이로 인해 PhysBone의 동작이 달라질 수 있습니다."
 
 msgid "ReplaceEndBoneWithEndpointPosition:validation:inequivalentPositions"
-msgstr "다른 위치에 있는 end 본을 Endpoint Position으로 대체하려고 합니다. 이로 인해 PhysBone의 동작이 달라질 수 있습니다."
+msgstr "end 본을 기존 위치와 다른 Endpoint Position으로 대체하려고 합니다. 이로 인해 PhysBone의 동작이 달라질 수 있습니다."
 
 msgid "ReplaceEndBoneWithEndpointPosition:validation:unsafeMultiChild"
 msgstr "자식이 여러 개인 본의 구성이 적합하지 않아 Endpoint Position으로 대체할 수 없습니다."
@@ -912,7 +913,7 @@ msgstr "Detect Extra Children"
 
 # "子にボーン以外を持つボーンを削除しない"
 msgid "UnusedBonesByReferencesTool:tooltip:detectExtraChild"
-msgstr "본이 아닌 자식 오브젝트를 가진 본을 삭제하지 않습니다."
+msgstr "본이 아닌 자식을 가진 본을 삭제하지 않습니다."
 
 msgid "UnusedBonesByReferencesTool:suggestMigrate"
 msgstr ""
@@ -1069,7 +1070,7 @@ msgid "TraceAndOptimize:prop:removeZeroSizedPolygons"
 msgstr "Automatically Remove Zero Sized Polygons"
 
 msgid "TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape"
-msgstr "알 수 없는 PhysBone 콜라이더 모양 '{0}'이(가) 지정되었습니다."
+msgstr "PhysBone Collider의 Shape Type에 알 수 없는 값 '{0}'이(가) 지정되었습니다."
 
 # endregion
 
@@ -1092,22 +1093,62 @@ msgstr "일부 블렌드 셰이프가 없거나 설정되지 않으면 비짐용
 #region ComponentInfos
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownLipSyncStyle"
-msgstr "알 수 없는 립싱크 모드 '{0}'이(가) 지정되었습니다."
+msgstr "LipSync의 Mode에 알 수 없는 값 '{0}'이(가) 지정되었습니다."
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownLipSyncStyle:hint"
 msgstr "일반적으로 Avatar Optimizer의 버그로 인해 발생합니다. 위 메시지와 함께 문제를 제보해 주세요."
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownColliderState"
-msgstr "{1}에 알 수 없는 Standard Collider 상태 '{0}'이(가) 지정되었습니다."
+msgstr "Colliders의 {1}에 알 수 없는 값 '{0}'이(가) 지정되었습니다."
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownColliderState:hint"
 msgstr "일반적으로 Avatar Optimizer의 버그로 인해 발생합니다. 위 메시지와 함께 문제를 제보해 주세요."
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType"
-msgstr "알 수 없는 눈꺼풀 유형 '{0}'이(가) 지정되었습니다."
+msgstr "Eyelid Type에 알 수 없는 값 '{0}'이(가) 지정되었습니다."
 
 msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyelidType:description"
 msgstr "일반적으로 Avatar Optimizer의 버그로 인해 발생합니다. 위 메시지와 함께 문제를 제보해 주세요."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyeGazeMode"
+msgstr "Eye Gaze Mode에 알 수 없는 값 '{0}'이(가) 지정되었습니다."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownEyeGazeMode:hint"
+msgstr "일반적으로 Avatar Optimizer의 버그로 인해 발생합니다. 위 메시지와 함께 문제를 제보해 주세요."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownParameterBehaviorTargetMode"
+msgstr "Parameter Behaviors의 출력 대상 모드에 알 수 없는 값 '{0}'이(가) 지정되었습니다."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:warning:UnknownParameterBehaviorTargetMode:hint"
+msgstr "일반적으로 Avatar Optimizer의 버그로 인해 발생합니다. 위 메시지와 함께 문제를 제보해 주세요."
+
+msgid "ComponentInfos:VRCAvatarDescriptor:FaceTracking:BlendShapeNameDiverge"
+msgstr "VRC 네이티브 페이스 트래킹용 블렌드 셰이프 '{0}'이(가) 여러 블렌드 셰이프 이름에 매핑되어 있습니다: {1}"
+
+msgid "ComponentInfos:VRCAvatarDescriptor:FaceTracking:BlendShapeNameDiverge:description"
+msgstr ""
+"일반적으로 Merge Skinned Mesh로 메시를 지원하지 않는 방식으로 병합했을 때 발생합니다.\n"
+"AAO Trace and Optimize만 사용했는데도 이 문제가 발생한다면 AAO의 버그입니다. 문제를 제보해 주세요!"
+
+msgid "ComponentInfos:VRCRaycast:warning:UnknownVersion"
+msgstr "알 수 없는 VRCRaycast 버전 '{0}'이(가) 지정되었습니다."
+
+msgid "ComponentInfos:VRCRaycast:warning:UnknownVersion:hint"
+msgstr "일반적으로 Avatar Optimizer의 버그로 인해 발생합니다. 위 메시지와 함께 문제를 제보해 주세요."
+
+#endregion
+
+#region BlendShapeGroup
+# Currently, only VRC Native FaceTracking uses this feature so our error messages are specific to Native FaceTracking.
+# However, this feature might be extended to support more use cases in the future
+
+msgid "BlendShapeGroup:error:BlendShapesMerged"
+msgstr "VRC 네이티브 페이스 트래킹에서 서로 다르게 지정된 블렌드 셰이프들이 하나의 블렌드 셰이프로 병합되었습니다. 이 구성은 지원하지 않습니다: {0}"
+
+msgid "BlendShapeGroup:error:BlendShapesMerged:description"
+msgstr ""
+"일반적으로 Merge Skinned Mesh로 메시를 지원하지 않는 방식으로 병합했을 때 발생합니다.\n"
+"AAO Trace and Optimize만 사용했는데도 이 문제가 발생한다면 AAO의 버그입니다. 문제를 제보해 주세요!"
 
 #endregion
 
@@ -1182,7 +1223,7 @@ msgstr "Trace and Optimize는 아바타 루트에만 추가할 수 있습니다.
 # region MaxTextureSize
 
 msgid "MaxTextureSize:description"
-msgstr "밉맵을 사용하여 이 GameObject와 자식 오브젝트의 텍스처 최대 크기를 제한하고, 처리 비용이 큰 재압축을 피합니다."
+msgstr "밉맵을 사용하여 이 GameObject와 그 하위의 텍스처 최대 크기를 제한하고, 처리 비용이 큰 재압축을 피합니다."
 
 msgid "MaxTextureSize:prop:maxTextureSize"
 msgstr "Max Texture Size"
