@@ -13,6 +13,11 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUILayout.HelpBox(description, MessageType.None);
 
             OnInspectorGUIInner();
+
+#if VRCSDK_AVATARS_NO_RESET_GUI_STATE_BUG
+            // Workarounds https://feedback.vrchat.com/sdk-bug-reports/p/3106-use-all-tracking-keys-toggle-may-be-unclickable-and-the-left-half-of-field
+            EditorGUIUtility.labelWidth = 0;
+#endif
         }
 
         private string? _descriptionKey;
