@@ -1435,7 +1435,6 @@ internal struct OptimizeTextureImpl {
         }
 
 
-        [Serializable]
         public class Island
         {
             public List<Triangle> triangles;
@@ -1443,8 +1442,8 @@ internal struct OptimizeTextureImpl {
             public Vector2 MaxPos;
             public int tileU;
             public int tileV;
-            [FormerlySerializedAs("flipX")] public bool flipU;
-            [FormerlySerializedAs("flipY")] public bool flipV;
+            public bool flipU;
+            public bool flipV;
 
             public Island(Island source)
             {
