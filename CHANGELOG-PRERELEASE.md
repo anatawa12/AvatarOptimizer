@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog].
 ### Added
 
 ### Changed
+- Work around a VRC Avatar Descriptor inspector bug where the "Use All Tracking Keys" toggle becomes unclickable when components are attached to the avatar root `#1816`
+  - Although the heading mentions AAO components, this issue can also be triggered by other components, including Unity built-in components such as Colliders. Therefore, I consider this a VRCSDK bug rather than an issue with our components.
+  - For details about the VRCSDK bug, see [this Canny post](https://feedback.vrchat.com/sdk-bug-reports/p/3106-use-all-tracking-keys-toggle-may-be-unclickable-and-the-left-half-of-field).
 
 ### Deprecated
 
