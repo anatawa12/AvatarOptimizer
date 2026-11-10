@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.9.22] - 2026-11-10
 ## [1.9.22-rc.2] - 2026-11-10
 ### Fixed
 - Remove Mesh by Mask may not work for meshes with UV near 0 [`#1818`](https://github.com/anatawa12/AvatarOptimizer/pull/1818)
@@ -2404,7 +2405,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.22-rc.2...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.22...HEAD
+[1.9.22]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.22-rc.2...v1.9.22
 [1.9.22-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.22-rc.1...v1.9.22-rc.2
 [1.9.22-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21...v1.9.22-rc.1
 [1.9.21]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21-rc.1...v1.9.21
