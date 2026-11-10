@@ -90,6 +90,13 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 removeVertex.Dispose();
                 throw;
             }
+            finally
+            {
+                if (renderer is SkinnedMeshRenderer)
+                {
+                    Object.DestroyImmediate(bakedMesh);
+                }
+            }
 
             return true;
         }
