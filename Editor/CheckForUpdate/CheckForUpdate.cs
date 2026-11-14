@@ -45,8 +45,17 @@ namespace Anatawa12.AvatarOptimizer.CheckForUpdate
             DoCheckForUpdate();
         }
 
+        public static bool Checking;
+
+        private struct CheckingScope : IDisposable
+        {
+            public CheckingScope() => Checking = true;
+            public void Dispose() => Checking = false;
+        }
+
         public async static void DoCheckForUpdate(bool force = false)
         {
+            using var test = new CheckingScope();
             if (!(GetCurrentVersion() is Version currentVersion))
             {
                 Debug.LogError("Avatar Optimizer CheckForUpdate: Failed to get current version");
