@@ -10,6 +10,7 @@ namespace Anatawa12.AvatarOptimizer.CheckForUpdate
     {
         static Checker()
         {
+            CurrentVersionName = GetCurrentVersion()?.ToString() ?? "";
             EditorApplication.delayCall += TriggerCheckForUpdate;
         }
 
