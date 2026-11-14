@@ -94,7 +94,7 @@ namespace Anatawa12.AvatarOptimizer.CheckForUpdate
                 OutOfDate = false;
             }
 
-            foreach (var editor in UnityObjectIDHelper.FindObjectsByType<Editor>()) editor.Repaint();
+            foreach (var editor in Resources.FindObjectsOfTypeAll<Editor>()) editor.Repaint();
         }
 
         static Version? GetCurrentVersion()
