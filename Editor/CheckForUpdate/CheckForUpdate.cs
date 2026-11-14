@@ -10,7 +10,7 @@ namespace Anatawa12.AvatarOptimizer.CheckForUpdate
     {
         static Checker()
         {
-            EditorApplication.delayCall += DoCheckForUpdate;
+            EditorApplication.delayCall += TriggerCheckForUpdate;
         }
 
         public static bool OutOfDate
@@ -33,7 +33,7 @@ namespace Anatawa12.AvatarOptimizer.CheckForUpdate
 
         public static bool IsBeta => CurrentVersionName.Contains('-');
 
-        static async void DoCheckForUpdate()
+        static void TriggerCheckForUpdate()
         {
             if (!MenuItems.CheckForUpdateEnabled)
             {
@@ -42,6 +42,11 @@ namespace Anatawa12.AvatarOptimizer.CheckForUpdate
                 return;
             }
 
+            DoCheckForUpdate();
+        }
+
+        public async static void DoCheckForUpdate(bool force = false)
+        {
             if (!(GetCurrentVersion() is Version currentVersion))
             {
                 Debug.LogError("Avatar Optimizer CheckForUpdate: Failed to get current version");
@@ -59,7 +64,7 @@ namespace Anatawa12.AvatarOptimizer.CheckForUpdate
 
             var ctx = new CheckForUpdateContext(isBeta, currentVersion, unityVersion);
 
-            if (await ctx.GetLatestVersion() is Version latestVersion)
+            if (await ctx.GetLatestVersion(force) is Version latestVersion)
             {
                 // there is known latest version
                 if (currentVersion < latestVersion)
@@ -79,6 +84,8 @@ namespace Anatawa12.AvatarOptimizer.CheckForUpdate
             {
                 OutOfDate = false;
             }
+
+            foreach (var editor in UnityEngine.Object.FindObjectsOfType<Editor>()) editor.Repaint();
         }
 
         static Version? GetCurrentVersion()
