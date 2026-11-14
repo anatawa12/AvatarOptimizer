@@ -34,6 +34,13 @@ public static class UnityObjectIDHelper
         return new (unityObject.objectReferenceInstanceIDValue);
 #endif
     }
+
+    public static T[] FindObjectsByType<T>() where T : UnityEngine.Object? =>
+#if UNITY_6000_4_OR_NEWER
+        UnityEngine.Object.FindObjectsByType<T>();
+#else
+        UnityEngine.Object.FindObjectsByType<T>(FindObjectsSortMode.None);
+#endif
 }
 #if !UNITY_6000_2_OR_NEWER
 /// <summary>
