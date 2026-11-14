@@ -22,6 +22,8 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
 
     internal class RemoveMeshInBoxRendererNode : AAORenderFilterNodeBase<RemoveMeshInBox>
     {
+        protected override RenderAspects ReadAspects => RenderAspects.Mesh | RenderAspects.Shapes;
+
         public static bool ComputeShouldRemoveVertex(
             Renderer renderer,
             RemoveMeshInBox[] components,
@@ -89,6 +91,13 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             {
                 removeVertex.Dispose();
                 throw;
+            }
+            finally
+            {
+                if (renderer is SkinnedMeshRenderer)
+                {
+                    Object.DestroyImmediate(bakedMesh);
+                }
             }
 
             return true;
