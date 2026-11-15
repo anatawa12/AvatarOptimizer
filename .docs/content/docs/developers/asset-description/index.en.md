@@ -33,7 +33,7 @@ For non-destructive tools, we still recommend you to continue to remove componen
 
 [make-component-compatible]: ../make-your-components-compatible-with-aao
 
-### Parameters Read By Extenral Tools {#why-parameters-read-by-external-tools}
+### Parameters Read By External Tools {#why-parameters-read-by-external-tools}
 
 Components such as PhysBone and Contact Receiver will make parameters that can be read by OSC tools.
 Such parameters are readable by the OSC tools without being defined on Animator Controller or Expression Parameter.\

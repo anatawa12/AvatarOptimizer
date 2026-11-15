@@ -57,7 +57,8 @@ Avatar Optimizer 1.8.0以降にアップデートしてください。
 最近のアバターはPhysBoneやContact Receiverを使用した独自のギミックが含まれている場合があり、ユーザーがギミックを削除する際には、これらのコンポーネントを削除し忘れる可能性が高いです。\
 そのため、`AAO Trace and Optimize`は、そのようなコンポーネントがOSCギミックで使用されていないものと仮定して、それらが他の用途で使われていなければ削除するよう設計されています。
 
-この仮定は正しいとは限らないため、PhysBone / Contact Receiverコンポーネントが(AnimatorやExpression Menuを使用せずに)OSCギミックで使用されている場合には、[Asset Description]ファイルを作成し、[Parameters Read By External Tools]を設定してください。
+この仮定は正しいとは限らないため、PhysBone / Contact Receiverコンポーネントが(AnimatorやExpression Menuを使用せずに)OSCギミックで使用されている場合には、[Asset Description]ファイルを作成し、[Parameters Read By External Tools]を設定してください。\
+OSCツールがパラメーターを変更する場合は、それらのパラメーターを[Parameters Changed By External Tools]にも設定してください。
 
 そのギミックが公開・販売されているような場合には、そのギミックとAAOの互換性を改善するために、作成した Asset Descriptionファイルを共有していただけると助かります。\
 そのAsset Descriptionを将来のAvatar Optimizerに組み込むことにより、そのギミックが正しく動作するようになるかもしれません。\
@@ -98,6 +99,7 @@ Avatar Optimizerの開発を支援したい場合、[GitHub Discussions]での�
 [GitHub]: https://github.com/anatawa12/AvatarOptimizer/
 [Asset Description]: ../developers/asset-description/
 [Parameters Read By External Tools]: ../developers/asset-description/#parameters-read-by-external-tools
+[Parameters Changed By External Tools]: ../developers/asset-description/#parameters-changed-by-external-tools
 [OSCギミックの互換性に関するページ]: ../developers/osc-gimmick/
 
 [^merged-mesh]: 統合先のメッシュとは、`AAO Merge Skinned Mesh`コンポーネントと一緒に付いているSkinned Mesh Rendererのことです。

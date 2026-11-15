@@ -61,6 +61,7 @@ Therefore, `AAO Trace and Optimize` will assume that such components are not for
 
 This assumption is not always the case, so if you are using PhysBone / Contact Receiver components for the OSC-based gimmick without Animator or Expressions,
 please create [Asset Description] and please configure [Parameters Read By External Tools] for your OSC-based gimmick.
+If your OSC tool also changes parameters, please configure [Parameters Changed By External Tools] for them as well.
 
 If the gimmick is published or selling, I would like to bundle your Asset Description with AAO to improve compatibility with the gimmick.
 If you would like to, please contact us on [GitHub], [NDMF Discord], [Fediverse (Misskey / Mastodon)][Fediverse], or [Twitter].
@@ -100,6 +101,7 @@ I also accept financial support on [GitHub Sponsors] and [Booth].
 [GitHub]: https://github.com/anatawa12/AvatarOptimizer/
 [Asset Description]: ../developers/asset-description/
 [Parameters Read By External Tools]: ../developers/asset-description/#parameters-read-by-external-tools
+[Parameters Changed By External Tools]: ../developers/asset-description/#parameters-changed-by-external-tools
 [OSC Gimmick Compatibility]: ../developers/osc-gimmick/
 
 [^merged-mesh]: Merged Mesh is a Skinned Mesh Renderer which is attached along with `AAO Merge Skinned Mesh` component.
