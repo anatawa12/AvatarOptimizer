@@ -1100,6 +1100,14 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                     break;
             }
 #endif
+
+#if AAO_VRCSDK3_AVATARS_VRC_RAYCAST_ROOT_TRANSFORM
+            if (component.RootTransform != null)
+            {
+                collector.AddDependency(component.RootTransform);
+            }
+#endif
+
             var transform = component.ResultTransform;
             // Raycast do nothing if target is null in Version_1_0
             if (transform != null
