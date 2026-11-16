@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 ### Fixed
 - Fixed a mesh leak in Remove Mesh by Box previews. [`#1819`](https://github.com/anatawa12/AvatarOptimizer/pull/1819)
 - Fixed UV channel selection in Remove Mesh by UV Tile previews. [`#1819`](https://github.com/anatawa12/AvatarOptimizer/pull/1819)
+- Some Global PhysBone Colliders can be removed `#1823`
 
 ### Security
 
