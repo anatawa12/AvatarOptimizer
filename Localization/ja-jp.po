@@ -19,7 +19,7 @@ msgid "CheckForUpdate:inspector:UsingLatest"
 msgstr "最新バージョンのAAO:~Avatar~Optimizerを使用しています！"
 
 msgid "CheckForUpdate:inspector:CheckForUpdate"
-msgstr "今すぐ更新を確認する"
+msgstr "更新を確認する"
 
 msgid "CheckForUpdate:inspector:CheckForUpdateDisabled"
 msgstr "更新の確認が無効化されています！ バージョンはご自身で確認してください。"
