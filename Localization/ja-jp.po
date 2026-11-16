@@ -7,7 +7,7 @@ msgid "CheckForUpdate:out-of-date"
 msgstr "Avatar Optimizerの新しいバージョン、{0}が公開されています！(現在 {1})"
 
 msgid "CheckForUpdate:inspector:CurrentVersion"
-msgstr "AAO:~Avatar~Optimizer v~{0}"
+msgstr "AAO:~Avatar~Optimizer v{0}"
 
 msgid "CheckForUpdate:inspector:CheckingForUpdate"
 msgstr "更新を確認中..."
