@@ -24,5 +24,31 @@ namespace Anatawa12.AvatarOptimizer
                 texture2D.LoadRawTextureData((IntPtr)ptr, sizeInBytes);
             }
         }
+
+        public static T EnumAllOne<T>() where T : struct, Enum
+        {
+            if (Unsafe.SizeOf<T>() == 1)
+            {
+                sbyte result = -1;
+                return Unsafe.As<sbyte, T>(ref result);
+            }
+            if (Unsafe.SizeOf<T>() == 2)
+            {
+                short result = -1;
+                return Unsafe.As<short, T>(ref result);
+            }
+            if (Unsafe.SizeOf<T>() == 4)
+            {
+                int result = -1;
+                return Unsafe.As<int, T>(ref result);
+            }
+            if (Unsafe.SizeOf<T>() == 8)
+            {
+                long result = -1;
+                return Unsafe.As<long, T>(ref result);
+            }
+
+            throw new NotSupportedException($"Unsupported enum size: {Unsafe.SizeOf<T>()}");
+        }
     }
 }

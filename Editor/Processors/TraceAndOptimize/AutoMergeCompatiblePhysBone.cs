@@ -237,7 +237,7 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
             // collision
             Radius = physBone.radius;
             RadiusCurve = NormalizeCurve(physBone.radiusCurve, Radius);
-            (AllowCollisionSelf, AllowCollisionOthers) = PermissionFilter(physBone.allowCollision, physBone.collisionFilter);
+            (AllowCollisionSelf, AllowCollisionOthers) = VRCSDKUtils.ParsePermissionFilter(physBone.allowCollision, physBone.collisionFilter);
             Colliders = physBone.colliders.ToImmutableHashSet();
             // stretch and squish
             StretchMotion = physBone.stretchMotion;
@@ -247,8 +247,8 @@ class AutoMergeCompatiblePhysBone: TraceAndOptimizePass<AutoMergeCompatiblePhysB
             MaxSquish = physBone.maxSquish;
             MaxSquishCurve = NormalizeCurve(physBone.maxSquishCurve, MaxSquish);
             // grab and posing
-            (AllowGrabbingSelf, AllowGrabbingOthers) = PermissionFilter(physBone.allowGrabbing, physBone.grabFilter);
-            (AllowPosingSelf, AllowPosingOthers) = PermissionFilter(physBone.allowPosing, physBone.poseFilter);
+            (AllowGrabbingSelf, AllowGrabbingOthers) = VRCSDKUtils.ParsePermissionFilter(physBone.allowGrabbing, physBone.grabFilter);
+            (AllowPosingSelf, AllowPosingOthers) = VRCSDKUtils.ParsePermissionFilter(physBone.allowPosing, physBone.poseFilter);
             SnapToHand = physBone.snapToHand;
             GrabMovement = physBone.grabMovement;
             // options

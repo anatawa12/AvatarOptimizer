@@ -195,7 +195,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 this.toggleRoot = toggleRoot;
                 shapeType = collider.shapeType;
 #if AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER
-                globalCollisionFlags = collider.globalCollisionFlags;
+                globalCollisionAllowSelf = VRCSDKUtils.ParseAdvancedBool(collider.globalCollision, collider.globalCollisionAllowSelf);
+                globalCollisionAllowOthers = VRCSDKUtils.ParseAdvancedBool(collider.globalCollision, collider.globalCollisionAllowOthers);
+                globalCollisionFlags = VRCSDKUtils.ParseAdvancedBool(collider.globalCollision, collider.globalCollisionFlags);
 #endif
             }
 
@@ -203,6 +205,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public Transform? toggleRoot;
             public VRCPhysBoneColliderBase.ShapeType shapeType;
 #if AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER
+            public bool globalCollisionAllowSelf;
+            public bool globalCollisionAllowOthers;
             public DynamicsUsageFlags globalCollisionFlags;
 #endif
 
@@ -211,6 +215,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 && Equals(toggleRoot, other.toggleRoot) 
                 && shapeType == other.shapeType
 #if AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER
+                && globalCollisionAllowSelf == other.globalCollisionAllowSelf
+                && globalCollisionAllowOthers == other.globalCollisionAllowOthers
                 && globalCollisionFlags == other.globalCollisionFlags
 #endif
 
@@ -225,6 +231,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     toggleRoot, 
                     (int)shapeType
 #if AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER
+                    , globalCollisionAllowSelf
+                    , globalCollisionAllowOthers
                     , (int)globalCollisionFlags
 #endif
                 );

@@ -869,7 +869,9 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         {
             collector.AddDependency(component.rootTransform);
 #if AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER
-            if (component.globalCollisionFlags != 0)
+            if (VRCSDKUtils.ParseAdvancedBool(component.globalCollision, component.globalCollisionAllowSelf)
+                || VRCSDKUtils.ParseAdvancedBool(component.globalCollision, component.globalCollisionAllowOthers)
+                || VRCSDKUtils.ParseAdvancedBool(component.globalCollision, component.globalCollisionFlags) != 0)
             {
                 collector.MarkEntrypoint();
             }
