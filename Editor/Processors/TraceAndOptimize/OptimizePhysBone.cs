@@ -202,6 +202,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 #else
                 globalCollisionFlags = collider.globalCollisionFlags;
 #endif
+#endif
             }
 
             public Transform rootTransformAnimated;
