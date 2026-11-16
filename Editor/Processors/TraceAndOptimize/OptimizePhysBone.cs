@@ -195,9 +195,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 this.toggleRoot = toggleRoot;
                 shapeType = collider.shapeType;
 #if AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER
+#if AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER_PERMISSION_FILTERS
                 globalCollisionAllowSelf = VRCSDKUtils.ParseAdvancedBool(collider.globalCollision, collider.globalCollisionAllowSelf);
                 globalCollisionAllowOthers = VRCSDKUtils.ParseAdvancedBool(collider.globalCollision, collider.globalCollisionAllowOthers);
                 globalCollisionFlags = VRCSDKUtils.ParseAdvancedBool(collider.globalCollision, collider.globalCollisionFlags);
+#else
+                globalCollisionFlags = collider.globalCollisionFlags;
 #endif
             }
 
@@ -205,8 +208,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             public Transform? toggleRoot;
             public VRCPhysBoneColliderBase.ShapeType shapeType;
 #if AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER
+#if AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER_PERMISSION_FILTERS
             public bool globalCollisionAllowSelf;
             public bool globalCollisionAllowOthers;
+#endif
             public DynamicsUsageFlags globalCollisionFlags;
 #endif
 
