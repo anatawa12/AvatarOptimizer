@@ -7,7 +7,7 @@ msgid "CheckForUpdate:out-of-date"
 msgstr "Avatar Optimizerの新しいバージョン、{0}が公開されています！(現在 {1})"
 
 msgid "CheckForUpdate:inspector:CurrentVersion"
-msgstr "AAO:~Avatar~Optimizer version~{0}"
+msgstr "AAO:~Avatar~Optimizer v~{0}"
 
 msgid "CheckForUpdate:inspector:CheckingForUpdate"
 msgstr "更新を確認中..."
@@ -18,14 +18,14 @@ msgstr "古いバージョンのAAO:~Avatar~Optimizerを使用しています！
 msgid "CheckForUpdate:inspector:UsingLatest"
 msgstr "最新バージョンのAAO:~Avatar~Optimizerを使用しています！"
 
-msgid "CheckForUpdate:inspector:CheckForUpdateNow"
+msgid "CheckForUpdate:inspector:CheckForUpdate"
 msgstr "今すぐ更新を確認する"
 
 msgid "CheckForUpdate:inspector:CheckForUpdateDisabled"
-msgstr "更新の確認が無効になっています！ ご自身でバージョンを確認してください！"
+msgstr "更新の確認が無効化されています！ バージョンはご自身で確認してください。"
 
 msgid "CheckForUpdate:inspector:EnableCheckForUpdate"
-msgstr "更新の確認を有効にする"
+msgstr "更新の確認を有効化する"
 
 msgid "OptimizationMetrics:Results"
 msgstr "AAOによる最適化結果:\n{0}"

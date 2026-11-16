@@ -63,7 +63,7 @@ namespace Anatawa12.AvatarOptimizer
                 else
                 {
                     GUILayout.Label(AAOL10N.Tr("CheckForUpdate:inspector:UsingLatest"), Styles.CheckForUpdateStatus);
-                    if (CheckForUpdateButton(AAOL10N.Tr("CheckForUpdate:inspector:CheckForUpdateNow")))
+                    if (CheckForUpdateButton(AAOL10N.Tr("CheckForUpdate:inspector:CheckForUpdate")))
                     {
                         CheckForUpdate.MenuItems.CheckForUpdateEnabled = true;
                         CheckForUpdate.Checker.DoCheckForUpdate(force: true);
