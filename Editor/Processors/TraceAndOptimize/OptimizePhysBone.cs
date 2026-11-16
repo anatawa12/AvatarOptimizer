@@ -221,8 +221,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 && Equals(toggleRoot, other.toggleRoot) 
                 && shapeType == other.shapeType
 #if AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER
+#if AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER_PERMISSION_FILTERS
                 && globalCollisionAllowSelf == other.globalCollisionAllowSelf
                 && globalCollisionAllowOthers == other.globalCollisionAllowOthers
+#endif
                 && globalCollisionFlags == other.globalCollisionFlags
 #endif
 
@@ -237,8 +239,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                     toggleRoot, 
                     (int)shapeType
 #if AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER
+#if AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER_PERMISSION_FILTERS
                     , globalCollisionAllowSelf
                     , globalCollisionAllowOthers
+#endif
                     , (int)globalCollisionFlags
 #endif
                 );
