@@ -328,14 +328,16 @@ namespace Anatawa12.AvatarOptimizer
                 serializedNewClip.ApplyModifiedPropertiesWithoutUndo();
             }
 
+            var bindings = new List<EditorCurveBinding>();
+            var editorCurves = new List<AnimationCurve>();
             foreach (var binding in floatBindings)
             {
                 var newBindings = _mapping.MapBinding(binding.path, binding.type, binding.propertyName);
                 Tracing.Trace(TracingArea.ApplyObjectMapping, $"Mapping Float ({binding.path}, {binding.type}, {binding.propertyName}): {(newBindings == null ? "same mapping" : newBindings.Length == 0 ? "empty" : string.Join(", ", newBindings))}");
                 if (newBindings == null)
                 {
-                    AnimationUtility.SetEditorCurve(newClip, binding,
-                        AnimationUtility.GetEditorCurve(clip, binding));
+                    bindings.Add(binding);
+                    editorCurves.Add(AnimationUtility.GetEditorCurve(clip, binding));
                 }
                 else
                 {
@@ -351,20 +353,23 @@ namespace Anatawa12.AvatarOptimizer
                         newBinding.path = tuple.path;
                         newBinding.type = tuple.type;
                         newBinding.propertyName = tuple.propertyName;
-                        AnimationUtility.SetEditorCurve(newClip, newBinding,
-                            AnimationUtility.GetEditorCurve(clip, binding));
+                        bindings.Add(newBinding);
+                        editorCurves.Add(AnimationUtility.GetEditorCurve(clip, binding));
                     }
                 }
             }
+            AnimationUtility.SetEditorCurves(newClip, bindings.ToArray(), editorCurves.ToArray());
 
+            bindings.Clear();
+            var objectCurves = new List<ObjectReferenceKeyframe[]>();
             foreach (var binding in objectBindings)
             {
                 var newBindings = _mapping.MapBinding(binding.path, binding.type, binding.propertyName);
                 Tracing.Trace(TracingArea.ApplyObjectMapping, $"Mapping Object ({binding.path}, {binding.type}, {binding.propertyName}): {(newBindings == null ? "same mapping" : newBindings.Length == 0 ? "empty" : string.Join(", ", newBindings))}");
                 if (newBindings == null)
                 {
-                    AnimationUtility.SetObjectReferenceCurve(newClip, binding,
-                        AnimationUtility.GetObjectReferenceCurve(clip, binding));
+                    bindings.Add(binding);
+                    objectCurves.Add(AnimationUtility.GetObjectReferenceCurve(clip, binding));
                 }
                 else
                 {
@@ -380,11 +385,13 @@ namespace Anatawa12.AvatarOptimizer
                         newBinding.path = tuple.path;
                         newBinding.type = tuple.type;
                         newBinding.propertyName = tuple.propertyName;
-                        AnimationUtility.SetObjectReferenceCurve(newClip, newBinding,
-                            AnimationUtility.GetObjectReferenceCurve(clip, binding));
+                        bindings.Add(newBinding);
+                        objectCurves.Add(AnimationUtility.GetObjectReferenceCurve(clip, binding));
                     }
                 }
             }
+
+            AnimationUtility.SetObjectReferenceCurves(newClip, bindings.ToArray(), objectCurves.ToArray());
 
             // ReSharper disable once CompareOfFloatsByEqualityOperator
             var hasLengthMismatch = newClip.length != clip.length;
@@ -423,15 +430,16 @@ namespace Anatawa12.AvatarOptimizer
                 if (EditorApplication.isPlayingOrWillChangePlaymode)
                 {
                     // Add multiple short messages as separate curves
-                    AnimationUtility.SetEditorCurve(newClip,
-                        EditorCurveBinding.FloatCurve(AAOL10N.Tr("ObjectMapping:DummyAnimationObject:1"), typeof(GameObject), Props.IsActive), 
-                        AnimationCurve.Constant(clip.length, clip.length, 1f));
-                    AnimationUtility.SetEditorCurve(newClip,
-                        EditorCurveBinding.FloatCurve(AAOL10N.Tr("ObjectMapping:DummyAnimationObject:2"), typeof(GameObject), Props.IsActive), 
-                        AnimationCurve.Constant(clip.length, clip.length, 1f));
-                    AnimationUtility.SetEditorCurve(newClip,
-                        EditorCurveBinding.FloatCurve(AAOL10N.Tr("ObjectMapping:DummyAnimationObject:3"), typeof(GameObject), Props.IsActive), 
-                        AnimationCurve.Constant(clip.length, clip.length, 1f));
+                    var curve = AnimationCurve.Constant(clip.length, clip.length, 1f);
+                    AnimationUtility.SetEditorCurves(newClip,
+                        new[]
+                        {
+                            EditorCurveBinding.FloatCurve(AAOL10N.Tr("ObjectMapping:DummyAnimationObject:1"), typeof(GameObject), Props.IsActive),
+                            EditorCurveBinding.FloatCurve(AAOL10N.Tr("ObjectMapping:DummyAnimationObject:2"), typeof(GameObject), Props.IsActive),
+                            EditorCurveBinding.FloatCurve(AAOL10N.Tr("ObjectMapping:DummyAnimationObject:3"), typeof(GameObject), Props.IsActive),
+                        },
+                        new[] { curve, curve, curve }
+                    );
                 }
                 else
                 {
