@@ -26,10 +26,12 @@ namespace Anatawa12.AvatarOptimizer
             _ => throw new ArgumentOutOfRangeException(nameof(allow), allow, null)
         };
 
-        public static DynamicsUsageFlags ParseAdvancedBool(VRCPhysBoneBase.AdvancedBool allow, DynamicsUsageFlags customization) => allow switch
+        public static E ParseAdvancedBool<E>(VRCPhysBoneBase.AdvancedBool allow, E customization)
+            where E: struct, Enum
+            => allow switch
         {
-            VRCPhysBoneBase.AdvancedBool.False => DynamicsUsageFlags.Nothing,
-            VRCPhysBoneBase.AdvancedBool.True => DynamicsUsageFlags.Everything,
+            VRCPhysBoneBase.AdvancedBool.False => default,
+            VRCPhysBoneBase.AdvancedBool.True => UtilsUsingUnsafe.EnumAllOne<E>(),
             VRCPhysBoneBase.AdvancedBool.Other => customization,
             _ => throw new ArgumentOutOfRangeException(nameof(allow), allow, null)
         };
