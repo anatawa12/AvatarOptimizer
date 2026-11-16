@@ -13,6 +13,29 @@ namespace Anatawa12.AvatarOptimizer
 {
     internal static partial class VRCSDKUtils
     {
+        public static (bool self, bool others) ParsePermissionFilter(VRCPhysBoneBase.AdvancedBool allow,
+            VRCPhysBoneBase.PermissionFilter filter) =>
+            (ParseAdvancedBool(allow, filter.allowSelf),
+                ParseAdvancedBool(allow, filter.allowOthers));
+
+        public static bool ParseAdvancedBool(VRCPhysBoneBase.AdvancedBool allow, bool customization) => allow switch
+        {
+            VRCPhysBoneBase.AdvancedBool.False => false,
+            VRCPhysBoneBase.AdvancedBool.True => true,
+            VRCPhysBoneBase.AdvancedBool.Other => customization,
+            _ => throw new ArgumentOutOfRangeException(nameof(allow), allow, null)
+        };
+
+        public static E ParseAdvancedBool<E>(VRCPhysBoneBase.AdvancedBool allow, E customization)
+            where E: struct, Enum
+            => allow switch
+        {
+            VRCPhysBoneBase.AdvancedBool.False => default,
+            VRCPhysBoneBase.AdvancedBool.True => UtilsUsingUnsafe.EnumAllOne<E>(),
+            VRCPhysBoneBase.AdvancedBool.Other => customization,
+            _ => throw new ArgumentOutOfRangeException(nameof(allow), allow, null)
+        };
+
         public static Transform GetTarget(this VRCPhysBoneBase physBoneBase) =>
             physBoneBase.rootTransform ? physBoneBase.rootTransform : physBoneBase.transform;
 
