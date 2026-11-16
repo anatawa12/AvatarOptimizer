@@ -13,7 +13,7 @@ msgid "CheckForUpdate:inspector:CheckingForUpdate"
 msgstr "更新を確認中..."
 
 msgid "CheckForUpdate:inspector:OutOfDate"
-msgstr "古いバージョンのAAO:~Avatar~Optimizerを使用しています！ AAO:~Avatar~Optimizerの最新バージョンは{0}です。"
+msgstr "古いバージョンのAAO:~Avatar~Optimizerを使用しています！ 最新バージョンは{0}です。"
 
 msgid "CheckForUpdate:inspector:UsingLatest"
 msgstr "最新バージョンのAAO:~Avatar~Optimizerを使用しています！"
