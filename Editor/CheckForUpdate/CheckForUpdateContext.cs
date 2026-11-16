@@ -33,12 +33,12 @@ namespace Anatawa12.AvatarOptimizer.CheckForUpdate
             ? "https://vpm.anatawa12.com/avatar-optimizer/beta/latest2.txt"
             : "https://vpm.anatawa12.com/avatar-optimizer/latest2.txt";
 
-        public async Task<Version?> GetLatestVersion()
+        public async Task<Version?> GetLatestVersion(bool force)
         {
             // first, try cache
             var (cachedLatest, cacheOutdated) = TryGetVersionFromCache();
 
-            if (cachedLatest is Version cacheLoaded && !cacheOutdated) return cacheLoaded;
+            if (cachedLatest is Version cacheLoaded && !cacheOutdated && !force) return cacheLoaded;
 
             // then try fetch
             var latestInfo = await FetchLatest2();

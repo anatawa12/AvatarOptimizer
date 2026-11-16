@@ -10,7 +10,8 @@ namespace Anatawa12.AvatarOptimizer.CheckForUpdate
     {
         static Checker()
         {
-            EditorApplication.delayCall += DoCheckForUpdate;
+            CurrentVersionName = GetCurrentVersion()?.ToString() ?? "";
+            EditorApplication.delayCall += TriggerCheckForUpdate;
         }
 
         public static bool OutOfDate
@@ -33,7 +34,7 @@ namespace Anatawa12.AvatarOptimizer.CheckForUpdate
 
         public static bool IsBeta => CurrentVersionName.Contains('-');
 
-        static async void DoCheckForUpdate()
+        static void TriggerCheckForUpdate()
         {
             if (!MenuItems.CheckForUpdateEnabled)
             {
@@ -42,6 +43,20 @@ namespace Anatawa12.AvatarOptimizer.CheckForUpdate
                 return;
             }
 
+            DoCheckForUpdate();
+        }
+
+        public static bool Checking;
+
+        private struct CheckingScope : IDisposable
+        {
+            public CheckingScope() => Checking = true;
+            public void Dispose() => Checking = false;
+        }
+
+        public async static void DoCheckForUpdate(bool force = false)
+        {
+            using var test = new CheckingScope();
             if (!(GetCurrentVersion() is Version currentVersion))
             {
                 Debug.LogError("Avatar Optimizer CheckForUpdate: Failed to get current version");
@@ -59,7 +74,7 @@ namespace Anatawa12.AvatarOptimizer.CheckForUpdate
 
             var ctx = new CheckForUpdateContext(isBeta, currentVersion, unityVersion);
 
-            if (await ctx.GetLatestVersion() is Version latestVersion)
+            if (await ctx.GetLatestVersion(force) is Version latestVersion)
             {
                 // there is known latest version
                 if (currentVersion < latestVersion)
@@ -79,6 +94,8 @@ namespace Anatawa12.AvatarOptimizer.CheckForUpdate
             {
                 OutOfDate = false;
             }
+
+            foreach (var editor in Resources.FindObjectsOfTypeAll<Editor>()) editor.Repaint();
         }
 
         static Version? GetCurrentVersion()
