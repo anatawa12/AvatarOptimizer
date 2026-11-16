@@ -8,23 +8,30 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
-- Version information on each component `#1820`
 
 ### Changed
-- Reduce unnecessary mesh removal preview updates. [`#1819`](https://github.com/anatawa12/AvatarOptimizer/pull/1819)
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Fixed a mesh leak in Remove Mesh by Box previews. [`#1819`](https://github.com/anatawa12/AvatarOptimizer/pull/1819)
-- Fixed UV channel selection in Remove Mesh by UV Tile previews. [`#1819`](https://github.com/anatawa12/AvatarOptimizer/pull/1819)
-- Global PhysBone Colliders with VRCSDK 3.10.5 can be removed `#1823`
-  - AAO only supports VRCSDK 3.10.4 Global PhysBone Colliders for bug.
-- Target Transform of VRC Raycast (VRCSDK 3.10.5 feature) can be removed `#1825`
 
 ### Security
+
+## [1.9.23-rc.1] - 2026-11-16
+### Added
+- Version information on each component [`#1820`](https://github.com/anatawa12/AvatarOptimizer/pull/1820)
+
+### Changed
+- Reduce unnecessary mesh removal preview updates. [`#1819`](https://github.com/anatawa12/AvatarOptimizer/pull/1819)
+
+### Fixed
+- Fixed a mesh leak in Remove Mesh by Box previews. [`#1819`](https://github.com/anatawa12/AvatarOptimizer/pull/1819)
+- Fixed UV channel selection in Remove Mesh by UV Tile previews. [`#1819`](https://github.com/anatawa12/AvatarOptimizer/pull/1819)
+- Global PhysBone Colliders with VRCSDK 3.10.5 can be removed [`#1823`](https://github.com/anatawa12/AvatarOptimizer/pull/1823)
+  - AAO only supports VRCSDK 3.10.4 Global PhysBone Colliders for bug.
+- Target Transform of VRC Raycast (VRCSDK 3.10.5 feature) can be removed [`#1825`](https://github.com/anatawa12/AvatarOptimizer/pull/1825)
 
 ## [1.9.22] - 2026-11-10
 ## [1.9.22-rc.2] - 2026-11-10
@@ -2412,7 +2419,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.22...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.23-rc.1...HEAD
+[1.9.23-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.22...v1.9.23-rc.1
 [1.9.22]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.22-rc.2...v1.9.22
 [1.9.22-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.22-rc.1...v1.9.22-rc.2
 [1.9.22-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21...v1.9.22-rc.1
