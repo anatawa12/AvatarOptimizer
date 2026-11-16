@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog].
 - Fixed UV channel selection in Remove Mesh by UV Tile previews. [`#1819`](https://github.com/anatawa12/AvatarOptimizer/pull/1819)
 - Global PhysBone Colliders with VRCSDK 3.10.5 can be removed `#1823`
   - AAO only supports VRCSDK 3.10.4 Global PhysBone Colliders for bug.
+- Target Transform of VRC Raycast (VRCSDK 3.10.5 feature) can be removed `#1825`
 
 ### Security
 
