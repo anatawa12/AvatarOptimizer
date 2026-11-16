@@ -27,20 +27,21 @@ namespace Anatawa12.AvatarOptimizer
         {
             public static readonly GUIStyle VersionText = new GUIStyle(GUI.skin.label)
             {
-                fontSize = (int)(EditorStyles.label.fontSize * 1.2f),
                 alignment = TextAnchor.MiddleCenter,
                 wordWrap = true,
             };
             public static readonly GUIStyle CheckForUpdateStatus = new GUIStyle(GUI.skin.label)
             {
+                fontSize = (int)(EditorStyles.label.fontSize * 0.9f),
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleCenter,
                 wordWrap = true,
             };
             public static readonly GUIStyle CheckForUpdateButton = new GUIStyle(GUI.skin.button)
             {
-                padding = new RectOffset(15, 15, 5, 5),
-                margin = new RectOffset(5, 5, 5, 5),
+                fontSize = (int)(EditorStyles.label.fontSize * 0.9f),
+                padding = new RectOffset(12, 12, 4, 4),
+                margin = new RectOffset(4, 4, 4, 4),
                 alignment = TextAnchor.MiddleCenter,
                 wordWrap = true,
             };
