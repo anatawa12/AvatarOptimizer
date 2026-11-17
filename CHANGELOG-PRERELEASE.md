@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- "Reduce bit width of synced Int parameters" in Trace and Optimize [#1814](https://github.com/anatawa12/AvatarOptimizer/pull/1814)
+    - Introduced as an experimental feature, also adds `Experimental Options` foldout to its Inspector.
+    - This optimization may break sync between PC and Mobile builds when resulting ExParam is different, due to [Sync-by-name revert](https://docs.vrchat.com/docs/vrchat-202641).
 
 ### Changed
 
