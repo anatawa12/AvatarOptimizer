@@ -869,7 +869,13 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
         {
             collector.AddDependency(component.rootTransform);
 #if AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER
+#if AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER_PERMISSION_FILTERS
+            if (VRCSDKUtils.ParseAdvancedBool(component.globalCollision, component.globalCollisionAllowSelf)
+                || VRCSDKUtils.ParseAdvancedBool(component.globalCollision, component.globalCollisionAllowOthers)
+                || VRCSDKUtils.ParseAdvancedBool(component.globalCollision, component.globalCollisionFlags) != 0)
+#else
             if (component.globalCollisionFlags != 0)
+#endif
             {
                 collector.MarkEntrypoint();
             }
@@ -1094,6 +1100,14 @@ namespace Anatawa12.AvatarOptimizer.APIInternal.VRCSDK
                     break;
             }
 #endif
+
+#if AAO_VRCSDK3_AVATARS_VRC_RAYCAST_ROOT_TRANSFORM
+            if (component.RootTransform != null)
+            {
+                collector.AddDependency(component.RootTransform);
+            }
+#endif
+
             var transform = component.ResultTransform;
             // Raycast do nothing if target is null in Version_1_0
             if (transform != null

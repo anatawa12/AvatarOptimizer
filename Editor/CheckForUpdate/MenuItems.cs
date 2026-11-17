@@ -13,7 +13,11 @@ namespace Anatawa12.AvatarOptimizer.CheckForUpdate
         public static bool CheckForUpdateEnabled
         {
             get => EditorPrefs.GetBool(ToggleSettingName, true);
-            set => EditorPrefs.SetBool(ToggleSettingName, value);
+            set
+            {
+                EditorPrefs.SetBool(ToggleSettingName, value);
+                Menu.SetChecked(ToggleCheckForUpdate, CheckForUpdateEnabled);
+            }
         }
 
         public static bool ForceBetaChannel
@@ -26,7 +30,7 @@ namespace Anatawa12.AvatarOptimizer.CheckForUpdate
         private static void ToggleGenerateOnPlay()
         {
             CheckForUpdateEnabled = !CheckForUpdateEnabled;
-            Menu.SetChecked(ToggleCheckForUpdate, CheckForUpdateEnabled);
+            if (CheckForUpdateEnabled) Checker.DoCheckForUpdate(force: true);
         }
 
         [MenuItem(ForceCheckForBetaRelease)]

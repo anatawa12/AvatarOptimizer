@@ -75,7 +75,8 @@ namespace Anatawa12.AvatarOptimizer
                 removeTile12 == other.removeTile12 &&
                 removeTile13 == other.removeTile13 &&
                 removeTile14 == other.removeTile14 &&
-                removeTile15 == other.removeTile15;
+                removeTile15 == other.removeTile15 &&
+                uvChannel == other.uvChannel;
 
             public override bool Equals(object? obj) => obj is MaterialSlot other && Equals(other);
 
@@ -98,6 +99,7 @@ namespace Anatawa12.AvatarOptimizer
                 hashCode.Add(removeTile13);
                 hashCode.Add(removeTile14);
                 hashCode.Add(removeTile15);
+                hashCode.Add(uvChannel);
                 return hashCode.ToHashCode();
             }
 

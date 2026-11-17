@@ -25,12 +25,12 @@ namespace Anatawa12.AvatarOptimizer
         });
 
 
-        public static string Tr(string key) => Localizer.GetLocalizedString(key);
+        public static string Tr(string key) => Localizer.GetLocalizedString(key).Replace("~", "\xA0");
 
         public static string? TryTr(string descriptionKey)
         {
             if (Localizer.TryGetLocalizedString(descriptionKey, out var result))
-                return result;
+                return result.Replace("~", "\xA0");
             return null;
         }
 

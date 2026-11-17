@@ -19,6 +19,31 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.9.23-rc.1] - 2026-11-16
+### Added
+- Version information on each component [`#1820`](https://github.com/anatawa12/AvatarOptimizer/pull/1820)
+
+### Changed
+- Reduce unnecessary mesh removal preview updates. [`#1819`](https://github.com/anatawa12/AvatarOptimizer/pull/1819)
+
+### Fixed
+- Fixed a mesh leak in Remove Mesh by Box previews. [`#1819`](https://github.com/anatawa12/AvatarOptimizer/pull/1819)
+- Fixed UV channel selection in Remove Mesh by UV Tile previews. [`#1819`](https://github.com/anatawa12/AvatarOptimizer/pull/1819)
+- Global PhysBone Colliders with VRCSDK 3.10.5 can be removed [`#1823`](https://github.com/anatawa12/AvatarOptimizer/pull/1823)
+  - AAO only supports VRCSDK 3.10.4 Global PhysBone Colliders for bug.
+- Target Transform of VRC Raycast (VRCSDK 3.10.5 feature) can be removed [`#1825`](https://github.com/anatawa12/AvatarOptimizer/pull/1825)
+
+## [1.9.22] - 2026-11-10
+## [1.9.22-rc.2] - 2026-11-10
+### Fixed
+- Remove Mesh by Mask may not work for meshes with UV near 0 [`#1818`](https://github.com/anatawa12/AvatarOptimizer/pull/1818)
+
+## [1.9.22-rc.1] - 2026-11-10
+### Changed
+- Work around a VRC Avatar Descriptor inspector bug where the "Use All Tracking Keys" toggle becomes unclickable when components are attached to the avatar root [`#1816`](https://github.com/anatawa12/AvatarOptimizer/pull/1816)
+  - Although the heading mentions AAO components, this issue can also be triggered by other components, including Unity built-in components such as Colliders. Therefore, I consider this a VRCSDK bug rather than an issue with our components.
+  - For details about the VRCSDK bug, see [this Canny post](https://feedback.vrchat.com/sdk-bug-reports/p/3106-use-all-tracking-keys-toggle-may-be-unclickable-and-the-left-half-of-field).
+
 ## [1.9.21] - 2026-10-30
 ## [1.9.21-rc.1] - 2026-10-30
 ### Changed
@@ -2394,7 +2419,11 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.23-rc.1...HEAD
+[1.9.23-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.22...v1.9.23-rc.1
+[1.9.22]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.22-rc.2...v1.9.22
+[1.9.22-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.22-rc.1...v1.9.22-rc.2
+[1.9.22-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21...v1.9.22-rc.1
 [1.9.21]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21-rc.1...v1.9.21
 [1.9.21-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21-beta.2...v1.9.21-rc.1
 [1.9.21-beta.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21-beta.1...v1.9.21-beta.2
