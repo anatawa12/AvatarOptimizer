@@ -927,6 +927,27 @@ msgstr "デバッグ用オプションはAvatar Optimizerのバグを回避す�
 "これらの設定を変更すると、アバターが適切に最適化されなくなる可能性があります。\n"
 "また、一部のデバッグ用オプションが正しく機能しなかったり、その動作が変更されたりする可能性があります。ご注意ください！"
 
+msgid "TraceAndOptimize:prop:experimentalOptions"
+msgstr "実験的なオプション"
+
+msgid "TraceAndOptimize:dialog:experimentalOptions:description"
+msgstr ""
+"これはAvatar Optimizerに実験的に導入されている機能です。\n"
+"これらの設定を変更すると、アバターが適切に最適化されなくなったり、最適化処理が失敗したりする可能性があります。\n"
+"また、動作が変更されたり機能が削除されたりする可能性があります。\n"
+"これらのことを理解した上で、設定を変更しますか？"
+
+msgid "TraceAndOptimize:dialog:experimentalOptions:proceed"
+msgstr "設定を変更する"
+
+msgid "TraceAndOptimize:dialog:experimentalOptions:cancel"
+msgstr "キャンセル"
+
+msgid "TraceAndOptimize:warn:experimentalOptions"
+msgstr "これはAvatar Optimizerに実験的に導入されている機能です。\n"
+"これらの設定を変更すると、アバターが適切に最適化されなくなる可能性があります。\n"
+"また、動作が変更されたり機能が削除されたりする可能性があります。ご注意ください！"
+
 msgid "TraceAndOptimize:warn:unknown-type"
 msgstr "未知のコンポーネント'{0}'を検出しました！"
 

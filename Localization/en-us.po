@@ -1034,6 +1034,27 @@ msgstr "Debug Options is for workaround bugs in Avatar Optimizer.\n"
 "Changing Debug Options will make your avatar non well-optimized.\n"
 "In addition, Some modification of Debug Options may not well-tested or its behaviour is likely to be changed. Be careful!"
 
+msgid "TraceAndOptimize:prop:experimentalOptions"
+msgstr "Experimental Options"
+
+msgid "TraceAndOptimize:dialog:experimentalOptions:description"
+msgstr ""
+"These features are introduced experimentally to Avatar Optimizer.\n"
+"Changing Experimental Options may cause your avatar to be not properly optimized or optimization process to fail.\n"
+"In addition, some Experimental Options may change its behavior or may be removed.\n"
+"Do you understand this and want to change these settings?"
+
+msgid "TraceAndOptimize:dialog:experimentalOptions:proceed"
+msgstr "Proceed"
+
+msgid "TraceAndOptimize:dialog:experimentalOptions:cancel"
+msgstr "Cancel"
+
+msgid "TraceAndOptimize:warn:experimentalOptions"
+msgstr "These features are introduced experimentally to Avatar Optimizer.\n"
+"Changing Experimental Options may make your avatar non well-optimized.\n"
+"In addition, Some Experimental Options may be removed or its behaviour is likely to be changed. Be careful!"
+
 msgid "TraceAndOptimize:warn:unknown-type"
 msgstr "Unknown Component Type '{0}' Found."
 
