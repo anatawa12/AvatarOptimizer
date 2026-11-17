@@ -25,6 +25,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 
         // all feature flags
         public bool RemoveZeroSizedPolygon;
+        public bool ReduceParameterBitWidth;
         public bool OptimizeTexture;
         public bool SweepComponents;
         public bool ConfigureLeafMergeBone;
@@ -130,6 +131,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             // always applied
             RemoveUnusedSubMesh = !config.debugOptions.skipRemoveUnusedSubMesh;
             OptimizationWarnings = !config.debugOptions.skipOptimizationWarnings;
+
+            // experimental options
+            ReduceParameterBitWidth = config.reduceParameterBitWidth;
         }
     }
 

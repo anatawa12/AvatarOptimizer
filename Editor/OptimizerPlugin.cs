@@ -136,6 +136,11 @@ namespace Anatawa12.AvatarOptimizer.ndmf
                         );
                 });
 
+#if AAO_VRCSDK3_AVATARS_PARAMETER_BIT_WIDTH
+            // this pass must run before animator optimizer because animator optimizer may change parameter types and conditions
+            mainSequence.Run(Processors.TraceAndOptimizes.ReduceParameterBitWidth.Instance);
+#endif
+
             // animator optimizer is written in newer C# so requires 2021.3 or newer 
             mainSequence.Run(Processors.AnimatorOptimizer.InitializeAnimatorOptimizer.Instance)
                 .Then.Run(Processors.AnimatorOptimizer.AnyStateToEntryExit.Instance)

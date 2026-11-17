@@ -52,6 +52,11 @@
             "define": "AAO_VRCSDK3_AVATARS_3_8_0"
         },
         {
+            "name": "com.vrchat.avatars",
+            "expression": "3.10.6",
+            "define": "AAO_VRCSDK3_AVATARS_PARAMETER_BIT_WIDTH"
+        },
+        {
             "name": "com.vrmc.univrm",
             "expression": "",
             "define": "AAO_VRM0"

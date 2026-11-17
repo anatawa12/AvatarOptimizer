@@ -135,6 +135,9 @@ msgstr "Animatorのレイヤー数"
 msgid "OptimizationMetrics:GameObjectCount"
 msgstr "GameObjectの数"
 
+msgid "OptimizationMetrics:SyncedParameterBits"
+msgstr "同期パラメーターのビット数"
+
 msgid "locale:ja"
 msgstr "日本語"
 
@@ -924,6 +927,27 @@ msgstr "デバッグ用オプションはAvatar Optimizerのバグを回避す�
 "これらの設定を変更すると、アバターが適切に最適化されなくなる可能性があります。\n"
 "また、一部のデバッグ用オプションが正しく機能しなかったり、その動作が変更されたりする可能性があります。ご注意ください！"
 
+msgid "TraceAndOptimize:prop:experimentalOptions"
+msgstr "実験的なオプション"
+
+msgid "TraceAndOptimize:dialog:experimentalOptions:description"
+msgstr ""
+"これはAvatar Optimizerに実験的に導入されている機能です。\n"
+"これらの設定を変更すると、アバターが適切に最適化されなくなったり、最適化処理が失敗したりする可能性があります。\n"
+"また、動作が変更されたり機能が削除されたりする可能性があります。\n"
+"これらのことを理解した上で、設定を変更しますか？"
+
+msgid "TraceAndOptimize:dialog:experimentalOptions:proceed"
+msgstr "設定を変更する"
+
+msgid "TraceAndOptimize:dialog:experimentalOptions:cancel"
+msgstr "キャンセル"
+
+msgid "TraceAndOptimize:warn:experimentalOptions"
+msgstr "これはAvatar Optimizerに実験的に導入されている機能です。\n"
+"これらの設定を変更すると、アバターが適切に最適化されなくなる可能性があります。\n"
+"また、動作が変更されたり機能が削除されたりする可能性があります。ご注意ください！"
+
 msgid "TraceAndOptimize:warn:unknown-type"
 msgstr "未知のコンポーネント'{0}'を検出しました！"
 
@@ -977,6 +1001,9 @@ msgstr "親が削除されていないendボーンを削除しないようにし
 
 msgid "TraceAndOptimize:prop:removeZeroSizedPolygons"
 msgstr "面積がゼロのポリゴンを自動的に削除する"
+
+msgid "TraceAndOptimize:prop:reduceParameterBitWidth"
+msgstr "同期されるInt型パラメーターのビット幅を自動的に削減する"
 
 msgid "TraceAndOptimize:OptimizePhysBone:UnknownPhysBoneColliderShape"
 msgstr "未知のPhysBone Collider形状'{0}'が指定されています。"

@@ -98,6 +98,7 @@ internal static class OptimizationMetricsImpl
             {
 #if AAO_VRCSDK3_AVATARS
                 new VrcMetricsSource(),
+                new VrcExpressionParametersMetricsSource(),
 #endif
                 new CustomMetricsSource()
             };
@@ -439,6 +440,27 @@ internal static class OptimizationMetricsImpl
     }
 
 #if AAO_VRCSDK3_AVATARS
+    class VrcExpressionParametersMetricsSource : IMetricsSource
+    {
+        public int Priority => 500;
+
+        public IReadOnlyDictionary<string, string> Capture(GameObject avatarRoot)
+        {
+            var result = new Dictionary<string, string>();
+            try
+            {
+                var descriptor = avatarRoot.GetComponent<VRC.SDK3.Avatars.Components.VRCAvatarDescriptor>();
+                if (descriptor != null && descriptor.customExpressions && descriptor.expressionParameters != null)
+                    result["SyncedParameterBits"] = descriptor.expressionParameters.CalcTotalCost().ToString();
+            }
+            catch
+            {
+                // ignored
+            }
+            return result;
+        }
+    }
+
     class VrcMetricsSource : IMetricsSource
     {
         public int Priority => 1000;
