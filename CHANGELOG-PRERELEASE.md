@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.9.23] - 2026-11-17
 ## [1.9.23-rc.1] - 2026-11-16
 ### Added
 - Version information on each component [`#1820`](https://github.com/anatawa12/AvatarOptimizer/pull/1820)
@@ -2419,7 +2420,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.23-rc.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.23...HEAD
+[1.9.23]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.23-rc.1...v1.9.23
 [1.9.23-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.22...v1.9.23-rc.1
 [1.9.22]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.22-rc.2...v1.9.22
 [1.9.22-rc.2]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.22-rc.1...v1.9.22-rc.2
