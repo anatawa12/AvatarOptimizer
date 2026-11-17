@@ -54,10 +54,6 @@ namespace Anatawa12.AvatarOptimizer
         [Section]
         [ToggleLeft] public bool removeZeroSizedPolygons = true;
 
-        // reduceParameterBitWidth
-        [Section]
-        [ToggleLeft] public bool reduceParameterBitWidth = true;
-
         // optimize animator
         [Section]
         [ToggleLeft] public bool optimizeAnimator = true;

@@ -104,11 +104,6 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
                 RemoveZeroSizedPolygon = true;
             }
 
-            if (config.reduceParameterBitWidth && settings.reduceParameterBitWidth)
-            {
-                ReduceParameterBitWidth = true;
-            }
-
             if (config.optimizeAnimator && settings.optimizeAnimator)
             {
                 OptimizeAnimator = true;
@@ -136,6 +131,9 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             // always applied
             RemoveUnusedSubMesh = !config.debugOptions.skipRemoveUnusedSubMesh;
             OptimizationWarnings = !config.debugOptions.skipOptimizationWarnings;
+
+            // experimental options
+            ReduceParameterBitWidth = config.reduceParameterBitWidth;
         }
     }
 
