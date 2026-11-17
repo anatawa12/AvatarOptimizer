@@ -57,7 +57,7 @@ namespace Anatawa12.AvatarOptimizer
         // no meaning without VRCSDK
         [HideInInspector]
 #endif
-        // Note: this option is a part of Advanced Optimizations
+        // Note: this option is a part of Experimental Options
         internal bool reduceParameterBitWidth = false;
 
         [NotKeyable]

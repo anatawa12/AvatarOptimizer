@@ -24,8 +24,10 @@ namespace Anatawa12.AvatarOptimizer
         private SerializedProperty _debugOptions = null!; // Initialized in OnEnable
         private GUIContent _advancedSettingsLabel = new GUIContent();
         private GUIContent _debugOptionsLabel = new GUIContent();
+        private GUIContent _experimentalOptionsLabel = new GUIContent();
         private bool _openFeatures = false;
         private bool _openDebugOptions = false;
+        private bool _openExperimentalOptions = false;
 
         private void OnEnable()
         {
@@ -111,6 +113,28 @@ namespace Anatawa12.AvatarOptimizer
                 EditorGUI.indentLevel++;
                 EditorGUILayout.HelpBox(AAOL10N.Tr("TraceAndOptimize:note:advancedOptimization"), MessageType.Info);
                 EditorGUILayout.PropertyField(_removeZeroSizedPolygons);
+                EditorGUI.indentLevel--;
+            }
+
+            _experimentalOptionsLabel.text = AAOL10N.Tr("TraceAndOptimize:prop:experimentalOptions");
+            var openExperimentalOptionsNew = EditorGUILayout.Foldout(_openExperimentalOptions, _experimentalOptionsLabel);
+            if (openExperimentalOptionsNew && !_openExperimentalOptions)
+            {
+                // Just opened
+                if (EditorUtility.DisplayDialog(
+                        AAOL10N.Tr("TraceAndOptimize:prop:experimentalOptions"),
+                        AAOL10N.Tr("TraceAndOptimize:dialog:experimentalOptions:description"),
+                        AAOL10N.Tr("TraceAndOptimize:dialog:experimentalOptions:proceed"),
+                        AAOL10N.Tr("TraceAndOptimize:dialog:experimentalOptions:cancel")
+                    ))
+                {
+                    _openExperimentalOptions = true;
+                }
+            }
+            if (_openExperimentalOptions)
+            {
+                EditorGUI.indentLevel++;
+                EditorGUILayout.HelpBox(AAOL10N.Tr("TraceAndOptimize:warn:experimentalOptions"), MessageType.Warning);
 #if AAO_VRCSDK3_AVATARS_PARAMETER_BIT_WIDTH
                 EditorGUILayout.PropertyField(_reduceParameterBitWidth);
 #endif
