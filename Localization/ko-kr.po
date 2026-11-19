@@ -1,9 +1,31 @@
 msgid ""
 msgstr ""
 "Language: ko-kr\n"
+# Note: '~' will be NBSP
 
 msgid "CheckForUpdate:out-of-date"
 msgstr "Avatar Optimizer의 새 버전 {0}을(를) 사용할 수 있습니다! (현재 버전: {1})"
+
+msgid "CheckForUpdate:inspector:CurrentVersion"
+msgstr "AAO:~Avatar~Optimizer v{0}"
+
+msgid "CheckForUpdate:inspector:CheckingForUpdate"
+msgstr "업데이트 확인 중..."
+
+msgid "CheckForUpdate:inspector:OutOfDate"
+msgstr "이전 버전의 AAO:~Avatar~Optimizer를 사용하고 있습니다! 최신 버전은 {0}입니다."
+
+msgid "CheckForUpdate:inspector:UsingLatest"
+msgstr "AAO:~Avatar~Optimizer의 최신 버전을 사용하고 있습니다!"
+
+msgid "CheckForUpdate:inspector:CheckForUpdate"
+msgstr "업데이트 확인!"
+
+msgid "CheckForUpdate:inspector:CheckForUpdateDisabled"
+msgstr "업데이트 확인이 비활성화되어 있습니다! 버전을 직접 확인해 주세요."
+
+msgid "CheckForUpdate:inspector:EnableCheckForUpdate"
+msgstr "업데이트 확인 활성화"
 
 msgid "OptimizationMetrics:Results"
 msgstr "AAO 최적화 결과:\n{0}"
