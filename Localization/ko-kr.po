@@ -1,9 +1,31 @@
 msgid ""
 msgstr ""
 "Language: ko-kr\n"
+# Note: '~' will be NBSP
 
 msgid "CheckForUpdate:out-of-date"
 msgstr "Avatar Optimizer의 새 버전 {0}을(를) 사용할 수 있습니다! (현재 버전: {1})"
+
+msgid "CheckForUpdate:inspector:CurrentVersion"
+msgstr "AAO:~Avatar~Optimizer v{0}"
+
+msgid "CheckForUpdate:inspector:CheckingForUpdate"
+msgstr "업데이트 확인 중..."
+
+msgid "CheckForUpdate:inspector:OutOfDate"
+msgstr "이전 버전의 AAO:~Avatar~Optimizer를 사용하고 있습니다! 최신 버전은 {0}입니다."
+
+msgid "CheckForUpdate:inspector:UsingLatest"
+msgstr "AAO:~Avatar~Optimizer의 최신 버전을 사용하고 있습니다!"
+
+msgid "CheckForUpdate:inspector:CheckForUpdate"
+msgstr "업데이트 확인!"
+
+msgid "CheckForUpdate:inspector:CheckForUpdateDisabled"
+msgstr "업데이트 확인이 비활성화되어 있습니다! 버전을 직접 확인해 주세요."
+
+msgid "CheckForUpdate:inspector:EnableCheckForUpdate"
+msgstr "업데이트 확인 활성화"
 
 msgid "OptimizationMetrics:Results"
 msgstr "AAO 최적화 결과:\n{0}"
@@ -235,17 +257,17 @@ msgstr ""
 "Merge Bone 컴포넌트를 사용할 때 유용합니다."
 
 msgid "ClearEndpointPosition:button:Apply and Remove Component"
-msgstr "Apply and Remove Component"
+msgstr "적용 후 컴포넌트 삭제"
 
 # endregion
 
 # region FreezeBlendShape
 
 msgid "FreezeBlendShape:button:Check All"
-msgstr "Check All"
+msgstr "모두 선택"
 
 msgid "FreezeBlendShape:button:Invert All"
-msgstr "Invert All"
+msgstr "선택 반전"
 
 msgid "FreezeBlendShape:warning:animation"
 msgstr ""
@@ -366,13 +388,13 @@ msgstr ""
 "버전별 차이는 온라인 문서를 확인해 주세요."
 
 msgid "MergePhysBone:dialog:versionInfo:openDoc"
-msgstr "Open Documentation"
+msgstr "문서 열기"
 
 msgid "MergePhysBone:dialog:versionInfo:revert"
-msgstr "Revert"
+msgstr "되돌리기"
 
 msgid "MergePhysBone:dialog:versionInfo:continue"
-msgstr "Continue Without Documentation"
+msgstr "문서를 확인하지 않고 계속"
 
 msgid "MergePhysBone:prop:merged"
 msgstr "Merged"
@@ -631,13 +653,13 @@ msgstr ""
 "Quest의 제한에 맞추는 데 사용할 수 있습니다."
 
 msgid "MergeToonLitMaterial:button:Add Merged Material"
-msgstr "Add Merged Material"
+msgstr "병합 결과 머티리얼 추가"
 
 msgid "MergeToonLitMaterial:button:Add Source"
-msgstr "Add Source"
+msgstr "원본 머티리얼 추가"
 
 msgid "MergeToonLitMaterial:button:Generate Preview"
-msgstr "Generate Preview"
+msgstr "미리보기 생성"
 
 msgid "MergeToonLitMaterial:suggestMigrate"
 msgstr ""
@@ -645,10 +667,10 @@ msgstr ""
 "아래 버튼을 눌러 Merge Material로 마이그레이션하는 것을 권장합니다."
 
 msgid "MergeToonLitMaterial:button:Migrate to MergeMaterial"
-msgstr "Migrate to Merge Material"
+msgstr "Merge Material로 마이그레이션"
 
 msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:title"
-msgstr "Migrate to Merge Material"
+msgstr "Merge Material로 마이그레이션"
 
 msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:message"
 msgstr ""
@@ -658,10 +680,10 @@ msgstr ""
 "또한 프리팹은 자동 마이그레이션을 지원하지 않습니다. 프리팹을 사용 중이라면 수동으로 옮겨 주세요."
 
 msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:ok"
-msgstr "Migrate"
+msgstr "마이그레이션"
 
 msgid "MergeToonLitMaterial:dialog:Migrate to MergeMaterial:cancel"
-msgstr "Cancel"
+msgstr "취소"
 
 msgid "MergeToonLitMaterial:label:Texture Size"
 msgstr "Texture Size"
@@ -717,10 +739,10 @@ msgstr ""
 "일반적으로 작은 값을 사용합니다."
 
 msgid "RemoveMeshByBlendShape:button:Check All"
-msgstr "Check All"
+msgstr "모두 선택"
 
 msgid "RemoveMeshByBlendShape:button:Invert All"
-msgstr "Invert All"
+msgstr "선택 반전"
 
 # endregion
 
@@ -761,16 +783,16 @@ msgid "RemoveMeshByMask:warning:NoMesh"
 msgstr "SkinnedMeshRenderer에 메시가 지정되지 않았습니다."
 
 msgid "RemoveMeshByMask:button:makeReadable"
-msgstr "Make Readable"
+msgstr "읽기 가능하게 설정"
 
 msgid "RemoveMeshByMask:button:create"
-msgstr "Create"
+msgstr "생성"
 
 msgid "RemoveMeshByMask:button:edit"
-msgstr "Edit"
+msgstr "편집"
 
 msgid "RemoveMeshByMask:dialog:create"
-msgstr "Create"
+msgstr "생성"
 
 msgid "RemoveMeshByMask:dialog:error"
 msgstr "Error"
@@ -788,13 +810,13 @@ msgstr ""
 "해당 VPM 저장소를 추가하고 이 프로젝트에 \"Mask Texture Editor\" 패키지를 설치해 주세요."
 
 msgid "RemoveMeshByMask:dialog:addRepo"
-msgstr "Open ALCOM (VCC)"
+msgstr "ALCOM(VCC) 열기"
 
 msgid "RemoveMeshByMask:dialog:openWeb"
-msgstr "Open GitHub"
+msgstr "GitHub 열기"
 
 msgid "RemoveMeshByMask:dialog:cancel"
-msgstr "Cancel"
+msgstr "취소"
 
 msgid "RemoveMeshByMask:tooltip:textureIsNotImported"
 msgstr "이 마스크 텍스처는 이미지 파일에서 임포트된 텍스처가 아닙니다."
@@ -921,7 +943,7 @@ msgstr ""
 "아래 버튼을 눌러 Trace and Optimize로 마이그레이션하시겠습니까?"
 
 msgid "UnusedBonesByReferencesTool:migrate"
-msgstr "Migrate to Trace and Optimize"
+msgstr "Trace and Optimize로 마이그레이션"
 
 msgid "UnusedBonesByReferencesTool:migrationFinished:title"
 msgstr "Migration Finished!"
@@ -940,7 +962,7 @@ msgstr ""
 "제보 방법은 https://an12.net/aao/en/tao-bug 에서 확인할 수 있습니다."
 
 msgid "TraceAndOptimize:report-bug"
-msgstr "Report a Bug"
+msgstr "버그 제보"
 
 msgid "TraceAndOptimize:tao-bug-link"
 msgstr "https://an12.net/aao/en/tao-bug"
@@ -1001,10 +1023,10 @@ msgstr ""
 "위 내용을 이해하신 상태에서 설정을 변경하시겠습니까?"
 
 msgid "TraceAndOptimize:dialog:debugOptions:proceed"
-msgstr "Proceed"
+msgstr "설정 변경"
 
 msgid "TraceAndOptimize:dialog:debugOptions:cancel"
-msgstr "Cancel"
+msgstr "취소"
 
 msgid "TraceAndOptimize:warn:debugOptions"
 msgstr ""
@@ -1031,7 +1053,7 @@ msgstr ""
 "도구 개발자에게 등록을 요청할 때는 개발자 문서 링크( https://vpm.anatawa12.com/avatar-optimizer/en/docs/developers/make-your-components-compatible-with-aao/ )를 함께 전달해 주세요."
 
 msgid "TraceAndOptimize:warn:unknown-type:autofix"
-msgstr "Ignore This Component"
+msgstr "이 컴포넌트 유형 무시"
 
 msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:title"
 msgstr "Ignore Unknown Component Type"
@@ -1049,13 +1071,13 @@ msgstr ""
 "자세한 내용은 문서를 확인해 주세요."
 
 msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:ignore"
-msgstr "Ignore Component"
+msgstr "컴포넌트 유형 무시"
 
 msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:open-docs"
-msgstr "Open Documentation"
+msgstr "문서 열기"
 
 msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:cancel"
-msgstr "Cancel"
+msgstr "취소"
 
 msgid "TraceAndOptimize:warn:unknown-type:autofix:dialog:url"
 msgstr "https://vpm.anatawa12.com/avatar-optimizer/en/docs/developers/make-your-components-compatible-with-aao/"
@@ -1194,7 +1216,7 @@ msgid "ErrorReporter:error.internal_error"
 msgstr "다음 대상을 처리하는 중 내부 오류가 발생했습니다: {0}"
 
 msgid "ErrorReporter:autoFix"
-msgstr "Auto Fix"
+msgstr "자동 수정"
 
 # endregion
 
@@ -1206,7 +1228,7 @@ msgstr ""
 "자세한 내용은 문서를 확인해 주세요."
 
 msgid "AssetDescription:OpenDocs"
-msgstr "Open Documentation"
+msgstr "문서 열기"
 
 # endregion
 
@@ -1239,10 +1261,10 @@ msgstr "이 텍스처에는 지정한 최대 크기로 줄이는 데 필요한 �
 # region MergeMaterial
 
 msgid "MergeMaterial:button:Add Merged Material"
-msgstr "Add Merged Material"
+msgstr "병합 결과 머티리얼 추가"
 
 msgid "MergeMaterial:button:Add Source"
-msgstr "Add Source Material"
+msgstr "원본 머티리얼 추가"
 
 msgid "MergeMaterial:label:Texture Size"
 msgstr "Texture Size"
@@ -1257,7 +1279,7 @@ msgid "MergeMaterial:label:Texture Config Overrides"
 msgstr "Texture Config Overrides"
 
 msgid "MergeMaterial:button:Add Texture Config Override"
-msgstr "Add Config Override"
+msgstr "텍스처 설정 오버라이드 추가"
 
 msgid "MergeMaterial:label:Texture Name"
 msgstr "Override Texture Name"
@@ -1321,7 +1343,7 @@ msgid "AvatarOptimizerSettings:Description"
 msgstr "Avatar Optimizer의 전역 설정입니다."
 
 msgid "AvatarOptimizerSettings:OpenDocs"
-msgstr "Open Documentation"
+msgstr "문서 열기"
 
 msgid "AvatarOptimizerSettings:DocsUrl"
 msgstr "https://vpm.anatawa12.com/avatar-optimizer/en/docs/developers/make-your-components-compatible-with-aao/"
@@ -1330,19 +1352,19 @@ msgid "AvatarOptimizerSettings:IgnoredComponents"
 msgstr "Ignored Components"
 
 msgid "AvatarOptimizerSettings:ClearAll"
-msgstr "Clear All Ignored Components"
+msgstr "모든 컴포넌트 무시 설정 해제"
 
 msgid "AvatarOptimizerSettings:ClearAll:Confirm:Title"
-msgstr "Clear All Ignored Components"
+msgstr "모든 컴포넌트 무시 설정 해제"
 
 msgid "AvatarOptimizerSettings:ClearAll:Confirm:Message"
 msgstr "모든 컴포넌트 무시 설정을 해제하시겠습니까?"
 
 msgid "AvatarOptimizerSettings:ClearAll:Confirm:OK"
-msgstr "Clear"
+msgstr "해제"
 
 msgid "AvatarOptimizerSettings:ClearAll:Confirm:Cancel"
-msgstr "Cancel"
+msgstr "취소"
 
 msgid "BugReportHelper:description"
 msgstr ""
