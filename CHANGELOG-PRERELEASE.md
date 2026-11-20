@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog].
 
 ## [Unreleased]
 ### Added
+- VRCSDK 3.11.x support `#1827`
+  - This also introduces official Unity 6000.x support
 
 ### Changed
 

@@ -31,6 +31,7 @@ jobs:
           - { name: 2022.3.22f1-3.10.4,       unity: 2022.3.22f1, vrcsdk: 3.10.4, ndmf: latest, } # AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER
           - { name: 2022.3.22f1-3.10.5,       unity: 2022.3.22f1, vrcsdk: 3.10.5, ndmf: latest, } # AAO_VRCSDK3_AVATARS_PHYSBONE_GLOBAL_COLLIDER_PERMISSION_FILTERS
           - { name: 2022.3.22f1-3.10.6,       unity: 2022.3.22f1, vrcsdk: 3.10.6, ndmf: latest, } # AAO_VRCSDK3_AVATARS_NATIVE_FACE_TRACKING AAO_VRCSDK3_AVATARS_VRC_RAYCAST_V1_1 and AAO_VRCSDK3_AVATARS_MATERIAL_CONTACTS_AND_ADVANCED_PROXIMITY
+          - { name: 6000.0.67f1-3.11.0,       unity: 6000.0.67f1, vrcsdk: 3.11.0-beta.1, ndmf: latest, } # First Unity 6000 release
           # No VRChat SDK Environments
           - { name: 2022.3.22f1-no-sdk,       unity: 2022.3.22f1,                 ndmf: latest, }
           # oldest possible NDMF version
@@ -93,7 +94,19 @@ jobs:
             m_EnterPlayModeOptionsEnabled: 1
             m_EnterPlayModeOptions: 3
           EOF
+
           # configure player settings
+          DEFINES="${VRCSDK_VERSION:+VRC_SDK_VRCSDK3;UNITY_POST_PROCESSING_STACK_V2}"
+          # EnvConfig changes over time. use latest known version
+          sdk_version="${VRCSDK_VERSION/#latest/3.10.6}"
+          case "$sdk_version" in
+            3.*)
+              IFS=. read -r _ minor _ <<< "$sdk_version"
+              if (( minor >= 11 )); then
+                DEFINES="$DEFINES;VRC_ENABLE_SOCIAL_HOOKS"
+              fi
+              ;;
+          esac
           cat <<EOF > ProjectSettings/ProjectSettings.asset
           %YAML 1.1
           %TAG !u! tag:unity3d.com,2011:
@@ -101,9 +114,9 @@ jobs:
           PlayerSettings:
             serializedVersion: 26
             scriptingDefineSymbols:
-              Android: ${VRCSDK_VERSION:+VRC_SDK_VRCSDK3;UNITY_POST_PROCESSING_STACK_V2}
-              Standalone: ${VRCSDK_VERSION:+VRC_SDK_VRCSDK3;UNITY_POST_PROCESSING_STACK_V2}
-              iPhone: ${VRCSDK_VERSION:+VRC_SDK_VRCSDK3;UNITY_POST_PROCESSING_STACK_V2}
+              Android: $DEFINES
+              Standalone: $DEFINES
+              iPhone: $DEFINES
             apiCompatibilityLevel: 3
             activeInputHandler: 0
           EOF
