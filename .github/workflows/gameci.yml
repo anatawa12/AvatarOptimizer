@@ -94,7 +94,19 @@ jobs:
             m_EnterPlayModeOptionsEnabled: 1
             m_EnterPlayModeOptions: 3
           EOF
+
           # configure player settings
+          DEFINES="${VRCSDK_VERSION:+VRC_SDK_VRCSDK3;UNITY_POST_PROCESSING_STACK_V2}"
+          # EnvConfig changes over time. use latest known version
+          sdk_version="${VRCSDK_VERSION/#latest/3.10.6}"
+          case "$sdk_version" in
+            3.*)
+              IFS=. read -r _ minor _ <<< "$sdk_version"
+              if (( minor >= 11 )); then
+                DEFINES="$DEFINES;VRC_ENABLE_SOCIAL_HOOKS"
+              fi
+              ;;
+          esac
           cat <<EOF > ProjectSettings/ProjectSettings.asset
           %YAML 1.1
           %TAG !u! tag:unity3d.com,2011:
@@ -102,9 +114,9 @@ jobs:
           PlayerSettings:
             serializedVersion: 26
             scriptingDefineSymbols:
-              Android: ${VRCSDK_VERSION:+VRC_SDK_VRCSDK3;UNITY_POST_PROCESSING_STACK_V2}
-              Standalone: ${VRCSDK_VERSION:+VRC_SDK_VRCSDK3;UNITY_POST_PROCESSING_STACK_V2}
-              iPhone: ${VRCSDK_VERSION:+VRC_SDK_VRCSDK3;UNITY_POST_PROCESSING_STACK_V2}
+              Android: $DEFINES
+              Standalone: $DEFINES
+              iPhone: $DEFINES
             apiCompatibilityLevel: 3
             activeInputHandler: 0
           EOF
