@@ -101,6 +101,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                     IsSyncedToOtherLayer: false,
                     IsSynced: false,
                     avatarMask: null,
+                    // IK Pass is per-layer setting so we cannot keep it in merged layer.
+                    iKPass: false,
                     IsOverride: true,
                     defaultWeight: 1,
                     WeightChange: AnimatorWeightChange.NotChanged or AnimatorWeightChange.AlwaysOne,

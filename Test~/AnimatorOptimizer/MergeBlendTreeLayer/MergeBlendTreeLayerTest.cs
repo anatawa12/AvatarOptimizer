@@ -83,6 +83,33 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             Assert.That(mergedTree.children.Length, Is.EqualTo(2));
         }
 
+        // IK Pass is per-layer setting and cannot be kept in merged layer so such layers must not be merged
+        [Test]
+        public void NotMergedLayerBecauseIKPass()
+        {
+            var controller = CreateThreeDirectBlendTreeLayers(out var states, timeDependentMiddleLayer: false);
+            var layers = controller.layers;
+            layers[1].iKPass = true;
+            controller.layers = layers;
+
+            var aoController = new AOAnimatorController(controller);
+            MergeBlendTreeLayer.Execute(new AnimatorOptimizerState(), aoController);
+
+            // the middle layer is kept as is
+            var middleLayer = aoController.layers[1];
+            Assert.That(middleLayer.name, Is.EqualTo("Layer 1"));
+            Assert.That(middleLayer.iKPass, Is.True);
+            Assert.That(middleLayer.stateMachine.states.Length, Is.EqualTo(1));
+            Assert.That(middleLayer.stateMachine.states[0].state, Is.SameAs(states[1]));
+
+            // other layers are merged
+            Assert.That(aoController.layers[0].stateMachine.states, Is.Empty);
+            var mergedLayer = aoController.layers[2];
+            Assert.That(mergedLayer.name, Is.EqualTo("AAO BlendTree MergedLayer"));
+            var mergedTree = (BlendTree)mergedLayer.stateMachine.states[0].state.motion;
+            Assert.That(mergedTree.children.Length, Is.EqualTo(2));
+        }
+
         [TestCase("default")]
         // speed and cycle offset do not affect time independent clips so we can merge them
         [TestCase("speed")]
