@@ -183,6 +183,90 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
             yield return new ExitPlayMode();
         }
 
+        /// <summary>
+        /// Checks cycle offset of the state works with BlendTree in the same way as with single clip
+        /// when motion time is active.
+        ///
+        /// EntryExitToBlendTree replaces states with motion time with single state with 1D BlendTree,
+        /// and copies cycle offset of the original states to the new state.
+        /// Since only one child of the BlendTree has weight, the cycle offset of the new state must work
+        /// as if the child with weight is the motion of the state, regardless of the length of other children.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator CycleOffsetWithMotionTimeAndBlendTree()
+        {
+            yield return new EnterPlayMode();
+
+            const float motionTime = 0.4f;
+            const float cycleOffset = 0.25f;
+            var failures = new List<string>();
+
+            foreach (var (name, blend, expected) in new[]
+                     {
+                         // blend = 0: 1 second clip for Target has weight, blend = 1: 4 seconds clip for Other has weight
+                         ("baseline", 0f, motionTime),
+                         ("baseline", 1f, motionTime),
+                         ("cycleOffset", 0f, motionTime + cycleOffset),
+                         ("cycleOffset", 1f, motionTime + cycleOffset),
+                         ("cycleOffsetParameter", 0f, motionTime + cycleOffset),
+                         ("cycleOffsetParameter", 1f, motionTime + cycleOffset),
+                     })
+            {
+                var blendTree = new BlendTree
+                {
+                    name = "1D",
+                    blendType = BlendTreeType.Simple1D,
+                    blendParameter = "Blend",
+                    useAutomaticThresholds = false,
+                    children = new[]
+                    {
+                        new ChildMotion { motion = LinearClip(TargetName, 1f), threshold = 0, timeScale = 1 },
+                        new ChildMotion { motion = LinearClip(OtherName, 4f), threshold = 1, timeScale = 1 },
+                    },
+                };
+
+                var controller = CreateController(blendTree, out var state,
+                    ("MotionTime", motionTime), ("Blend", blend), ("CycleOffset", cycleOffset));
+                state.timeParameterActive = true;
+                state.timeParameter = "MotionTime";
+
+                switch (name)
+                {
+                    case "baseline":
+                        break;
+                    case "cycleOffset":
+                        state.cycleOffset = cycleOffset;
+                        break;
+                    case "cycleOffsetParameter":
+                        state.cycleOffsetParameterActive = true;
+                        state.cycleOffsetParameter = "CycleOffset";
+                        break;
+                }
+
+                var (animator, target) = CreateAnimator(controller);
+                var other = animator.transform.Find(OtherName);
+
+                Step(animator, 0.5f);
+
+                var stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+                // the transform animated by the child with weight
+                var actual = blend == 0f ? target.localPosition.x : other.localPosition.x;
+
+                var message = $"{name}, blend={blend}: actual={actual}, expected={expected}, " +
+                              $"stateInfo.normalizedTime={stateInfo.normalizedTime}, stateInfo.length={stateInfo.length}";
+                Debug.Log($"CycleOffsetWithMotionTimeAndBlendTree: {message}");
+
+                if (Mathf.Abs(actual - expected) > Tolerance)
+                    failures.Add(message);
+
+                Object.Destroy(animator.gameObject);
+            }
+
+            Assert.That(failures, Is.Empty, "cycle offset with motion time and BlendTree behaves differently from expected");
+
+            yield return new ExitPlayMode();
+        }
+
         #region Utilities
 
         /// <summary>
