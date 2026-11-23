@@ -15,9 +15,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         protected override bool Enabled(TraceAndOptimizeState state) => state.MergeBlendTreeLayer;
 
         private protected override void Execute(BuildContext context, AOAnimatorController controller,
-            TraceAndOptimizeState settings) => Execute(controller);
+            TraceAndOptimizeState settings) =>
+            Execute(context.GetState<AnimatorOptimizerState>(), controller);
 
-        public static void Execute(AOAnimatorController controller, string? alwaysOneParameter = null)
+        public static void Execute(AnimatorOptimizerState state, AOAnimatorController controller,
+            string? alwaysOneParameter = null)
         {
             var directBlendTrees = new List<(int layerIndex, BlendTree tree)>();
 
@@ -29,7 +31,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             {
                 var layer = controller.layers[i];
 
-                var blendTree = GetSingleBlendTreeAsDirect(layer, alwaysOneParameter);
+                var blendTree = GetSingleBlendTreeAsDirect(layer, state, alwaysOneParameter);
 
                 if (blendTree != null)
                 {
@@ -91,7 +93,8 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             }
         }
 
-        private static BlendTree? GetSingleBlendTreeAsDirect(AOAnimatorControllerLayer layer, string alwaysOneParameter)
+        private static BlendTree? GetSingleBlendTreeAsDirect(AOAnimatorControllerLayer layer,
+            AnimatorOptimizerState optimizerState, string alwaysOneParameter)
         {
             if (layer is
                 {
@@ -115,9 +118,26 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         {
                             behaviours: { Length: 0 },
                             timeParameterActive: false,
+                            // Those settings are per-state settings so we cannot keep them in merged state.
+                            // They affect humanoid animations even if the clip is not time dependent.
+                            // https://github.com/anatawa12/AvatarOptimizer/issues/1829
+                            mirrorParameterActive: false,
+                            mirror: false,
+                            iKOnFeet: false,
                             motion: BlendTree { } blendTree,
                         })
                     {
+                        // All children of Direct BlendTree share the normalized time, and the duration of the
+                        // Direct BlendTree is the sum of 'weight * length' of each child. Therefore, merging
+                        // BlendTrees changes the playback speed of time dependent clips.
+                        // See BlendTreeTimeBehaviorChecks for the behavior.
+                        // We also cannot keep speed, cycle offset and their parameters of the state in merged state,
+                        // but they do not affect time independent clips so we don't have to check them.
+                        // https://github.com/anatawa12/AvatarOptimizer/issues/1829
+                        foreach (var clip in ACUtils.AllClips(blendTree))
+                            if (optimizerState.IsTimeDependentClip(clip))
+                                return null;
+
                         if (state.writeDefaultValues)
                         {
                             var isMergeableDirectBlendTree = blendTree.blendType == BlendTreeType.Direct;
