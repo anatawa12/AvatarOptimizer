@@ -45,6 +45,20 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 }
             }
 
+            foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(clip))
+            {
+                var keys = AnimationUtility.GetObjectReferenceCurve(clip, binding);
+
+                // one frame is time independent
+                if (keys.Length <= 1) continue;
+
+                // if the value is changed, it's time dependent
+                var first = keys[0].value;
+                for (var i = 1; i < keys.Length; i++)
+                    if (keys[i].value != first)
+                        return true;
+            }
+
             return false;
         }
     }
