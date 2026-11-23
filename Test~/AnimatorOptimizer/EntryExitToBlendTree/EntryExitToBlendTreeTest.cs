@@ -530,6 +530,270 @@ namespace Anatawa12.AvatarOptimizer.Test.AnimatorOptimizer
 
         #endregion
 
+        #region state settings
+        // https://github.com/anatawa12/AvatarOptimizer/issues/1829
+
+        // foot IK cannot be kept in the new state
+        [TestCase("iKOnFeet", false)]
+        [TestCase("iKOnFeet", true)]
+        // mirror must be same for all states
+        [TestCase("mirror", false)]
+        [TestCase("mirrorParameterActive", false)]
+        [TestCase("mirror", true)]
+        [TestCase("mirrorParameterActive", true)]
+        // cycle offset is added to motion time so it must be same for all states with motion time
+        [TestCase("cycleOffset", true)]
+        [TestCase("cycleOffsetParameterActive", true)]
+        public void NonConvertibleBecauseStateSettings(string setting, bool motionTime)
+        {
+            var controller = CreateDiamondLayerForStateSettings(setting, motionTime);
+
+            EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
+
+            Assert.AreEqual(2, controller.layers[0].stateMachine.states.Length,
+                "Should NOT convert - state count should remain the same");
+        }
+
+        [TestCase("default", false)]
+        [TestCase("default", true)]
+        // speed and cycle offset do not affect time independent clips
+        [TestCase("speed", false)]
+        [TestCase("speedParameterActive", false)]
+        [TestCase("cycleOffset", false)]
+        [TestCase("cycleOffsetParameterActive", false)]
+        // speed is ignored when motion time is active
+        [TestCase("speed", true)]
+        [TestCase("speedParameterActive", true)]
+        public void ConvertibleWithStateSettings(string setting, bool motionTime)
+        {
+            var controller = CreateDiamondLayerForStateSettings(setting, motionTime);
+
+            EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
+
+            var states = controller.layers[0].stateMachine.states;
+            Assert.AreEqual(1, states.Length, "Should have one state after conversion");
+            Assert.IsInstanceOf<BlendTree>(states[0].state.motion, "State motion should be a BlendTree");
+            Assert.AreEqual(motionTime, states[0].state.timeParameterActive);
+        }
+
+        // mirror is copied to the new state if it is same for all states
+        [TestCase(false, false)]
+        [TestCase(true, false)]
+        [TestCase(false, true)]
+        [TestCase(true, true)]
+        public void ConvertibleWithSameMirror(bool parameter, bool motionTime)
+        {
+            var controller = CreateDiamondLayerForStateSettings("default", motionTime);
+            foreach (var childState in controller.layers[0].stateMachine.states)
+            {
+                if (parameter)
+                {
+                    childState.state.mirrorParameterActive = true;
+                    childState.state.mirrorParameter = "BoolParam";
+                }
+                else
+                {
+                    childState.state.mirror = true;
+                }
+            }
+
+            EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
+
+            var states = controller.layers[0].stateMachine.states;
+            Assert.AreEqual(1, states.Length, "Should have one state after conversion");
+            var newState = states[0].state;
+            Assert.IsInstanceOf<BlendTree>(newState.motion, "State motion should be a BlendTree");
+            Assert.AreEqual(parameter, newState.mirrorParameterActive);
+            if (parameter)
+                Assert.AreEqual("BoolParam", newState.mirrorParameter);
+            else
+                Assert.IsTrue(newState.mirror);
+        }
+
+        [Test]
+        public void NonConvertibleBecauseDifferentMirrorParameter()
+        {
+            var controller = CreateDiamondLayerForStateSettings("default", motionTime: false);
+            controller.AddParameter("BoolParam2", AnimatorControllerParameterType.Bool);
+            var states = controller.layers[0].stateMachine.states;
+            states[0].state.mirrorParameterActive = true;
+            states[0].state.mirrorParameter = "BoolParam";
+            states[1].state.mirrorParameterActive = true;
+            states[1].state.mirrorParameter = "BoolParam2";
+
+            EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
+
+            Assert.AreEqual(2, controller.layers[0].stateMachine.states.Length,
+                "Should NOT convert - state count should remain the same");
+        }
+
+        // cycle offset is copied to the new state like motion time parameter if it is same for all states
+        [TestCase(false)]
+        [TestCase(true)]
+        public void ConvertibleWithSameCycleOffsetWithMotionTime(bool parameter)
+        {
+            var controller = CreateDiamondLayerForStateSettings("default", motionTime: true);
+            foreach (var childState in controller.layers[0].stateMachine.states)
+            {
+                if (parameter)
+                {
+                    childState.state.cycleOffsetParameterActive = true;
+                    childState.state.cycleOffsetParameter = "FloatParam";
+                }
+                else
+                {
+                    childState.state.cycleOffset = 0.25f;
+                }
+            }
+
+            EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
+
+            var states = controller.layers[0].stateMachine.states;
+            Assert.AreEqual(1, states.Length, "Should have one state after conversion");
+            var newState = states[0].state;
+            Assert.IsInstanceOf<BlendTree>(newState.motion, "State motion should be a BlendTree");
+            Assert.IsTrue(newState.timeParameterActive);
+            Assert.AreEqual("MotionTime", newState.timeParameter);
+            Assert.AreEqual(parameter, newState.cycleOffsetParameterActive);
+            if (parameter)
+                Assert.AreEqual("FloatParam", newState.cycleOffsetParameter);
+            else
+                Assert.AreEqual(0.25f, newState.cycleOffset);
+        }
+
+        [TestCase("constant")]
+        [TestCase("parameter")]
+        [TestCase("constantAndParameter")]
+        public void NonConvertibleBecauseDifferentCycleOffsetWithMotionTime(string kind)
+        {
+            var controller = CreateDiamondLayerForStateSettings("default", motionTime: true);
+            var states = controller.layers[0].stateMachine.states;
+            switch (kind)
+            {
+                case "constant":
+                    states[0].state.cycleOffset = 0.25f;
+                    states[1].state.cycleOffset = 0.5f;
+                    break;
+                case "parameter":
+                    states[0].state.cycleOffsetParameterActive = true;
+                    states[0].state.cycleOffsetParameter = "FloatParam";
+                    states[1].state.cycleOffsetParameterActive = true;
+                    states[1].state.cycleOffsetParameter = "MotionTime";
+                    break;
+                case "constantAndParameter":
+                    states[0].state.cycleOffset = 0.25f;
+                    states[1].state.cycleOffsetParameterActive = true;
+                    states[1].state.cycleOffsetParameter = "FloatParam";
+                    break;
+            }
+
+            EntryExitToBlendTree.Execute(_state, new AOAnimatorController(controller));
+
+            Assert.AreEqual(2, controller.layers[0].stateMachine.states.Length,
+                "Should NOT convert - state count should remain the same");
+        }
+
+        /// <summary>
+        /// Creates diamond style layer, and applies the setting to the non-default state.
+        /// With motion time, clips are time dependent. Without motion time, clips are time independent.
+        /// </summary>
+        private AnimatorController CreateDiamondLayerForStateSettings(string setting, bool motionTime)
+        {
+            var controller = new AnimatorController { name = "StateSettings" };
+            controller.AddParameter("GestureLeft", AnimatorControllerParameterType.Int);
+            controller.AddParameter("MotionTime", AnimatorControllerParameterType.Float);
+            controller.AddParameter("FloatParam", AnimatorControllerParameterType.Float);
+            controller.AddParameter("BoolParam", AnimatorControllerParameterType.Bool);
+
+            AnimationClip CreateClip(string name)
+            {
+                if (motionTime) return CreateTimeDependentClip(name);
+                var clip = new AnimationClip { name = name };
+                clip.SetCurve("Body", typeof(GameObject), "m_IsActive", AnimationCurve.Constant(0, 1, 1));
+                return clip;
+            }
+
+            var layer = new AnimatorControllerLayer
+            {
+                name = "GestureLayer",
+                defaultWeight = 1.0f,
+                stateMachine = new AnimatorStateMachine
+                {
+                    name = "GestureLayer",
+                    hideFlags = HideFlags.HideInHierarchy
+                }
+            };
+
+            var defaultState = layer.stateMachine.AddState("Idle");
+            defaultState.motion = CreateClip("Clip0");
+            defaultState.writeDefaultValues = true;
+
+            var fistState = layer.stateMachine.AddState("Fist");
+            fistState.motion = CreateClip("Clip1");
+            fistState.writeDefaultValues = true;
+
+            if (motionTime)
+            {
+                defaultState.timeParameterActive = true;
+                defaultState.timeParameter = "MotionTime";
+                fistState.timeParameterActive = true;
+                fistState.timeParameter = "MotionTime";
+            }
+
+            switch (setting)
+            {
+                case "default":
+                    break;
+                case "speed":
+                    fistState.speed = 2f;
+                    break;
+                case "speedParameterActive":
+                    fistState.speedParameterActive = true;
+                    fistState.speedParameter = "FloatParam";
+                    break;
+                case "cycleOffset":
+                    fistState.cycleOffset = 0.5f;
+                    break;
+                case "cycleOffsetParameterActive":
+                    fistState.cycleOffsetParameterActive = true;
+                    fistState.cycleOffsetParameter = "FloatParam";
+                    break;
+                case "mirror":
+                    fistState.mirror = true;
+                    break;
+                case "mirrorParameterActive":
+                    fistState.mirrorParameterActive = true;
+                    fistState.mirrorParameter = "BoolParam";
+                    break;
+                case "iKOnFeet":
+                    fistState.iKOnFeet = true;
+                    break;
+                default:
+                    Assert.Fail($"unknown setting: {setting}");
+                    break;
+            }
+
+            layer.stateMachine.defaultState = defaultState;
+
+            // Entry transitions
+            layer.stateMachine.AddEntryTransition(fistState)
+                .AddCondition(AnimatorConditionMode.Equals, 1, "GestureLeft");
+
+            // Exit transitions
+            var exitTransition = defaultState.AddExitTransition(defaultExitTime: false);
+            exitTransition.duration = 0.0f;
+            exitTransition.AddCondition(AnimatorConditionMode.Equals, 1, "GestureLeft");
+
+            exitTransition = fistState.AddExitTransition(defaultExitTime: false);
+            exitTransition.duration = 0.0f;
+            exitTransition.AddCondition(AnimatorConditionMode.NotEqual, 1, "GestureLeft");
+
+            controller.AddLayer(layer);
+            return controller;
+        }
+
+        #endregion
+
         // https://github.com/anatawa12/AvatarOptimizer/issues/1697
         // Default value for animator must be preserved (converted) when converting non-float parameters to float
         // for entry/exit to blend tree, otherwise it can cause issues with animator parameters without 

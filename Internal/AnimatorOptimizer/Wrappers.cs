@@ -130,6 +130,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         }
 
         public AvatarMask? avatarMask => Layer.avatarMask;
+        public bool iKPass => Layer.iKPass;
         // ReSharper restore InconsistentNaming
 
         private bool _removable = true;

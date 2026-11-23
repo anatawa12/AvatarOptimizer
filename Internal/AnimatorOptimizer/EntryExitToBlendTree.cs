@@ -69,7 +69,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 convertInfos[i] = info;
                 if (info != null)
                 {
-                    Debug.Log($"EntryExitToBlendTree: converting layer#{i} ({layers[i].name}) in controller {controller} by parameter {info.ParameterName}: default state={info.DefaultState.name}, states=[{string.Join(", ", info.RangeForStates.Select(p => $"{p.Key.name}: {p.Value}"))}], timeMotionParameter={info.TimeMotionParameter}");
+                    Debug.Log($"EntryExitToBlendTree: converting layer#{i} ({layers[i].name}) in controller {controller} by parameter {info.ParameterName}: default state={info.DefaultState.name}, states=[{string.Join(", ", info.RangeForStates.Select(p => $"{p.Key.name}: {p.Value}"))}], timeMotionParameter={info.MotionTime?.TimeParameter}, cycleOffset={info.MotionTime?.CycleOffsetDescription}");
                     foreach (var parameter in info.Parameters)
                     {
                         if (!layerByParameter.TryGetValue(parameter, out var list))
@@ -218,7 +218,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
         private static ConvertibleLayerInfo? TryParseDiamondLayer(AOAnimatorControllerLayer layer,
             AnimatorOptimizerState optimizerState, Dictionary<string, AnimatorControllerParameterType> parameterType)
         {
-            if (!CheckForBasicStateCondition(layer, optimizerState, out var timeMotionParameter)) return null;
+            if (!CheckForBasicStateCondition(layer, optimizerState, out var motionTime)) return null;
 
             if (layer is not
                 {
@@ -257,11 +257,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             switch (paramType)
             {
                 case AnimatorControllerParameterType.Float:
-                    return ProcessLayerByType<FloatRangeSet, FloatSetTrait>(conditionParameter, timeMotionParameter, defaultState, states, entryTransitions);
+                    return ProcessLayerByType<FloatRangeSet, FloatSetTrait>(conditionParameter, motionTime, defaultState, states, entryTransitions);
                 case AnimatorControllerParameterType.Int:
-                    return ProcessLayerByType<IntRangeSet, IntSetTrait>(conditionParameter, timeMotionParameter, defaultState, states, entryTransitions);
+                    return ProcessLayerByType<IntRangeSet, IntSetTrait>(conditionParameter, motionTime, defaultState, states, entryTransitions);
                 case AnimatorControllerParameterType.Bool: 
-                    return ProcessLayerByType<BoolSet, BoolSetTrait>(conditionParameter, timeMotionParameter, defaultState, states, entryTransitions);
+                    return ProcessLayerByType<BoolSet, BoolSetTrait>(conditionParameter, motionTime, defaultState, states, entryTransitions);
                 default: return null;
             }
             
@@ -269,7 +269,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
         static ConvertibleLayerInfo? ProcessLayerByType<TRangeSet, TTrait>(
             string conditionParameter,
-            string? timeMotionParameter,
+            MotionTimeSettings? motionTime,
             AnimatorState defaultState,
             ChildAnimatorState[] states,
             AnimatorTransition[] entryTransitions)
@@ -358,7 +358,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
                     return new ConvertibleLayerInfo(conditionParameter, defaultState,
                         stateRanges.ToDictionary(p => p.Key, p => default(TTrait).ConvertToFloatRangeSet(p.Value)),
-                        timeMotionParameter);
+                        motionTime);
                 }
             }
         }
@@ -377,7 +377,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             AnimatorOptimizerState optimizerState,
             Dictionary<string, AnimatorControllerParameterType> parameterType)
         {
-            if (!CheckForBasicStateCondition(layer, optimizerState, out var timeMotionParameter)) return null;
+            if (!CheckForBasicStateCondition(layer, optimizerState, out var motionTime)) return null;
 
             if (layer is not
                 {
@@ -419,11 +419,11 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             switch (paramType)
             {
                 case AnimatorControllerParameterType.Float:
-                    return TryParseLinearLayerByType<FloatRangeSet, FloatSetTrait>(conditionParameter, timeMotionParameter, defaultState, anotherState);
+                    return TryParseLinearLayerByType<FloatRangeSet, FloatSetTrait>(conditionParameter, motionTime, defaultState, anotherState);
                 case AnimatorControllerParameterType.Int:
-                    return TryParseLinearLayerByType<IntRangeSet, IntSetTrait>(conditionParameter, timeMotionParameter, defaultState, anotherState);
+                    return TryParseLinearLayerByType<IntRangeSet, IntSetTrait>(conditionParameter, motionTime, defaultState, anotherState);
                 case AnimatorControllerParameterType.Bool:
-                    return TryParseLinearLayerByType<BoolSet, BoolSetTrait>(conditionParameter, timeMotionParameter, defaultState, anotherState);
+                    return TryParseLinearLayerByType<BoolSet, BoolSetTrait>(conditionParameter, motionTime, defaultState, anotherState);
                 default:
                     return null;
             }
@@ -431,7 +431,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
 
         private static ConvertibleLayerInfo? TryParseLinearLayerByType<TRangeSet, TTrait>(
             string conditionParameter,
-            string? timeMotionParameter,
+            MotionTimeSettings? motionTime,
             AnimatorState defaultState,
             AnimatorState anotherState)
             where TRangeSet : struct, IRangeSet<TRangeSet>
@@ -487,12 +487,12 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 if (!exitingValues.Equals(expectedToExitRange)) return null;
             }
 
-            return new ConvertibleLayerInfo(conditionParameter, defaultState, new Dictionary<AnimatorState, FloatRangeSet> {{anotherState, default(TTrait).ConvertToFloatRangeSet(anotherStateValues)}}, timeMotionParameter);
+            return new ConvertibleLayerInfo(conditionParameter, defaultState, new Dictionary<AnimatorState, FloatRangeSet> {{anotherState, default(TTrait).ConvertToFloatRangeSet(anotherStateValues)}}, motionTime);
         }
 
-        private static bool CheckForBasicStateCondition(AOAnimatorControllerLayer layer, AnimatorOptimizerState optimizerState, out string? timeMotionParameter)
+        private static bool CheckForBasicStateCondition(AOAnimatorControllerLayer layer, AnimatorOptimizerState optimizerState, out MotionTimeSettings? motionTime)
         {
-            timeMotionParameter = null;
+            motionTime = null;
             if (layer is not
                 {
                     IsSynced: false,
@@ -564,21 +564,35 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                         state:
                         {
                             behaviours: { Length: 0 },
+                            // This is per-state setting so we cannot keep it in the new state.
+                            // This affects humanoid animations even if the clip is not time dependent.
+                            iKOnFeet: false,
                             motion: var motion,
                         },
                     }) return false;
 
+                // Mirror affects humanoid animations even if the clip is not time dependent.
+                // We copy mirror settings of the default state to the new state so it must be same for all states.
+                if (!IsSameMirrorSettings(states[0].state, childStateInfo.state)) return false;
+
+                // We don't check speed (and speed parameter) of the state in the new state.
+                // It does not affect time independent clips, and it is ignored if motion time is active.
+                // Cycle offset does not affect time independent clips neither, but it is added to the motion time
+                // so we have to keep it if motion time is active.
+                // See BlendTreeTimeBehaviorChecks for the behavior.
+
                 if (childStateInfo.state.timeParameterActive)
                 {
                     // we allow any motion including time dependency motion if timeParameter is assigned
-                    // however, all timeParameter must be same
-                    if (timeMotionParameter == null)
+                    // however, all timeParameter and cycle offset must be same
+                    var stateMotionTime = new MotionTimeSettings(childStateInfo.state);
+                    if (motionTime == null)
                     {
-                        timeMotionParameter = childStateInfo.state.timeParameter ?? "";
+                        motionTime = stateMotionTime;
                     }
                     else
                     {
-                        if (timeMotionParameter != childStateInfo.state.timeParameter) return false;
+                        if (!motionTime.Equals(stateMotionTime)) return false;
                     }
                 }
                 else
@@ -593,25 +607,74 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
             return true;
         }
 
+        private static bool IsSameMirrorSettings(AnimatorState a, AnimatorState b)
+        {
+            if (a.mirrorParameterActive != b.mirrorParameterActive) return false;
+            // constant mirror is ignored if mirror parameter is active
+            return a.mirrorParameterActive
+                ? (a.mirrorParameter ?? "") == (b.mirrorParameter ?? "")
+                : a.mirror == b.mirror;
+        }
+
         private sealed class ConvertibleLayerInfo
         {
             public readonly string ParameterName;
             public readonly AnimatorState DefaultState;
             public readonly Dictionary<AnimatorState, FloatRangeSet> RangeForStates;
-            public readonly string? TimeMotionParameter;
+            public readonly MotionTimeSettings? MotionTime;
 
             public ConvertibleLayerInfo(string parameterName, AnimatorState defaultState,
                 Dictionary<AnimatorState, FloatRangeSet> rangeForStates,
-                string? timeMotionParameter)
+                MotionTimeSettings? motionTime)
             {
                 ParameterName = parameterName;
                 DefaultState = defaultState;
                 RangeForStates = rangeForStates; 
-                TimeMotionParameter = timeMotionParameter;
+                MotionTime = motionTime;
             }
 
 
             public IEnumerable<string> Parameters => new[] { ParameterName };
+        }
+
+        /// <summary>
+        /// The settings of the state with motion time.
+        /// Those settings must be same for all states with motion time, and will be copied to the new state.
+        /// </summary>
+        private sealed class MotionTimeSettings : IEquatable<MotionTimeSettings>
+        {
+            public readonly string TimeParameter;
+            // null if cycle offset parameter is not active
+            public readonly string? CycleOffsetParameter;
+            // constant cycle offset. this is ignored if cycle offset parameter is active so it's 0 in that case
+            public readonly float CycleOffset;
+
+            public MotionTimeSettings(AnimatorState state)
+            {
+                TimeParameter = state.timeParameter ?? "";
+                if (state.cycleOffsetParameterActive)
+                {
+                    CycleOffsetParameter = state.cycleOffsetParameter ?? "";
+                    CycleOffset = 0;
+                }
+                else
+                {
+                    CycleOffsetParameter = null;
+                    CycleOffset = state.cycleOffset;
+                }
+            }
+
+            public string CycleOffsetDescription =>
+                CycleOffsetParameter != null ? $"parameter {CycleOffsetParameter}" : $"{CycleOffset}";
+
+            public bool Equals(MotionTimeSettings? other) =>
+                other != null
+                && TimeParameter == other.TimeParameter
+                && CycleOffsetParameter == other.CycleOffsetParameter
+                && CycleOffset.Equals(other.CycleOffset);
+
+            public override bool Equals(object? obj) => obj is MotionTimeSettings other && Equals(other);
+            public override int GetHashCode() => HashCode.Combine(TimeParameter, CycleOffsetParameter, CycleOffset);
         }
 
         private static HashSet<EditorCurveBinding>? CollectAnimatingProperties(Motion? motion)
@@ -684,9 +747,33 @@ namespace Anatawa12.AvatarOptimizer.Processors.AnimatorOptimizer
                 // since it's 1d BlendTree, it's always be normalized wo WD off will not cause weird behavior.
                 // changing to WD on will cause problem with WD off-based animators
                 writeDefaultValues = info.DefaultState.writeDefaultValues,
-                timeParameterActive = info.TimeMotionParameter != null,
-                timeParameter = info.TimeMotionParameter,
             };
+
+            // mirror settings are same for all states so we can use one of default state
+            if (info.DefaultState.mirrorParameterActive)
+            {
+                newState.mirrorParameterActive = true;
+                newState.mirrorParameter = info.DefaultState.mirrorParameter;
+            }
+            else
+            {
+                newState.mirror = info.DefaultState.mirror;
+            }
+
+            if (info.MotionTime is { } motionTime)
+            {
+                newState.timeParameterActive = true;
+                newState.timeParameter = motionTime.TimeParameter;
+                if (motionTime.CycleOffsetParameter != null)
+                {
+                    newState.cycleOffsetParameterActive = true;
+                    newState.cycleOffsetParameter = motionTime.CycleOffsetParameter;
+                }
+                else
+                {
+                    newState.cycleOffset = motionTime.CycleOffset;
+                }
+            }
 
             layer.stateMachine!.states = new[]
             {
