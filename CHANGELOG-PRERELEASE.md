@@ -16,7 +16,12 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Several behavior changes caused by BlendTree related animator optimizations `#1830`
+
+### Security
+
+## [1.9.24-beta.1] - 2026-11-23
+### Fixed
+- Several behavior changes caused by BlendTree related animator optimizations [`#1830`](https://github.com/anatawa12/AvatarOptimizer/pull/1830)
   - Merge BlendTree Layer changed playback speed of time dependent animations.
     - Layers with time dependent animations are no longer merged.
     - This also fixes Speed, Cycle Offset and their parameters of the state being ignored.
@@ -25,8 +30,6 @@ The format is based on [Keep a Changelog].
   - Entry-Exit to BlendTree lost Mirror, Foot IK and Cycle Offset settings of states.
     - Mirror and Cycle Offset are now kept if they are the same for all states. Layers with Foot IK are no longer converted.
   - Entry-Exit to BlendTree converted layers with animations that swap objects like materials over time.
-
-### Security
 
 ## [1.9.23] - 2026-11-17
 ## [1.9.23-rc.1] - 2026-11-16
@@ -2429,7 +2432,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.23...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.24-beta.1...HEAD
+[1.9.24-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.23...v1.9.24-beta.1
 [1.9.23]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.23-rc.1...v1.9.23
 [1.9.23-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.22...v1.9.23-rc.1
 [1.9.22]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.22-rc.2...v1.9.22
