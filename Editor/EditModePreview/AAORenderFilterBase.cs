@@ -38,10 +38,12 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 }
 
                 Renderer renderer;
-                if (component.TryGetComponent<SkinnedMeshRenderer>(out var skinned) && skinned.sharedMesh != null)
+                // We don't check sharedMesh here since it is not observed for target groups.
+                // Mesh changes are handled by Refresh with RenderAspects.Mesh, and null mesh is handled in Process.
+                if (component.TryGetComponent<SkinnedMeshRenderer>(out var skinned))
                     renderer = skinned;
                 else if (component.TryGetComponent<MeshRenderer>(out var basic) &&
-                         component.TryGetComponent<MeshFilter>(out var meshFilter) && meshFilter.sharedMesh != null)
+                         component.TryGetComponent<MeshFilter>(out _))
                     renderer = basic;
                 else
                     continue;
@@ -128,12 +130,14 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             try
             {
                 {
-                    if (proxy is SkinnedMeshRenderer skinned)
+                    // the renderer may have no mesh. we don't exclude such renderers in GetTargetGroups
+                    if (proxy is SkinnedMeshRenderer skinned && skinned.sharedMesh != null)
                     {
                         duplicated = Object.Instantiate(skinned.sharedMesh);
                         duplicated.name = skinned.sharedMesh.name + " (AAO Generated)";
                     }
-                    else if (proxy is MeshRenderer && proxy.TryGetComponent<MeshFilter>(out var meshFilter))
+                    else if (proxy is MeshRenderer && proxy.TryGetComponent<MeshFilter>(out var meshFilter) &&
+                             meshFilter.sharedMesh != null)
                     {
                         duplicated = Object.Instantiate(meshFilter.sharedMesh);
                         duplicated.name = meshFilter.sharedMesh.name + " (AAO Generated)";

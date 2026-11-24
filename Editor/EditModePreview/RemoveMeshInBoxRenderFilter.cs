@@ -86,6 +86,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             if (renderer is SkinnedMeshRenderer skinned)
             {
                 mesh = skinned.sharedMesh;
+                if (mesh == null) return false;
                 UnityEngine.Profiling.Profiler.BeginSample("BakeMesh");
                 bakedMesh = new Mesh();
                 skinned.BakeMesh(bakedMesh);
@@ -97,6 +98,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             {
                 if (!meshRenderer.TryGetComponent<MeshFilter>(out var meshFilter)) return false;
                 mesh = meshFilter.sharedMesh;
+                if (mesh == null) return false;
                 bakedMesh = mesh; // static mesh, no need to bake
                 // vertices of static mesh are in local space, including scale
                 bakedMeshToWorld = renderer.transform.localToWorldMatrix;
