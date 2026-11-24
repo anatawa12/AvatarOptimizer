@@ -82,6 +82,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             data = null;
             Mesh mesh;
             Mesh bakedMesh;
+            Matrix4x4 bakedMeshToWorld;
             if (renderer is SkinnedMeshRenderer skinned)
             {
                 mesh = skinned.sharedMesh;
@@ -89,19 +90,21 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 bakedMesh = new Mesh();
                 skinned.BakeMesh(bakedMesh);
                 UnityEngine.Profiling.Profiler.EndSample();
+                // BakeMesh does not apply the scale of the renderer
+                bakedMeshToWorld = Matrix4x4.TRS(renderer.transform.position, renderer.transform.rotation, Vector3.one);
             }
             else if (renderer is MeshRenderer meshRenderer)
             {
                 if (!meshRenderer.TryGetComponent<MeshFilter>(out var meshFilter)) return false;
                 mesh = meshFilter.sharedMesh;
                 bakedMesh = mesh; // static mesh, no need to bake
+                // vertices of static mesh are in local space, including scale
+                bakedMeshToWorld = renderer.transform.localToWorldMatrix;
             }
             else
             {
                 return false;
             }
-
-            var localToWorldMatrix = Matrix4x4.TRS(renderer.transform.position, renderer.transform.rotation, Vector3.one);
 
             var vertexCount = mesh.vertexCount;
             var result = new BoxRemovalData(components.Length, vertexCount);
@@ -126,7 +129,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                             boxes = boxes,
                             vertexPosition = realPosition,
                             inBox = result.InBox.GetSubArray(componentIndex * vertexCount, vertexCount),
-                            meshToBoxTransform = componentWorldToLocalMatrix * localToWorldMatrix,
+                            meshToBoxTransform = componentWorldToLocalMatrix * bakedMeshToWorld,
                         }.Schedule(vertexCount, 32).Complete();
                     }
                 }
