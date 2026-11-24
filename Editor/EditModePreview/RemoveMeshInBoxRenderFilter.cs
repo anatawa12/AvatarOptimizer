@@ -113,9 +113,6 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             if (!ComputeShouldRemoveVertex(proxy, components, context, out var vertexIsInBox)) return new ValueTask<bool>(false);
             using var _ = vertexIsInBox;
 
-            var uv = duplicated.uv;
-            using var uvJob = new NativeArray<Vector2>(uv, Allocator.TempJob);
-
             for (var subMeshI = 0; subMeshI < duplicated.subMeshCount; subMeshI++)
             {
                 var subMesh = duplicated.GetSubMesh(subMeshI);
