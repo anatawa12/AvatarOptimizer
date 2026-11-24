@@ -124,7 +124,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             ComputeContext context)
         {
             _context.Invalidates(context);
-            UnityEngine.Profiling.Profiler.BeginSample($"RemoveMeshByBlendShapeRendererNode.Process({original.name})");
+            UnityEngine.Profiling.Profiler.BeginSample($"{GetType().Name}.Process({original.name})");
 
             Mesh? duplicated = null;
             try
