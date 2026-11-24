@@ -70,7 +70,8 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                     (a, b) => a.SetEquals(b));
                 foreach (var shape in shapeKeys)
                 {
-                    var shapeIndex = shapeIndexCache[shape];
+                    // the shape key may not exist in the mesh. skip it as RemoveMeshByBlendShapeProcessor does
+                    if (!shapeIndexCache.TryGetValue(shape, out var shapeIndex)) continue;
 
                     var frameCount = mesh.GetBlendShapeFrameCount(shapeIndex);
                     for (var frameIndex = 0; frameIndex < frameCount; frameIndex++)
