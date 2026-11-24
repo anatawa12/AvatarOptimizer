@@ -35,7 +35,10 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             var component = components[0];
 
             var uv = duplicated.uv;
-            using var uvJob = new NativeArray<Vector2>(uv, Allocator.TempJob);
+            // if the mesh has no UV0, uv is empty. RemoveMeshByMaskProcessor treats UV as (0, 0) in that case
+            using var uvJob = uv.Length == duplicated.vertexCount
+                ? new NativeArray<Vector2>(uv, Allocator.TempJob)
+                : new NativeArray<Vector2>(duplicated.vertexCount, Allocator.TempJob);
 
             var materialSettings = context.Observe(component, c => c.materials.ToArray(), 
                 (a, b) => a.SequenceEqual(b, RemoveMeshByMask.MaterialSlotComparer.Instance));
