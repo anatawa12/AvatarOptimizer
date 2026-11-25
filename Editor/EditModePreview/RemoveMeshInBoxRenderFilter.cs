@@ -24,72 +24,125 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
     {
         protected override RenderAspects ReadAspects => RenderAspects.Mesh | RenderAspects.Shapes;
 
-        public static bool ComputeShouldRemoveVertex(
+        /// <summary>
+        /// Per-component in-box state of each vertex.
+        /// A primitive is removed if, for any component, whether all vertices of the primitive are in the boxes of the
+        /// component equals removeInBox of the component. This matches RemoveMeshInBoxProcessor.
+        /// </summary>
+        public sealed class BoxRemovalData : System.IDisposable
+        {
+            // inBox[componentIndex * VertexCount + vertexIndex]
+            public NativeArray<bool> InBox;
+            public NativeArray<bool> RemoveInBox;
+            public readonly int VertexCount;
+            public int ComponentCount => RemoveInBox.Length;
+
+            public BoxRemovalData(int componentCount, int vertexCount)
+            {
+                VertexCount = vertexCount;
+                InBox = new NativeArray<bool>(componentCount * vertexCount, Allocator.TempJob);
+                RemoveInBox = new NativeArray<bool>(componentCount, Allocator.TempJob);
+            }
+
+            public bool ShouldRemovePrimitive(System.Span<int> vertexIndices)
+            {
+                for (var componentIndex = 0; componentIndex < ComponentCount; componentIndex++)
+                {
+                    var baseIndex = componentIndex * VertexCount;
+                    var allInBox = true;
+                    foreach (var vertexIndex in vertexIndices)
+                    {
+                        if (!InBox[baseIndex + vertexIndex])
+                        {
+                            allInBox = false;
+                            break;
+                        }
+                    }
+
+                    if (allInBox == RemoveInBox[componentIndex]) return true;
+                }
+
+                return false;
+            }
+
+            public void Dispose()
+            {
+                if (InBox.IsCreated) InBox.Dispose();
+                if (RemoveInBox.IsCreated) RemoveInBox.Dispose();
+            }
+        }
+
+        public static bool ComputeInBox(
             Renderer renderer,
             RemoveMeshInBox[] components,
             ComputeContext context,
-            out NativeArray<bool> removeVertex
+            out BoxRemovalData? data
         )
         {
+            data = null;
             Mesh mesh;
             Mesh bakedMesh;
+            Matrix4x4 bakedMeshToWorld;
             if (renderer is SkinnedMeshRenderer skinned)
             {
                 mesh = skinned.sharedMesh;
+                if (mesh == null) return false;
                 UnityEngine.Profiling.Profiler.BeginSample("BakeMesh");
                 bakedMesh = new Mesh();
                 skinned.BakeMesh(bakedMesh);
                 UnityEngine.Profiling.Profiler.EndSample();
+                // BakeMesh does not apply the scale of the renderer
+                bakedMeshToWorld = Matrix4x4.TRS(renderer.transform.position, renderer.transform.rotation, Vector3.one);
             }
             else if (renderer is MeshRenderer meshRenderer)
             {
-                if (!meshRenderer.TryGetComponent<MeshFilter>(out var meshFilter))
-                {
-                    removeVertex = default;
-                    return false;
-                }
-
+                if (!meshRenderer.TryGetComponent<MeshFilter>(out var meshFilter)) return false;
                 mesh = meshFilter.sharedMesh;
+                if (mesh == null) return false;
                 bakedMesh = mesh; // static mesh, no need to bake
+                // vertices of static mesh are in local space, including scale
+                bakedMeshToWorld = renderer.transform.localToWorldMatrix;
             }
             else
             {
-                removeVertex = default;
                 return false;
             }
 
-            var localToWorldMatrix = Matrix4x4.TRS(renderer.transform.position, renderer.transform.rotation, Vector3.one);
-
-
-            removeVertex = new NativeArray<bool>(mesh.vertexCount, Allocator.TempJob);
+            var vertexCount = mesh.vertexCount;
+            var result = new BoxRemovalData(components.Length, vertexCount);
 
             try
             {
                 using var realPosition = new NativeArray<Vector3>(bakedMesh.vertices, Allocator.TempJob);
 
                 UnityEngine.Profiling.Profiler.BeginSample("CollectVertexData");
-                foreach (var component in components)
+                try
                 {
-                    var boxesArray = context.Observe(component, c => c.boxes.ToArray(), Enumerable.SequenceEqual);
-                    var componentWorldToLocalMatrix = context.Observe(component.transform, c => c.worldToLocalMatrix);
-                    var removeInBox = context.Observe(component, c => c.removeInBox);
-                    using var boxes = new NativeArray<RemoveMeshInBox.BoundingBox>(boxesArray, Allocator.TempJob);
-
-                    new CheckRemoveVertexJob
+                    for (var componentIndex = 0; componentIndex < components.Length; componentIndex++)
                     {
-                        removeInBox = removeInBox,
-                        boxes = boxes,
-                        vertexPosition = realPosition,
-                        removeVertex = removeVertex,
-                        meshToBoxTransform = componentWorldToLocalMatrix * localToWorldMatrix,
-                    }.Schedule(mesh.vertexCount, 32).Complete();
-                }
+                        var component = components[componentIndex];
+                        var boxesArray = context.Observe(component, c => c.boxes.ToArray(), Enumerable.SequenceEqual);
+                        var componentWorldToLocalMatrix = context.Observe(component.transform, c => c.worldToLocalMatrix);
+                        result.RemoveInBox[componentIndex] = context.Observe(component, c => c.removeInBox);
+                        using var boxes = new NativeArray<RemoveMeshInBox.BoundingBox>(boxesArray, Allocator.TempJob);
 
-                UnityEngine.Profiling.Profiler.EndSample();
+                        new CheckInBoxJob
+                        {
+                            boxes = boxes,
+                            vertexPosition = realPosition,
+                            inBox = result.InBox.GetSubArray(componentIndex * vertexCount, vertexCount),
+                            meshToBoxTransform = componentWorldToLocalMatrix * bakedMeshToWorld,
+                        }.Schedule(vertexCount, 32).Complete();
+                    }
+                }
+                finally
+                {
+                    UnityEngine.Profiling.Profiler.EndSample();
+                }
             }
             catch
             {
-                removeVertex.Dispose();
+                result.Dispose();
                 throw;
             }
             finally
@@ -100,6 +153,7 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 }
             }
 
+            data = result;
             return true;
         }
 
@@ -110,11 +164,8 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
             // Observe transform since the BakeMesh depends on the transform
             context.Observe(proxy.transform, t => t.localToWorldMatrix);
 
-            if (!ComputeShouldRemoveVertex(proxy, components, context, out var vertexIsInBox)) return new ValueTask<bool>(false);
-            using var _ = vertexIsInBox;
-
-            var uv = duplicated.uv;
-            using var uvJob = new NativeArray<Vector2>(uv, Allocator.TempJob);
+            if (!ComputeInBox(proxy, components, context, out var boxData) || boxData == null) return new ValueTask<bool>(false);
+            using var _ = boxData;
 
             for (var subMeshI = 0; subMeshI < duplicated.subMeshCount; subMeshI++)
             {
@@ -150,7 +201,9 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 {
                     vertexPerPrimitive = vertexPerPrimitive,
                     triangles = trianglesJob,
-                    vertexIsInBox = vertexIsInBox,
+                    inBox = boxData.InBox,
+                    removeInBox = boxData.RemoveInBox,
+                    vertexCount = boxData.VertexCount,
                     shouldRemove = shouldRemove,
                 };
                 job.Schedule(primitiveCount, 32).Complete();
@@ -172,33 +225,31 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         }
 
         [BurstCompile]
-        struct CheckRemoveVertexJob : IJobParallelFor
+        struct CheckInBoxJob : IJobParallelFor
         {
             // ReSharper disable InconsistentNaming
-            public bool removeInBox;
             [ReadOnly] public NativeArray<RemoveMeshInBox.BoundingBox> boxes;
             [ReadOnly] public NativeArray<Vector3> vertexPosition;
-            public NativeArray<bool> removeVertex;
+            [WriteOnly] public NativeArray<bool> inBox;
 
             public Matrix4x4 meshToBoxTransform;
             // ReSharper restore InconsistentNaming
 
             public void Execute(int vertexIndex)
             {
-                var inBox = false;
+                var result = false;
 
                 var position = meshToBoxTransform.MultiplyPoint3x4(vertexPosition[vertexIndex]);
                 foreach (var box in boxes)
                 {
                     if (box.ContainsVertex(position))
                     {
-                        inBox = true;
+                        result = true;
                         break;
                     }
                 }
 
-                if (removeInBox == inBox)
-                    removeVertex[vertexIndex] = true;
+                inBox[vertexIndex] = result;
             }
         }
 
@@ -207,8 +258,11 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
         {
             // ReSharper disable InconsistentNaming
             public int vertexPerPrimitive;
+            public int vertexCount;
             [ReadOnly] public NativeArray<int> triangles;
-            [ReadOnly] public NativeArray<bool> vertexIsInBox;
+            // inBox[componentIndex * vertexCount + vertexIndex]
+            [ReadOnly] public NativeArray<bool> inBox;
+            [ReadOnly] public NativeArray<bool> removeInBox;
             [WriteOnly] public NativeArray<bool> shouldRemove;
             // ReSharper restore InconsistentNaming
 
@@ -217,12 +271,25 @@ namespace Anatawa12.AvatarOptimizer.EditModePreview
                 var baseIndex = primitiveIndex * vertexPerPrimitive;
                 var indices = triangles.Slice(baseIndex, vertexPerPrimitive);
 
-                var result = true;
-                foreach (var index in indices)
+                // same as RemoveMeshInBoxProcessor: each component removes primitives
+                // if all vertices are in box == removeInBox
+                var result = false;
+                for (var componentIndex = 0; componentIndex < removeInBox.Length; componentIndex++)
                 {
-                    if (!vertexIsInBox[index])
+                    var componentBase = componentIndex * vertexCount;
+                    var allInBox = true;
+                    foreach (var index in indices)
                     {
-                        result = false;
+                        if (!inBox[componentBase + index])
+                        {
+                            allInBox = false;
+                            break;
+                        }
+                    }
+
+                    if (allInBox == removeInBox[componentIndex])
+                    {
+                        result = true;
                         break;
                     }
                 }

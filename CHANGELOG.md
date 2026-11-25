@@ -16,15 +16,10 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Several behavior changes caused by BlendTree related animator optimizations `#1830`
-  - Merge BlendTree Layer changed playback speed of time dependent animations.
-    - Layers with time dependent animations are no longer merged.
-    - This also fixes Speed, Cycle Offset and their parameters of the state being ignored.
-  - Merge BlendTree Layer lost Mirror, Foot IK and IK Pass settings.
-    - Layers with those settings are no longer merged.
-  - Entry-Exit to BlendTree lost Mirror, Foot IK and Cycle Offset settings of states.
-    - Mirror and Cycle Offset are now kept if they are the same for all states. Layers with Foot IK are no longer converted.
-  - Entry-Exit to BlendTree converted layers with animations that swap objects like materials over time.
+- Small fixes for Preview system and removal provider API `#1831`
+  - Small memory leaks
+  - Inaccurate preview and API result for Remove Mesh By Box
+  - Mesh removal preview fails with an exception in rare cases
 
 ### Security
 

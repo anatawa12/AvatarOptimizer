@@ -16,6 +16,10 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
+- Small fixes for preview system and removal provider API `#1831`
+  - Small memory leaks
+  - Inaccurate preview and API result for Remove Mesh By Box
+  - Mesh removal preview fails with an exception in rare cases
 
 ### Security
 

@@ -33,7 +33,7 @@ internal class MeshRemovalProviderImpl : MeshRemovalProvider
     }
 
     private NativeArray<bool> _removedByBlendShape;
-    private NativeArray<bool> _removedByBox;
+    private EditModePreview.RemoveMeshInBoxRendererNode.BoxRemovalData? _removedByBox;
     private readonly Vector2[]? _uv;
     private readonly MaterialSlotInformation[]? _removedByMask;
 
@@ -64,7 +64,7 @@ internal class MeshRemovalProviderImpl : MeshRemovalProvider
 
         if (removeMeshInBox.Length != 0)
         {
-            EditModePreview.RemoveMeshInBoxRendererNode.ComputeShouldRemoveVertex(renderer, removeMeshInBox, ComputeContext.NullContext, out _removedByBox);
+            EditModePreview.RemoveMeshInBoxRendererNode.ComputeInBox(renderer, removeMeshInBox, ComputeContext.NullContext, out _removedByBox);
         }
 
         if (removeMeshByMask != null)
@@ -160,20 +160,8 @@ internal class MeshRemovalProviderImpl : MeshRemovalProvider
                     return true;
         }
 
-        if (_removedByBox.Length > 0)
-        {
-            var removePrimitive = true;
-            foreach (var vertexIndex in vertexIndices)
-            {
-                if (!_removedByBox[vertexIndex])
-                {
-                    removePrimitive = false;
-                    break;
-                }
-            }
-
-            if (removePrimitive) return true;
-        }
+        if (_removedByBox != null && _removedByBox.ShouldRemovePrimitive(vertexIndices))
+            return true;
 
         if (_uv != null && _removedByMask != null)
         {
@@ -206,6 +194,7 @@ internal class MeshRemovalProviderImpl : MeshRemovalProvider
     public override void Dispose()
     {
         if (_removedByBlendShape != default) _removedByBlendShape.Dispose();
-        if (_removedByBox != default) _removedByBox.Dispose();
+        _removedByBox?.Dispose();
+        _removedByBox = null;
     }
 }
