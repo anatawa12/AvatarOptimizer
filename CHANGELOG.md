@@ -16,12 +16,15 @@ The format is based on [Keep a Changelog].
 ### Removed
 
 ### Fixed
-- Small fixes for Preview system and removal provider API `#1831`
+
+### Security
+
+## [1.9.24] - 2026-11-27
+### Fixed
+- Small fixes for Preview system and removal provider API [`#1831`](https://github.com/anatawa12/AvatarOptimizer/pull/1831)
   - Small memory leaks
   - Inaccurate preview and API result for Remove Mesh By Box
   - Mesh removal preview fails with an exception in rare cases
-
-### Security
 
 ## [1.9.23] - 2026-11-17
 ### Added
@@ -1577,7 +1580,8 @@ The format is based on [Keep a Changelog].
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.23...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.24...HEAD
+[1.9.24]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.23...v1.9.24
 [1.9.23]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.22...v1.9.23
 [1.9.22]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.21...v1.9.22
 [1.9.21]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.20...v1.9.21

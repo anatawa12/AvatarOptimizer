@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog].
 
 ### Security
 
+## [1.9.24] - 2026-11-27
 ## [1.9.24-rc.1] - 2026-11-25
 ### Fixed
 - Small fixes for preview system and removal provider API [`#1831`](https://github.com/anatawa12/AvatarOptimizer/pull/1831)
@@ -2439,7 +2440,8 @@ This release is mistake.
 - Merge Bone
 - Clear Endpoint Position
 
-[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.24-rc.1...HEAD
+[Unreleased]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.24...HEAD
+[1.9.24]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.24-rc.1...v1.9.24
 [1.9.24-rc.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.24-beta.1...v1.9.24-rc.1
 [1.9.24-beta.1]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.23...v1.9.24-beta.1
 [1.9.23]: https://github.com/anatawa12/AvatarOptimizer/compare/v1.9.23-rc.1...v1.9.23
